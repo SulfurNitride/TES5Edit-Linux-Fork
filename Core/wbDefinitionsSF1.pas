@@ -12238,6 +12238,7 @@ end;
       ]),
       wbInteger('Reset Hours', itU16, wbDiv(2730))
     ]),
+    wbFormIDCk(TPIC, 'Topic', [DIAL]),
     wbFormIDCk(DNAM, 'Shared INFO', [INFO]),
     wbFormIDCk(GNAM, 'INFO group', [INFO]),
 
