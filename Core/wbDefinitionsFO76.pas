@@ -13537,7 +13537,7 @@ begin
     ], cpNormal, False, nil, 1)
   ]);
 
-  wbRecord(NPC_, 'Non-Player Character (Actor)',
+  wbRecord(NPC_, 'Non-Player Character',
     wbFlags(wbFlagsList([
       {0x00000400} 10, 'Unknown 10',
       {0x00040000} 18, 'Compressed',

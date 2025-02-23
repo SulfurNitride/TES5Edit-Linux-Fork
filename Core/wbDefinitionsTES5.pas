@@ -8732,7 +8732,7 @@ begin
     .SetSummaryMemberPrefixSuffix(3, 'when (', ')')
     .SetSummaryMemberPrefixSuffix(5, 'at (', ')');
 
-  wbRecord(NPC_, 'Non-Player Character (Actor)',
+  wbRecord(NPC_, 'Non-Player Character',
     wbFlags(wbFlagsList([
       10, 'Unknown 10',
       18, 'Compressed',
