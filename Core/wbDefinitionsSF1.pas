@@ -19262,7 +19262,8 @@ end;
     wbEDID,
     wbREFL,
     wbFormIDCk(RFDP, 'Reflection Parent', [WTHS]),
-    wbRDIF
+    wbRDIF,
+    wbConditions
   ]);
 
   {subrecords checked against Starfield.esm}
