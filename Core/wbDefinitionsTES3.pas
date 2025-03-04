@@ -1027,13 +1027,11 @@ begin
         ])),
       wbInteger('Enchantment Cost', itS32),
       wbInteger('Charge Amount', itS32),
-      wbInteger('Auto Calculate', itU32,
-        wbEnum([
-        {0} 'False',
-        {1} 'True'
-        ], [
-        $0000FFFE, 'N/A - Constant Effect'
-      ]))
+      wbInteger('Flags', itU8,
+        wbFlags([
+        {0} 'Auto Calculate'
+        ], True)),
+      wbUnused(3)
     ]).SetRequired,
     wbEffects
   ]).SetFormIDBase($04);
