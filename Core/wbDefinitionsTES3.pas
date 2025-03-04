@@ -175,6 +175,27 @@ begin
   aElement.Container.ElementByName['Range'].SetToDefault;
 end;
 
+function wbConditionFunctionDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
+var
+  Container : IwbContainer;
+begin
+  Result := 0;
+  if not wbTryGetContainerFromUnion(aElement, Container) then
+    Exit;
+
+  case Integer(Container.ElementNativeValues['Type']) of
+    50,51,67: Result := 1;
+    52: Result := 2;
+    53: Result := 3;
+    54: Result := 4;
+    55: Result := 5;
+    56: Result := 6;
+    57: Result := 7;
+    65: Result := 8;
+    66: Result := 9;
+  end;
+end;
+
 function wbEffectRangeDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
 var
   Container  : IwbContainer;
@@ -1126,109 +1147,153 @@ begin
         wbStruct(SCVR, 'Condition Breakdown', [
           wbInteger('Position', itU8,
             wbEnum([], [
-            $30, '1st', //0
-            $31, '2nd', //1
-            $32, '3rd', //2
-            $33, '4th', //3
-            $34, '5th', //4
-            $35, '6th' //5
+            48, '1st', //0
+            49, '2nd', //1
+            50, '3rd', //2
+            51, '4th', //3
+            52, '5th', //4
+            53, '6th' //5
             ])),
-          wbInteger('Function', itU24,
+          wbInteger('Type', itU8,
             wbEnum([], [
-            $313030, 'Reaction Low', //100
-            $313031, 'Reaction High', //101
-            $313032, 'Rank Requirement', //102
-            $313033, 'Reputation', //103
-            $313034, 'Health Percent', //104
-            $313035, 'PC Reputation', //105
-            $313036, 'PC Level', //106
-            $313037, 'PC Health Percent', //107
-            $313038, 'PC Magicka', //108
-            $313039, 'PC Fatigue', //109
-            $313130, 'PC Strength', //110
-            $313131, 'PC Block', //111
-            $313132, 'PC Armorer', //112
-            $313133, 'PC Medium Armor', //113
-            $313134, 'PC Heavy Armor', //114
-            $313135, 'PC Blunt Weapon', //115
-            $313136, 'PC Long Blade', //116
-            $313137, 'PC Axe', //117
-            $313138, 'PC Spear', //118
-            $313139, 'PC Athletics', //119
-            $313230, 'PC Enchant', //120
-            $313231, 'PC Destruction', //121
-            $313232, 'PC Alteration', //122
-            $313233, 'PC Illusion', //123
-            $313234, 'PC Conjuration', //124
-            $313235, 'PC Mysticism', //125
-            $313236, 'PC Restoration', //126
-            $313237, 'PC Alchemy', //127
-            $313238, 'PC Unarmored', //128
-            $313239, 'PC Security', //129
-            $313330, 'PC Sneak', //130
-            $313331, 'PC Acrobatics', //131
-            $313332, 'PC Light Armor', //132
-            $313333, 'PC Short Blade', //133
-            $313334, 'PC Marksman', //134
-            $313335, 'PC Mercantile', //135
-            $313336, 'PC Speechcraft', //136
-            $313337, 'PC Hand To Hand', //137
-            $313338, 'PC Sex', //138
-            $313339, 'PC Expelled', //139
-            $313430, 'PC Common Disease', //140
-            $313431, 'PC Blight Disease', //141
-            $313432, 'Clothing Modifier', //142
-            $313433, 'PC Crime Level', //143
-            $313434, 'Same Sex', //144
-            $313435, 'Same Race', //145
-            $313436, 'Same Faction', //146
-            $313437, 'Faction Rank Difference', //147
-            $313438, 'Detected', //148
-            $313439, 'Alarmed', //149
-            $313530, 'Choice', //150
-            $313531, 'PC Intelligence', //151
-            $313532, 'PC Willpower', //152
-            $313533, 'PC Agility', //153
-            $313534, 'PC Speed', //154
-            $313535, 'PC Endurance', //155
-            $313536, 'PC Personality', //156
-            $313537, 'PC Luck', //157
-            $313538, 'PC Corpus', //158
-            $313539, 'Weather', //159
-            $313630, 'PC Vampire', //160
-            $313631, 'Level', //161
-            $313632, 'Attacked', //162
-            $313633, 'Talked To PC', //163
-            $313634, 'PC Health', //164
-            $313635, 'Creature Target', //165
-            $313636, 'Friend Hit', //166
-            $313637, 'Fight', //167
-            $313638, 'Hello', //168
-            $313639, 'Alarm', //169
-            $313730, 'Flee', //170
-            $313731, 'Should Attack', //171
-            $313732, 'Werewolf', //172
-            $313733, 'PC Werewolf Kills', //173
-            $327358, 'Global', //2sX //[GLOB]
-            $337358, 'Local', //3sX
-            $344A58, 'Journal', //4JX //[DIAL]
-            $354958, 'Item', //5IX //[ALCH, APPA, ARMO, BOOK, CLOT, INGR, LIGH, LOCK, MISC, PROB, REPA, WEAP]
-            $364458, 'Dead', //6DX //[CREA, NPC_]
-            $375858, 'Not ID', //7XX //[NPC_]
-            $384658, 'Not Faction', //8FX //[FACT]
-            $394358, 'Not Class', //9CX //[CLAS]
-            $415258, 'Not Race', //ARX //[RACE]
-            $424C58, 'Not Cell', //BLX //[CELL]
-            $437358, 'Not Local' //CsX),
+            49, 'Function',
+            50, 'Global',
+            51, 'Local',
+            52, 'Journal',
+            53, 'Item',
+            54, 'Dead',
+            55, 'Not ID',
+            56, 'Not Faction',
+            57, 'Not Class',
+            65, 'Not Race',
+            66, 'Not Cell',
+            67, 'Not Local'
             ])),
+          wbUnion('Function', wbConditionFunctionDecider, [
+            wbInteger('Function', itU16,
+              wbEnum([], [
+              12336, 'Reaction Low',
+              12337, 'PC Strength',
+              12338, 'PC Enchant',
+              12339, 'PC Sneak',
+              12340, 'PC Common Disease',
+              12341, 'Choice',
+              12342, 'PC Vampire',
+              12343, 'Flee',
+              12592, 'Reaction High',
+              12593, 'PC Block',
+              12594, 'PC Destruction',
+              12595, 'PC Acrobatics',
+              12596, 'PC Blight Disease',
+              12597, 'PC Intelligence',
+              12598, 'Level',
+              12599, 'Should Attack',
+              12848, 'Rank Requirement',
+              12849, 'PC Armorer',
+              12850, 'PC Alteration',
+              12851, 'PC Light Armor',
+              12852, 'PC Clothing Modifier',
+              12853, 'PC Willpower',
+              12854, 'Attacked',
+              12855, 'Werewolf',
+              13104, 'Reputation',
+              13105, 'PC Medium Armor',
+              13106, 'PC Illusion',
+              13107, 'PC Short Blade',
+              13108, 'PC Crime Level',
+              13109, 'PC Agility',
+              13110, 'Talked To PC',
+              13111, 'PC Werewolf Kills',
+              13360, 'Health Percent',
+              13361, 'PC Heavy Armor',
+              13362, 'PC Conjuration',
+              13363, 'PC Marksman',
+              13364, 'Same Sex',
+              13365, 'PC Speed',
+              13366, 'PC Health',
+              13616, 'PC Reputation',
+              13617, 'PC Blunt Weapon',
+              13619, 'PC Mysticism',
+              13619, 'PC Mercantile',
+              13620, 'Same Race',
+              13621, 'PC Endurance',
+              13622, 'Creature Target',
+              13872, 'PC Level',
+              13873, 'PC Long Blade',
+              13874, 'PC Restoration',
+              13875, 'PC Speechcraft',
+              13876, 'Same Faction',
+              13877, 'PC Personality',
+              13878, 'Friend Hit',
+              14128, 'PC Health Percent',
+              14129, 'PC Axe',
+              14130, 'PC Alchemy',
+              14131, 'PC Hand To Hand',
+              14132, 'Faction Rank Difference',
+              14133, 'PC Luck',
+              14134, 'Fight',
+              14384, 'PC Magicka',
+              14385, 'PC Spear',
+              14386, 'PC Unarmored',
+              14387, 'PC Sex',
+              14388, 'Detected',
+              14389, 'PC Corpus',
+              14390, 'Hello',
+              14640, 'PC Fatigue',
+              14641, 'PC Athletics',
+              16462, 'PC Security',
+              14643, 'PC Expelled',
+              14644, 'Alarmed',
+              14645, 'Weather',
+              14646, 'Alarm'
+              ])).SetDefaultNativeValue(14646),
+            wbInteger('Function', itU16,
+              wbEnum([], [
+              22610, 'Long in INTV',
+              22630, 'Float in FLTV',
+              22643, 'Short in INTV'
+              ])).SetDefaultNativeValue(22610),
+            wbInteger('Function', itU16,
+              wbEnum([], [
+              22602, 'Journal'
+              ])).SetDefaultNativeValue(22602),
+            wbInteger('Function', itU16,
+              wbEnum([], [
+              22601, 'Item'
+              ])).SetDefaultNativeValue(22601),
+            wbInteger('Function', itU16,
+              wbEnum([], [
+              22596, 'Dead'
+              ])).SetDefaultNativeValue(22596),
+            wbInteger('Function', itU16,
+              wbEnum([], [
+              22616, 'Not ID'
+              ])).SetDefaultNativeValue(22616),
+            wbInteger('Function', itU16,
+              wbEnum([], [
+              22598, 'Not Faction'
+              ])).SetDefaultNativeValue(22598),
+            wbInteger('Function', itU16,
+              wbEnum([], [
+              22595, 'Not Class'
+              ])).SetDefaultNativeValue(22595),
+            wbInteger('Function', itU16,
+              wbEnum([], [
+              22610, 'Not Race'
+              ])).SetDefaultNativeValue(22610),
+            wbInteger('Function', itU16,
+              wbEnum([], [
+              22604, 'Not Cell'
+              ])).SetDefaultNativeValue(22604)
+            ]),
           wbInteger('Operator', itU8,
             wbEnum([], [
-            $30, 'Equal To', //0
-            $31, 'Not Equal To', //1
-            $32, 'Less Than', //2
-            $33, 'Less Than or Equal To', //3
-            $34, 'Greater Than', //4
-            $35, 'Greater Than or Equal To' //5
+            48, 'Equal To',
+            49, 'Not Equal To',
+            50, 'Less Than',
+            51, 'Less Than or Equal To',
+            52, 'Greater Than',
+            53, 'Greater Than or Equal To'
             ])),
           wbString('Variable/Object')
         ]),
