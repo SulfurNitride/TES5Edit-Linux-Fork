@@ -120,6 +120,80 @@ begin
   Result := ((aElement.Container.Container as IwbMainRecord).RecordBySignature['PGRP'].Elements[Pred(Index)] as IwbContainer).Elements[2].NativeValue;
 end;
 
+function wbEffectAreaDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := False;
+  case Integer(aElement.Container.ElementNativeValues['Range']) of
+    1,2: Result := True;
+  end;
+  if aElement.ContainingMainRecord.Signature = ALCH then
+    Result := True
+end;
+
+function wbEffectAttributeDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := True;
+  case Integer(aElement.Container.ElementNativeValues['Magic Effect']) of
+    17,22,74,79,85: Result := False;
+  end;
+end;
+
+function wbEffectDurationDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := False;
+  case Integer(aElement.Container.ElementNativeValues['Magic Effect']) of
+    12,13,57,60,61,62,63,69,70,71,72,73,133: Result := True;
+  end;
+end;
+
+function wbEffectSkillDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := True;
+  case Integer(aElement.Container.ElementNativeValues['Magic Effect']) of
+    21,26,78,83,89: Result := False;
+  end;
+end;
+
+procedure wbEffectRangeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+begin
+  aElement.Container.ElementByName['Range'].SetToDefault;
+end;
+
+function wbEffectRangeDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
+var
+  Container  : IwbContainer;
+begin
+  Result := 0;
+  if not wbTryGetContainerFromUnion(aElement, Container) then
+    Exit;
+
+  case Integer(Container.ElementNativeValues['Magic Effect']) of
+    12,13,44,49,50,51,52,53,54,55,56,57,85,86,87,88,89,101,118,119,126: Result :=1;
+  end;
+end;
+
+function wbEffectRangeDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := False;
+  case Integer(aElement.Container.ElementNativeValues['Magic Effect']) of
+    59,60,61,62,63,64,65,66,102,103,104,105,106,107,108,109,110,111,112,113,
+    114,115,116,120,121,122,123,124,125,127,128,129,130,131,132,133,134,135,
+    137,138,139,140,141,142: Result := True;
+  end;
+  if aElement.ContainingMainRecord.Signature = ALCH then
+    Result := True;
+end;
+
+function wbEffectMagnitudeDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := False;
+  case Integer(aElement.Container.ElementNativeValues['Magic Effect']) of
+    0,2,39,45,46,58,60,61,62,63,69,70,71,72,73,102,103,104,105,106,107,108,
+    109,110,111,112,113,114,115,116,120,121,122,123,124,125,126,127,128,129,
+    130,131,132,133,134,136,137,138,139,140,141,142: Result := True;
+  end;
+end;
+
 function wbFRMRToString(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 begin
   Result := '';
@@ -530,19 +604,32 @@ begin
   wbEffects :=
     wbRArray('Effects',
       wbStruct(ENAM, 'Effect', [
-        wbInteger('Magic Effect', itU16, wbMagicEffectEnum), //[MGEF]
-        wbInteger('Skill', itS8, wbSkillEnum), //[SKIL]
-        wbInteger('Attribute', itS8, wbAttributeEnum),
-        wbInteger('Range', itU32,
-          wbEnum([
+        wbInteger('Magic Effect', itS16, wbMagicEffectEnum)
+          .SetAfterSet(wbEffectRangeAfterSet)
+          .SetDefaultNativeValue(-1),
+        wbInteger('Skill', itS8, wbSkillEnum)
+          .SetDefaultNativeValue(-1)
+          .SetDontShow(wbEffectSkillDontShow),
+        wbInteger('Attribute', itS8, wbAttributeEnum)
+          .SetDefaultNativeValue(-1)
+          .SetDontShow(wbEffectAttributeDontShow),
+        wbUnion('Range', wbEffectRangeDecider, [
+          wbInteger('Range', itU32,
+            wbEnum([
             {0} 'Self',
             {1} 'Touch',
             {2} 'Target'
-          ])),
-        wbInteger('Area', itS32),
-        wbInteger('Duration', itS32),
-        wbInteger('Magnitude Minimum', itS32),
-        wbInteger('Magnitude Maximum', itS32)
+            ])),
+          wbInteger('Range', itU32,
+            wbEnum([], [
+            1, 'Touch',
+            2, 'Target'
+            ])).SetDefaultNativeValue(1)
+          ]).SetDontShow(wbEffectRangeDontShow),
+        wbInteger('Area', itU32).SetDontShow(wbEffectAreaDontShow),
+        wbInteger('Duration', itU32).SetDontShow(wbEffectDurationDontShow),
+        wbInteger('Magnitude Minimum', itU32).SetDontShow(wbEffectMagnitudeDontShow),
+        wbInteger('Magnitude Maximum', itU32).SetDontShow(wbEffectMagnitudeDontShow)
       ]).SetRequired);
 
   wbTravelServices :=
