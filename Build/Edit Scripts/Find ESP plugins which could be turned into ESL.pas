@@ -7,7 +7,6 @@ const
   iESLMaxRecords = $ffe; // max possible new records in ESL
   iESLMaxFormID = $fff; // max allowed FormID number in ESL
 
-
 procedure CheckForESL(f: IInterface);
 var
   i: Integer;
@@ -69,10 +68,8 @@ begin
     if GetLoadOrder(f) = 0 then
       Continue;
     // check non-light plugins only
-    if not GetIsEsl and not SameText(ExtractFileExt(GetFileName(f)), '.esl') then
+    if not GetIsEsl(f) and not SameText(ExtractFileExt(GetFileName(f)), '.esl') then
       CheckForESL(f);
   end;
 end;
-
-
 end.
