@@ -204,23 +204,6 @@ begin
   end;
 end;
 
-function wbGLOBUnionDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
-begin
-  Result := 0;
-  if not Assigned(aElement) then
-    Exit;
-  var rValue := aElement.Container.RecordBySignature[FNAM];
-  if Assigned(rValue) then begin
-    var s := rValue.Value;
-    if Length(s) > 0 then
-      case s[1] of
-        'S': Result := 0;
-        'L': Result := 1;
-        'F': Result := 2;
-      end;
-  end;
-end;
-
 function GridCellToFormID(aFormIDBase: Byte; const aGridCell: TwbGridCell; out aFormID: TwbFormID): Boolean;
 begin
   Result := False;
@@ -1079,11 +1062,7 @@ begin
       $6C, 'Long',
       $73, 'Short'
       ])),
-    wbUnion(FLTV, 'Value', wbGLOBUnionDecider, [
-      wbFloat('Value - Short'),
-      wbFloat('Value - Long'),
-      wbFloat('Value - Float')
-    ])
+    wbFloat(FLTV, 'Value')
   ]).SetFormIDBase($58);
 
   wbRecord(GMST, 'Game Setting', [
