@@ -1904,11 +1904,11 @@ begin
   ]).SetFormIDBase($28);
 
   wbRecord(SOUN, 'Sound', @wbKnownSubRecordSignaturesNoFNAM, [
-    wbEditorID,
+    wbEditorID.SetRequired,
     wbDeleted,
-    wbString(FNAM, 'Sound Filename'),
+    wbString(FNAM, 'Sound Filename').SetRequired,
     wbStruct(DATA, 'Data', [
-      wbInteger('Volume', itU8),
+      wbInteger('Volume', itU8).SetDefaultNativeValue(1),
       wbInteger('Minimum Range', itU8),
       wbInteger('Maximum Range', itU8)
     ]).SetRequired
