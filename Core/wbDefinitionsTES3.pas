@@ -172,10 +172,10 @@ begin
   wbRecordFlags :=
     wbInteger('Record Flags', itU32,
       wbFlags(wbSparseFlags([
-        0,  'ESM',
-        5,  'Deleted',
-        10, 'Persistent Reference',
-        13, 'Blocked'
+      0,  'ESM',
+      5,  'Deleted',
+      10, 'References Persist',
+      13, 'Blocked'
       ], False, 14)));
 
   wbMainRecordHeader := wbStruct('Record Header', [
@@ -196,253 +196,253 @@ begin
 
   wbAttributeEnum :=
     wbEnum([
-      {0} 'Strength',
-      {1} 'Intelligence',
-      {2} 'Willpower',
-      {3} 'Agility',
-      {4} 'Speed',
-      {5} 'Endurance',
-      {6} 'Personality',
-      {7} 'Luck'
+    {0} 'Strength',
+    {1} 'Intelligence',
+    {2} 'Willpower',
+    {3} 'Agility',
+    {4} 'Speed',
+    {5} 'Endurance',
+    {6} 'Personality',
+    {7} 'Luck'
     ], [
-      -1, 'None'
+    -1, 'None'
     ]);
 
   wbBipedObjectEnum :=
     wbEnum ([
-      {0}  'Head',
-      {1}  'Hair',
-      {2}  'Neck',
-      {3}  'Chest',
-      {4}  'Groin',
-      {5}  'Skirt',
-      {6}  'Right Hand',
-      {7}  'Left Hand',
-      {8}  'Right Wrist',
-      {9}  'Left Wrist',
-      {10} 'Shield',
-      {11} 'Right Forearm',
-      {12} 'Left Forearm',
-      {13} 'Right Upper Arm',
-      {14} 'Left Upper Arm',
-      {15} 'Right Foot',
-      {16} 'Left Foot',
-      {17} 'Right Ankle',
-      {18} 'Left Ankle',
-      {19} 'Right Knee',
-      {20} 'Left Knee',
-      {21} 'Right Upper Leg',
-      {22} 'Left Upper Leg',
-      {23} 'Right Pauldron',
-      {24} 'Left Pauldron',
-      {25} 'Weapon',
-      {26} 'Tail'
+    {0}  'Head',
+    {1}  'Hair',
+    {2}  'Neck',
+    {3}  'Chest',
+    {4}  'Groin',
+    {5}  'Skirt',
+    {6}  'Right Hand',
+    {7}  'Left Hand',
+    {8}  'Right Wrist',
+    {9}  'Left Wrist',
+    {10} 'Shield',
+    {11} 'Right Forearm',
+    {12} 'Left Forearm',
+    {13} 'Right Upper Arm',
+    {14} 'Left Upper Arm',
+    {15} 'Right Foot',
+    {16} 'Left Foot',
+    {17} 'Right Ankle',
+    {18} 'Left Ankle',
+    {19} 'Right Knee',
+    {20} 'Left Knee',
+    {21} 'Right Upper Leg',
+    {22} 'Left Upper Leg',
+    {23} 'Right Pauldron',
+    {24} 'Left Pauldron',
+    {25} 'Weapon',
+    {26} 'Tail'
     ]);
 
   wbDialogTypeEnum :=
     wbEnum([
-      {0} 'Regular Topic',
-      {1} 'Voice',
-      {2} 'Greeting',
-      {3} 'Persuasion',
-      {4} 'Journal'
+    {0} 'Regular Topic',
+    {1} 'Voice',
+    {2} 'Greeting',
+    {3} 'Persuasion',
+    {4} 'Journal'
     ]);
 
   wbMagicEffectEnum :=
     wbEnum([
-      {0}   'Water Breathing',
-      {1}   'Swift Swim',
-      {2}   'Water Walking',
-      {3}   'Shield',
-      {4}   'Fire Shield',
-      {5}   'Lightning Shield',
-      {6}   'Frost Shield',
-      {7}   'Burden',
-      {8}   'Feather',
-      {9}   'Jump',
-      {10}  'Levitate',
-      {11}  'Slow Fall',
-      {12}  'Lock',
-      {13}  'Open',
-      {14}  'Fire Damage',
-      {15}  'Shock Damage',
-      {16}  'Frost Damage',
-      {17}  'Drain Attribute',
-      {18}  'Drain Health',
-      {19}  'Drain Spell Points',
-      {20}  'Drain Fatigue',
-      {21}  'Drain Skill',
-      {22}  'Damage Attribute',
-      {23}  'Damage Health',
-      {24}  'Damage Magicka',
-      {25}  'Damage Fatigue',
-      {26}  'Damage Skill',
-      {27}  'Poison',
-      {28}  'Weakness To Fire',
-      {29}  'Weakness To Frost',
-      {30}  'Weakness To Shock',
-      {31}  'Weakness To Magicka',
-      {32}  'Weakness To Common Disease',
-      {33}  'Weakness To Blight Disease',
-      {34}  'Weakness To Corprus Disease',
-      {35}  'Weakness To Poison',
-      {36}  'Weakness To Normal Weapons',
-      {37}  'Disintegrate Weapon',
-      {38}  'Disintegrate Armor',
-      {39}  'Invisibility',
-      {40}  'Chameleon',
-      {41}  'Light',
-      {42}  'Sanctuary',
-      {43}  'Night Eye',
-      {44}  'Charm',
-      {45}  'Paralyze',
-      {46}  'Silence',
-      {47}  'Blind',
-      {48}  'Sound',
-      {49}  'Calm Humanoid',
-      {50}  'Calm Creature',
-      {51}  'Frenzy Humanoid',
-      {52}  'Frenzy Creature',
-      {53}  'Demoralize Humanoid',
-      {54}  'Demoralize Creature',
-      {55}  'Rally Humanoid',
-      {56}  'Rally Creature',
-      {57}  'Dispel',
-      {58}  'Soultrap',
-      {59}  'Telekinesis',
-      {60}  'Mark',
-      {61}  'Recall',
-      {62}  'Divine Intervention',
-      {63}  'Almsivi Intervention',
-      {64}  'Detect Animal',
-      {65}  'Detect Enchantment',
-      {66}  'Detect Key',
-      {67}  'Spell Absorption',
-      {68}  'Reflect',
-      {69}  'Cure Common Disease',
-      {70}  'Cure Blight Disease',
-      {71}  'Cure Corprus Disease',
-      {72}  'Cure Poison',
-      {73}  'Cure Paralyzation',
-      {74}  'Restore Attribute',
-      {75}  'Restore Health',
-      {76}  'Restore Spell Points',
-      {77}  'Restore Fatigue',
-      {78}  'Restore Skill',
-      {79}  'Fortify Attribute',
-      {80}  'Fortify Health',
-      {81}  'Fortify Spell Points',
-      {82}  'Fortify Fatigue',
-      {83}  'Fortify Skill',
-      {84}  'Fortify Magicka Multiplier',
-      {85}  'Absorb Attribute',
-      {86}  'Absorb Health',
-      {87}  'Absorb Spell Points',
-      {88}  'Absorb Fatigue',
-      {89}  'Absorb Skill',
-      {90}  'Resist Fire',
-      {91}  'Resist Frost',
-      {92}  'Resist Shock',
-      {93}  'Resist Magicka',
-      {94}  'Resist Common Disease',
-      {95}  'Resist Blight Disease',
-      {96}  'Resist Corprus Disease',
-      {97}  'Resist Poison',
-      {98}  'Resist Normal Weapons',
-      {99}  'Resist Paralysis',
-      {100} 'Remove Curse',
-      {101} 'Turn Undead',
-      {102} 'Summon Scamp',
-      {103} 'Summon Clannfear',
-      {104} 'Summon Daedroth',
-      {105} 'Summon Dremora',
-      {106} 'Summon Ancestral Ghost',
-      {107} 'Summon Skeletal Minion',
-      {108} 'Summon Least Bonewalker',
-      {109} 'Summon Greater Bonewalker',
-      {110} 'Summon Bonelord',
-      {111} 'Summon Winged Twilight',
-      {112} 'Summon Hunger',
-      {113} 'Summon Golden Saint',
-      {114} 'Summon Flame Atronach',
-      {115} 'Summon Frost Atronach',
-      {116} 'Summon Storm Atronach',
-      {117} 'Fortify Attack Bonus',
-      {118} 'Command Creatures',
-      {119} 'Command Humanoids',
-      {120} 'Bound Dagger',
-      {121} 'Bound Longsword',
-      {122} 'Bound Mace',
-      {123} 'Bound Battle Axe',
-      {124} 'Bound Spear',
-      {125} 'Bound Longbow',
-      {126} 'Unused 126',
-      {127} 'Bound Cuirass',
-      {128} 'Bound Helm',
-      {129} 'Bound Boots',
-      {130} 'Bound Shield',
-      {131} 'Bound Gloves',
-      {132} 'Corpus',
-      {133} 'Vampirism',
-      {134} 'Summon Centurion Sphere',
-      {135} 'Sun Damage',
-      {136} 'Stunted Magicka',
-      {137} 'Summon Fabricant',
-      {138} 'Call Wolf',
-      {139} 'Call Bear',
-      {140} 'Summon Bonewolf',
-      {141} 'Unused 141',
-      {142} 'Unused 142'
+    {0}   'Water Breathing',
+    {1}   'Swift Swim',
+    {2}   'Water Walking',
+    {3}   'Shield',
+    {4}   'Fire Shield',
+    {5}   'Lightning Shield',
+    {6}   'Frost Shield',
+    {7}   'Burden',
+    {8}   'Feather',
+    {9}   'Jump',
+    {10}  'Levitate',
+    {11}  'Slow Fall',
+    {12}  'Lock',
+    {13}  'Open',
+    {14}  'Fire Damage',
+    {15}  'Shock Damage',
+    {16}  'Frost Damage',
+    {17}  'Drain Attribute',
+    {18}  'Drain Health',
+    {19}  'Drain Magicka',
+    {20}  'Drain Fatigue',
+    {21}  'Drain Skill',
+    {22}  'Damage Attribute',
+    {23}  'Damage Health',
+    {24}  'Damage Magicka',
+    {25}  'Damage Fatigue',
+    {26}  'Damage Skill',
+    {27}  'Poison',
+    {28}  'Weakness To Fire',
+    {29}  'Weakness To Frost',
+    {30}  'Weakness To Shock',
+    {31}  'Weakness To Magicka',
+    {32}  'Weakness To Common Disease',
+    {33}  'Weakness To Blight Disease',
+    {34}  'Weakness To Corprus Disease',
+    {35}  'Weakness To Poison',
+    {36}  'Weakness To Normal Weapons',
+    {37}  'Disintegrate Weapon',
+    {38}  'Disintegrate Armor',
+    {39}  'Invisibility',
+    {40}  'Chameleon',
+    {41}  'Light',
+    {42}  'Sanctuary',
+    {43}  'Night Eye',
+    {44}  'Charm',
+    {45}  'Paralyze',
+    {46}  'Silence',
+    {47}  'Blind',
+    {48}  'Sound',
+    {49}  'Calm Humanoid',
+    {50}  'Calm Creature',
+    {51}  'Frenzy Humanoid',
+    {52}  'Frenzy Creature',
+    {53}  'Demoralize Humanoid',
+    {54}  'Demoralize Creature',
+    {55}  'Rally Humanoid',
+    {56}  'Rally Creature',
+    {57}  'Dispel',
+    {58}  'Soultrap',
+    {59}  'Telekinesis',
+    {60}  'Mark',
+    {61}  'Recall',
+    {62}  'Divine Intervention',
+    {63}  'Almsivi Intervention',
+    {64}  'Detect Animal',
+    {65}  'Detect Enchantment',
+    {66}  'Detect Key',
+    {67}  'Spell Absorption',
+    {68}  'Reflect',
+    {69}  'Cure Common Disease',
+    {70}  'Cure Blight Disease',
+    {71}  'Cure Corprus Disease',
+    {72}  'Cure Poison',
+    {73}  'Cure Paralyzation',
+    {74}  'Restore Attribute',
+    {75}  'Restore Health',
+    {76}  'Restore Magicka',
+    {77}  'Restore Fatigue',
+    {78}  'Restore Skill',
+    {79}  'Fortify Attribute',
+    {80}  'Fortify Health',
+    {81}  'Fortify Magicka',
+    {82}  'Fortify Fatigue',
+    {83}  'Fortify Skill',
+    {84}  'Fortify Maximum Magicka',
+    {85}  'Absorb Attribute',
+    {86}  'Absorb Health',
+    {87}  'Absorb Magicka',
+    {88}  'Absorb Fatigue',
+    {89}  'Absorb Skill',
+    {90}  'Resist Fire',
+    {91}  'Resist Frost',
+    {92}  'Resist Shock',
+    {93}  'Resist Magicka',
+    {94}  'Resist Common Disease',
+    {95}  'Resist Blight Disease',
+    {96}  'Resist Corprus Disease',
+    {97}  'Resist Poison',
+    {98}  'Resist Normal Weapons',
+    {99}  'Resist Paralysis',
+    {100} 'Remove Curse',
+    {101} 'Turn Undead',
+    {102} 'Summon Scamp',
+    {103} 'Summon Clannfear',
+    {104} 'Summon Daedroth',
+    {105} 'Summon Dremora',
+    {106} 'Summon Ancestral Ghost',
+    {107} 'Summon Skeletal Minion',
+    {108} 'Summon Bonewalker',
+    {109} 'Summon Greater Bonewalker',
+    {110} 'Summon Bonelord',
+    {111} 'Summon Winged Twilight',
+    {112} 'Summon Hunger',
+    {113} 'Summon Golden Saint',
+    {114} 'Summon Flame Atronach',
+    {115} 'Summon Frost Atronach',
+    {116} 'Summon Storm Atronach',
+    {117} 'Fortify Attack',
+    {118} 'Command Creature',
+    {119} 'Command Humanoid',
+    {120} 'Bound Dagger',
+    {121} 'Bound Longsword',
+    {122} 'Bound Mace',
+    {123} 'Bound Battle Axe',
+    {124} 'Bound Spear',
+    {125} 'Bound Longbow',
+    {126} 'EXTRA SPELL',
+    {127} 'Bound Cuirass',
+    {128} 'Bound Helm',
+    {129} 'Bound Boots',
+    {130} 'Bound Shield',
+    {131} 'Bound Gloves',
+    {132} 'Corpus',
+    {133} 'Vampirism',
+    {134} 'Summon Centurion Sphere',
+    {135} 'Sun Damage',
+    {136} 'Stunted Magicka',
+    {137} 'Summon Fabricant',
+    {138} 'sEffectSummonCreature01',
+    {139} 'sEffectSummonCreature02',
+    {140} 'sEffectSummonCreature03',
+    {141} 'sEffectSummonCreature04',
+    {142} 'sEffectSummonCreature05'
     ], [
-       -1, 'None'
+    -1, 'None'
     ]);
 
   wbSkillEnum :=
     wbEnum([
-      {0}  'Block',
-      {1}  'Armorer',
-      {2}  'Medium Armor',
-      {3}  'Heavy Armor',
-      {4}  'Blunt Weapon',
-      {5}  'Long Blade',
-      {6}  'Axe',
-      {7}  'Spear',
-      {8}  'Athletics',
-      {9}  'Enchant',
-      {10} 'Destruction',
-      {11} 'Alteration',
-      {12} 'Illusion',
-      {13} 'Conjuration',
-      {14} 'Mysticism',
-      {15} 'Restoration',
-      {16} 'Alchemy',
-      {17} 'Unarmored',
-      {18} 'Security',
-      {19} 'Sneak',
-      {20} 'Acrobatics',
-      {21} 'Light Armor',
-      {22} 'Short Blade',
-      {23} 'Marksman',
-      {24} 'Mercantile',
-      {25} 'Speechcraft',
-      {26} 'Hand-To-Hand'
+    {0}  'Block',
+    {1}  'Armorer',
+    {2}  'Medium Armor',
+    {3}  'Heavy Armor',
+    {4}  'Blunt Weapon',
+    {5}  'Long Blade',
+    {6}  'Axe',
+    {7}  'Spear',
+    {8}  'Athletics',
+    {9}  'Enchant',
+    {10} 'Destruction',
+    {11} 'Alteration',
+    {12} 'Illusion',
+    {13} 'Conjuration',
+    {14} 'Mysticism',
+    {15} 'Restoration',
+    {16} 'Alchemy',
+    {17} 'Unarmored',
+    {18} 'Security',
+    {19} 'Sneak',
+    {20} 'Acrobatics',
+    {21} 'Light Armor',
+    {22} 'Short Blade',
+    {23} 'Marksman',
+    {24} 'Mercantile',
+    {25} 'Speechcraft',
+    {26} 'Hand-To-Hand'
     ], [
-      -1, 'None'
+    -1, 'None'
     ]);
 
   wbSpecializationEnum :=
     wbEnum([
-      {0} 'Combat',
-      {1} 'Magic',
-      {2} 'Stealth'
+    {0} 'Combat',
+    {1} 'Magic',
+    {2} 'Stealth'
     ]);
 
   {>>> Flags <<<}
 
   wbLeveledFlags :=
     wbFlags([
-      {0} 'Calculate from all levels <= player''s level',
-      {1} 'Calculate for each item in count'
+    {0} 'Calculate from all levels <= player''s level',
+    {1} 'Calculate for each item in count'
     ]);
 
   {>>> Common Defs <<<}
@@ -553,10 +553,10 @@ begin
     wbStruct(AADT, 'Data', [
       wbInteger('Type', itU32,
         wbEnum([
-          {0} 'Mortar & Pestle',
-          {1} 'Alembic',
-          {2} 'Calcinator',
-          {3} 'Retort'
+        {0} 'Mortar & Pestle',
+        {1} 'Alembic',
+        {2} 'Calcinator',
+        {3} 'Retort'
         ])),
       wbFloat('Quality', cpNormal, False, 1, 2),
       wbFloat('Weight', cpNormal, False, 1, 2),
@@ -574,17 +574,17 @@ begin
     wbStruct(AODT, 'Data', [
       wbInteger('Type', itU32,
         wbEnum([
-          {0}  'Helmet',
-          {1}  'Cuirass',
-          {2}  'Left Pauldron',
-          {3}  'Right Pauldron',
-          {4}  'Greaves',
-          {5}  'Boots',
-          {6}  'Left Gauntlet',
-          {7}  'Right Gauntlet',
-          {8}  'Shield',
-          {9}  'Left Bracer',
-          {10} 'Right Bracer'
+        {0}  'Helmet',
+        {1}  'Cuirass',
+        {2}  'Left Pauldron',
+        {3}  'Right Pauldron',
+        {4}  'Greaves',
+        {5}  'Boots',
+        {6}  'Left Gauntlet',
+        {7}  'Right Gauntlet',
+        {8}  'Shield',
+        {9}  'Left Bracer',
+        {10} 'Right Bracer'
         ])),
       wbFloat('Weight', cpNormal, False, 1, 2),
       wbInteger('Value', itS32),
@@ -605,37 +605,37 @@ begin
     wbStruct(BYDT, 'Data', [
       wbInteger('Part', itU8,
         wbEnum([
-          {0} 'Head',
-          {1} 'Hair',
-          {2} 'Neck',
-          {3} 'Chest',
-          {4} 'Groin',
-          {5} 'Hand',
-          {6} 'Wrist',
-          {7} 'Forearm',
-          {8} 'Upperarm',
-          {9} 'Foot',
-          {10} 'Ankle',
-          {11} 'Knee',
-          {12} 'Upperleg',
-          {13} 'Clavicle',
-          {14} 'Tail'
+        {0} 'Head',
+        {1} 'Hair',
+        {2} 'Neck',
+        {3} 'Chest',
+        {4} 'Groin',
+        {5} 'Hand',
+        {6} 'Wrist',
+        {7} 'Forearm',
+        {8} 'Upperarm',
+        {9} 'Foot',
+        {10} 'Ankle',
+        {11} 'Knee',
+        {12} 'Upperleg',
+        {13} 'Clavicle',
+        {14} 'Tail'
         ])),
       wbInteger('Skin Type', itU8,
         wbEnum([
-          {0} 'Normal',
-          {1} 'Vampire'
+        {0} 'Normal',
+        {1} 'Vampire'
         ])),
       wbInteger('Flags', itU8,
         wbFlags([
-          {0} 'Female',
-          {1} 'Not Playable'
+        {0} 'Female',
+        {1} 'Not Playable'
         ])),
       wbInteger('Part Type', itU8,
         wbEnum([
-          {0} 'Skin',
-          {1} 'Clothing',
-          {2} 'Armor'
+        {0} 'Skin',
+        {1} 'Clothing',
+        {2} 'Armor'
         ]))
     ]).SetRequired
   ]).SetFormIDBase($20);
@@ -673,11 +673,11 @@ begin
     wbStruct(DATA, 'Data', [
       wbInteger('Flags', itU32,
         wbFlags(wbSparseFlags([
-          0, 'Is Interior Cell',
-          1, 'Has Water',
-          2, 'Illegal to Sleep Here',
-          6, 'Has Map Color',
-          7, 'Behave Like Exterior'
+        0, 'Is Interior Cell',
+        1, 'Has Water',
+        2, 'Illegal to Sleep Here',
+        6, 'Has Map Color',
+        7, 'Behave Like Exterior'
         ], False, 8))),
       wbStruct('Grid', [
         wbInteger('X', itS32),
@@ -744,16 +744,16 @@ begin
     wbFNAM,
     wbStruct(CTDT, 'Data', [
       wbInteger('Type', itU32, wbEnum([
-        {0} 'Pants',
-        {1} 'Shoes',
-        {2} 'Shirt',
-        {3} 'Belt',
-        {4} 'Robe',
-        {5} 'Right Glove',
-        {6} 'Left Glove',
-        {7} 'Skirt',
-        {8} 'Ring',
-        {9} 'Amulet'
+      {0} 'Pants',
+      {1} 'Shoes',
+      {2} 'Shirt',
+      {3} 'Belt',
+      {4} 'Robe',
+      {5} 'Right Glove',
+      {6} 'Left Glove',
+      {7} 'Skirt',
+      {8} 'Ring',
+      {9} 'Amulet'
       ])),
       wbFloat('Weight', cpNormal, False, 1.0, 2),
       wbInteger('Value', itU16),
@@ -773,9 +773,9 @@ begin
     wbFloat(CNDT, 'Weight', cpNormal, False, 1.0, 2),
     wbInteger(FLAG, 'Flags', itU32,
       wbFlags(wbSparseFlags([
-        0, 'Organic',
-        1, 'Respawns',
-        3, 'Can Hold Items'
+      0, 'Organic',
+      1, 'Respawns',
+      3, 'Can Hold Items'
       ], False, 4))),
     wbSCRI, //[SCPT]
     wbRArray('Item Entries',
@@ -795,10 +795,10 @@ begin
     wbStruct(NPDT, 'Data', [
       wbInteger('Type', itU32,
         wbEnum([
-          {0} 'Creature',
-          {1} 'Daedra',
-          {2} 'Undead',
-          {3} 'Humanoid'
+        {0} 'Creature',
+        {1} 'Daedra',
+        {2} 'Undead',
+        {3} 'Humanoid'
         ])),
       wbInteger('Level', itS32),
       wbStruct('Attributes', [
@@ -830,16 +830,16 @@ begin
     ]).SetRequired,
     wbInteger(FLAG, 'Flags', itU32,
       wbFlags(wbSparseFlags([
-        0, 'Biped',
-        1, 'Respawn',
-        2, 'Weapon & Shield',
-        3, 'Can Hold Items',
-        4, 'Swims',
-        5, 'Flies',
-        6, 'Walks',
-        7, 'Essential',
-        10, 'Skeleton Blood',
-        11, 'Metal Blood'
+      0, 'Biped',
+      1, 'Respawn',
+      2, 'Weapon & Shield',
+      3, 'Can Hold Items',
+      4, 'Swims',
+      5, 'Flies',
+      6, 'Walks',
+      7, 'Essential',
+      10, 'Skeleton Blood',
+      11, 'Metal Blood'
       ], False, 12))
     ).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbFloat(XSCL, 'Scale', cpNormal, False, 1.0, 2),
@@ -924,10 +924,10 @@ begin
     wbStruct(ENDT, 'Data', [
       wbInteger('Cast Type', itU32,
         wbEnum([
-          {0} 'Cast Once',
-          {1} 'Cast Strikes',
-          {2} 'Cast When Used',
-          {3} 'Constant Effect'
+        {0} 'Cast Once',
+        {1} 'Cast Strikes',
+        {2} 'Cast When Used',
+        {3} 'Constant Effect'
         ])),
       wbInteger('Enchantment Cost', itS32),
       wbInteger('Charge Amount', itS32),
@@ -978,9 +978,9 @@ begin
     wbDELE,
     wbInteger(FNAM, 'Variable Type', itU8,
       wbEnum([], [
-        $66, 'Float',
-        $6C, 'Long',
-        $73, 'Short'
+      $66, 'Float',
+      $6C, 'Long',
+      $73, 'Short'
       ])),
     wbUnion(FLTV, 'Value', wbGLOBUnionDecider, [
       wbFloat('Value - Short'),
@@ -1036,109 +1036,109 @@ begin
         wbStruct(SCVR, 'Condition Breakdown', [
           wbInteger('Position', itU8,
             wbEnum([], [
-              $30, '1st', //0
-              $31, '2nd', //1
-              $32, '3rd', //2
-              $33, '4th', //3
-              $34, '5th', //4
-              $35, '6th' //5
+            $30, '1st', //0
+            $31, '2nd', //1
+            $32, '3rd', //2
+            $33, '4th', //3
+            $34, '5th', //4
+            $35, '6th' //5
             ])),
           wbInteger('Function', itU24,
             wbEnum([], [
-              $313030, 'Reaction Low', //100
-              $313031, 'Reaction High', //101
-              $313032, 'Rank Requirement', //102
-              $313033, 'Reputation', //103
-              $313034, 'Health Percent', //104
-              $313035, 'PC Reputation', //105
-              $313036, 'PC Level', //106
-              $313037, 'PC Health Percent', //107
-              $313038, 'PC Magicka', //108
-              $313039, 'PC Fatigue', //109
-              $313130, 'PC Strength', //110
-              $313131, 'PC Block', //111
-              $313132, 'PC Armorer', //112
-              $313133, 'PC Medium Armor', //113
-              $313134, 'PC Heavy Armor', //114
-              $313135, 'PC Blunt Weapon', //115
-              $313136, 'PC Long Blade', //116
-              $313137, 'PC Axe', //117
-              $313138, 'PC Spear', //118
-              $313139, 'PC Athletics', //119
-              $313230, 'PC Enchant', //120
-              $313231, 'PC Destruction', //121
-              $313232, 'PC Alteration', //122
-              $313233, 'PC Illusion', //123
-              $313234, 'PC Conjuration', //124
-              $313235, 'PC Mysticism', //125
-              $313236, 'PC Restoration', //126
-              $313237, 'PC Alchemy', //127
-              $313238, 'PC Unarmored', //128
-              $313239, 'PC Security', //129
-              $313330, 'PC Sneak', //130
-              $313331, 'PC Acrobatics', //131
-              $313332, 'PC Light Armor', //132
-              $313333, 'PC Short Blade', //133
-              $313334, 'PC Marksman', //134
-              $313335, 'PC Mercantile', //135
-              $313336, 'PC Speechcraft', //136
-              $313337, 'PC Hand To Hand', //137
-              $313338, 'PC Sex', //138
-              $313339, 'PC Expelled', //139
-              $313430, 'PC Common Disease', //140
-              $313431, 'PC Blight Disease', //141
-              $313432, 'Clothing Modifier', //142
-              $313433, 'PC Crime Level', //143
-              $313434, 'Same Sex', //144
-              $313435, 'Same Race', //145
-              $313436, 'Same Faction', //146
-              $313437, 'Faction Rank Difference', //147
-              $313438, 'Detected', //148
-              $313439, 'Alarmed', //149
-              $313530, 'Choice', //150
-              $313531, 'PC Intelligence', //151
-              $313532, 'PC Willpower', //152
-              $313533, 'PC Agility', //153
-              $313534, 'PC Speed', //154
-              $313535, 'PC Endurance', //155
-              $313536, 'PC Personality', //156
-              $313537, 'PC Luck', //157
-              $313538, 'PC Corpus', //158
-              $313539, 'Weather', //159
-              $313630, 'PC Vampire', //160
-              $313631, 'Level', //161
-              $313632, 'Attacked', //162
-              $313633, 'Talked To PC', //163
-              $313634, 'PC Health', //164
-              $313635, 'Creature Target', //165
-              $313636, 'Friend Hit', //166
-              $313637, 'Fight', //167
-              $313638, 'Hello', //168
-              $313639, 'Alarm', //169
-              $313730, 'Flee', //170
-              $313731, 'Should Attack', //171
-              $313732, 'Werewolf', //172
-              $313733, 'PC Werewolf Kills', //173
-              $327358, 'Global', //2sX //[GLOB]
-              $337358, 'Local', //3sX
-              $344A58, 'Journal', //4JX //[DIAL]
-              $354958, 'Item', //5IX //[ALCH, APPA, ARMO, BOOK, CLOT, INGR, LIGH, LOCK, MISC, PROB, REPA, WEAP]
-              $364458, 'Dead', //6DX //[CREA, NPC_]
-              $375858, 'Not ID', //7XX //[NPC_]
-              $384658, 'Not Faction', //8FX //[FACT]
-              $394358, 'Not Class', //9CX //[CLAS]
-              $415258, 'Not Race', //ARX //[RACE]
-              $424C58, 'Not Cell', //BLX //[CELL]
-              $437358, 'Not Local' //CsX),
+            $313030, 'Reaction Low', //100
+            $313031, 'Reaction High', //101
+            $313032, 'Rank Requirement', //102
+            $313033, 'Reputation', //103
+            $313034, 'Health Percent', //104
+            $313035, 'PC Reputation', //105
+            $313036, 'PC Level', //106
+            $313037, 'PC Health Percent', //107
+            $313038, 'PC Magicka', //108
+            $313039, 'PC Fatigue', //109
+            $313130, 'PC Strength', //110
+            $313131, 'PC Block', //111
+            $313132, 'PC Armorer', //112
+            $313133, 'PC Medium Armor', //113
+            $313134, 'PC Heavy Armor', //114
+            $313135, 'PC Blunt Weapon', //115
+            $313136, 'PC Long Blade', //116
+            $313137, 'PC Axe', //117
+            $313138, 'PC Spear', //118
+            $313139, 'PC Athletics', //119
+            $313230, 'PC Enchant', //120
+            $313231, 'PC Destruction', //121
+            $313232, 'PC Alteration', //122
+            $313233, 'PC Illusion', //123
+            $313234, 'PC Conjuration', //124
+            $313235, 'PC Mysticism', //125
+            $313236, 'PC Restoration', //126
+            $313237, 'PC Alchemy', //127
+            $313238, 'PC Unarmored', //128
+            $313239, 'PC Security', //129
+            $313330, 'PC Sneak', //130
+            $313331, 'PC Acrobatics', //131
+            $313332, 'PC Light Armor', //132
+            $313333, 'PC Short Blade', //133
+            $313334, 'PC Marksman', //134
+            $313335, 'PC Mercantile', //135
+            $313336, 'PC Speechcraft', //136
+            $313337, 'PC Hand To Hand', //137
+            $313338, 'PC Sex', //138
+            $313339, 'PC Expelled', //139
+            $313430, 'PC Common Disease', //140
+            $313431, 'PC Blight Disease', //141
+            $313432, 'Clothing Modifier', //142
+            $313433, 'PC Crime Level', //143
+            $313434, 'Same Sex', //144
+            $313435, 'Same Race', //145
+            $313436, 'Same Faction', //146
+            $313437, 'Faction Rank Difference', //147
+            $313438, 'Detected', //148
+            $313439, 'Alarmed', //149
+            $313530, 'Choice', //150
+            $313531, 'PC Intelligence', //151
+            $313532, 'PC Willpower', //152
+            $313533, 'PC Agility', //153
+            $313534, 'PC Speed', //154
+            $313535, 'PC Endurance', //155
+            $313536, 'PC Personality', //156
+            $313537, 'PC Luck', //157
+            $313538, 'PC Corpus', //158
+            $313539, 'Weather', //159
+            $313630, 'PC Vampire', //160
+            $313631, 'Level', //161
+            $313632, 'Attacked', //162
+            $313633, 'Talked To PC', //163
+            $313634, 'PC Health', //164
+            $313635, 'Creature Target', //165
+            $313636, 'Friend Hit', //166
+            $313637, 'Fight', //167
+            $313638, 'Hello', //168
+            $313639, 'Alarm', //169
+            $313730, 'Flee', //170
+            $313731, 'Should Attack', //171
+            $313732, 'Werewolf', //172
+            $313733, 'PC Werewolf Kills', //173
+            $327358, 'Global', //2sX //[GLOB]
+            $337358, 'Local', //3sX
+            $344A58, 'Journal', //4JX //[DIAL]
+            $354958, 'Item', //5IX //[ALCH, APPA, ARMO, BOOK, CLOT, INGR, LIGH, LOCK, MISC, PROB, REPA, WEAP]
+            $364458, 'Dead', //6DX //[CREA, NPC_]
+            $375858, 'Not ID', //7XX //[NPC_]
+            $384658, 'Not Faction', //8FX //[FACT]
+            $394358, 'Not Class', //9CX //[CLAS]
+            $415258, 'Not Race', //ARX //[RACE]
+            $424C58, 'Not Cell', //BLX //[CELL]
+            $437358, 'Not Local' //CsX),
             ])),
           wbInteger('Operator', itU8,
             wbEnum([], [
-              $30, 'Equal To', //0
-              $31, 'Not Equal To', //1
-              $32, 'Less Than', //2
-              $33, 'Less Than or Equal To', //3
-              $34, 'Greater Than', //4
-              $35, 'Greater Than or Equal To' //5
+            $30, 'Equal To', //0
+            $31, 'Not Equal To', //1
+            $32, 'Less Than', //2
+            $33, 'Less Than or Equal To', //3
+            $34, 'Greater Than', //4
+            $35, 'Greater Than or Equal To' //5
             ])),
           wbString('Variable/Object')
         ]),
@@ -1165,50 +1165,50 @@ begin
         wbArray('Skills',
           wbInteger('Skill', itS32,
             wbEnum([
-              {0}  'Block (None for Attribute based Magic Effects)',
-              {1}  'Armorer',
-              {2}  'Medium Armor',
-              {3}  'Heavy Armor',
-              {4}  'Blunt Weapon',
-              {5}  'Long Blade',
-              {6}  'Axe',
-              {7}  'Spear',
-              {8}  'Athletics',
-              {9}  'Enchant',
-              {10} 'Destruction',
-              {11} 'Alteration',
-              {12} 'Illusion',
-              {13} 'Conjuration',
-              {14} 'Mysticism',
-              {15} 'Restoration',
-              {16} 'Alchemy',
-              {17} 'Unarmored',
-              {18} 'Security',
-              {19} 'Sneak',
-              {20} 'Acrobatics',
-              {21} 'Light Armor',
-              {22} 'Short Blade',
-              {23} 'Marksman',
-              {24} 'Mercantile',
-              {25} 'Speechcraft',
-              {26} 'Hand-To-Hand'
+            {0}  'Block (None for Attribute based Magic Effects)',
+            {1}  'Armorer',
+            {2}  'Medium Armor',
+            {3}  'Heavy Armor',
+            {4}  'Blunt Weapon',
+            {5}  'Long Blade',
+            {6}  'Axe',
+            {7}  'Spear',
+            {8}  'Athletics',
+            {9}  'Enchant',
+            {10} 'Destruction',
+            {11} 'Alteration',
+            {12} 'Illusion',
+            {13} 'Conjuration',
+            {14} 'Mysticism',
+            {15} 'Restoration',
+            {16} 'Alchemy',
+            {17} 'Unarmored',
+            {18} 'Security',
+            {19} 'Sneak',
+            {20} 'Acrobatics',
+            {21} 'Light Armor',
+            {22} 'Short Blade',
+            {23} 'Marksman',
+            {24} 'Mercantile',
+            {25} 'Speechcraft',
+            {26} 'Hand-To-Hand'
             ], [
-              -1, 'None'
+            -1, 'None'
             ])),
         4),
         wbArray('Attributes',
           wbInteger('Attribute', itS32,
             wbEnum([
-              {0} 'Strength (None for Skill based Magic Effects)',
-              {1} 'Intelligence',
-              {2} 'Willpower',
-              {3} 'Agility',
-              {4} 'Speed',
-              {5} 'Endurance',
-              {6} 'Personality',
-              {7} 'Luck'
+            {0} 'Strength (None for Skill based Magic Effects)',
+            {1} 'Intelligence',
+            {2} 'Willpower',
+            {3} 'Agility',
+            {4} 'Speed',
+            {5} 'Endurance',
+            {6} 'Personality',
+            {7} 'Luck'
             ], [
-              -1, 'None'
+            -1, 'None'
             ])),
         4)
       ])
@@ -1224,10 +1224,10 @@ begin
     ], cpCritical).SetRequired,
     wbInteger(DATA, 'Flags', itU32,
       wbFlags([
-        {0} 'Has Vertex Normals/Height Map',
-        {1} 'Has Vertex Colors',
-        {2} 'Has Landscape Textures',
-        {3} 'User Created/Edited'
+      {0} 'Has Vertex Normals/Height Map',
+      {1} 'Has Vertex Colors',
+      {2} 'Has Landscape Textures',
+      {3} 'User Created/Edited'
       ])),
     IfThen(wbSimpleRecords,
       wbByteArray(VNML, 'Vertex Normals'),
@@ -1330,15 +1330,15 @@ begin
       wbByteColors,
       wbInteger('Flags', itU32,
         wbFlags([
-          {0} 'Dynamic',
-          {1} 'Can Be Carried',
-          {2} 'Negative',
-          {3} 'Flicker',
-          {4} 'Fire',
-          {5} 'Off By Default',
-          {6} 'Flicker Slow',
-          {7} 'Pulse',
-          {8} 'Pulse Slow'
+        {0} 'Dynamic',
+        {1} 'Can Be Carried',
+        {2} 'Negative',
+        {3} 'Flicker',
+        {4} 'Fire',
+        {5} 'Off By Default',
+        {6} 'Flicker Slow',
+        {7} 'Pulse',
+        {8} 'Pulse Slow'
         ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ]).SetRequired,
     wbSCRI, //[SCPT]
@@ -1372,34 +1372,34 @@ begin
     wbStruct(MEDT, 'Data', [
       wbInteger('School', itU32,
         wbEnum([
-          {0} 'Alteration',
-          {1} 'Conjuration',
-          {2} 'Destruction',
-          {3} 'Illusion',
-          {4} 'Mysticism',
-          {5} 'Restoration'
+        {0} 'Alteration',
+        {1} 'Conjuration',
+        {2} 'Destruction',
+        {3} 'Illusion',
+        {4} 'Mysticism',
+        {5} 'Restoration'
         ])),
       wbFloat('Base Cost', cpNormal, False, 1.0, 2),
       wbInteger('Flags', itU32,
         wbFlags([
-          {0}  'Target Skill',
-          {1}  'Target Attribute',
-          {2}  'No Duration',
-          {3}  'No Magnitude',
-          {4}  'Harmful',
-          {5}  'Continuous VFX',
-          {6}  'Cast Self',
-          {7}  'Cast Touch',
-          {8}  'Cast Target',
-          {9}  'Spellmaking',
-          {10} 'Enchanting',
-          {11} 'Negative',
-          {12} 'Applied Once',
-          {13} 'Stealth',
-          {14} 'Non-Recastable',
-          {15} 'Illegal Daedra',
-          {16} 'Non-reflectable',
-          {17} 'Caster Linked'
+        {0}  'Target Skill',
+        {1}  'Target Attribute',
+        {2}  'No Duration',
+        {3}  'No Magnitude',
+        {4}  'Harmful',
+        {5}  'Continuous VFX',
+        {6}  'Cast Self',
+        {7}  'Cast Touch',
+        {8}  'Cast Target',
+        {9}  'Spellmaking',
+        {10} 'Enchanting',
+        {11} 'Negative',
+        {12} 'Applied Once',
+        {13} 'Stealth',
+        {14} 'Non-Recastable',
+        {15} 'Illegal Daedra',
+        {16} 'Non-reflectable',
+        {17} 'Caster Linked'
         ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbStruct('Color', [
         wbInteger('Red', itU32),
@@ -1514,13 +1514,13 @@ begin
     ]).SetRequired,
     wbInteger(FLAG, 'Flags', itU32,
       wbFlags(wbSparseFlags([
-        0, 'Female',
-        1, 'Essential',
-        2, 'Respawn',
-        3, 'Can Hold Items',
-        4, 'Auto Calculate Stats',
-        10, 'Skeleton Blood',
-        11, 'Metal Blood'
+      0, 'Female',
+      1, 'Essential',
+      2, 'Respawn',
+      3, 'Can Hold Items',
+      4, 'Auto Calculate Stats',
+      10, 'Skeleton Blood',
+      11, 'Metal Blood'
       ], False, 12))),
     wbRArray('Item Entries',
       wbStruct(NPCO, 'Item Entry', [
@@ -1701,8 +1701,8 @@ begin
       ]),
       wbInteger('Flags', itU32,
         wbFlags([
-          {0} 'Playable',
-          {1} 'Beast Race'
+        {0} 'Playable',
+        {1} 'Beast Race'
         ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ]).SetRequired,
     wbRArray('Spells', wbStringForward(NPCS, 'Spell', 32)),
@@ -1837,14 +1837,14 @@ begin
     wbNAME,
     wbInteger(DATA, 'Type', itU32,
       wbEnum([
-        {0} 'Left Foot',
-        {1} 'Right Foot',
-        {2} 'Swim Left',
-        {3} 'Swim Right',
-        {4} 'Moan',
-        {5} 'Roar',
-        {6} 'Scream',
-        {7} 'Land'
+      {0} 'Left Foot',
+      {1} 'Right Foot',
+      {2} 'Swim Left',
+      {3} 'Swim Right',
+      {4} 'Moan',
+      {5} 'Roar',
+      {6} 'Scream',
+      {7} 'Land'
       ])),
     wbString(CNAM, 'Creature'), //[CREA]
     wbString(SNAM, 'Sound'), //[SOUN]
@@ -1869,19 +1869,19 @@ begin
     wbStruct(SPDT, 'Data', [
       wbInteger('Type', itU32,
         wbEnum([
-          {0} 'Spell',
-          {1} 'Ability',
-          {2} 'Blight',
-          {3} 'Disease',
-          {4} 'Curse',
-          {5} 'Power'
+        {0} 'Spell',
+        {1} 'Ability',
+        {2} 'Blight',
+        {3} 'Disease',
+        {4} 'Curse',
+        {5} 'Power'
         ])),
       wbInteger('Spell Cost', itS32),
       wbInteger('Flags', itU32,
         wbFlags([
-          {0} 'Auto Calculate Cost',
-          {1} 'PC Start Spell',
-          {2} 'Always Succeeds'
+        {0} 'Auto Calculate Cost',
+        {1} 'PC Start Spell',
+        {2} 'Always Succeeds'
         ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ]).SetRequired,
     wbENAM
@@ -1946,8 +1946,8 @@ begin
       ]),
       wbInteger('Flags', itU32,
         wbFlags([
-          {0} 'Silver Weapon',
-          {1} 'Ignore Normal Weapon Resistance'
+        {0} 'Silver Weapon',
+        {1} 'Ignore Normal Weapon Resistance'
         ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ]).SetRequired,
     wbSCRI, //[SCPT]
