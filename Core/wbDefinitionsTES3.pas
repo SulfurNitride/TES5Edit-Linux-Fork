@@ -1025,7 +1025,7 @@ begin
   wbRecord(FACT, 'Faction', [
     wbEditorID,
     wbDeleted,
-    wbString(FNAM, 'Name'),
+    wbFullName,
     wbRArray('Ranks', wbStringForward(RNAM, 'Rank', 32)),
     wbStruct(FADT, 'Data', [
       wbArray('Attributes',
@@ -1343,7 +1343,8 @@ begin
             wbInteger('Red', itU8),
             wbInteger('Green', itU8),
             wbInteger('Blue', itU8)
-          ]),
+          ]).SetToStr(wbRGBAToStr)
+            .IncludeFlag(dfCollapsed, wbCollapseRGBA),
         65),
       65)),
     IfThen(wbSimpleRecords,
@@ -1371,12 +1372,12 @@ begin
     wbDeleted,
     wbInteger(DATA, 'Leveled Flags', itU32, wbLeveledFlags),
     wbInteger(NNAM, 'Chance None', itU8),
-    wbInteger(INDX, 'Entry Count', itU32),
+    wbInteger(INDX, 'Entry Count', itU32).IncludeFlag(dfSkipImplicitEdit),
     wbRArray('Leveled Creature Entries',
       wbRStruct('Leveled Creature Entry', [
         wbString(CNAM, 'Creature'), //[CREA]
         wbInteger(INTV, 'Player Level', itU16)
-      ]))
+      ])).SetCountPath(INDX)
   ]).SetFormIDBase($40);
 
   wbRecord(LEVI, 'Leveled Item', [
@@ -1384,12 +1385,12 @@ begin
     wbDeleted,
     wbInteger(DATA, 'Levelved Flags', itU32, wbLeveledFlags),
     wbInteger(NNAM, 'Chance None', itU8),
-    wbInteger(INDX, 'Entry Count', itU32),
+    wbInteger(INDX, 'Entry Count', itU32).IncludeFlag(dfSkipImplicitEdit),
     wbRArray('Leveled Item Entries',
       wbRStruct('Leveled Item Entry', [
         wbString(INAM, 'Item'), //[ALCH, APPA, ARMO, BOOK, CLOT, INGR, LEVI, LIGH, LOCK, MISC, PROB, REPA, WEAP]
         wbInteger(INTV, 'Player Level', itU16)
-      ]))
+      ])).SetCountPath(INDX)
   ]).SetFormIDBase($40);
 
   wbRecord(LIGH, 'Light', [
@@ -1481,7 +1482,8 @@ begin
         wbInteger('Red', itU32),
         wbInteger('Green', itU32),
         wbInteger('Blue', itU32)
-      ]),
+      ]).SetToStr(wbRGBAToStr)
+        .IncludeFlag(dfCollapsed, wbCollapseRGBA),
       wbFloat('Size Multiplier', cpNormal, False, 1.0, 2),
       wbFloat('Speed Multiplier', cpNormal, False, 1.0, 2),
       wbFloat('Size Cap', cpNormal, False, 1.0, 2)
@@ -1821,10 +1823,10 @@ begin
     wbModel,
     wbFullName,
     wbStruct(RIDT, 'Data', [
-      wbFloat('Weight', cpNormal, False, 1.0, 2),
+      wbFloat('Weight', cpNormal, False, 1, 2),
       wbInteger('Value', itS32),
       wbInteger('Uses', itS32),
-      wbFloat('Quality', cpNormal, False, 1.0, 2)
+      wbFloat('Quality', cpNormal, False, 1, 2)
     ]).SetRequired,
     wbScript, //[SCPT]
     wbIcon
@@ -1857,15 +1859,13 @@ begin
     wbStruct(SKDT, 'Data', [
       wbInteger('Attribute', itS32, wbAttributeEnum),
       wbInteger('Type', itU32, wbSpecializationEnum),
-      wbArray('Actions',
-        wbFloat('Action'),
-      4)
+      wbArray('Actions', wbFloat('Action'), 4)
     ]).SetRequired,
     wbDescription
   ]).SetFormIDBase($01);
 
   wbRecord(SNDG, 'Sound Generator', [
-    wbEditorID,
+    wbEditorID.SetRequired,
     wbInteger(DATA, 'Type', itU32,
       wbEnum([
       {0} 'Left Foot',
