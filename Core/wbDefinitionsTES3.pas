@@ -1872,41 +1872,41 @@ begin
     wbModel.SetRequired,
     wbFullName,
     wbStruct(WPDT, 'Data', [
-      wbFloat('Weight', cpNormal, False, 1.0, 2),
-      wbInteger('Value', itS32),
+      wbFloat('Weight', cpNormal, False, 1, 2).SetDefaultNativeValue(1),
+      wbInteger('Value', itU32).SetDefaultNativeValue(1),
       wbInteger('Type', itU16,
         wbEnum([
-          {0}  'Short Blade One Hand',
-          {1}  'Long Blade One Hand',
-          {2}  'Long Blade Two Close',
-          {3}  'Blunt One Hand',
-          {4}  'Blunt Two Close',
-          {5}  'Blunt Two Wide',
-          {6}  'Spear Two Wide',
-          {7}  'Axe One Hand',
-          {8}  'Axe Two Hand',
-          {9}  'Marksman Bow',
-          {10} 'Marksman Crossbow',
-          {11} 'Marksman Thrown',
-          {12} 'Arrow',
-          {13} 'Bolt'
-        ])),
-      wbInteger('Health', itU16),
-      wbFloat('Speed'),
-      wbFloat('Reach'),
-      wbInteger('Enchanting Charge', itU16),
+        {0}  'Short Blade One Hand',
+        {1}  'Long Blade One Hand',
+        {2}  'Long Blade Two Close',
+        {3}  'Blunt One Hand',
+        {4}  'Blunt Two Close',
+        {5}  'Blunt Two Wide',
+        {6}  'Spear Two Wide',
+        {7}  'Axe One Hand',
+        {8}  'Axe Two Hand',
+        {9}  'Marksman Bow',
+        {10} 'Marksman Crossbow',
+        {11} 'Marksman Thrown',
+        {12} 'Arrow',
+        {13} 'Bolt'
+        ])).SetDefaultNativeValue(12),
+      wbInteger('Health', itU16).SetDefaultNativeValue(100),
+      wbFloat('Speed', cpNormal, False, 1, 2).SetDefaultNativeValue(1),
+      wbFloat('Reach', cpNormal, False, 1, 2).SetDefaultNativeValue(1),
+      wbInteger('Enchanting Charge', itU16).SetDefaultNativeValue(100),
       wbStruct('Damage Types', [
         wbStruct('Chop', [
-          wbInteger('Minimum', itU8),
-          wbInteger('Maximum', itU8)
+          wbInteger('Minimum', itU8).SetDefaultNativeValue(1),
+          wbInteger('Maximum', itU8).SetDefaultNativeValue(5)
         ]),
         wbStruct('Slash', [
-          wbInteger('Minimum', itU8),
-          wbInteger('Maximum', itU8)
+          wbInteger('Minimum', itU8).SetDefaultNativeValue(1),
+          wbInteger('Maximum', itU8).SetDefaultNativeValue(5)
         ]),
         wbStruct('Thrust', [
-          wbInteger('Minimum', itU8),
-          wbInteger('Maximum', itU8)
+          wbInteger('Minimum', itU8).SetDefaultNativeValue(1),
+          wbInteger('Maximum', itU8).SetDefaultNativeValue(5)
         ])
       ]),
       wbInteger('Flags', itU32,
