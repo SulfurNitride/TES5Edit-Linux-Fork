@@ -154,6 +154,22 @@ begin
   end;
 end;
 
+procedure wbEffectRangeAfterLoad(const aElement: IwbElement);
+var
+  Container: IwbContainer;
+begin
+  if wbBeginInternalEdit then try
+    if not Supports (aElement, IwbContainer, Container) then
+      Exit;
+
+    if Container.ElementEditValues['Range'] = '0' then
+      Container.ElementNativeValues['Range'] := 1;
+
+  finally
+    wbEndInternalEdit
+  end;
+end;
+
 procedure wbEffectRangeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
   aElement.Container.ElementByName['Range'].SetToDefault;
@@ -168,7 +184,7 @@ begin
     Exit;
 
   case Integer(Container.ElementNativeValues['Magic Effect']) of
-    12,13,44,49,50,51,52,53,54,55,56,57,85,86,87,88,89,101,118,119,126: Result :=1;
+    12,13,44,49,50,51,52,53,54,55,56,58,85,86,87,88,89,101,118,119,126: Result :=1;
   end;
 end;
 
@@ -613,7 +629,7 @@ begin
         wbInteger('Duration', itU32).SetDontShow(wbEffectDurationDontShow),
         wbInteger('Magnitude Minimum', itU32).SetDontShow(wbEffectMagnitudeDontShow),
         wbInteger('Magnitude Maximum', itU32).SetDontShow(wbEffectMagnitudeDontShow)
-      ]).SetRequired);
+      ]).SetAfterLoad(wbEffectRangeAfterLoad));
 
   wbTravelServices :=
     wbRArray('Travel Services',
