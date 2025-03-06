@@ -557,9 +557,9 @@ begin
 
   wbAIData :=
     wbStruct(AIDT, 'AI Data', [
-      wbInteger('Hello', itU16),
-      wbInteger('Fight', itU8),
-      wbInteger('Flee', itU8),
+      wbInteger('Hello', itU16).SetDefaultNativeValue(30),
+      wbInteger('Fight', itU8).SetDefaultNativeValue(30),
+      wbInteger('Flee', itU8).SetDefaultNativeValue(30),
       wbInteger('Alarm', itU8),
       wbUnused(3),
       wbInteger('Service Flags', itU32, wbServiceFlags)
@@ -568,19 +568,14 @@ begin
   wbAIPackages :=
     wbRArray('AI Packages',
       wbRUnion('AI Packages', [
-        wbStruct(AI_T, 'AI Travel', [
-          wbVec3('Position'),
-          wbInteger('Reset', itU8, wbBoolEnum),
-          wbUnused(3)
-        ]).SetRequired,
         wbStruct(AI_W, 'AI Wander', [
-          wbInteger('Distance', itU16),
-          wbInteger('Duration In Hours', itU16),
+          wbInteger('Distance', itU16).SetDefaultNativeValue(512),
+          wbInteger('Duration In Hours', itU16).SetDefaultNativeValue(5),
           wbInteger('Time of Day', itU8),
           wbStruct('Idle Chances', [
-            wbInteger('Idle 2', itU8),
-            wbInteger('Idle 3', itU8),
-            wbInteger('Idle 4', itU8),
+            wbInteger('Idle 2', itU8).SetDefaultNativeValue(60),
+            wbInteger('Idle 3', itU8).SetDefaultNativeValue(20),
+            wbInteger('Idle 4', itU8).SetDefaultNativeValue(10),
             wbInteger('Idle 5', itU8),
             wbInteger('Idle 6', itU8),
             wbInteger('Idle 7', itU8),
@@ -589,14 +584,10 @@ begin
           ]),
           wbInteger('Reset', itU8, wbBoolEnum)
         ]).SetRequired,
-        wbRStruct('AI Escort', [
-          wbStruct(AI_E, 'AI Escort', [
-            wbVec3('Position'),
-            wbInteger('Duration In Hours', itU16),
-            wbString(True, 'Target', 32), //[CREA, NPC_]
-            wbInteger('Reset', itU16, wbBoolEnum)
-          ]).SetRequired,
-          wbString(CNDT, 'Escort To Cell') //[CELL]
+        wbStruct(AI_T, 'AI Travel', [
+          wbVec3('Position'),
+          wbInteger('Reset', itU8, wbBoolEnum),
+          wbUnused(3)
         ]),
         wbRStruct('AI Follow', [
           wbStruct(AI_F, 'AI Follow', [
@@ -607,10 +598,19 @@ begin
           ]).SetRequired,
           wbString(CNDT, 'Follow To Cell') //[CELL]
         ]),
+        wbRStruct('AI Escort', [
+          wbStruct(AI_E, 'AI Escort', [
+            wbVec3('Position'),
+            wbInteger('Duration In Hours', itU16),
+            wbString(True, 'Target', 32), //[CREA, NPC_]
+            wbInteger('Reset', itU16, wbBoolEnum)
+          ]).SetRequired,
+          wbString(CNDT, 'Escort To Cell') //[CELL]
+        ]),
         wbStruct(AI_A, 'AI Activate', [
           wbString(True, 'Target', 32), //[ACTI, ALCH, APPA, ARMO, BODY, BOOK, CLOT, CONT, CREA, DOOR, ENCH, INGR, LIGH, LEVC, LEVI, LOCK, MISC, NPC_, PROB, REPA, SPEL, STAT, WEAP]
           wbInteger('Reset', itU8, wbBoolEnum)
-        ]).SetRequired
+        ])
       ]));
 
   wbBipedObjects :=
@@ -1596,20 +1596,28 @@ begin
   ]).SetFormIDBase($40);
 
   wbRecord(NPC_, 'Non-Player Character', [
-    wbEditorID,
+    wbEditorID.SetRequired,
     wbDeleted,
     wbModel,
     wbFullName,
-    wbString(RNAM, 'Race'), //[RACE]
-    wbString(CNAM, 'Class'), //[CLAS]
-    wbString(ANAM, 'Faction'), //[FACT]
-    wbString(BNAM, 'Head Body Part'), //[BODY]
-    wbString(KNAM, 'Hair Body Part'), //[BODY]
+    wbString(RNAM, 'Race') //[RACE]
+      .SetDefaultEditValue('Argonian')
+      .SetRequired,
+    wbString(CNAM, 'Class') //[CLAS]
+      .SetDefaultEditValue('Acrobat')
+      .SetRequired,
+    wbString(ANAM, 'Faction').SetRequired, //[FACT]
+    wbString(BNAM, 'Head Body Part') //[BODY]
+      .SetDefaultEditValue('b_n_argonian_m_head_02')
+      .SetRequired,
+    wbString(KNAM, 'Hair Body Part') //[BODY]
+      .SetDefaultEditValue('b_n_argonian_m_hair01')
+      .SetRequired,
     wbScript, //[SCPT]
     wbStruct(NPDT, 'Data', [
       wbUnion('Calculated Format', wbNPCDataDecider, [
         wbStruct('Non-Auto', [
-          wbInteger('Level', itS16),
+          wbInteger('Level', itU16),
           wbStruct('Attributes', [
             wbInteger('Strength', itU8),
             wbInteger('Intelligence', itU8),
@@ -1678,17 +1686,17 @@ begin
       4, 'Auto Calculate Stats',
       10, 'Skeleton Blood',
       11, 'Metal Blood'
-      ], False, 12))),
+      ], False, 12))).SetDefaultNativeValue(24),
     wbRArray('Item Entries',
       wbStruct(NPCO, 'Item Entry', [
-        wbInteger('Count', itS32),
+        wbInteger('Count', itU32),
         wbString('Item', 32) //[ALCH, APPA, ARMO, BOOK, CLOT, INGR, LEVI, LIGH, LOCK, MISC, PROB, REPA, WEAP]
       ])),
     wbRArray('Spells', wbString(NPCS, 'Spell', 32)), //[SPEL]
-    wbAIData,
+    wbAIData.SetRequired,
     wbTravelServices,
-    wbAIPackages,
-    wbFloat(XSCL, 'Scale', cpNormal, False, 1.0, 2)
+    wbAIPackages.SetRequired,
+    wbFloat(XSCL, 'Scale', cpNormal, False, 1, 2)
   ]).SetFormIDBase($40);
 
   wbRecord(PGRD, 'Path Grid', [
