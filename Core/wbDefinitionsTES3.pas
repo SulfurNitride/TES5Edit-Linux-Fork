@@ -1897,15 +1897,15 @@ begin
   ]).SetFormIDBase($70);
 
   wbRecord(REPA, 'Repair Item', [
-    wbEditorID,
+    wbEditorID.SetRequired,
     wbDeleted,
-    wbModel,
+    wbModel.SetRequired,
     wbFullName,
     wbStruct(RIDT, 'Data', [
-      wbFloat('Weight', cpNormal, False, 1, 2),
-      wbInteger('Value', itS32),
-      wbInteger('Uses', itS32),
-      wbFloat('Quality', cpNormal, False, 1, 2)
+      wbFloat('Weight', cpNormal, False, 1, 2).SetDefaultNativeValue(1),
+      wbInteger('Value', itU32).SetDefaultNativeValue(1),
+      wbInteger('Uses', itU32).SetDefaultNativeValue(10),
+      wbFloat('Quality', cpNormal, False, 1, 2).SetDefaultNativeValue(1)
     ]).SetRequired,
     wbScript, //[SCPT]
     wbIcon
