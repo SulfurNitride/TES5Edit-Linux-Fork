@@ -312,7 +312,7 @@ function wbVertexToStr2(aInt: Int64; const aElement: IwbElement; aType: TwbCallb
 function wbVTXTPosition(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbWeatherCloudSpeedToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 
-{>>> Union Deciders <<<} //21
+{>>> Union Deciders <<<} //22
 function wbCOEDOwnerDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
 function wbConditionCompValueDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
 function wbConditionParam3Decider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
@@ -333,6 +333,7 @@ function wbRecordSizeDecider(aSize: Integer): TwbUnionDecider; overload;
 function wbRecordSizeDecider(aMinSize, aMaxSize: Integer): TwbUnionDecider; overload;
 function wbRecordSizeDecider(const aSizes: array of Integer): TwbUnionDecider; overload;
 function wbScriptObjFormatDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
+function wbWeatherTimeOfDayDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
 function wbWwiseKeywordMappingSoundDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
 
 {>>> VarRecs <<<} //2
@@ -3177,7 +3178,7 @@ begin
   end;
 end;
 
-{>>> Union Deciders <<<} //21
+{>>> Union Deciders <<<} //22
 
 function wbCOEDOwnerDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
 var
@@ -3600,6 +3601,17 @@ end;
 function wbScriptObjFormatDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
 begin
   Result := wbGetScriptObjFormat(aElement);
+end;
+
+function wbWeatherTimeOfDayDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
+var
+  SubRecord: IwbSubRecord;
+begin
+  Result := 0;
+  if Assigned(aElement) and Supports (aElement, IwbSubRecord, SubRecord) then
+    case Integer(SubRecord.SubRecordHeaderSize) of
+      64, 160: Result := 1;
+    end;
 end;
 
 function wbWwiseKeywordMappingSoundDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
@@ -4810,32 +4822,53 @@ end;
 {>>> Weather Defs <<<} //1
 
 function wbWeatherTimeOfDay(const aName: string): IwbValueDef;
+var
+  Struct : IwbValueDef;
 begin
+  if wbIsFalloutNV then
+    Struct :=
+      wbUnion('', wbWeatherTimeOfDayDecider, [
+        wbStruct(aName, [
+          wbByteColors('Sunrise'),
+	        wbByteColors('Day'),
+	        wbByteColors('Sunset'),
+	        wbByteColors('Night'),
+          wbByteColors('High Noon'),
+          wbByteColors('Midnight')
+        ]).SetSummaryKey([0,1,2,3,4,5])
+          .IncludeFlag(dfCollapsed),
+        wbStruct(aName, [
+          wbByteColors('Sunrise'),
+	        wbByteColors('Day'),
+	        wbByteColors('Sunset'),
+	        wbByteColors('Night')
+        ]).SetSummaryKey([0,1,2,3])
+          .IncludeFlag(dfCollapsed)
+      ]).IncludeFlag(dfUnionStaticResolve)
+  else if wbIsFallout4 or wbIsFallout76 or wbIsStarfield then
+    Struct :=
+      wbStruct(aName, [
+        wbByteColors('Sunrise'),
+	      wbByteColors('Day'),
+	      wbByteColors('Sunset'),
+	      wbByteColors('Night'),
+        wbFromVersion(111, wbByteColors('Early Sunrise')),
+	      wbFromVersion(111, wbByteColors('Late Sunrise')),
+	      wbFromVersion(111, wbByteColors('Early Sunset')),
+	      wbFromVersion(111, wbByteColors('Late Sunset'))
+      ]).SetSummaryKey([0,1,2,3,4,5,6,7])
+  else
+    Struct :=
+      wbStruct(aName, [
+        wbByteColors('Sunrise'),
+	      wbByteColors('Day'),
+	      wbByteColors('Sunset'),
+	      wbByteColors('Night')
+        ]).SetSummaryKey([0,1,2,3]);
+
   wbWeatherTimeOfDay :=
-    wbStruct(aName, [
-	    wbByteColors('Sunrise').IncludeFlag(dfSummaryNoName),
-	    wbByteColors('Day').IncludeFlag(dfSummaryNoName),
-	    wbByteColors('Sunset').IncludeFlag(dfSummaryNoName),
-	    wbByteColors('Night').IncludeFlag(dfSummaryNoName),
-	    IsFNV(
-        wbByteColors('High Noon').IncludeFlag(dfSummaryNoName),
-        IsFO4Plus(
-          wbFromVersion(111, wbByteColors('Early Sunrise').IncludeFlag(dfSummaryNoName)),
-          nil)),
-	    IsFNV(
-        wbByteColors('Midnight').IncludeFlag(dfSummaryNoName),
-        IsFO4Plus(
-          wbFromVersion(111, wbByteColors('Late Sunrise').IncludeFlag(dfSummaryNoName)),
-          nil)),
-	    IsFO4Plus(
-        wbFromVersion(111, wbByteColors('Early Sunset').IncludeFlag(dfSummaryNoName)),
-        nil),
-	    IsFO4Plus(
-        wbFromVersion(111, wbByteColors('Late Sunset').IncludeFlag(dfSummaryNoName)),
-        nil)
-	  ], cpNormal, True, nil, 4)
-    .SetSummaryKey([0, 1, 2, 3, 4, 5, 6, 7])
-    .IncludeFlag(dfCollapsed);
+    Struct.IncludeFlag(dfSummaryMembersNoName)
+          .IncludeFlag(dfCollapsed)
 end;
 
 {>>> Common Definitions <<<}
