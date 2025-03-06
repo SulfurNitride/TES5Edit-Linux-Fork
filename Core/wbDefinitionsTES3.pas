@@ -1873,26 +1873,26 @@ begin
 
   wbRecord(REGN, 'Region', [
     wbDeleted,
-    wbEditorID,
-    wbFullName,
+    wbEditorID.SetRequired,
+    wbFullName.SetRequired,
     wbStruct(WEAT, 'Weather Chances', [
-      wbInteger('Clear', itU8),
-      wbInteger('Cloudy', itU8),
-      wbInteger('Foggy', itU8),
-      wbInteger('Overcast', itU8),
-      wbInteger('Rain', itU8),
-      wbInteger('Thunder', itU8),
+      wbInteger('Clear', itU8).SetDefaultNativeValue(5),
+      wbInteger('Cloudy', itU8).SetDefaultNativeValue(25),
+      wbInteger('Foggy', itU8).SetDefaultNativeValue(35),
+      wbInteger('Overcast', itU8).SetDefaultNativeValue(20),
+      wbInteger('Rain', itU8).SetDefaultNativeValue(10),
+      wbInteger('Thunder', itU8).SetDefaultNativeValue(5),
       wbInteger('Ash', itU8),
       wbInteger('Blight', itU8),
       wbInteger('Snow', itU8),
       wbInteger('Blizzard', itU8)
     ], cpNormal, True, nil, 8),
     wbString(BNAM, 'Sleep Creature'), //[LEVC]
-    wbByteColors(CNAM, 'Map Color'),
+    wbByteColors(CNAM, 'Map Color').SetRequired,
     wbRArray('Sound Records',
       wbStruct(SNAM, 'Sound Record', [
         wbString(True, 'Sound', 32), //[SOUN]
-        wbInteger('Chance', itS8)
+        wbInteger('Chance', itU8)
       ]))
   ]).SetFormIDBase($70);
 
