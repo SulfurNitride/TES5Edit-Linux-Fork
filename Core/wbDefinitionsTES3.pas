@@ -1249,7 +1249,6 @@ begin
               ])).SetDefaultNativeValue(14646),
             wbInteger('Function', itU16,
               wbEnum([], [
-              //22610, 'Long in INTV',
               22630, 'Float in FLTV',
               22636, 'Long in INTV',
               22643, 'Short in INTV'
