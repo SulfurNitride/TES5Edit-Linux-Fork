@@ -1759,57 +1759,57 @@ begin
   ]).SetFormIDBase($40);
 
   wbRecord(RACE, 'Race', [
-    wbEditorID,
+    wbEditorID.SetRequired,
     wbDeleted,
-    wbFullName,
+    wbFullName.SetRequired,
     wbStruct(RADT, 'Data', [
       wbArray('Skill Bonuses',
         wbStruct('Skill Bonus', [
-          wbInteger('Skill', itS32, wbSkillEnum),
-          wbInteger('Bonus', itS32)
+          wbInteger('Skill', itS32, wbSkillEnum).SetDefaultNativeValue(-1),
+          wbInteger('Bonus', itU32)
         ]),
       7),
       wbStruct('Base Attributes', [
         wbStruct('Strength', [
-          wbInteger('Male', itS32),
-          wbInteger('Female', itS32)
+          wbInteger('Male', itU32).SetDefaultNativeValue(50),
+          wbInteger('Female', itU32).SetDefaultNativeValue(50)
         ]),
         wbStruct('Intelligence', [
-          wbInteger('Male', itS32),
-          wbInteger('Female', itS32)
+          wbInteger('Male', itU32).SetDefaultNativeValue(50),
+          wbInteger('Female', itU32).SetDefaultNativeValue(50)
         ]),
         wbStruct('Willpower', [
-          wbInteger('Male', itS32),
-          wbInteger('Female', itS32)
+          wbInteger('Male', itU32).SetDefaultNativeValue(50),
+          wbInteger('Female', itU32).SetDefaultNativeValue(50)
         ]),
         wbStruct('Agility', [
-          wbInteger('Male', itS32),
-          wbInteger('Female', itS32)
+          wbInteger('Male', itU32).SetDefaultNativeValue(50),
+          wbInteger('Female', itU32).SetDefaultNativeValue(50)
         ]),
         wbStruct('Speed', [
-          wbInteger('Male', itS32),
-          wbInteger('Female', itS32)
+          wbInteger('Male', itU32).SetDefaultNativeValue(50),
+          wbInteger('Female', itU32).SetDefaultNativeValue(50)
         ]),
         wbStruct('Endurance', [
-          wbInteger('Male', itS32),
-          wbInteger('Female', itS32)
+          wbInteger('Male', itU32).SetDefaultNativeValue(50),
+          wbInteger('Female', itU32).SetDefaultNativeValue(50)
         ]),
         wbStruct('Personality', [
-          wbInteger('Male', itS32),
-          wbInteger('Female', itS32)
+          wbInteger('Male', itU32).SetDefaultNativeValue(50),
+          wbInteger('Female', itU32).SetDefaultNativeValue(50)
         ]),
         wbStruct('Luck', [
-          wbInteger('Male', itS32),
-          wbInteger('Female', itS32)
+          wbInteger('Male', itU32).SetDefaultNativeValue(50),
+          wbInteger('Female', itU32).SetDefaultNativeValue(50)
         ])
       ]),
       wbStruct('Height', [
-        wbFloat('Male', cpNormal, False, 1.0, 2),
-        wbFloat('Female', cpNormal, False, 1.0, 2)
+        wbFloat('Male', cpNormal, False, 1, 2).SetDefaultNativeValue(1),
+        wbFloat('Female', cpNormal, False, 1, 2).SetDefaultNativeValue(1)
       ]),
       wbStruct('Weight', [
-        wbFloat('Male', cpNormal, False, 1.0, 2),
-        wbFloat('Female', cpNormal, False, 1.0, 2)
+        wbFloat('Male', cpNormal, False, 1, 2).SetDefaultNativeValue(1),
+        wbFloat('Female', cpNormal, False, 1, 2).SetDefaultNativeValue(1)
       ]),
       wbInteger('Flags', itU32,
         wbFlags([
