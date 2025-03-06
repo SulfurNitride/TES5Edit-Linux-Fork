@@ -1744,15 +1744,15 @@ begin
     end);
 
   wbRecord(PROB, 'Probe', [
-    wbEditorID,
+    wbEditorID.SetRequired,
     wbDeleted,
-    wbModel,
+    wbModel.SetRequired,
     wbFullName,
     wbStruct(PBDT, 'Data', [
-      wbFloat('Weight', cpNormal, False, 1.0, 2),
-      wbInteger('Value', itS32),
-      wbFloat('Quality', cpNormal, False, 1.0, 2),
-      wbInteger('Uses', itS32)
+      wbFloat('Weight', cpNormal, False, 1, 2).SetDefaultNativeValue(1),
+      wbInteger('Value', itU32).SetDefaultNativeValue(1),
+      wbFloat('Quality', cpNormal, False, 1, 2).SetDefaultNativeValue(1),
+      wbInteger('Uses', itU32).SetDefaultNativeValue(10)
     ]).SetRequired,
     wbScript, //[SCPT]
     wbIcon
