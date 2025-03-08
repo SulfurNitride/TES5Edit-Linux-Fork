@@ -1580,14 +1580,14 @@ begin
     wbDescription
   ]).SetFormIDBase($02);
 
-  wbRecord(MISC, 'Miscellaneous Item', [
-    wbEditorID,
+  wbRecord(MISC, 'Misc. Item', [
+    wbEditorID.SetRequired,
     wbDeleted,
-    wbModel,
+    wbModel.SetRequired,
     wbFullName,
     wbStruct(MCDT,'Data', [
-      wbFloat('Weight', cpNormal, False, 1.0, 2),
-      wbInteger('Value', itS32),
+      wbFloat('Weight', cpNormal, False, 1, 2).SetDefaultNativeValue(1),
+      wbInteger('Value', itU32).SetDefaultNativeValue(1),
       //This bool is only set true if the object is used in a KNAM on a REFR.
       wbInteger('Is Key', itU32, wbBoolEnum)
     ]).SetRequired,
