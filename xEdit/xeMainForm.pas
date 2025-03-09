@@ -12814,7 +12814,7 @@ begin
           end;
         end;
 
-        wbCurrentProgress := 'Processed Records: ' + k.ToString;
+        wbCurrentProgress := 'Processed Records: ' + Integer(k + 1).ToString;
       end;
       if AnyErrors then begin
         pgMain.ActivePage := tbsMessages;
