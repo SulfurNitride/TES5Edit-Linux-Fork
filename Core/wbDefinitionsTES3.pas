@@ -1518,9 +1518,9 @@ begin
 
   wbRecord(LTEX, 'Landscape Texture', [
     wbDeleted,
-    wbEditorID,
+    wbEditorID.SetRequired,
     wbInteger(INTV, 'Texture ID', itU32),
-    wbString(DATA, 'Texture Filename')
+    wbString(DATA, 'Texture Filename').SetRequired
   ]).SetFormIDBase($60);
 
   wbRecord(MGEF, 'Magic Effect', @wbKnownSubRecordSignaturesINDX, [
