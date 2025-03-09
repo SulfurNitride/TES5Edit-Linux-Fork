@@ -1473,21 +1473,21 @@ begin
   ]).SetFormIDBase($40);
 
   wbRecord(LIGH, 'Light', [
-    wbEditorID,
+    wbEditorID.SetRequired,
     wbDeleted,
-    wbModel,
+    wbModel.SetRequired,
     wbFullName,
     wbIcon,
     wbStruct(LHDT, 'Data', [
-      wbFloat('Weight', cpNormal, False, 1.0, 2),
-      wbInteger('Value', itS32),
-      wbInteger('Time', itS32),
-      wbFloat('Radius', cpNormal, False, 1.0, 2),
+      wbFloat('Weight', cpNormal, False, 1, 2),
+      wbInteger('Value', itU32),
+      wbInteger('Time', itS32).SetDefaultNativeValue(-1),
+      wbInteger('Radius', itU32).SetDefaultNativeValue(1000),
       wbByteColors,
       wbInteger('Flags', itU32,
         wbFlags([
         {0} 'Dynamic',
-        {1} 'Can Be Carried',
+        {1} 'Can Carry',
         {2} 'Negative',
         {3} 'Flicker',
         {4} 'Fire',
