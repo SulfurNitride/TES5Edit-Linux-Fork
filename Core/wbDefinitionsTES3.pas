@@ -1535,7 +1535,7 @@ begin
         {4} 'Mysticism',
         {5} 'Restoration'
         ])),
-      wbFloat('Base Cost', cpNormal, False, 1.0, 2),
+      wbFloat('Base Cost', cpNormal, False, 1, 2),
       wbInteger('Flags', itU32,
         wbFlags([
         {0}  'Target Skill',
@@ -1557,15 +1557,15 @@ begin
         {16} 'Non-reflectable',
         {17} 'Caster Linked'
         ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
-      wbStruct('Color', [
+      wbStruct('Lighting Effect', [
         wbInteger('Red', itU32),
         wbInteger('Green', itU32),
         wbInteger('Blue', itU32)
       ]).SetToStr(wbRGBAToStr)
         .IncludeFlag(dfCollapsed, wbCollapseRGBA),
-      wbFloat('Size Multiplier', cpNormal, False, 1.0, 2),
-      wbFloat('Speed Multiplier', cpNormal, False, 1.0, 2),
-      wbFloat('Size Cap', cpNormal, False, 1.0, 2)
+      wbFloat('Size Multiplier', cpNormal, False, 1, 2),
+      wbFloat('Speed Multiplier', cpNormal, False, 1, 2),
+      wbFloat('Size Cap', cpNormal, False, 1, 2)
     ]).SetRequired,
     wbString(ITEX, 'Effect Texture Filename'),
     wbString(PTEX, 'Particle Texture Filename'),
