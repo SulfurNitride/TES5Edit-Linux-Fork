@@ -17,18 +17,19 @@ unit AssetsManager;
 
 const
   // asset type
-  atMesh = 1;
-  atTexture = 2;
-  atSound = 4;
-  atMusic = 8;
-  atPapyrusScript = 16;
-  atSeqFile = 32;
-  atLODAsset = 64;
-  atSpeedTree = 128;
-  atAnimation = 256;
-  atInterface = 512;
-  atMaterial = 1024;
-  atProgram = 2048;
+  atAnimation = 1;
+  atInterface = 2;
+  atLODAsset = 4;
+  atMaterial = 8;
+  atMesh = 16;  
+  atMusic = 32;
+  atPapyrusScript = 64;
+  atPapyrusSource = 128;
+  atProgram = 256;
+  atSeqFile = 512;
+  atSound = 1024;
+  atSpeedTree = 2048;
+  atTexture = 4096;
 
   // work mode
   wmNone = 0;
@@ -46,7 +47,7 @@ const
 
 var
   slAssetsType, slAssetsExt, sl, slRes, slDump: TStringList;
-  slContainers, slTextures, slChecksum: TwbFastStringList;
+  slContainers, slTextures, slChecksum: TStringList;
   CurrentRecord: IInterface;
   optAsset, optMode: integer;
   optPath: string;
@@ -540,26 +541,26 @@ begin
   //if not SameText(Copy(value, 1, 3), 'c:\') then
   if Copy(value, 1, 1) = '\' then
     Delete(value, 1, 1);
-  if SameText(Copy(value, 1, 5), 'data\') then
+  if SameText(Copy(value, 1, 5), 'Data\') then
     value := Copy(value, 6, Length(value));
-  if (atype = atMesh) and not (Copy(value, 1, 7) = 'meshes\') then
-    value := 'meshes\' + value
-  else if (atype = atAnimation) and not (Copy(value, 1, 7) = 'meshes\') then
-    value := 'meshes\' + value
-  else if (atype = atTexture) and not (Copy(value, 1, 9) = 'textures\') then
-    value := 'textures\' + value
-  else if (atype = atSound) and not (Copy(value, 1, 6) = 'sound\') then
-    value := 'sound\' + value
-  else if (atype = atMusic) and not (Copy(value, 1, 6) = 'music\') then
-    value := 'music\' + value
-  else if (atype = atSpeedTree) and not (Copy(value, 1, 6) = 'trees\') then
-    value := 'trees\' + value
-  else if (atype = atInterface) and not (Copy(value, 1, 10) = 'interface\') then
-    value := 'interface\' + value
-  else if (atype = atMaterial) and not (Copy(value, 1, 9) = 'material\') then
-    value := 'materials\' + value
-  else if (atype = atProgram) and not (Copy(value, 1, 9) = 'programs\') then
-    value := 'programs\' + value;
+  if (atype = atInterface) and not (Copy(value, 1, 10) = 'Interface\') then
+    value := 'Interface\' + value  
+  else if (atype = atMesh) and not (Copy(value, 1, 7) = 'Meshes\') then
+    value := 'Meshes\' + value
+  else if (atype = atAnimation) and not (Copy(value, 1, 7) = 'Meshes\') then
+    value := 'Meshes\' + value
+  else if (atype = atMaterial) and not (Copy(value, 1, 9) = 'Material\') then
+    value := 'Materials\' + value
+  else if (atype = atMusic) and not (Copy(value, 1, 6) = 'Music\') then
+    value := 'Music\' + value
+  else if (atype = atProgram) and not (Copy(value, 1, 9) = 'Programs\') then
+    value := 'Programs\' + value
+  else if (atype = atSound) and not (Copy(value, 1, 6) = 'Sound\') then
+    value := 'Sound\' + value
+  else if (atype = atTexture) and not (Copy(value, 1, 9) = 'Textures\') then
+    value := 'Textures\' + value
+  else if (atype = atSpeedTree) and not (Copy(value, 1, 6) = 'Trees\') then
+    value := 'Trees\' + value;
   Result := value;
 end;
 
@@ -636,7 +637,7 @@ begin
   try
     GetNifAssets(aMesh, sl);
   except on E: Exception do
-    AddMessage('Error reading NIF: ' + E.Message + ' ' + aMesh);
+    AddMessage('Error reading Mesh: ' + E.Message + ' ' + aMesh);
   end;
   
   // remove duplicates and empty
@@ -660,7 +661,7 @@ begin
   try
     GetTexturesFromMaterial(aMaterial, sl);
   except on E: Exception do
-    AddMessage('Error reading material: ' + E.Message + ' ' + aMaterial);
+    AddMessage('Error reading Material: ' + E.Message + ' ' + aMaterial);
   end;
   
   // remove duplicates and empty
@@ -684,7 +685,7 @@ begin
     Exit;
 
   // just in case, resource container index is lowercased
-  value := LowerCase(value);
+  //value := LowerCase(value);
   
   if valuedescr = '' then
     if ResDescrPrefix = '' then
@@ -715,7 +716,7 @@ begin
   if not Assigned(el) then
     Exit;
   
-  value := LowerCase(GetEditValue(el));
+  value := GetEditValue(el);
   if value = '' then
     Exit;
 
@@ -725,7 +726,7 @@ begin
     if SameText(s, 'CREA \ NIFZ - Model List \ Model') then
       value := ExtractFilePath(GetElementEditValues(CurrentRecord, 'Model\MODL')) + value
     else if SameText(s, 'CREA \ KFFZ - Animations \ Animation') then
-      value := ExtractFilePath(GetElementEditValues(CurrentRecord, 'Model\MODL')) + 'specialanims\' + value;
+      value := ExtractFilePath(GetElementEditValues(CurrentRecord, 'Model\MODL')) + 'Specialanims\' + value;
   end;
   
   // asset extension
@@ -744,9 +745,9 @@ begin
     atype := atSpeedTree
   // hardcoded location for speedtree leaves billboards
   else if (atype = atTexture) and ((wbGameMode = gmFO3) or (wbGameMode = gmFNV)) and (Signature(CurrentRecord) = 'TREE') then
-    value := 'textures\trees\leaves\' + value;
+    value := 'Textures\Trees\Leaves\' + value;
 
-  value := NormalizePath(LowerCase(value), atype);
+  value := NormalizePath(value, atype);
   
   ProcessAssetEx(el, value, '', atype);
 end;
@@ -774,7 +775,7 @@ begin
   i := DefType(e);
   if (i = dtString) or (i = dtLenString) then
     // do extension check before processing asset to speed up execution
-    if (slAssetsExt.IndexOf(LowerCase(ExtractFileExt(GetEditValue(e)))) <> -1) then
+    if (slAssetsExt.IndexOf(ExtractFileExt(GetEditValue(e))) <> -1) then
       ProcessAsset(e);
   
   for i := 0 to Pred(ElementCount(e)) do
@@ -798,12 +799,14 @@ begin
   
   if SameText(Name(e),'ScriptName') then begin
     s := StringReplace(GetEditValue(e), ':', '\', [rfReplaceAll]);
-	if wbGameMode = gmSSE then
-	  Source := 'source\scripts\'
-	else
-	  Source := 'scripts\source';
-    ProcessAssetEx(e, 'scripts\' + s + '.pex', 'Papyrus script attached to ' + Name(CurrentRecord), atPapyrusScript);
-    ProcessAssetEx(e, Source + s + '.psc', 'Source of papyrus script attached to ' + Name(CurrentRecord), atPapyrusScript);
+  if wbGameMode = gmSSE then
+    Source := 'Source\Scripts\'
+  else
+    Source := 'Scripts\Source';
+    if atPapyrusScript > 0 then 
+	  ProcessAssetEx(e, 'Scripts\' + s + '.pex', 'Papyrus Script attached to ' + Name(CurrentRecord), atPapyrusScript);
+    if atPapyrusSource > 0 then 
+	  ProcessAssetEx(e, Source + s + '.psc', 'Papyrus Source attached to ' + Name(CurrentRecord), atPapyrusSource);
   end;
   
   for i := 0 to Pred(ElementCount(e)) do
@@ -826,39 +829,40 @@ begin
   
   // known extensions, unknown ones are skipped
   slAssetsExt := TStringList.Create;
-  slAssetsExt.AddObject('.nif', atMesh);
-  slAssetsExt.AddObject('.dds', atTexture);
-  slAssetsExt.AddObject('.bgsm', atMaterial);
   slAssetsExt.AddObject('.bgem', atMaterial);
-  slAssetsExt.AddObject('.wav', atSound);
-  slAssetsExt.AddObject('.mp3', atSound);
-  slAssetsExt.AddObject('.ogg', atSound);
-  slAssetsExt.AddObject('.xwm', atSound);
-  slAssetsExt.AddObject('.kf', atAnimation);
+  slAssetsExt.AddObject('.bgsm', atMaterial);
+  slAssetsExt.AddObject('.dds', atTexture);
   slAssetsExt.AddObject('.hkx', atAnimation);
-  slAssetsExt.AddObject('.spt', atMesh); // speedtree is in mesh category
-  slAssetsExt.AddObject('.psa', atMesh); // pose is in mesh category
-  slAssetsExt.AddObject('.tri', atMesh); // morphs
-  slAssetsExt.AddObject('.ssf', atMesh); // FO4 bone weights is in mesh category
-  slAssetsExt.AddObject('.seq', atSeqFile);
+  slAssetsExt.AddObject('.kf', atAnimation);
+  slAssetsExt.AddObject('.mp3', atSound);
+  slAssetsExt.AddObject('.nif', atMesh);
+  slAssetsExt.AddObject('.ogg', atSound);
   slAssetsExt.AddObject('.pex', atPapyrusScript);
-  slAssetsExt.AddObject('.psc', atPapyrusScript);
+  slAssetsExt.AddObject('.psa', atMesh); // pose is in mesh category
+  slAssetsExt.AddObject('.psc', atPapyrusSource);
+  slAssetsExt.AddObject('.seq', atSeqFile);
+  slAssetsExt.AddObject('.spt', atMesh); // speedtree is in mesh category
+  slAssetsExt.AddObject('.ssf', atMesh); // FO4 bone weights is in mesh category
   slAssetsExt.AddObject('.swf', atInterface);
-
+  slAssetsExt.AddObject('.tri', atMesh); // morphs
+  slAssetsExt.AddObject('.wav', atSound);
+  slAssetsExt.AddObject('.xwm', atSound);
+  
   // selection list
   slAssetsType := TStringList.Create;
-  slAssetsType.AddObject('Meshes', atMesh);
-  slAssetsType.AddObject('Textures', atTexture);
-  slAssetsType.AddObject('[FO4] Materials', atMaterial);
-  slAssetsType.AddObject('Sounds', atSound);
-  slAssetsType.AddObject('Music', atMusic);
   slAssetsType.AddObject('Animations', atAnimation);
-  slAssetsType.AddObject('Papyrus scripts', atPapyrusScript);
-  slAssetsType.AddObject('[TES5] SEQ file', atSeqFile);
   slAssetsType.AddObject('Interface', atInterface);
   slAssetsType.AddObject('LOD Assets ', atLODAsset);
-  slAssetsType.AddObject('[FO4] PipBoy Programs', atProgram);
-
+  slAssetsType.AddObject('Materials [FO4]', atMaterial);
+  slAssetsType.AddObject('Meshes', atMesh);
+  slAssetsType.AddObject('Music', atMusic);
+  slAssetsType.AddObject('Papyrus Scripts', atPapyrusScript);
+  slAssetsType.AddObject('Papyrus Source', atPapyrusSource);
+  slAssetsType.AddObject('PipBoy Programs [FO4]', atProgram);
+  slAssetsType.AddObject('SEQ File [TES5]', atSeqFile);
+  slAssetsType.AddObject('Sounds', atSound);
+  slAssetsType.AddObject('Textures', atTexture);
+  
   slTextures := TwbFastStringList.Create;
   slTextures.Sorted := True;
   slTextures.Duplicates := dupIgnore;
@@ -871,7 +875,7 @@ begin
   slRes := TStringList.Create;
   sl := TStringList.Create;
   
-  ChecksumsFileName := Format('%sAssets manager %s checksums.txt', [ScriptsPath, wbGameName]);
+  ChecksumsFileName := Format('%sAssets Manager %s Checksums.txt', [ScriptsPath, wbGameName]);
 
   ShowOptions;
   
@@ -918,180 +922,17 @@ begin
   ScanForAssets(ElementByPath(e, 'Destructible'));
   
   // GAME SPECIFIC ELEMENTS
-
-  // --------------------------------------------------------------------------------
-  // Skyrim and SSE
-  // --------------------------------------------------------------------------------
-  if (wbGameMode = gmTES5) or (wbGameMode = gmSSE) then begin
   
-    // papyrus scripts
-    if optAsset and atPapyrusScript > 0 then
-      ScanForPapyrusScripts(ElementByPath(e, 'VMAD'));
-    
-    if (sig = 'ARMA') then begin
-      i1 := GetElementNativeValues(e, 'DNAM\Weight slider - Male');
-      i2 := GetElementNativeValues(e, 'DNAM\Weight slider - Female');
-      for i := 1 to 4 do begin
-        if i = 1 then s := 'Male Biped Model\MOD2'
-        else if i = 2 then s := 'Female Biped Model\MOD3'
-        else if i = 3 then s := 'Male 1st Person\MOD4'
-        else if i = 4 then s := 'Female 1st Person\MOD5';
-        ent := ElementByPath(e, s);
-        if not Assigned(ent) then Continue;
-        ProcessAsset(ent);
-        // additional weight models
-        if ((i mod 2 = 1) and (i1 = 2)) or ((i mod 2 = 0) and (i2 = 2)) or (optMode = wmCopy) then begin
-          s := wbNormalizeResourceName(GetEditValue(ent), resMesh);
-          if SameText(Copy(s, Length(s)-5, 6), '_1.nif') then
-            ProcessAssetEx(ent, Copy(s, 1, Length(s)-6) + '_0.nif', '', atMesh)
-          else if SameText(Copy(s, Length(s)-5, 6), '_0.nif') then
-            ProcessAssetEx(ent, Copy(s, 1, Length(s)-6) + '_1.nif', '', atMesh);
-        end;
-        // the last element in the same container as model is alternate textures
-        ent := ElementByIndex(GetContainer(ent), ElementCount(GetContainer(ent)) - 1);
-        if Pos('Alternate', Name(ent)) > 0 then
-          ScanForAssets(ent);
-      end;
-      ScanForAssets(ElementByPath(e, 'Icon 2 (female)'));
-    end
-    
-    else if (sig = 'ARMO') then begin
-      ScanForAssets(ElementByName(e, 'Male World Model'));
-      ScanForAssets(ElementByName(e, 'Female World Model'));
-      ScanForAssets(ElementByName(e, 'Icon 2 (female)'));
-    end
-
-    else if (sig = 'CELL') then begin
-      ProcessAsset(ElementByPath(e, 'XNAM'));
-      ProcessAsset(ElementByPath(e, 'XWEM'));
-    end
-
-    else if (sig = 'CLMT') then begin
-      ProcessAsset(ElementByPath(e, 'FNAM'));
-      ProcessAsset(ElementByPath(e, 'GNAM'));
-    end
-    
-    else if (sig = 'DEBR') then
-      ScanForAssets(ElementByPath(e, 'Models'))
-
-    else if (sig = 'EFSH') then begin
-      ProcessAsset(ElementByPath(e, 'ICO2'));
-      ProcessAsset(ElementByPath(e, 'NAM7'));
-      ProcessAsset(ElementByPath(e, 'NAM8'));
-      ProcessAsset(ElementByPath(e, 'NAM9'));
-    end
-
-    else if (sig = 'FURN') then
-      ProcessAsset(ElementByPath(e, 'XMRK'))
-	  
-    else if (sig = 'HDPT') then 
-      ScanForAssets(ElementByPath(e, 'Parts'))
-
-    else if (sig = 'LSCR') then
-      ProcessAsset(ElementByPath(e, 'MOD2'))
-
-    else if sig = 'LENS' then begin
-      ents := ElementByName(e, 'Lens Flare Sprites');
-      for i := 0 to Pred(ElementCount(ents)) do
-        ProcessAsset( ElementBySignature(ElementByIndex(ents, i), 'FNAM') );
-    end
-
-    else if (sig = 'MUST') then begin
-      ProcessAsset(ElementByPath(e, 'ANAM'));
-      ProcessAsset(ElementByPath(e, 'BNAM'));
-    end
-  
-    else if (sig = 'NPC_') and (optMode <> wmCheck) then
-      ProcessAssetEx(e, Format('Meshes\Actors\Character\FaceGenData\FaceGeom\%s\%s.nif', [GetFileName(MasterOrSelf(e)), IntToHex(FormID(e) and $00FFFFFF, 8)]), 'Facegen for ' + Name(e), atMesh)
-
-	else if (sig = 'PROJ') then
-      ProcessAsset(ElementByPath(e, 'Muzzle Flash Model\NAM1'))
-
-    else if (sig = 'QUST') then begin
-      if GetElementNativeValues(e, 'DNAM\Flags') and 1 > 0 then
-        if not Assigned(Master(e)) or (GetElementNativeValues(Master(e), 'DNAM\Flags') and 1 = 0) then
-          ProcessAssetEx(e, 'seq\' + ChangeFileExt(GetFileName(e), '.seq'), 'Start-game enabled quest requires SEQ file ' + Name(e), atSeqFile);
-    end
-                
-    else if (sig = 'RACE') then begin
-      ProcessAsset(ElementByPath(e, 'ANAM - Male Skeletal Model'));
-      ProcessAsset(ElementByPath(e, 'ANAM - Female Skeletal Model'));
-      ScanForAssets(ElementByPath(e, 'Body Data'));
-      ProcessAsset(ElementByPath(e, 'Male Behavior Graph\Model\MODL'));
-      ProcessAsset(ElementByPath(e, 'Female Behavior Graph\Model\MODL'));
-      ProcessAsset(ElementByPath(e, 'Head Data\Male Head Data\Model'));
-      ProcessAsset(ElementByPath(e, 'Head Data\Female Head Data\Model'));
-    end
-
-    else if (sig = 'SNDR') then
-      ScanForAssets(ElementByPath(e, 'Sounds'))
-
-    // STAT LOD
-    else if (sig = 'STAT') and ElementExists(e, 'MNAM') then begin
-      ents := ElementBySignature(e, 'MNAM');
-      for i := 0 to Pred(ElementCount(ents)) do begin
-        ent := ElementByIndex(ents, i);
-        s := wbNormalizeResourceName(GetElementEditValues(ent, 'Mesh'), resMesh);
-        ProcessAssetEx(e, s, 'Static LOD level ' + IntToStr(i) + ' mesh for ' + Name(e), atLODAsset);
-      end;
-    end
-
-    // TREE LOD
-    // we don't know if a mesh must have lod or not since it is not referenced directly from record, so skip it in "check missing" mode
-    else if (sig = 'TREE') and (optMode <> wmCheck) then begin
-      s := GetElementEditValues(e, 'Model\MODL');
-      if s <> '' then begin
-        s := wbNormalizeResourceName(ChangeFileExt(s, '') + '_lod_%s.nif', resMesh);
-        ProcessAssetEx(e, Format(s, ['flat']), 'Tree LOD mesh for ' + Name(e), atLODAsset);
-        ProcessAssetEx(e, Format(s, ['0']), 'xLODGen 0 mesh for ' + Name(e), atLODAsset);
-        ProcessAssetEx(e, Format(s, ['1']), 'xLODGen 1 mesh for ' + Name(e), atLODAsset);
-        ProcessAssetEx(e, Format(s, ['2']), 'xLODGen 2 mesh for ' + Name(e), atLODAsset);
-        ProcessAssetEx(e, Format(s, ['3']), 'xLODGen 3 mesh for ' + Name(e), atLODAsset);
-      end;
-    end
-
-    else if (sig = 'TXST') then
-      ScanForAssets(ElementByPath(e, 'Textures (RGB/A)'))
-
-    else if (sig = 'WATR') then
-      ProcessAsset(ElementByPath(e, 'NAM2'))
-   
-    else if (sig = 'WEAP') then
-      ProcessAsset(ElementByPath(e, 'Has Scope\MOD3'))
-
-    else if (sig = 'WRLD') then begin
-      ScanForAssets(ElementByPath(e, 'Cloud Model\Model'));
-      ProcessAsset(ElementByPath(e, 'NNAM'));
-      ProcessAsset(ElementByPath(e, 'XNAM'));
-      ProcessAsset(ElementByPath(e, 'TNAM'));
-      ProcessAsset(ElementByPath(e, 'UNAM'));
-      ProcessAsset(ElementByPath(e, 'XWEM'));
-    end
-
-    else if (sig = 'WTHR') then begin
-      // check cloud texture layers except disabled ones
-      sl := TStringList.Create;
-      sl.CommaText := '00TX,10TX,20TX,30TX,40TX,50TX,60TX,70TX,80TX,90TX,:0TX,;0TX,<0TX,=0TX,>0TX,?0TX,@0TX,A0TX,B0TX,C0TX,D0TX,E0TX,F0TX,G0TX,H0TX,I0TX,J0TX,K0TX,L0TX';
-      DisabledClouds := GetElementNativeValues(e, 'NAM1');
-	  for i := 0 to Pred(sl.Count) do begin
-        if DisabledClouds and (1 shl i) = 0 then
-          ProcessAsset(ElementByPath(e, 'Cloud Textures\' + sl[i]));
-      end;
-      sl.Free;
-      ProcessAsset(ElementByPath(e, 'Aurora\Model\MODL'));
-    end;  	
-  end
-
   
   // --------------------------------------------------------------------------------
   // Oblivion
   // --------------------------------------------------------------------------------
-  else if wbGameMode = gmTES4 then begin
+  if wbGameMode = gmTES4 then begin
   
     if (sig = 'WTHR') then begin
       ProcessAsset(ElementByPath(e, 'DNAM'));
       ProcessAsset(ElementByPath(e, 'CNAM'));
-    end; 	
+    end;   
   end
   
   
@@ -1101,10 +942,10 @@ begin
   else if (wbGameMode = gmFO3) or (wbGameMode = gmFNV) then begin
 
     if (sig = 'ARMA') or (sig = 'ARMO') then begin
-      ScanForAssets(ElementByPath(e, 'Male biped model'));
-      ScanForAssets(ElementByPath(e, 'Male world model'));
-      ScanForAssets(ElementByPath(e, 'Female biped model'));
-      ScanForAssets(ElementByPath(e, 'Female world model'));
+      ScanForAssets(ElementByPath(e, 'Male Biped Model'));
+      ScanForAssets(ElementByPath(e, 'Male World Model'));
+      ScanForAssets(ElementByPath(e, 'Female Biped Model'));
+      ScanForAssets(ElementByPath(e, 'Female World Model'));
       ProcessAsset(ElementBySignature(e, 'MICO'));
       ProcessAsset(ElementBySignature(e, 'ICO2'));
       ProcessAsset(ElementBySignature(e, 'MIC2'));
@@ -1196,8 +1037,8 @@ begin
     else if (sig = 'STAT') and (optMode <> wmCheck) then begin
       s := GetElementEditValues(e, 'Model\MODL');
       if s <> '' then begin
-        s := wbNormalizeResourceName(ChangeFileExt(s, '') + '_lod.nif', resMesh);
-        ProcessAssetEx(e, s, 'Static LOD mesh for ' + Name(e), atLODAsset);
+        s := wbNormalizeResourceName(ChangeFileExt(s, '') + '_LOD.nif', resMesh);
+        ProcessAssetEx(e, s, 'Static LOD Mesh for ' + Name(e), atLODAsset);
       end;
     end
 
@@ -1205,8 +1046,8 @@ begin
     else if (sig = 'TREE') and (optMode <> wmCheck) then begin
       s := ExtractFileName(GetElementEditValues(e, 'Model\MODL'));
       if s <> '' then begin
-        s := 'textures\trees\billboards\' + ChangeFileExt(s, '.dds');
-        ProcessAssetEx(e, s, 'Tree billboard LOD texture for ' + Name(e), atLODAsset);
+        s := 'Textures\Trees\Billboards\' + ChangeFileExt(s, '.dds');
+        ProcessAssetEx(e, s, 'Tree Billboard LOD Texture For ' + Name(e), atLODAsset);
       end;
     end
 
@@ -1242,6 +1083,174 @@ begin
     end;
   end
 
+
+  // --------------------------------------------------------------------------------
+  // Skyrim and SSE
+  // --------------------------------------------------------------------------------
+  else if (wbGameMode = gmTES5) or (wbGameMode = gmSSE) then begin
+  
+    // papyrus scripts
+    if optAsset > 0 then begin 
+	  if atPapyrusScript > 0 then
+        ScanForPapyrusScripts(ElementByPath(e, 'VMAD'));
+	  if atPapyrusSource > 0 then
+	    ScanForPapyrusScripts(ElementByPath(e, 'VMAD'));
+	end;
+    
+    if (sig = 'ARMA') then begin
+      i1 := GetElementNativeValues(e, 'DNAM\Weight Slider - Male');
+      i2 := GetElementNativeValues(e, 'DNAM\Weight Slider - Female');
+      for i := 1 to 4 do begin
+        if i = 1 then s := 'Male Biped Model\MOD2'
+        else if i = 2 then s := 'Female Biped Model\MOD3'
+        else if i = 3 then s := 'Male 1st Person\MOD4'
+        else if i = 4 then s := 'Female 1st Person\MOD5';
+        ent := ElementByPath(e, s);
+        if not Assigned(ent) then Continue;
+        ProcessAsset(ent);
+        // additional weight models
+        if ((i mod 2 = 1) and (i1 = 2)) or ((i mod 2 = 0) and (i2 = 2)) or (optMode = wmCopy) then begin
+          s := wbNormalizeResourceName(GetEditValue(ent), resMesh);
+          if SameText(Copy(s, Length(s)-5, 6), '_1.nif') then
+            ProcessAssetEx(ent, Copy(s, 1, Length(s)-6) + '_0.nif', '', atMesh)
+          else if SameText(Copy(s, Length(s)-5, 6), '_0.nif') then
+            ProcessAssetEx(ent, Copy(s, 1, Length(s)-6) + '_1.nif', '', atMesh);
+        end;
+        // the last element in the same container as model is alternate textures
+        ent := ElementByIndex(GetContainer(ent), ElementCount(GetContainer(ent)) - 1);
+        if Pos('Alternate', Name(ent)) > 0 then
+          ScanForAssets(ent);
+      end;
+      ScanForAssets(ElementByPath(e, 'Icon 2 (Female)'));
+    end
+    
+    else if (sig = 'ARMO') then begin
+      ScanForAssets(ElementByName(e, 'Male World Model'));
+      ScanForAssets(ElementByName(e, 'Female World Model'));
+      ScanForAssets(ElementByName(e, 'Icon 2 (Female)'));
+    end
+
+    else if (sig = 'CELL') then begin
+      ProcessAsset(ElementByPath(e, 'XNAM'));
+      ProcessAsset(ElementByPath(e, 'XWEM'));
+    end
+
+    else if (sig = 'CLMT') then begin
+      ProcessAsset(ElementByPath(e, 'FNAM'));
+      ProcessAsset(ElementByPath(e, 'GNAM'));
+    end
+    
+    else if (sig = 'DEBR') then
+      ScanForAssets(ElementByPath(e, 'Models'))
+
+    else if (sig = 'EFSH') then begin
+      ProcessAsset(ElementByPath(e, 'ICO2'));
+      ProcessAsset(ElementByPath(e, 'NAM7'));
+      ProcessAsset(ElementByPath(e, 'NAM8'));
+      ProcessAsset(ElementByPath(e, 'NAM9'));
+    end
+
+    else if (sig = 'FURN') then
+      ProcessAsset(ElementByPath(e, 'XMRK'))
+    
+    else if (sig = 'HDPT') then 
+      ScanForAssets(ElementByPath(e, 'Parts'))
+
+    else if (sig = 'LSCR') then
+      ProcessAsset(ElementByPath(e, 'MOD2'))
+
+    else if sig = 'LENS' then begin
+      ents := ElementByName(e, 'Lens Flare Sprites');
+      for i := 0 to Pred(ElementCount(ents)) do
+        ProcessAsset( ElementBySignature(ElementByIndex(ents, i), 'FNAM') );
+    end
+
+    else if (sig = 'MUST') then begin
+      ProcessAsset(ElementByPath(e, 'ANAM'));
+      ProcessAsset(ElementByPath(e, 'BNAM'));
+    end
+  
+    else if (sig = 'NPC_') and (optMode <> wmCheck) then
+      ProcessAssetEx(e, Format('Meshes\Actors\Character\FaceGenData\FaceGeom\%s\%s.nif', [GetFileName(MasterOrSelf(e)), IntToHex(FormID(e) and $00FFFFFF, 8)]), 'Facegen for ' + Name(e), atMesh)
+
+  else if (sig = 'PROJ') then
+      ProcessAsset(ElementByPath(e, 'Muzzle Flash Model\NAM1'))
+
+    else if (sig = 'QUST') then begin
+      if GetElementNativeValues(e, 'DNAM\Flags') and 1 > 0 then
+        if not Assigned(Master(e)) or (GetElementNativeValues(Master(e), 'DNAM\Flags') and 1 = 0) then
+          ProcessAssetEx(e, 'Seq\' + ChangeFileExt(GetFileName(e), '.seq'), 'Start-Game Enabled Quest Requires SEQ File ' + Name(e), atSeqFile);
+    end
+                
+    else if (sig = 'RACE') then begin
+      ProcessAsset(ElementByPath(e, 'ANAM - Male Skeletal Model'));
+      ProcessAsset(ElementByPath(e, 'ANAM - Female Skeletal Model'));
+      ScanForAssets(ElementByPath(e, 'Body Data'));
+      ProcessAsset(ElementByPath(e, 'Male Behavior Graph\Model\MODL'));
+      ProcessAsset(ElementByPath(e, 'Female Behavior Graph\Model\MODL'));
+      ProcessAsset(ElementByPath(e, 'Head Data\Male Head Data\Model'));
+      ProcessAsset(ElementByPath(e, 'Head Data\Female Head Data\Model'));
+    end
+
+    else if (sig = 'SNDR') then
+      ScanForAssets(ElementByPath(e, 'Sounds'))
+
+    // STAT LOD
+    else if (sig = 'STAT') and ElementExists(e, 'MNAM') then begin
+      ents := ElementBySignature(e, 'MNAM');
+      for i := 0 to Pred(ElementCount(ents)) do begin
+        ent := ElementByIndex(ents, i);
+        s := wbNormalizeResourceName(GetElementEditValues(ent, 'Mesh'), resMesh);
+        ProcessAssetEx(e, s, 'Static LOD Level ' + IntToStr(i) + ' Mesh For ' + Name(e), atLODAsset);
+      end;
+    end
+
+    // TREE LOD
+    // we don't know if a mesh must have lod or not since it is not referenced directly from record, so skip it in "check missing" mode
+    else if (sig = 'TREE') and (optMode <> wmCheck) then begin
+      s := GetElementEditValues(e, 'Model\MODL');
+      if s <> '' then begin
+        s := wbNormalizeResourceName(ChangeFileExt(s, '') + '_LOD_%s.nif', resMesh);
+        ProcessAssetEx(e, Format(s, ['Flat']), 'Tree LOD Mesh for ' + Name(e), atLODAsset);
+        ProcessAssetEx(e, Format(s, ['0']), 'xLODGen 0 Mesh for ' + Name(e), atLODAsset);
+        ProcessAssetEx(e, Format(s, ['1']), 'xLODGen 1 Mesh for ' + Name(e), atLODAsset);
+        ProcessAssetEx(e, Format(s, ['2']), 'xLODGen 2 Mesh for ' + Name(e), atLODAsset);
+        ProcessAssetEx(e, Format(s, ['3']), 'xLODGen 3 Mesh for ' + Name(e), atLODAsset);
+      end;
+    end
+
+    else if (sig = 'TXST') then
+      ScanForAssets(ElementByPath(e, 'Textures (RGB/A)'))
+
+    else if (sig = 'WATR') then
+      ProcessAsset(ElementByPath(e, 'NAM2'))
+   
+    else if (sig = 'WEAP') then
+      ProcessAsset(ElementByPath(e, 'Has Scope\MOD3'))
+
+    else if (sig = 'WRLD') then begin
+      ScanForAssets(ElementByPath(e, 'Cloud Model\Model'));
+      ProcessAsset(ElementByPath(e, 'NNAM'));
+      ProcessAsset(ElementByPath(e, 'XNAM'));
+      ProcessAsset(ElementByPath(e, 'TNAM'));
+      ProcessAsset(ElementByPath(e, 'UNAM'));
+      ProcessAsset(ElementByPath(e, 'XWEM'));
+    end
+
+    else if (sig = 'WTHR') then begin
+      // check cloud texture layers except disabled ones
+      sl := TStringList.Create;
+      sl.CommaText := '00TX,10TX,20TX,30TX,40TX,50TX,60TX,70TX,80TX,90TX,:0TX,;0TX,<0TX,=0TX,>0TX,?0TX,@0TX,A0TX,B0TX,C0TX,D0TX,E0TX,F0TX,G0TX,H0TX,I0TX,J0TX,K0TX,L0TX';
+      DisabledClouds := GetElementNativeValues(e, 'NAM1');
+      for i := 0 to Pred(sl.Count) do begin
+        if DisabledClouds and (1 shl i) = 0 then
+          ProcessAsset(ElementByPath(e, 'Cloud Textures\' + sl[i]));
+      end;
+      sl.Free;
+      ProcessAsset(ElementByPath(e, 'Aurora\Model\MODL'));
+    end;    
+  end
+  
   
   // --------------------------------------------------------------------------------
   // Fallout 4
@@ -1252,19 +1261,23 @@ begin
     ProcessAsset(ElementBySignature(e, 'MICO'));
 
     // papyrus scripts
-    if optAsset and atPapyrusScript > 0 then
-      ScanForPapyrusScripts(ElementBySignature(e, 'VMAD'));
+    if optAsset > 0 then begin 
+	  if atPapyrusScript > 0 then
+        ScanForPapyrusScripts(ElementByPath(e, 'VMAD'));
+	  if atPapyrusSource > 0 then
+	    ScanForPapyrusScripts(ElementByPath(e, 'VMAD'));
+	end;
 
     if sig = 'ARMA' then begin
-      ProcessAsset(ElementByPath(e, 'Male world model\MOD2'));
-      ProcessAsset(ElementByPath(e, 'Female world model\MOD3'));
+      ProcessAsset(ElementByPath(e, 'Male World Model\MOD2'));
+      ProcessAsset(ElementByPath(e, 'Female World Model\MOD3'));
       ProcessAsset(ElementByPath(e, 'Male 1st Person\MOD4'));
       ProcessAsset(ElementByPath(e, 'Female 1st Person\MOD5'));
     end
 
     else if sig = 'ARMO' then begin
-      ProcessAsset(ElementByPath(e, 'Male world model\MOD2'));
-      ProcessAsset(ElementByPath(e, 'Female world model\MOD4'));
+      ProcessAsset(ElementByPath(e, 'Male World Model\MOD2'));
+      ProcessAsset(ElementByPath(e, 'Female World Model\MOD4'));
       ProcessAsset(ElementBySignature(e, 'ICO2'));
       ProcessAsset(ElementBySignature(e, 'MIC2'));
     end
@@ -1331,7 +1344,7 @@ begin
     else if (sig = 'NOTE') then begin
       s := GetElementEditValues(e, 'PNAM');
       if s <> '' then
-        ProcessAssetEx(e, NormalizePath(s, atProgram), 'PipBoy program for ' + Name(e), atProgram);
+        ProcessAssetEx(e, NormalizePath(s, atProgram), 'PipBoy Program for ' + Name(e), atProgram);
     end
 
     else if (sig = 'PERK') then
@@ -1364,7 +1377,7 @@ begin
       for i := 0 to Pred(ElementCount(ents)) do begin
         ent := ElementByIndex(ents, i);
         s := wbNormalizeResourceName(GetElementEditValues(ent, 'Mesh'), resMesh);
-        ProcessAssetEx(e, s, 'Static LOD level ' + IntToStr(i) + ' mesh for ' + Name(e), atLODAsset);
+        ProcessAssetEx(e, s, 'Static LOD Level ' + IntToStr(i) + ' Mesh for ' + Name(e), atLODAsset);
       end;
     end
 
@@ -1447,7 +1460,7 @@ begin
         slNoDups.Assign(slDump);
         json := TJSONArray.Create;
         for i := 0 to slNoDups.Count - 1 do
-          json.Add('data\' + slNoDups[i]);
+          json.Add('Data\' + slNoDups[i]);
         AddMessage('Saving assets list to ' + dlgSave.FileName);
         json.SaveToFile(dlgSave.FileName, False);
         json.Free;
