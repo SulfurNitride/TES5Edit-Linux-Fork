@@ -551,7 +551,7 @@ begin
   wbEnchantment := wbString(ENAM, 'Enchantment');
   wbFullName := wbString(FNAM, 'Name');
   wbIcon := wbString(ITEX, 'Icon Filename');
-  wbModel := wbString(MODL, 'Model Filename').SetDefaultEditValue('Add Art File');
+  wbModel := wbString(MODL, 'Model').SetDefaultEditValue('Add Art File');
   wbScript := wbString(SCRI, 'Script');
   {>>> Record Members <<<}
 
