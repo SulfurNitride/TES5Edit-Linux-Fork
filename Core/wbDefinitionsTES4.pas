@@ -1087,16 +1087,16 @@ begin
 
   wbActorValueEnum :=
     wbEnum([
-      {0}  'Strength',
-      {1}  'Intelligence',
-      {2}  'Willpower',
-      {3}  'Agility',
-      {4}  'Speed',
-      {5}  'Endurance',
-      {6}  'Personality',
-      {7}  'Luck',
-      {8}  'Health',
-      {9}  'Magicka',
+       {0} 'Strength',
+       {1} 'Intelligence',
+       {2} 'Willpower',
+       {3} 'Agility',
+       {4} 'Speed',
+       {5} 'Endurance',
+       {6} 'Personality',
+       {7} 'Luck',
+       {8} 'Health',
+       {9} 'Magicka',
       {10} 'Fatigue',
       {11} 'Encumbrance',
       {12} 'Armorer',
@@ -1233,47 +1233,48 @@ begin
       {2} 'Destruction',
       {3} 'Illusion',
       {4} 'Mysticism',
-      {5} 'Restoration'
+      {5} 'Restoration',
+      {6} 'None'
     ]);
 
   wbMajorSkillEnum :=
     wbEnum([], [
       -1, 'None',
-      12,  'Armorer',
-      13,  'Athletics',
-      14,  'Blade',
-      15,  'Block',
-      16,  'Blunt',
-      17,  'Hand To Hand',
-      18,  'Heavy Armor',
-      19,  'Alchemy',
-      20,  'Alteration',
-      21,  'Conjuration',
-      22,  'Destruction',
-      23,  'Illusion',
-      24,  'Mysticism',
-      25,  'Restoration',
-      26,  'Acrobatics',
-      27,  'Light Armor',
-      28,  'Marksman',
-      29,  'Mercantile',
-      30,  'Security',
-      31,  'Sneak',
-      32,  'Speechcraft'
+      12, 'Armorer',
+      13, 'Athletics',
+      14, 'Blade',
+      15, 'Block',
+      16, 'Blunt',
+      17, 'Hand To Hand',
+      18, 'Heavy Armor',
+      19, 'Alchemy',
+      20, 'Alteration',
+      21, 'Conjuration',
+      22, 'Destruction',
+      23, 'Illusion',
+      24, 'Mysticism',
+      25, 'Restoration',
+      26, 'Acrobatics',
+      27, 'Light Armor',
+      28, 'Marksman',
+      29, 'Mercantile',
+      30, 'Security',
+      31, 'Sneak',
+      32, 'Speechcraft'
     ]);
 
   wbMiscStatEnum :=
     wbEnum([
-      {0}  'Days In Prison',
-      {1}  'Days Passed',
-      {2}  'Skill Increases',
-      {3}  'Training Sessions',
-      {4}  'Largest Bounty',
-      {5}  'Creatures Killed',
-      {6}  'People Killed',
-      {7}  'Places Discovered',
-      {8}  'Locks Picked',
-      {9}  'Picks Broken',
+       {0} 'Days In Prison',
+       {1} 'Days Passed',
+       {2} 'Skill Increases',
+       {3} 'Training Sessions',
+       {4} 'Largest Bounty',
+       {5} 'Creatures Killed',
+       {6} 'People Killed',
+       {7} 'Places Discovered',
+       {8} 'Locks Picked',
+       {9} 'Picks Broken',
       {10} 'Souls Trapped',
       {11} 'Ingredients Eaten',
       {12} 'Potions Made',
@@ -1310,29 +1311,29 @@ begin
 
   wbSkillEnum :=
     wbEnum([
-      {0}   'Armorer',
-      {1}   'Athletics',
-      {2}   'Blade',
-      {3}   'Block',
-      {4}   'Blunt',
-      {5}   'Hand To Hand',
-      {6}   'Heavy Armor',
-      {7}   'Alchemy',
-      {8}   'Alteration',
-      {9}   'Conjuration',
-      {10}  'Destruction',
-      {11}  'Illusion',
-      {12}  'Mysticism',
-      {13}  'Restoration',
-      {14}  'Acrobatics',
-      {15}  'Light Armor',
-      {16}  'Marksman',
-      {17}  'Mercantile',
-      {18}  'Security',
-      {19}  'Sneak',
-      {20}  'Speechcraft'
+       {0} 'Armorer',
+       {1} 'Athletics',
+       {2} 'Blade',
+       {3} 'Block',
+       {4} 'Blunt',
+       {5} 'Hand To Hand',
+       {6} 'Heavy Armor',
+       {7} 'Alchemy',
+       {8} 'Alteration',
+       {9} 'Conjuration',
+      {10} 'Destruction',
+      {11} 'Illusion',
+      {12} 'Mysticism',
+      {13} 'Restoration',
+      {14} 'Acrobatics',
+      {15} 'Light Armor',
+      {16} 'Marksman',
+      {17} 'Mercantile',
+      {18} 'Security',
+      {19} 'Sneak',
+      {20} 'Speechcraft'
     ], [
-      -1, 'None'
+       -1, 'None'
     ]);
 
   wbSpecializationEnum :=
@@ -1346,16 +1347,16 @@ begin
 
   wbBipedFlags :=
     wbFlags([
-      {0}  'Head',
-      {1}  'Hair',
-      {2}  'Upper Body',
-      {3}  'Lower Body',
-      {4}  'Hand',
-      {5}  'Foot',
-      {6}  'Right Ring',
-      {7}  'Left Ring',
-      {8}  'Amulet',
-      {9}  'Weapon',
+       {0} 'Head',
+       {1} 'Hair',
+       {2} 'Upper Body',
+       {3} 'Lower Body',
+       {4} 'Hand',
+       {5} 'Foot',
+       {6} 'Right Ring',
+       {7} 'Left Ring',
+       {8} 'Amulet',
+       {9} 'Weapon',
       {10} 'Back Weapon',
       {11} 'Side Weapon',
       {12} 'Quiver',
@@ -1382,7 +1383,7 @@ begin
   wbEDID := wbString(EDID, 'Editor ID', 0, cpNormal); // not cpBenign according to Arthmoor
   wbFULL := wbStringKC(FULL, 'Name', 0, cpTranslate);
   wbFULLReq := wbStringKC(FULL, 'Name', 0, cpTranslate).SetRequired;
-  wbICON := wbString(ICON, 'Icon FileName');
+  wbICON := wbString(ICON, 'Icon Filename');
   wbSCRI := wbFormIDCk(SCRI, 'Script', [SCPT]);
   wbSPLOs := wbRArrayS('Spells', wbFormIDCkST(SPLO, 'Spell', [LVSP, SPEL]));
   wbXSCL := wbFloat(XSCL, 'Scale');
@@ -1391,18 +1392,18 @@ begin
 
   wbConditionParameters := [
   //Misc
-  {0} wbUnknown(4),
-  {1} wbByteArray('None', 4, cpIgnore).IncludeFlag(dfZeroSortKey),
-  {2} wbInteger('Integer', itS32),
-  {3} wbInteger('Quest Stage', itS32, wbConditionQuestStageToStr, wbQuestStageToInt),
-  {4} wbInteger('Variable Name', itS32, wbConditionVariableNameToStr, wbConditionVariableNameToInt),
+   {0} wbUnknown(4),
+   {1} wbByteArray('None', 4, cpIgnore).IncludeFlag(dfZeroSortKey),
+   {2} wbInteger('Integer', itS32),
+   {3} wbInteger('Quest Stage', itS32, wbConditionQuestStageToStr, wbQuestStageToInt),
+   {4} wbInteger('Variable Name', itS32, wbConditionVariableNameToStr, wbConditionVariableNameToInt),
 
   //Enums
-  {5}  wbInteger('Actor Value', itS32, wbActorValueEnum),
-  {6}  wbInteger('Axis', itU32, wbAxisEnum),
-  {7}  wbInteger('Crime Type', itU32, wbCrimeTypeEnum),
-  {8}  wbInteger('Form Type', itU32, wbFormTypeEnum),
-  {9}  wbInteger('Menu Mode', itU32, wbMenuModeEnum),
+   {5} wbInteger('Actor Value', itS32, wbActorValueEnum),
+   {6} wbInteger('Axis', itU32, wbAxisEnum),
+   {7} wbInteger('Crime Type', itU32, wbCrimeTypeEnum),
+   {8} wbInteger('Form Type', itU32, wbFormTypeEnum),
+   {9} wbInteger('Menu Mode', itU32, wbMenuModeEnum),
   {10} wbInteger('Misc Stat', itU32, wbMiscStatEnum),
   {11} wbInteger('Sex', itU32, wbSexEnum),
 
@@ -1623,7 +1624,7 @@ begin
                 wbStructSK(SCIT, [0], 'Script Effect Data', [
                   wbFormIDCk('Script effect', [SCPT, NULL]),
                   wbInteger('Magic school', itU32, wbMagicSchoolEnum),
-                  wbStringMgefCode('Visual Effect Code', 4),
+                  wbStringMgefCode('Visual Effect Code', 4), //Add Union for null code? KURO
                   wbInteger('Hostile', itU8, wbBoolEnum),
                   wbUnused(3)
                 ], cpNormal, True, nil, 1),
@@ -1631,8 +1632,32 @@ begin
               ]),
               wbString(EFII, 'Icon'),
               wbStructSK(EFIX, [3], '', [
-                wbInteger('Override Mask', itU32, wbFlags([])),
-                wbInteger('Flags', itU32, wbFlags([])),
+                wbInteger('Override Flags', itU32, wbFlags(wbSparseFlags([
+                   //Incomplete
+                   0, 'Script Hostility',
+                   1, 'Effects',
+                   2, 'Lowers Actor Value (Default Is False), Flag A On, Flag A Off',
+                   3, 'Hostility',
+                   4, 'Script/EFIX',
+                   5, 'School',
+                   6, 'Name',
+                   7, 'VFX Code',
+                   8, 'Base Cost',
+                   9, 'Resistance',
+                  11, 'Icon',
+                  16, 'Special Treatment for Abilities (Default Is False), Flag B On, Flag B Off',
+                  19, 'Base, Max, Offset, Damage, Script Effect Off, Script Effect On, Flag C On, Flag C Off',
+                  20, 'Base, Max, Offset, Damage, Script Effect Off, Script Effect On, Flag D On, Flag D Off'
+                ]))),
+                wbInteger('Flags', itU32, wbFlags(wbSparseFlags([
+                   //Incomplete
+                   1, 'Override is Null',
+                   2, 'Lowers Actor Value Is True, Flag A On, Flag B On, Flag C On, Flag D On',
+                   3, 'Hostility - Beneficial',
+                  16, 'Special Treatment for Abilities Is True, Flag A On, Flag B On, Flag C On, Flag D On',
+                  19, 'Base, Offset, Script Effect On, FormID, Flag A On, Flag C On',
+                  20, 'Base, Damage, Script Effect On, MGEFCode, Flag B On, Flag D On'
+                ]))),
                 wbFloat('Base Cost'),
                 wbUnion('Param #2', wbEFIXParamDecider, [
                   wbByteArray('Param #2 - Unknown Type', 4),
@@ -1640,7 +1665,7 @@ begin
                   wbStringMgefCode('Param #2 - Magic Effect Code', 4),
                   wbFormIDCk('Param #2 - Actor Value', [ACVA])
                 ]),
-                wbUnknown
+                wbByteArray('Unknown', 16)
               ]).SetAfterLoad(wbEFITAfterLoad)
                 .SetRequired
             ])),
@@ -1677,13 +1702,21 @@ begin
       4, 'Optimized'
     ])), [
     wbHEDR,
-    wbByteArray(OFST, 'Unknown', 0, cpIgnore),
-    wbByteArray(DELE, 'Unknown', 0, cpIgnore),
+    IfThen(wbSimpleRecords,
+      wbByteArray(OFST, 'Offset Load Order', 0, cpIgnore),
+      wbArray(OFST, 'Offset Load Order',
+        wbStruct('Form', [
+          wbInteger('Index', itU8),
+          wbUnused(3),
+          wbString('Form Type', 4),
+          wbInteger('Offset (Unused)', itU32)
+        ]), 0, nil, nil, cpIgnore).IncludeFlag(dfCollapsed)),
+    wbByteArray(DELE, 'Version Control (Unused)', 8, cpIgnore),
     wbString(CNAM, 'Author', 0, cpTranslate).SetRequired,
     wbString(SNAM, 'Description', 0, cpTranslate),
     wbRArray('Master Files',
       wbRStruct('Master File', [
-        wbStringForward(MAST, 'FileName').SetRequired,
+        wbStringForward(MAST, 'Filename').SetRequired,
         wbUnused(DATA, 8).SetRequired
       ])).IncludeFlag(dfInternalEditOnly, not wbAllowMasterFilesEdit)
   ], False, nil, cpNormal, True);
@@ -1802,14 +1835,14 @@ begin
     wbStruct(DATA, 'Data', [
       wbInteger('Type', itU8,
         wbEnum([
-          {0} 'Mortar and Pestle',
+          {0} 'Mortar & Pestle',
           {1} 'Alembic',
           {2} 'Calcinator',
           {3} 'Retort'
         ])),
       wbInteger('Value', itU32),
-      wbFloat('Weight'),
-      wbFloat('Quality')
+      wbFloat('Weight', cpNormal, False, 1, 4),
+      wbFloat('Quality', cpNormal, False, 1, 0)
     ]).SetRequired
   ]);
 
@@ -1873,7 +1906,7 @@ begin
   wbRecord(BSGN, 'Birthsign', [
     wbEDID.SetRequired,
     wbFULL,
-    wbICON,
+    wbString(ICON, 'Constellation Filename'),
     wbDESC.SetRequired,
     wbSPLOs
   ]);
@@ -1891,7 +1924,7 @@ begin
         0, 'Is Interior Cell',
         1, 'Has Water',
         2, 'Can''t Travel From Here',
-        3, 'Force Hide Land (Exterior) / Oblivion Interior Iinterior)',
+        3, 'Force Hide Land (Exterior) / Oblivion Interior (Interior)',
         5, 'Public Area',
         6, 'Hand Changed',
         7, 'Behave Like Exterior'
@@ -1932,7 +1965,7 @@ begin
     wbEDID.SetRequired,
     wbFULL,
     wbDESC.SetRequired,
-    wbICON,
+    wbString(ICON, 'Image Filename'),
     wbStruct(DATA, 'Data', [
       wbStruct('Primary Attributes', [
         wbInteger('Attribute #1', itU32, wbAttributeEnum),
@@ -2021,14 +2054,14 @@ begin
       ).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbFloat('Weight')
     ]).SetRequired,
-    wbFormIDCk(SNAM, 'Open sound', [SOUN]),
-    wbFormIDCk(QNAM, 'Close sound', [SOUN])
+    wbFormIDCk(SNAM, 'Open Sound', [SOUN]),
+    wbFormIDCk(QNAM, 'Close Sound', [SOUN])
   ]);
 
   wbRecord(CREA, 'Creature',
     wbFlags(wbFlagsList([
       10, 'Quest Item',
-      19, 'Unknown 19'
+      19, 'Spawns Dead'
     ])), [
     wbEDID,
     wbFULL,
@@ -2148,14 +2181,16 @@ begin
       wbInteger('Dodge % Chance', itU8).SetDefaultNativeValue(75),
       wbInteger('Left/Right % Chance', itU8).SetDefaultNativeValue(50),
       wbUnused(2),
-      wbFloat('Dodge L/R Timer (min)').SetDefaultNativeValue(0.5),
-      wbFloat('Dodge L/R Timer (max)').SetDefaultNativeValue(1.5),
-      wbFloat('Dodge Forward Timer (min)').SetDefaultNativeValue(0.5),
-      wbFloat('Dodge Forward Timer (max)').SetDefaultNativeValue(1),
-      wbFloat('Dodge Back Timer Min').SetDefaultNativeValue(0.25),
-      wbFloat('Dodge Back Timer Max').SetDefaultNativeValue(0.75),
-      wbFloat('Idle Timer min').SetDefaultNativeValue(0.5),
-      wbFloat('Idle Timer max').SetDefaultNativeValue(1.5),
+      wbStruct('Dodge', [
+        wbFloat('L/R Timer Min').SetDefaultNativeValue(0.5),
+        wbFloat('L/R Timer Max').SetDefaultNativeValue(1.5),
+        wbFloat('Forward Timer Min').SetDefaultNativeValue(0.5),
+        wbFloat('Forward Timer Max').SetDefaultNativeValue(1),
+        wbFloat('Back Timer Min').SetDefaultNativeValue(0.25),
+        wbFloat('Back Timer Max').SetDefaultNativeValue(0.75)
+      ]),
+      wbFloat('Idle Timer Min').SetDefaultNativeValue(0.5),
+      wbFloat('Idle Timer Max').SetDefaultNativeValue(1.5),
       wbInteger('Block % Chance', itU8).SetDefaultNativeValue(30),
       wbInteger('Attack % Chance', itU8).SetDefaultNativeValue(40),
       wbUnused(2),
@@ -2164,16 +2199,18 @@ begin
       wbFloat('Hand-To-Hand Bonus to Attack').SetDefaultNativeValue(5),
       wbInteger('Power Attack % Chance', itU8).SetDefaultNativeValue(25),
       wbUnused(3),
-      wbFloat('Recoil/Stagger Bonus to Power').SetDefaultNativeValue(5),
+      wbFloat('Recoil/Stagger Bonus to Power Attack').SetDefaultNativeValue(5),
       wbFloat('Unconscious Bonus to Power Attack').SetDefaultNativeValue(5),
-      wbInteger('Power Attack - Normal', itU8).SetDefaultNativeValue(20),
-      wbInteger('Power Attack - Forward', itU8).SetDefaultNativeValue(20),
-      wbInteger('Power Attack - Back', itU8).SetDefaultNativeValue(20),
-      wbInteger('Power Attack - Left', itU8).SetDefaultNativeValue(20),
-      wbInteger('Power Attack - Right', itU8).SetDefaultNativeValue(20),
+      wbStruct('Power Attack', [
+        wbInteger('Normal', itU8).SetDefaultNativeValue(20),
+        wbInteger('Forward', itU8).SetDefaultNativeValue(20),
+        wbInteger('Back', itU8).SetDefaultNativeValue(20),
+        wbInteger('Left', itU8).SetDefaultNativeValue(20),
+        wbInteger('Right', itU8).SetDefaultNativeValue(20)
+      ]),
       wbUnused(3),
-      wbFloat('Hold Timer (min)').SetDefaultNativeValue(0.5),
-      wbFloat('Hold Timer (max)').SetDefaultNativeValue(1.5),
+      wbFloat('Hold Timer Min').SetDefaultNativeValue(0.5),
+      wbFloat('Hold Timer Max').SetDefaultNativeValue(1.5),
       wbInteger('Flags', itU8,
         wbFlags([
           {0} 'Advanced',
@@ -2202,31 +2239,38 @@ begin
     wbStruct(CSAD, 'Advanced', [
       wbFloat('Dodge Fatigue Mod Mult').SetDefaultNativeValue(-20),
       wbFloat('Dodge Fatigue Mod Base'),
-      wbFloat('Encumb. Speed Mod Base').SetDefaultNativeValue(-110),
-      wbFloat('Encumb. Speed Mod Mult').SetDefaultNativeValue(1),
-      wbFloat('Dodge While Under Attack Mult').SetDefaultNativeValue(1),
-      wbFloat('Dodge Not Under Attack Mult').SetDefaultNativeValue(0.75),
-      wbFloat('Dodge Back While Under Attack Mult').SetDefaultNativeValue(1),
-      wbFloat('Dodge Back Not Under Attack Mult').SetDefaultNativeValue(0.7),
-      wbFloat('Dodge Forward While Attacking Mult').SetDefaultNativeValue(1),
-      wbFloat('Dodge Forward Not Attacking Mult').SetDefaultNativeValue(0.5),
-      wbFloat('Block Skill Modifier Mult').SetDefaultNativeValue(20),
-      wbFloat('Block Skill Modifier Base'),
-      wbFloat('Block While Under Attack Mult').SetDefaultNativeValue(2),
-      wbFloat('Block Not Under Attack Mult').SetDefaultNativeValue(1),
-      wbFloat('Attack Skill Modifier Mult').SetDefaultNativeValue(20),
-      wbFloat('Attack Skill Modifier Base'),
-      wbFloat('Attack While Under Attack Mult').SetDefaultNativeValue(0.75),
-      wbFloat('Attack Not Under Attack Mult').SetDefaultNativeValue(1),
-      wbFloat('Attack During Block Mult').SetDefaultNativeValue(0.5),
-      wbFloat('Power Att. Fatigue Mod Base').SetDefaultNativeValue(5),
-      wbFloat('Power Att. Fatigue Mod Mult').SetDefaultNativeValue(-10)
+      wbFloat('Encumbered Speed Mod Base').SetDefaultNativeValue(-110),
+      wbFloat('Encumbered Speed Mod Mult').SetDefaultNativeValue(1),
+      wbStruct('Dodge', [
+        wbFloat('While Under Attack Mult').SetDefaultNativeValue(1),
+        wbFloat('Not Under Attack Mult').SetDefaultNativeValue(0.75),
+        wbFloat('Back While Under Attack Mult').SetDefaultNativeValue(1),
+        wbFloat('Back Not Under Attack Mult').SetDefaultNativeValue(0.7),
+        wbFloat('Forward While Attacking Mult').SetDefaultNativeValue(1),
+        wbFloat('Forward Not Attacking Mult').SetDefaultNativeValue(0.5)
+      ]),
+      wbStruct('Block', [
+        wbFloat('Skill Modifier Mult').SetDefaultNativeValue(20),
+        wbFloat('Skill Modifier Base'),
+        wbFloat('While Under Attack Mult').SetDefaultNativeValue(2),
+        wbFloat('Not Under Attack Mult').SetDefaultNativeValue(1)
+      ]),
+      wbStruct('Attack', [
+        wbFloat('Skill Modifier Mult').SetDefaultNativeValue(20),
+        wbFloat('Skill Modifier Base'),
+        wbFloat('While Under Attack Mult').SetDefaultNativeValue(0.75),
+        wbFloat('Not Under Attack Mult').SetDefaultNativeValue(1),
+        wbFloat('During Block Mult').SetDefaultNativeValue(0.5)
+      ]),
+      wbFloat('Power Attack Fatigue Mod Base').SetDefaultNativeValue(5),
+      wbFloat('Power Attack Fatigue Mod Mult').SetDefaultNativeValue(-10)
     ])
   ]);
 
   wbRecord(DIAL, 'Dialog Topic', [
     wbEDID,
-    wbRArrayS('Quests', wbFormIDCkNoReach(QSTI, 'Quest', [QUST], False, cpBenign)),
+    wbQSTI,
+    wbQSTR,
     wbFULL,
     wbInteger(DATA, 'Type', itU8, wbDialogueTypeEnum).SetRequired,
     wbINOM,
@@ -2241,17 +2285,17 @@ begin
     wbFULL,
     wbTexturedModel('Model', [MODL, MODB, MODT], []),
     wbSCRI,
-    wbFormIDCk(SNAM, 'Open sound', [SOUN]),
-    wbFormIDCk(ANAM, 'Close sound', [SOUN]),
-    wbFormIDCk(BNAM, 'Loop sound', [SOUN]),
+    wbFormIDCk(SNAM, 'Open Sound', [SOUN]),
+    wbFormIDCk(ANAM, 'Close Sound', [SOUN]),
+    wbFormIDCk(BNAM, 'Loop Sound', [SOUN]),
     wbInteger(FNAM, 'Flags', itU8,
       wbFlags([
-        {0} 'Oblivion gate',
-        {1} 'Automatic door',
+        {0} 'Oblivion Gate',
+        {1} 'Automatic Door',
         {2} 'Hidden',
-        {3} 'Minimal use'
+        {3} 'Minimal Use'
       ])).SetRequired,
-    wbRArrayS('Random teleport destinations',
+    wbRArrayS('Random Teleport Destinations',
       wbFormIDCk(TNAM, 'Destination', [CELL, WRLD]))
   ]);
 
@@ -2269,52 +2313,60 @@ begin
         ], False, 6))
       ).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbUnused(3),
-      wbInteger('Membrane Shader - Source Blend Mode', itU32, wbBlendModeEnum).SetDefaultNativeValue(5),
-      wbInteger('Membrane Shader - Blend Operation', itU32, wbBlendOpEnum).SetDefaultNativeValue(1),
-      wbInteger('Membrane Shader - Z Test Function', itU32, wbZTestFuncEnum).SetDefaultNativeValue(3),
-      wbByteColors('Fill/Texture Effect - Color'),
-      wbFloat('Fill/Texture Effect - Alpha Fade In Time'),
-      wbFloat('Fill/Texture Effect - Full Alpha Time'),
-      wbFloat('Fill/Texture Effect - Alpha Fade Out Time'),
-      wbFloat('Fill/Texture Effect - Presistent Alpha Ratio'),
-      wbFloat('Fill/Texture Effect - Alpha Pulse Amplitude'),
-      wbFloat('Fill/Texture Effect - Alpha Pulse Frequency').SetDefaultNativeValue(1),
-      wbFloat('Fill/Texture Effect - Texture Animation Speed (U)'),
-      wbFloat('Fill/Texture Effect - Texture Animation Speed (V)'),
-      wbFloat('Edge Effect - Fall Off').SetDefaultNativeValue(1),
-      wbByteColors('Edge Effect - Color'),
-      wbFloat('Edge Effect - Alpha Fade In Time'),
-      wbFloat('Edge Effect - Full Alpha Time'),
-      wbFloat('Edge Effect - Alpha Fade Out Time'),
-      wbFloat('Edge Effect - Persistent Alpha Ratio'),
-      wbFloat('Edge Effect - Alpha Pulse Amplitude'),
-      wbFloat('Edge Effect - Alpha Pusle Frequence').SetDefaultNativeValue(1),
+      wbStruct('Membrane Shader', [
+        wbInteger('Source Blend Mode', itU32, wbBlendModeEnum).SetDefaultNativeValue(5),
+        wbInteger('Blend Operation', itU32, wbBlendOpEnum).SetDefaultNativeValue(1),
+        wbInteger('Z Test Function', itU32, wbZTestFuncEnum).SetDefaultNativeValue(3)
+      ]),
+      wbStruct('Fill/Texture Effect', [
+        wbByteColors('Color'),
+        wbFloat('Alpha Fade In Time'),
+        wbFloat('Full Alpha Time'),
+        wbFloat('Alpha Fade Out Time'),
+        wbFloat('Persistent Alpha Ratio'),
+        wbFloat('Alpha Pulse Amplitude'),
+        wbFloat('Alpha Pulse Frequency').SetDefaultNativeValue(1),
+        wbFloat('Texture Animation Speed (U)'),
+        wbFloat('Texture Animation Speed (V)')
+      ]),
+      wbStruct('Edge Effect', [
+        wbFloat('Fall Off').SetDefaultNativeValue(1),
+        wbByteColors('Color'),
+        wbFloat('Alpha Fade In Time'),
+        wbFloat('Full Alpha Time'),
+        wbFloat('Alpha Fade Out Time'),
+        wbFloat('Persistent Alpha Ratio'),
+        wbFloat('Alpha Pulse Amplitude'),
+        wbFloat('Alpha Pusle Frequence').SetDefaultNativeValue(1)
+      ]),
       wbFloat('Fill/Texture Effect - Full Alpha Ratio').SetDefaultNativeValue(1),
       wbFloat('Edge Effect - Full Alpha Ratio').SetDefaultNativeValue(1),
       wbInteger('Membrane Shader - Dest Blend Mode', itU32, wbBlendModeEnum).SetDefaultNativeValue(6),
-      wbInteger('Particle Shader - Source Blend Mode', itU32, wbBlendModeEnum).SetDefaultNativeValue(5),
-      wbInteger('Particle Shader - Blend Operation', itU32, wbBlendOpEnum).SetDefaultNativeValue(1),
-      wbInteger('Particle Shader - Z Test Function', itU32, wbZTestFuncEnum).SetDefaultNativeValue(4),
-      wbInteger('Particle Shader - Dest Blend Mode', itU32, wbBlendModeEnum).SetDefaultNativeValue(6),
-      wbFloat('Particle Shader - Particle Birth Ramp Up Time'),
-      wbFloat('Particle Shader - Full Particle Birth Time'),
-      wbFloat('Particle Shader - Particle Birth Ramp Down Time'),
-      wbFloat('Particle Shader - Full Particle Birth Ratio').SetDefaultNativeValue(1),
-      wbFloat('Particle Shader - Persistant Particle Birth Ratio').SetDefaultNativeValue(1),
-      wbFloat('Particle Shader - Particle Lifetime').SetDefaultNativeValue(1),
-      wbFloat('Particle Shader - Particle Lifetime +/-'),
-      wbFloat('Particle Shader - Initial Speed Along Normal'),
-      wbFloat('Particle Shader - Acceleration Along Normal'),
-      wbFloat('Particle Shader - Initial Velocity #1'),
-      wbFloat('Particle Shader - Initial Velocity #2'),
-      wbFloat('Particle Shader - Initial Velocity #3'),
-      wbFloat('Particle Shader - Acceleration #1'),
-      wbFloat('Particle Shader - Acceleration #2'),
-      wbFloat('Particle Shader - Acceleration #3'),
-      wbFloat('Particle Shader - Scale Key 1').SetDefaultNativeValue(1),
-      wbFloat('Particle Shader - Scale Key 2').SetDefaultNativeValue(1),
-      wbFloat('Particle Shader - Scale Key 1 Time'),
-      wbFloat('Particle Shader - Scale Key 2 Time').SetDefaultNativeValue(1),
+      wbStruct('Particle Shader', [
+        wbInteger('Source Blend Mode', itU32, wbBlendModeEnum).SetDefaultNativeValue(5),
+        wbInteger('Blend Operation', itU32, wbBlendOpEnum).SetDefaultNativeValue(1),
+        wbInteger('Z Test Function', itU32, wbZTestFuncEnum).SetDefaultNativeValue(4),
+        wbInteger('Dest Blend Mode', itU32, wbBlendModeEnum).SetDefaultNativeValue(6),
+        wbFloat('Particle Birth Ramp Up Time'),
+        wbFloat('Full Particle Birth Time'),
+        wbFloat('Particle Birth Ramp Down Time'),
+        wbFloat('Full Particle Birth Ratio').SetDefaultNativeValue(1),
+        wbFloat('Persistant Particle Birth Ratio').SetDefaultNativeValue(1),
+        wbFloat('Particle Lifetime').SetDefaultNativeValue(1),
+        wbFloat('Particle Lifetime +/-'),
+        wbFloat('Initial Speed Along Normal'),
+        wbFloat('Acceleration Along Normal'),
+        wbFloat('Initial Velocity #1'),
+        wbFloat('Initial Velocity #2'),
+        wbFloat('Initial Velocity #3'),
+        wbFloat('Acceleration #1'),
+        wbFloat('Acceleration #2'),
+        wbFloat('Acceleration #3'),
+        wbFloat('Scale Key 1').SetDefaultNativeValue(1),
+        wbFloat('Scale Key 2').SetDefaultNativeValue(1),
+        wbFloat('Scale Key 1 Time'),
+        wbFloat('Scale Key 2 Time').SetDefaultNativeValue(1)
+      ]),
       wbByteColors('Color Key 1 - Color'),
       wbByteColors('Color Key 2 - Color'),
       wbByteColors('Color Key 3 - Color'),
@@ -2462,7 +2514,7 @@ begin
   wbRecord(HAIR, 'Hair', [
     wbEDID.SetRequired,
     wbFULL,
-    wbTexturedModel('Skeleton', [MODL, MODB, MODT], []),
+    wbTexturedModel('Model', [MODL, MODB, MODT], []),
     wbString(ICON, 'Texture').SetRequired,
     wbInteger(DATA, 'Flags', itU8,
       wbFlags([
@@ -2745,7 +2797,7 @@ begin
     .SetAfterLoad(wbLVLAfterLoad);
 
   wbRecord(MGEF, 'Magic Effect', [
-    wbStringMgefCode(EDID, 'Magic Effect Code').SetRequired,
+    wbStringMgefCode(EDID, 'Magic Effect Code', 4).SetRequired,
     wbStruct(OBME, 'Oblivion Magic Extender', [
       wbInteger('Record Version', itU8),
       wbOBMEVersion,
@@ -2764,7 +2816,7 @@ begin
           20, 'ParamFlagD',
           30, 'Hidden'
         ], False, 31))),
-      wbByteArray('ParamB', 4),
+      wbByteArray('Param B', 4), //Needs a union based on Handler.
       wbUnused($1C)
     ]).SetDontShow(wbOBMEDontShow),
     wbString(EDDX, 'EditorID').SetDontShow(wbEDDXDontShow),
@@ -2802,7 +2854,7 @@ begin
       ).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbFloat('Base cost'),
       wbUnion('Assoc. Item', wbMGEFFAssocItemDecider, [
-        wbFormIDCk('Unused', [NULL]),
+        wbByteArray('Param A', 4).SetDontShow(wbOBMEDontShow), //Needs a union based on Handler.
         wbFormIDCk('Assoc. Weapon', [WEAP]),
         wbFormIDCk('Assoc. Armor', [ARMO, NULL{?}]),
         wbFormIDCk('Assoc. Creature', [CREA, LVLC, NPC_]),
@@ -2811,15 +2863,16 @@ begin
       wbInteger('Magic School', itU32, wbMagicSchoolEnum),
       wbInteger('Resist value', itS32,
         wbEnum([], [
-          -1, 'None',
-          61, 'Resist Fire',
-          62, 'Resist Frost',
-          63, 'Resist Disease',
-          64, 'Resist Magic',
-          65, 'Resist Normal Weapons',
-          66, 'Resist Paralysis',
-          67, 'Resist Poison',
-          68, 'Resist Shock'
+          -1,  'None',
+          61,  'Resist Fire',
+          62,  'Resist Frost',
+          63,  'Resist Disease',
+          64,  'Resist Magic',
+          65,  'Resist Normal Weapons',
+          66,  'Resist Paralysis',
+          67,  'Resist Poison',
+          68,  'Resist Shock',
+          255, 'None (OBME)'
         ])),
       wbInteger('Counter Effect Count', itU16), //!!! must be updated automatically when ESCE length changes!
       wbUnused(2),
@@ -2874,7 +2927,7 @@ begin
     wbFlags(wbFlagsList([
       10, 'Quest Item',
       18, 'Compressed',
-      19, 'Unknown 19'
+      19, 'Spawns Dead'
     ])), [
     wbEDID,
     wbFULL,
@@ -3305,7 +3358,7 @@ begin
     wbOwnership([XLOC]),
     wbXESP,
     wbFormIDCk(XTRG, 'Target', [ACHR, ACRE, REFR], True),
-    wbStruct(XSED, 'SpeedTree', [
+    wbStruct(XSED, 'Speed Tree', [
       wbInteger('Seed', itU8),
       wbUnused(0)
     ]),
@@ -3319,7 +3372,7 @@ begin
     wbInteger(XLCM, 'Level Modifier', itS32),
     wbFormIDCk(XRTM, 'Reference Teleport Marker', [REFR]),
     wbActionFlag,
-    wbInteger(XCNT, 'Count', itS32),
+    wbInteger(XCNT, 'Count', itU32),
     wbRStruct('Map Marker', [
       wbEmpty(XMRK, 'Map Marker Data'),
       wbInteger(FNAM, 'Map Flags', itU8,
@@ -3524,7 +3577,7 @@ begin
 
   wbRecord(SOUN, 'Sound', [
     wbEDID,
-    wbString(FNAM, 'Sound FileName'),
+    wbString(FNAM, 'Sound Filename'),
     wbRUnion('Sound Data', [
       wbStruct(SNDX, 'Sound Data', wbSoundDataMembers, cpNormal, True, nil, 6),
       wbStruct(SNDD, 'Sound Data', wbSoundDataMembers, cpNormal, True, nil, 6)

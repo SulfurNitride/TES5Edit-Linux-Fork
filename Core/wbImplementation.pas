@@ -5861,7 +5861,7 @@ begin
                 GroupType := 8;
               end;
             end else
-              if (Rec.Signature = 'NAM0') or (Rec.Signature = 'MVRF') then
+              if Rec.Signature = 'NAM0' then
                 GroupType := 9;
           end else
             flProgress(Rec.Name + ' processed');
@@ -10192,7 +10192,7 @@ begin
 
   CurrentPtr := GetDataBasePtr;
   while NativeUInt(CurrentPtr) < NativeUInt(dcDataEndPtr) do begin
-    if (IsTES3Cell or (FRMRCount > 0)) and ((PwbSignature(CurrentPtr)^ = 'FRMR') or (PwbSignature(CurrentPtr)^ = 'NAM0') or (PwbSignature(CurrentPtr)^ = 'MVRF') or (PwbSignature(CurrentPtr)^ = 'CNDT')) then begin
+    if (IsTES3Cell or (FRMRCount > 0)) and ((PwbSignature(CurrentPtr)^ = 'FRMR') or (PwbSignature(CurrentPtr)^ = 'NAM0') or (PwbSignature(CurrentPtr)^ = 'MVRF')) then begin
       if dcEndPtr = dcDataEndPtr then
         dcEndPtr := CurrentPtr;
       dcDataEndPtr := CurrentPtr;
