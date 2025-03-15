@@ -71,14 +71,14 @@ var
   wbHEDR: IwbRecordMemberDef;
   wbINOA: IwbRecordMemberDef;
   wbINOM: IwbRecordMemberDef;
-  wbQSTI: IwbRecordMemberDef;
-  wbQSTR: IwbRecordMemberDef;
   wbKWDAs: IwbRecordMemberDef;
   wbKeywords :IwbRecordMemberDef;
   wbMagicEffectSounds: IwbRecordMemberDef;
   wbMDOB: IwbRecordMemberDef;
   wbMHDTCELL: IwbRecordMemberDef;
   wbMODT: IwbRecordMemberDef;
+  wbQSTI: IwbRecordMemberDef;
+  wbQSTR: IwbRecordMemberDef;
   wbRagdoll: IwbRecordMemberDef;
   wbRegionSounds: IwbRecordMemberDef;
   wbSeasons: IwbRecordMemberDef;
@@ -358,8 +358,9 @@ function wbIsFlag(aFlag: Integer; const aValue: IwbValueDef; aIsUnused: Boolean 
 function wbIsNotFlag(aFlag: Integer; const aSignature: TwbSignature; const aValue: IwbValueDef; aIsUnused: Boolean = True): IwbRecordMemberDef; overload;
 function wbIsNotFlag(aFlag: Integer; const aValue: IwbValueDef; aIsUnused: Boolean = True): IwbValueDef; overload;
 
-{>>> Game Mode IfThen Defs <<<} //31
+{>>> Game Mode IfThen Defs <<<} //32
 function IsTES3(const aDef1, aDef2: String): string; overload;
+function IsTES3(const aDef1, aDef2: TwbSignature): TwbSignature; overload;
 function IsTES4(const aDef1, aDef2: Integer): Integer; overload;
 function IsTES4(const aDef1, aDef2: IwbRecordMemberDef): IwbRecordMemberDef; overload;
 function IsTES4(const aDef1, aDef2: IwbValueDef): IwbValueDef; overload;
@@ -403,11 +404,10 @@ function wbBelowVersion(aVersion: Integer; const aValue: IwbValueDef): IwbValueD
 function wbFromVersion(aVersion: Integer; const aSignature: TwbSignature; const aValue: IwbValueDef): IwbRecordMemberDef; overload;
 function wbFromVersion(aVersion: Integer; const aValue: IwbValueDef): IwbValueDef; overload;
 
-{>>> Vec3 Defs <<<} //12
+{>>> Vec3 Defs <<<} //11
 function wbVec3(const aName: string = 'Unknown'; const aPrefix: string = ''): IwbValueDef; overload;
 function wbVec3(const aSignature: TwbSignature; const aName: string = 'Unknown'; const aPrefix: string = ''): IwbRecordMemberDef; overload;
 function wbVec3Pos(const aName: string = 'Position'; const aPrefix: string = 'Pos'): IwbValueDef; overload;
-function wbVec3PosInt32(const aName: string = 'Position'; const aPrefix: string = 'Pos'): IwbValueDef; overload;
 function wbVec3Pos(const aSignature: TwbSignature; const aName: string = 'Position'; const aPrefix: string = 'Pos'): IwbRecordMemberDef; overload;
 function wbVec3Rot(const aName: string = 'Rotation'; const aPrefix: string = 'Rot'): IwbValueDef; overload;
 function wbVec3Rot(const aSignature: TwbSignature; const aName: string = 'Rotation'; const aPrefix: string = 'Rot'): IwbRecordMemberDef; overload;
@@ -417,13 +417,11 @@ function wbVec3PosRotDegrees(const aCombinedName: string = 'Position/Rotation'; 
 function wbVec3PosRotDegrees(const aSignature: TwbSignature; const aCombinedName: string = 'Position/Rotation'; aPosName: string = 'Position'; const aRotName: string = 'Rotation'; const aPosPrefix: string ='Pos'; const aRotPrefix: string = 'Rot'): IwbRecordMemberDef; overload;
 function wbSizePosRot(aSignature: TwbSignature; aName: string; aPriority: TwbConflictPriority = cpNormal): IwbSubRecordDef; overload;
 
-{>>> Color Defs <<<} //18
+{>>> Color Defs <<<} //16
 function wbAmbientColors(const aSignature: TwbSignature; const aName: string = 'Directional Ambient Lighting Colors'): IwbSubRecordDef; overload;
 function wbAmbientColors(const aName: string = 'Directional Ambient Lighting Colors'): IwbStructDef; overload;
 function wbByteColors(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef; overload;
 function wbByteColors(const aName: string = 'Color'): IwbValueDef; overload;
-function wbByteColorsRGB(const aName: string = 'Color'): IwbValueDef; overload;
-function wbByteColorsInt32(const aName: string = 'Color'): IwbValueDef; overload;
 function wbByteABGR(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef; overload;
 function wbByteABGR(const aName: string = 'Color'): IwbValueDef; overload;
 function wbByteRGBA(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef; overload;
@@ -1290,12 +1288,12 @@ end;
 
 function wbCellInteriorDontShow(const aElement: IwbElement): Boolean;
 begin
-  Result := (aElement.ContainingMainRecord.ElementNativeValues[IfThen(wbIsMorrowind, 'DATA\Flags', 'DATA')] and 1 = 1);
+  Result := (aElement.ContainingMainRecord.ElementNativeValues[IsTES3('DATA\Flags', 'DATA')] and 1 = 1);
 end;
 
 function wbCellExteriorDontShow(const aElement: IwbElement): Boolean;
 begin
-  Result := (aElement.ContainingMainRecord.ElementNativeValues[IfThen(wbIsMorrowind, 'DATA\Flags', 'DATA')] and 1 = 0);
+  Result := (aElement.ContainingMainRecord.ElementNativeValues[IsTES3('DATA\Flags', 'DATA')] and 1 = 0);
 end;
 
 function wbModelInfoDontShow(const aElement: IwbElement): Boolean;
@@ -2866,7 +2864,7 @@ begin
   if not wbTrySetContainer(aElement, aType, CER) then
     Exit;
 
-  var eSCDA := [IfThen(wbIsMorrowind, SCDA, SCDT)];
+  var eSCDA := CER.ElementBySignature[IsTES3(SCDT, SCDA)];
   var eSCTX := CER.ElementBySignature[SCTX];
 
   if not Assigned(eSCDA) then begin
@@ -3775,12 +3773,19 @@ begin
       ]).IncludeFlag(dfMustBeUnion);
 end;
 
-{>>> wbGameMode IfThen Defs <<<} //31
+{>>> wbGameMode IfThen Defs <<<} //32
 
 function IsTES3(const aDef1, aDef2: string): string;
 begin
   Result := aDef2;
   if wbIsMorrowind then
+    Result := aDef1
+end;
+
+function IsTES3(const aDef1, aDef2: TwbSignature): TwbSignature;
+begin
+  Result := aDef2;
+  if wbIsOblivion then
     Result := aDef1
 end;
 
@@ -4131,21 +4136,6 @@ begin
   Result := wbSubRecord(aSignature, aName, wbVec3Pos(''));
 end;
 
-function wbVec3PosInt32(const aName: string = 'Position'; const aPrefix: string = 'Pos'): IwbValueDef;
-begin
-  Result :=
-    wbStruct(aName, [
-      wbInteger('X', itS32),
-      wbInteger('Y', itS32),
-      wbInteger('Z', itS32)
-    ]).SetSummaryKey([0, 1, 2])
-      .SetSummaryMemberPrefixSuffix(0, aPrefix + '(', '')
-      .SetSummaryMemberPrefixSuffix(2, '', ')')
-      .SetSummaryDelimiter(', ')
-      .IncludeFlag(dfSummaryMembersNoName)
-      .IncludeFlag(dfCollapsed, wbCollapseVec3);
-end;
-
 function wbVec3Rot(const aName: string = 'Rotation'; const aPrefix: string = 'Rot'): IwbValueDef;
 begin
   Result :=
@@ -4226,7 +4216,7 @@ begin
     ], aPriority);
 end;
 
-{>>> Color Defs <<<} //18
+{>>> Color Defs <<<} //16
 
 function wbAmbientColors(const aSignature: TwbSignature; const aName: string = 'Directional Ambient Lighting Colors'): IwbSubRecordDef;
 begin
@@ -4296,26 +4286,6 @@ begin
     wbInteger('Green', itU8),
     wbInteger('Blue', itU8),
     wbUnused(1)
-  ]).SetToStr(wbRGBAToStr)
-    .IncludeFlag(dfCollapsed, wbCollapseRGBA);
-end;
-
-function wbByteColorsRGB(const aName: string = 'Color'): IwbValueDef;
-begin
-  Result := wbStruct(aName, [
-    wbInteger('Red', itU8),
-    wbInteger('Green', itU8),
-    wbInteger('Blue', itU8)
-  ]).SetToStr(wbRGBAToStr)
-    .IncludeFlag(dfCollapsed, wbCollapseRGBA);
-end;
-
-function wbByteColorsInt32(const aName: string = 'Color'): IwbValueDef;
-begin
-  Result := wbStruct(aName, [
-    wbInteger('Red', itU32),
-    wbInteger('Green', itU32),
-    wbInteger('Blue', itU32)
   ]).SetToStr(wbRGBAToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
@@ -5778,7 +5748,7 @@ begin
       {6}  IsTES3('Probes',
            IsFO3 ('Stimpaks', '')),
       {7}  IsFO3 ('', 'Lights'),
-      {8}  IsFO3 ('', 'Alchemical Apparatus'),
+      {8}  IsFO3 ('', 'Apparatus'),
       {9}  IsTES3('Repair',
            IsTES4('Repair', '')),
       {10}        'Miscellaneous',
@@ -6084,12 +6054,12 @@ begin
      .IncludeFlag(dfDontAssign);
 
   wbQSTI :=
-    wbRArrayS('Associated Quests', wbFormIDCkNoReach(QSTI, 'Associated Quest', [QUST], False, cpBenign));
+    wbRArrayS('Associated Quests',
+      wbFormIDCkNoReach(QSTI, 'Associated Quest', [QUST], False, cpBenign));
 
   wbQSTR :=
-    wbRArrayS('Removed Quests', wbFormIDCkNoReach(QSTR, 'Removed Quest', [QUST], False, cpBenign));
-
-
+    wbRArrayS('Removed Quests',
+      wbFormIDCkNoReach(QSTR, 'Removed Quest', [QUST], False, cpBenign));
 
 {>>>Landscape Common Defs<<<}
   //TES4,FO3,FNV,TES5,FO4,FO76,SF1

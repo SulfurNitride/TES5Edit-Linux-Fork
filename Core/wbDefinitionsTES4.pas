@@ -1087,16 +1087,16 @@ begin
 
   wbActorValueEnum :=
     wbEnum([
-       {0} 'Strength',
-       {1} 'Intelligence',
-       {2} 'Willpower',
-       {3} 'Agility',
-       {4} 'Speed',
-       {5} 'Endurance',
-       {6} 'Personality',
-       {7} 'Luck',
-       {8} 'Health',
-       {9} 'Magicka',
+      {0}  'Strength',
+      {1}  'Intelligence',
+      {2}  'Willpower',
+      {3}  'Agility',
+      {4}  'Speed',
+      {5}  'Endurance',
+      {6}  'Personality',
+      {7}  'Luck',
+      {8}  'Health',
+      {9}  'Magicka',
       {10} 'Fatigue',
       {11} 'Encumbrance',
       {12} 'Armorer',
@@ -1240,41 +1240,41 @@ begin
   wbMajorSkillEnum :=
     wbEnum([], [
       -1, 'None',
-      12, 'Armorer',
-      13, 'Athletics',
-      14, 'Blade',
-      15, 'Block',
-      16, 'Blunt',
-      17, 'Hand To Hand',
-      18, 'Heavy Armor',
-      19, 'Alchemy',
-      20, 'Alteration',
-      21, 'Conjuration',
-      22, 'Destruction',
-      23, 'Illusion',
-      24, 'Mysticism',
-      25, 'Restoration',
-      26, 'Acrobatics',
-      27, 'Light Armor',
-      28, 'Marksman',
-      29, 'Mercantile',
-      30, 'Security',
-      31, 'Sneak',
-      32, 'Speechcraft'
+      12,  'Armorer',
+      13,  'Athletics',
+      14,  'Blade',
+      15,  'Block',
+      16,  'Blunt',
+      17,  'Hand To Hand',
+      18,  'Heavy Armor',
+      19,  'Alchemy',
+      20,  'Alteration',
+      21,  'Conjuration',
+      22,  'Destruction',
+      23,  'Illusion',
+      24,  'Mysticism',
+      25,  'Restoration',
+      26,  'Acrobatics',
+      27,  'Light Armor',
+      28,  'Marksman',
+      29,  'Mercantile',
+      30,  'Security',
+      31,  'Sneak',
+      32,  'Speechcraft'
     ]);
 
   wbMiscStatEnum :=
     wbEnum([
-       {0} 'Days In Prison',
-       {1} 'Days Passed',
-       {2} 'Skill Increases',
-       {3} 'Training Sessions',
-       {4} 'Largest Bounty',
-       {5} 'Creatures Killed',
-       {6} 'People Killed',
-       {7} 'Places Discovered',
-       {8} 'Locks Picked',
-       {9} 'Picks Broken',
+      {0}  'Days In Prison',
+      {1}  'Days Passed',
+      {2}  'Skill Increases',
+      {3}  'Training Sessions',
+      {4}  'Largest Bounty',
+      {5}  'Creatures Killed',
+      {6}  'People Killed',
+      {7}  'Places Discovered',
+      {8}  'Locks Picked',
+      {9}  'Picks Broken',
       {10} 'Souls Trapped',
       {11} 'Ingredients Eaten',
       {12} 'Potions Made',
@@ -1311,29 +1311,29 @@ begin
 
   wbSkillEnum :=
     wbEnum([
-       {0} 'Armorer',
-       {1} 'Athletics',
-       {2} 'Blade',
-       {3} 'Block',
-       {4} 'Blunt',
-       {5} 'Hand To Hand',
-       {6} 'Heavy Armor',
-       {7} 'Alchemy',
-       {8} 'Alteration',
-       {9} 'Conjuration',
-      {10} 'Destruction',
-      {11} 'Illusion',
-      {12} 'Mysticism',
-      {13} 'Restoration',
-      {14} 'Acrobatics',
-      {15} 'Light Armor',
-      {16} 'Marksman',
-      {17} 'Mercantile',
-      {18} 'Security',
-      {19} 'Sneak',
-      {20} 'Speechcraft'
+      {0}   'Armorer',
+      {1}   'Athletics',
+      {2}   'Blade',
+      {3}   'Block',
+      {4}   'Blunt',
+      {5}   'Hand To Hand',
+      {6}   'Heavy Armor',
+      {7}   'Alchemy',
+      {8}   'Alteration',
+      {9}   'Conjuration',
+      {10}  'Destruction',
+      {11}  'Illusion',
+      {12}  'Mysticism',
+      {13}  'Restoration',
+      {14}  'Acrobatics',
+      {15}  'Light Armor',
+      {16}  'Marksman',
+      {17}  'Mercantile',
+      {18}  'Security',
+      {19}  'Sneak',
+      {20}  'Speechcraft'
     ], [
-       -1, 'None'
+      -1, 'None'
     ]);
 
   wbSpecializationEnum :=
@@ -1347,16 +1347,16 @@ begin
 
   wbBipedFlags :=
     wbFlags([
-       {0} 'Head',
-       {1} 'Hair',
-       {2} 'Upper Body',
-       {3} 'Lower Body',
-       {4} 'Hand',
-       {5} 'Foot',
-       {6} 'Right Ring',
-       {7} 'Left Ring',
-       {8} 'Amulet',
-       {9} 'Weapon',
+      {0}  'Head',
+      {1}  'Hair',
+      {2}  'Upper Body',
+      {3}  'Lower Body',
+      {4}  'Hand',
+      {5}  'Foot',
+      {6}  'Right Ring',
+      {7}  'Left Ring',
+      {8}  'Amulet',
+      {9}  'Weapon',
       {10} 'Back Weapon',
       {11} 'Side Weapon',
       {12} 'Quiver',
@@ -1392,18 +1392,18 @@ begin
 
   wbConditionParameters := [
   //Misc
-   {0} wbUnknown(4),
-   {1} wbByteArray('None', 4, cpIgnore).IncludeFlag(dfZeroSortKey),
-   {2} wbInteger('Integer', itS32),
-   {3} wbInteger('Quest Stage', itS32, wbConditionQuestStageToStr, wbQuestStageToInt),
-   {4} wbInteger('Variable Name', itS32, wbConditionVariableNameToStr, wbConditionVariableNameToInt),
+  {0} wbUnknown(4),
+  {1} wbByteArray('None', 4, cpIgnore).IncludeFlag(dfZeroSortKey),
+  {2} wbInteger('Integer', itS32),
+  {3} wbInteger('Quest Stage', itS32, wbConditionQuestStageToStr, wbQuestStageToInt),
+  {4} wbInteger('Variable Name', itS32, wbConditionVariableNameToStr, wbConditionVariableNameToInt),
 
   //Enums
-   {5} wbInteger('Actor Value', itS32, wbActorValueEnum),
-   {6} wbInteger('Axis', itU32, wbAxisEnum),
-   {7} wbInteger('Crime Type', itU32, wbCrimeTypeEnum),
-   {8} wbInteger('Form Type', itU32, wbFormTypeEnum),
-   {9} wbInteger('Menu Mode', itU32, wbMenuModeEnum),
+  {5}  wbInteger('Actor Value', itS32, wbActorValueEnum),
+  {6}  wbInteger('Axis', itU32, wbAxisEnum),
+  {7}  wbInteger('Crime Type', itU32, wbCrimeTypeEnum),
+  {8}  wbInteger('Form Type', itU32, wbFormTypeEnum),
+  {9}  wbInteger('Menu Mode', itU32, wbMenuModeEnum),
   {10} wbInteger('Misc Stat', itU32, wbMiscStatEnum),
   {11} wbInteger('Sex', itU32, wbSexEnum),
 
@@ -1665,7 +1665,7 @@ begin
                   wbStringMgefCode('Param #2 - Magic Effect Code', 4),
                   wbFormIDCk('Param #2 - Actor Value', [ACVA])
                 ]),
-                wbByteArray('Unknown', 16)
+                wbUnknown(16)
               ]).SetAfterLoad(wbEFITAfterLoad)
                 .SetRequired
             ])),
@@ -1714,8 +1714,8 @@ begin
     wbByteArray(DELE, 'Version Control (Unused)', 8, cpIgnore),
     wbString(CNAM, 'Author', 0, cpTranslate).SetRequired,
     wbString(SNAM, 'Description', 0, cpTranslate),
-    wbRArray('Master Files',
-      wbRStruct('Master File', [
+    wbRArray('Masters',
+      wbRStruct('Master', [
         wbStringForward(MAST, 'Filename').SetRequired,
         wbUnused(DATA, 8).SetRequired
       ])).IncludeFlag(dfInternalEditOnly, not wbAllowMasterFilesEdit)
@@ -1826,7 +1826,7 @@ begin
   ]).SetSummaryKey([1, 2])
     .IncludeFlag(dfSummaryMembersNoName);
 
-  wbRecord(APPA, 'Alchemical Apparatus', [
+  wbRecord(APPA, 'Apparatus', [
     wbEDID,
     wbFULL,
     wbTexturedModel('Model', [MODL, MODB, MODT], []),
@@ -2061,7 +2061,7 @@ begin
   wbRecord(CREA, 'Creature',
     wbFlags(wbFlagsList([
       10, 'Quest Item',
-      19, 'Spawns Dead'
+      19, 'Starts Dead'
     ])), [
     wbEDID,
     wbFULL,
@@ -2863,16 +2863,16 @@ begin
       wbInteger('Magic School', itU32, wbMagicSchoolEnum),
       wbInteger('Resist value', itS32,
         wbEnum([], [
-          -1,  'None',
-          61,  'Resist Fire',
-          62,  'Resist Frost',
-          63,  'Resist Disease',
-          64,  'Resist Magic',
-          65,  'Resist Normal Weapons',
-          66,  'Resist Paralysis',
-          67,  'Resist Poison',
-          68,  'Resist Shock',
-          255, 'None (OBME)'
+          -1, 'None',
+          61, 'Resist Fire',
+          62, 'Resist Frost',
+          63, 'Resist Disease',
+          64, 'Resist Magic',
+          65, 'Resist Normal Weapons',
+          66, 'Resist Paralysis',
+          67, 'Resist Poison',
+          68, 'Resist Shock',
+         255, 'None (OBME)'
         ])),
       wbInteger('Counter Effect Count', itU16), //!!! must be updated automatically when ESCE length changes!
       wbUnused(2),
@@ -2927,7 +2927,7 @@ begin
     wbFlags(wbFlagsList([
       10, 'Quest Item',
       18, 'Compressed',
-      19, 'Spawns Dead'
+      19, 'Starts Dead'
     ])), [
     wbEDID,
     wbFULL,
