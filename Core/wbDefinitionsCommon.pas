@@ -6664,7 +6664,7 @@ Can't properly represent that with current record definition methods.
          .IncludeFlag(dfNotAlignable))
     ]).IncludeFlag(dfCollapsed)
       .IncludeFlag(dfFastAssign)
-      .IncludeFlag(dfNoCopyAsOverride);
+      .IncludeFlag(dfNoCopyAsOverride, not wbIsFallout4);
 
   //TES5,FO4,FO76,SF1
   wbWorldFixedCenter :=
