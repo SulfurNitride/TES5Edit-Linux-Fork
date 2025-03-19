@@ -40,7 +40,7 @@ const
   wmCopy = 5;
 
   // records to skip without assets
-  sSkipSignatures = 'REFR,ACHR,ACRE,PGRE,LAND,NAVM,PGRD';
+  sSkipSignatures = 'LAND,NAVM,PGRD';
 
   // music record signature
   sMusicSignatures = 'MUSC,MUST,MSET';
@@ -549,23 +549,23 @@ begin
     Delete(value, 1, 1);
   if SameText(Copy(value, 1, 5), 'Data\') then
     value := Copy(value, 6, Length(value));
-  if (atype = atInterface) and not (Copy(value, 1, 10) = 'Interface\') then
+  if (atype = atInterface) and not ((Copy(value, 1, 10) = 'Interface\') or (Copy(value, 1, 10) = 'interface\')) then
     value := 'Interface\' + value  
-  else if (atype = atMesh) and not (Copy(value, 1, 7) = 'Meshes\') then
+  else if (atype = atMesh) and not ((Copy(value, 1, 7) = 'Meshes\') or (Copy(value, 1, 7) = 'meshes\')) then
     value := 'Meshes\' + value
-  else if (atype = atAnimation) and not (Copy(value, 1, 7) = 'Meshes\') then
+  else if (atype = atAnimation) and not ((Copy(value, 1, 7) = 'Meshes\') or (Copy(value, 1, 7) = 'meshes\')) then
     value := 'Meshes\' + value
-  else if (atype = atMaterial) and not (Copy(value, 1, 9) = 'Material\') then
+  else if (atype = atMaterial) and not ((Copy(value, 1, 10) = 'Materials\') or (Copy(value, 1, 10) = 'materials\')) then
     value := 'Materials\' + value
-  else if (atype = atMusic) and not (Copy(value, 1, 6) = 'Music\') then
+  else if (atype = atMusic) and not ((Copy(value, 1, 6) = 'Music\') or (Copy(value, 1, 6) = 'music\')) then
     value := 'Music\' + value
-  else if (atype = atProgram) and not (Copy(value, 1, 9) = 'Programs\') then
+  else if (atype = atProgram) and not ((Copy(value, 1, 9) = 'Programs\') or (Copy(value, 1, 9) = 'programs\')) then
     value := 'Programs\' + value
-  else if (atype = atSound) and not (Copy(value, 1, 6) = 'Sound\') then
+  else if (atype = atSound) and not ((Copy(value, 1, 6) = 'Sound\') or (Copy(value, 1, 6) = 'sound\')) then
     value := 'Sound\' + value
-  else if (atype = atTexture) and not (Copy(value, 1, 9) = 'Textures\') then
+  else if (atype = atTexture) and not ((Copy(value, 1, 9) = 'Textures\') or (Copy(value, 1, 9) = 'textures\')) then
     value := 'Textures\' + value
-  else if (atype = atSpeedTree) and not (Copy(value, 1, 6) = 'Trees\') then
+  else if (atype = atSpeedTree) and not ((Copy(value, 1, 6) = 'Trees\') or (Copy(value, 1, 6) = 'trees\')) then
     value := 'Trees\' + value;
   Result := value;
 end;
@@ -585,6 +585,11 @@ begin
   aResDescr := ResDescrPrefix + aResDescr;
   slRes.Clear;
   ResourceCount(aResName, slRes);
+  if slRes.Count = 0 then
+    if SameText(ExtractFileExt(aResName), '.wav') then begin
+      aResName := ChangeFileExt(aResName, '.xwm');
+      ResourceCount(aResName, slRes);
+    end;
 
   // dump everything regardless of asset existance in selected containers
   if optMode = wmList then
