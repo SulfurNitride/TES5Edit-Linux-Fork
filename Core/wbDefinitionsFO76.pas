@@ -17474,8 +17474,8 @@ begin
     ])), [
     wbEDID,
     wbXALG,
-    wbLString(ANAM, 'Title'), //Possibly male version
-    wbLString(BNAM), //Possibly female version
+    wbLString(ANAM, 'Male Title'),
+    wbLString(BNAM, 'Female Title'),
     wbInteger(PTPR, 'Is Prefix', itU8, wbBoolEnum),
     wbInteger(PTSU, 'Is Suffix', itU8, wbBoolEnum),
     wbUnknown(PTDS), //Only shows up on ones labeled with DEL so most likely a deleted flag
