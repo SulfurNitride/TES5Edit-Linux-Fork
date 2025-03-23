@@ -2811,7 +2811,6 @@ begin
   end;
 end;
 
-
 procedure wbWEAPAfterLoad(const aElement: IwbElement);
 var
   Container: IwbContainerElementRef;
@@ -2824,6 +2823,8 @@ begin
     if not Container.ElementExists['DNAM'] then
       Exit;
 
+    if Container.ElementNativeValues['DNAM\Reload Animation'] = 255 then
+      Container.ElementNativeValues['DNAM\Reload Animation'] := 0;
     if Container.ElementNativeValues['DNAM\Animation Multiplier'] = 0.0 then
       Container.ElementNativeValues['DNAM\Animation Multiplier'] := 1.0;
     if Container.ElementNativeValues['DNAM\Animation Attack Multiplier'] = 0.0 then
@@ -3078,14 +3079,11 @@ begin
     'ReloadQ',
     'ReloadR',
     'ReloadS',
-//    'ReloadT',
-//    'ReloadU',
-//    'ReloadV',
     'ReloadW',
     'ReloadX',
     'ReloadY',
     'ReloadZ'
-  ],[255, 'None']);   // 255 seen in DLC, though Geck converts to 0
+  ]);
 
   wbEDID := wbString(EDID, 'Editor ID', 0, cpNormal); // not cpBenign according to Arthmoor
   wbEDIDReq := wbString(EDID, 'Editor ID', 0, cpNormal, True); // not cpBenign according to Arthmoor
