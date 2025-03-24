@@ -1301,19 +1301,19 @@ begin
     if FindCmdLineSwitch('PseudoMedium') then
       wbPseudoMedium := True;
 
-  if FindCmdLineSwitch('IgnoreOverlay') then
-    wbIgnoreOverlay := True
+  if FindCmdLineSwitch('IgnoreUpdate') then
+    wbIgnoreUpdate := True
   else
-    if FindCmdLineSwitch('PseudoOverlay') then
-      wbPseudoOverlay := True;
+    if FindCmdLineSwitch('PseudoUpdate') then
+      wbPseudoUpdate := True;
 	  
   if wbComplexFileFileID then begin
     wbIgnoreLight := False;
 	wbPseudoLight := False;
 	wbIgnoreMedium := False;
 	wbPseudoMedium := False;
-	wbIgnoreOverlay := False;
-    wbPseudoOverlay := False;
+	wbIgnoreUpdate := False;
+    wbPseudoUpdate := False;
   end;
 
   if FindCmdLineSwitch('SimpleFormIDs') then
