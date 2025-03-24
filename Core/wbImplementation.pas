@@ -44,8 +44,8 @@ var
   ChaptersToSkip     : TStringList;
   SubRecordOrderList : TStringList;
 
-function wbMastersForFile(const aFileName: string; aMasters: TStrings; aIsESM: PBoolean = nil; aIsLight: PBoolean = nil; aIsLocalized: PBoolean = nil; aIsOverlay: PBoolean = nil; aIsMedium: PBoolean = nil): Boolean; overload;
-function wbMastersForFile(const aFileName: string; out aMasters: TDynStrings; aIsESM: PBoolean = nil; aIsLight: PBoolean = nil; aIsLocalized: PBoolean = nil; aIsOverlay: PBoolean = nil; aIsMedium: PBoolean = nil): Boolean; overload;
+function wbMastersForFile(const aFileName: string; aMasters: TStrings; aIsESM: PBoolean = nil; aIsLight: PBoolean = nil; aIsLocalized: PBoolean = nil; aIsUpdate: PBoolean = nil; aIsMedium: PBoolean = nil): Boolean; overload;
+function wbMastersForFile(const aFileName: string; out aMasters: TDynStrings; aIsESM: PBoolean = nil; aIsLight: PBoolean = nil; aIsLocalized: PBoolean = nil; aIsUpdate: PBoolean = nil; aIsMedium: PBoolean = nil): Boolean; overload;
 
 function wbFile(const aFileName: string; aLoadOrder: Integer = -1; aCompareTo: string = ''; aStates: TwbFileStates = []; const aData: TBytes = nil): IwbFile;
 function wbNewFile(const aFileName: string; aLoadOrder: Integer; aIsLight, aIsMedium: Boolean): IwbFile; overload;
@@ -884,9 +884,9 @@ type
     function GetIsMediumDirect: Boolean;
     procedure SetIsMedium(Value: Boolean);
 
-    function GetIsOverlay: Boolean;
-    function GetIsOverlayDirect: Boolean;
-    procedure SetIsOverlay(Value: Boolean);
+    function GetIsUpdate: Boolean;
+    function GetIsUpdateDirect: Boolean;
+    procedure SetIsUpdate(Value: Boolean);
 
     function GetIsLocalized: Boolean;
     procedure SetIsLocalized(Value: Boolean);
@@ -1361,8 +1361,8 @@ type
     procedure SetIsLight(aValue: Boolean);
     function GetIsMedium: Boolean;
     procedure SetIsMedium(aValue: Boolean);
-    function GetIsOverlay: Boolean;
-    procedure SetIsOverlay(aValue: Boolean);
+    function GetIsUpdate: Boolean;
+    procedure SetIsUpdate(aValue: Boolean);
 
     procedure UpdateRefs;
     procedure UpdateKeys;
@@ -2416,10 +2416,10 @@ begin
 
       end;
 
-      Exclude(flStates, fsOverlayCompatible);
+      Exclude(flStates, fsUpdateCompatible);
       if wbHasProgressCallback then
-        if GetIsOverlay then
-          wbProgressCallback('<Error: ' + aRecord.Name + ' has invalid ObjectID ' + IntToHex64((FormID.ToCardinal and $00FFFFFF),6) + ' for an overlay module. You will not be able to save this file with the Overlay flag active.>');
+        if GetIsUpdate then
+          wbProgressCallback('<Error: ' + aRecord.Name + ' has invalid ObjectID ' + IntToHex64((FormID.ToCardinal and $00FFFFFF),6) + ' for an update module. You will not be able to save this file with the Update flag active.>');
 
       {new record...}
     end else try
@@ -3199,8 +3199,8 @@ begin
         Include(flModule.miFlags, mfHasLightFlag);
       if GetIsMediumDirect then
         Include(flModule.miFlags, mfHasMediumFlag);
-      if GetIsOverlayDirect then
-        Include(flModule.miFlags, mfHasOverlayFlag);
+      if GetIsUpdateDirect then
+        Include(flModule.miFlags, mfHasUpdateFlag);
       if GetIsLocalized then
         Include(flModule.miFlags, mfHasLocalizedFlag);
     end;
@@ -3226,7 +3226,7 @@ begin
   Include(flStates, fsIsNew);
   Include(flStates, fsLightCompatible);
   Include(flStates, fsMediumCompatible);
-  Include(flStates, fsOverlayCompatible);
+  Include(flStates, fsUpdateCompatible);
   flLoadOrder := aLoadOrder;
   flFileName := aFileName;
   flFileNameOnDisk := flFileName;
@@ -3256,7 +3256,7 @@ begin
   flIndicesActive := True;
 
   if flLoadOrder >= 0 then begin
-    if wbIsLightSupported or wbPseudoLight or wbIsMediumSupported or wbPseudoMedium or wbPseudoOverlay then begin
+    if wbIsLightSupported or wbPseudoLight or wbIsMediumSupported or wbPseudoMedium or wbPseudoUpdate then begin
       if Header.IsLight and not wbIgnoreLight then begin
         if _NextLightSlot > TwbFileID.MaxLightSlot then
           raise Exception.Create('Too many light modules');
@@ -3268,7 +3268,7 @@ begin
         flLoadOrderFileID := TwbFileID.CreateMedium(_NextMediumSlot);
         Inc(_NextMediumSlot);
       end else begin
-        if (wbIsOverlaySupported or wbPseudoOverlay) and Header.IsOverlay and not wbIgnoreOverlay then begin
+        if (wbIsUpdateSupported or wbPseudoUpdate) and Header.IsUpdate and not wbIgnoreUpdate then begin
           flLoadOrderFileID := TwbFileID.Invalid;
         end else begin
           if _NextFullSlot >= TwbFileID.MaxFullSlot then
@@ -3304,7 +3304,7 @@ begin
   Include(flStates, fsIsNew);
   Include(flStates, fsLightCompatible);
   Include(flStates, fsMediumCompatible);
-  Include(flStates, fsOverlayCompatible);
+  Include(flStates, fsUpdateCompatible);
   flLoadOrder := aLoadOrder;
   flFileName := aFileName;
   flFileNameOnDisk := flFileName;
@@ -3319,22 +3319,22 @@ begin
   if wbGameMode >= gmTES4 then
     Header.RecordBySignature['HEDR'].Elements[2].NativeValue := wbHEDRNextObjectID;
 
-  if (mfHasOverlayFlag in aTemplate.miFlags) and wbIsOverlaySupported then begin
-    Header.IsOverlay := True;
-    Include(flModule.miFlags, mfHasOverlayFlag);
+  if (mfHasUpdateFlag in aTemplate.miFlags) and wbIsUpdateSupported then begin
+    Header.IsUpdate := True;
+    Include(flModule.miFlags, mfHasUpdateFlag);
   end;
 
   if (mfHasLightFlag in aTemplate.miFlags) and wbIsLightSupported then begin
     Header.IsLight := True;
     Include(flModule.miFlags, mfHasLightFlag);
-    Exclude(flModule.miFlags, mfHasOverlayFlag);
+    Exclude(flModule.miFlags, mfHasUpdateFlag);
   end;
 
   if (mfHasMediumFlag in aTemplate.miFlags) and wbIsMediumSupported then begin
     Header.IsMedium := True;
     Include(flModule.miFlags, mfHasMediumFlag);
     Exclude(flModule.miFlags, mfHasLightFlag);
-    Exclude(flModule.miFlags, mfHasOverlayFlag);
+    Exclude(flModule.miFlags, mfHasUpdateFlag);
   end;
 
   if mfHasESMFlag in aTemplate.miFlags then begin
@@ -3350,7 +3350,7 @@ begin
   flIndicesActive := True;
 
   if flLoadOrder >= 0 then begin
-    if wbIsLightSupported or wbPseudoLight or wbIsMediumSupported or wbPseudoMedium or wbPseudoOverlay then begin
+    if wbIsLightSupported or wbPseudoLight or wbIsMediumSupported or wbPseudoMedium or wbPseudoUpdate then begin
       if Header.IsLight and not wbIgnoreLight then begin
         if _NextLightSlot > TwbFileID.MaxLightSlot then
           raise Exception.Create('Too many light modules');
@@ -3362,7 +3362,7 @@ begin
         flLoadOrderFileID := TwbFileID.CreateMedium(_NextMediumSlot);
         Inc(_NextMediumSlot);
       end else begin
-        if (wbIsOverlaySupported or wbPseudoOverlay) and Header.IsOverlay and not wbIgnoreOverlay then begin
+        if (wbIsUpdateSupported or wbPseudoUpdate) and Header.IsUpdate and not wbIgnoreUpdate then begin
           flLoadOrderFileID := TwbFileID.Invalid;
         end else begin
           if _NextFullSlot > TwbFileID.MaxFullSlot then
@@ -4294,14 +4294,14 @@ begin
   Result := Header.IsLight;
 end;
 
-function TwbFile.GetIsOverlay: Boolean;
+function TwbFile.GetIsUpdate: Boolean;
 var
   Header         : IwbMainRecord;
 begin
-  if wbPseudoOverlay then
-    Exit(fsPseudoOverlay in flStates);
+  if wbPseudoUpdate then
+    Exit(fsPseudoUpdate in flStates);
 
-  if not wbIsOverlaySupported or GetIsNotPlugin then
+  if not wbIsUpdateSupported or GetIsNotPlugin then
     Exit(False);
 
   var SelfRef := Self as IwbContainerElementRef;
@@ -4309,14 +4309,14 @@ begin
   if (GetElementCount < 1) or not Supports(GetElement(0), IwbMainRecord, Header) then
     raise Exception.CreateFmt('Unexpected error reading file "%s"', [flFileName]);
 
-  Result := Header.IsOverlay;
+  Result := Header.IsUpdate;
 end;
 
-function TwbFile.GetIsOverlayDirect: Boolean;
+function TwbFile.GetIsUpdateDirect: Boolean;
 var
   Header         : IwbMainRecord;
 begin
-  if not wbIsOverlaySupported or GetIsNotPlugin then
+  if not wbIsUpdateSupported or GetIsNotPlugin then
     Exit(False);
 
   var SelfRef := Self as IwbContainerElementRef;
@@ -4324,7 +4324,7 @@ begin
   if (GetElementCount < 1) or not Supports(GetElement(0), IwbMainRecord, Header) then
     raise Exception.CreateFmt('Unexpected error reading file "%s"', [flFileName]);
 
-  Result := Header.IsOverlay;
+  Result := Header.IsUpdate;
 end;
 
 
@@ -4749,7 +4749,7 @@ begin
   end else begin
     Result := flLoadOrderFileID;
     if not Result.IsValid then
-      if GetIsOverlay then
+      if GetIsUpdate then
         if GetMasterCount(aNew) > 0 then
           Result := GetMaster(0, aNew).ResolvedLoadOrderFileID[True];
   end;
@@ -4981,8 +4981,8 @@ var
   lModuleType  : TwbModuleType;
   Mask         : Cardinal;
 begin
-  if GetIsOverlay then
-    raise Exception.Create('File ' + GetFileName + ' is an overlay and can not contain new records.');
+  if GetIsUpdate then
+    raise Exception.Create('File ' + GetFileName + ' is an update and can not contain new records.');
 
   Assert(not (fsMastersUpdating in flStates));
 
@@ -5009,8 +5009,8 @@ begin
   else if GetIsMedium or flLoadOrderFileID.IsMediumSlot then
     lModuleType := mtMedium;
 
-  if GetIsOverlay then
-    raise ERangeError.Create('File ' + GetFileName + ' is Overlay flagged and can''t contain new records');
+  if GetIsUpdate then
+    raise ERangeError.Create('File ' + GetFileName + ' is Update flagged and can''t contain new records');
 
   case lModuleType of
     mtLight: Mask := $FFF;
@@ -5101,19 +5101,19 @@ begin
       raise Exception.Create('File ' + GetFileName + ' has a file header with missing HEDR subrecord');
 
     if wbIsStarfield then begin
-      if GetIsOverlayDirect then begin
+      if GetIsUpdateDirect then begin
         if GetIsLightDirect then begin
-          SetIsOverlay(False);
+          SetIsUpdate(False);
           SetIsLight(True);
         end else if GetIsMediumDirect then begin
-          SetIsOverlay(False);
+          SetIsUpdate(False);
           SetIsMedium(True);
         end;
       end;
 
       if flModule.miExtension in [meESM, meESL] then
         SetIsESM(True);
-      if not GetIsOverlayDirect then begin
+      if not GetIsUpdateDirect then begin
         if flModule.miExtension = meESL then
           SetIsLight(True);
       end;
@@ -5289,8 +5289,8 @@ begin
 
         for var lMasterIdx := 0 to Pred(GetMasterCount(True)) do begin
           var lMaster := GetMaster(lMasterIdx, True);
-          if lMaster.GetIsLightDirect or lMaster.GetIsMediumDirect or lMaster.GetIsOverlayDirect or (PwbModuleInfo(lMaster.ModuleInfo).miFlags * [mfHasLightFlag, mfHasMediumFlag, mfHasOverlayFlag] <> []) then
-            raise Exception.Create('Modules with Small, Medium, or Overlay flagged modules as masters can''t be saved in ' + wbAppName + wbToolName);
+          if lMaster.GetIsLightDirect or lMaster.GetIsMediumDirect or lMaster.GetIsUpdateDirect or (PwbModuleInfo(lMaster.ModuleInfo).miFlags * [mfHasLightFlag, mfHasMediumFlag, mfHasUpdateFlag] <> []) then
+            raise Exception.Create('Modules with Small, Medium, or Update flagged modules as masters can''t be saved in ' + wbAppName + wbToolName);
         end;
 
         if FileHeader.IsLight <> (mfHasLightFlag in flModule.miFlags) then
@@ -5299,15 +5299,15 @@ begin
         if FileHeader.IsMedium <> (mfHasMediumFlag in flModule.miFlags) then
           raise Exception.Create('Medium flag can''t be added or removed from existing files in ' + wbAppName + wbToolName);
 
-        if FileHeader.IsOverlay <> (mfHasOverlayFlag in flModule.miFlags) then
-          raise Exception.Create('Overlay flag can''t be added or removed from existing files in ' + wbAppName + wbToolName);
+        if FileHeader.IsUpdate <> (mfHasUpdateFlag in flModule.miFlags) then
+          raise Exception.Create('Update flag can''t be added or removed from existing files in ' + wbAppName + wbToolName);
 
         if FileHeader.IsLight then
           raise Exception.Create('Small flagged files can''t be saved in ' + wbAppName + wbToolName);
         if FileHeader.IsMedium then
           raise Exception.Create('Medium flagged files can''t be saved in ' + wbAppName + wbToolName);
-        if FileHeader.IsOverlay then
-          raise Exception.Create('Overlay flagged files can''t be saved in ' + wbAppName + wbToolName);
+        if FileHeader.IsUpdate then
+          raise Exception.Create('Update flagged files can''t be saved in ' + wbAppName + wbToolName);
 
       end;
 
@@ -5339,15 +5339,15 @@ begin
         end;
       end;
 
-      if FileHeader.IsOverlay then begin
+      if FileHeader.IsUpdate then begin
         if lFileFileID.FullSlot <= 0 then
-          raise Exception.Create('File ' + Self.GetName + ' is an overlay module with no masters. You will not be able to save this file with Overlay flag active');
+          raise Exception.Create('File ' + Self.GetName + ' is an update module with no masters. You will not be able to save this file with Update flag active');
 
         for i := High(flRecords) downto Low(flRecords) do begin
           Current := flRecords[i];
           FormID := Current.FormID;
           if IsNewRecord(FormID, True) then begin
-            raise Exception.Create('Record ' + Current.Name + ' has invalid ObjectID ' + IntToHex64((FormID.ToCardinal and $00FFFFFF),6) + ' for an overlay module. You will not be able to save this file with Overlay flag active');
+            raise Exception.Create('Record ' + Current.Name + ' has invalid ObjectID ' + IntToHex64((FormID.ToCardinal and $00FFFFFF),6) + ' for an update module. You will not be able to save this file with Update flag active');
           end else
             Break;
         end;
@@ -5552,8 +5552,8 @@ var
 
     if flLoadOrder >= 0 then begin
       _NextLoadOrder := Max(_NextLoadOrder, Succ(flLoadOrder));
-      if wbIsLightSupported or wbPseudoLight or wbIsMediumSupported or wbPseudoMedium or wbIsOverlaySupported or wbPseudoOverlay then begin
-        if (wbIsOverlaySupported or wbPseudoOverlay) and ((fsPseudoOverlay in flStates) or ((Header.IsOverlay) and not wbIgnoreOverlay)) then begin
+      if wbIsLightSupported or wbPseudoLight or wbIsMediumSupported or wbPseudoMedium or wbIsUpdateSupported or wbPseudoUpdate then begin
+        if (wbIsUpdateSupported or wbPseudoUpdate) and ((fsPseudoUpdate in flStates) or ((Header.IsUpdate) and not wbIgnoreUpdate)) then begin
           flLoadOrderFileID := TwbFileID.Invalid;
         end else if (fsPseudoLight in flStates) or ((Header.IsLight or flFileName.EndsWith(csDotEsl, True)) and not wbIgnoreLight) then begin
           if _NextLightSlot > TwbFileID.MaxLightSlot then
@@ -5726,27 +5726,27 @@ begin
       Include(flStates, fsLightCompatible);
     if wbPseudoMedium then
       Include(flStates, fsMediumCompatible);
-    if wbPseudoOverlay then
-      Include(flStates, fsOverlayCompatible);
+    if wbPseudoUpdate then
+      Include(flStates, fsUpdateCompatible);
 
-    if Header.IsOverlay then begin
-      if wbPseudoOverlay then
-        Include(flStates, fsPseudoOverlay);
+    if Header.IsUpdate then begin
+      if wbPseudoUpdate then
+        Include(flStates, fsPseudoUpdate);
       AssignSlot;
     end else if Header.IsLight then begin
-      if not wbPseudoOverlay then begin
+      if not wbPseudoUpdate then begin
         if wbPseudoLight then
           Include(flStates, fsPseudoLight);
         AssignSlot;
       end;
     end else if Header.IsMedium then begin
-      if not (wbPseudoOverlay or wbPseudoLight) then begin
+      if not (wbPseudoUpdate or wbPseudoLight) then begin
         if wbPseudoMedium then
           Include(flStates, fsPseudoMedium);
         AssignSlot;
       end;
     end else
-      if not (wbPseudoLight or wbPseudoMedium or wbPseudoOverlay) then
+      if not (wbPseudoLight or wbPseudoMedium or wbPseudoUpdate) then
         AssignSlot;
 
 
@@ -5873,11 +5873,11 @@ begin
     if flRecordsCount < Length(flRecords) then
       SetLength(flRecords, flRecordsCount);
 
-    if wbPseudoOverlay then
-      if fsOverlayCompatible in flStates then
-        Include(flStates, fsPseudoOverlay);
+    if wbPseudoUpdate then
+      if fsUpdateCompatible in flStates then
+        Include(flStates, fsPseudoUpdate);
 
-    if not (fsPseudoOverlay in flStates) then begin
+    if not (fsPseudoUpdate in flStates) then begin
       if wbPseudoLight then
         if fsLightCompatible in flStates then
           Include(flStates, fsPseudoLight);
@@ -6037,11 +6037,11 @@ begin
   end;
 end;
 
-procedure TwbFile.SetIsOverlay(Value: Boolean);
+procedure TwbFile.SetIsUpdate(Value: Boolean);
 var
   Header         : IwbMainRecord;
 begin
-  if not wbIsOverlaySupported then
+  if not wbIsUpdateSupported then
     Exit;
   if GetIsNotPlugin then
     Exit;
@@ -6049,11 +6049,11 @@ begin
   if (GetElementCount < 1) or not Supports(GetElement(0), IwbMainRecord, Header) then
     raise Exception.CreateFmt('Unexpected error reading file "%s"', [flFileName]);
 
-  if Value <> Header.IsOverlay then begin
+  if Value <> Header.IsUpdate then begin
     if not IsElementEditable(nil) then
       raise Exception.Create('File "' + GetFileName + '" is not editable');
 
-    Header.IsOverlay := Value;
+    Header.IsUpdate := Value;
   end;
 end;
 
@@ -10789,10 +10789,10 @@ begin
 
   _File := GetFile;
   if Assigned(_File) then begin
-    if _File.IsOverlay then begin
+    if _File.IsUpdate then begin
       FormID := GetFormID;
       if _File.IsNewRecord(FormID, True) then
-        Result := 'An overlay module can not contain new records.';
+        Result := 'An update module can not contain new records.';
     end;
 
     if Result = '' then begin
@@ -11671,9 +11671,9 @@ begin
   Result := GetFlags.IsLight;
 end;
 
-function TwbMainRecord.GetIsOverlay: Boolean;
+function TwbMainRecord.GetIsUpdate: Boolean;
 begin
-  Result := GetFlags.IsOverlay;
+  Result := GetFlags.IsUpdate;
 end;
 
 
@@ -13805,11 +13805,11 @@ begin
   end;
 end;
 
-procedure TwbMainRecord.SetIsOverlay(aValue: Boolean);
+procedure TwbMainRecord.SetIsUpdate(aValue: Boolean);
 begin
-  if aValue <> GetIsOverlay then begin
+  if aValue <> GetIsUpdate then begin
     MakeHeaderWriteable;
-    GetFlagsPtr.SetOverlay(aValue);
+    GetFlagsPtr.SetUpdate(aValue);
   end;
 end;
 
@@ -22944,7 +22944,7 @@ begin
   end;
 end;
 
-function wbMastersForFile(const aFileName: string; aMasters: TStrings; aIsESM, aIsLight, aIsLocalized, aIsOverlay, aIsMedium: PBoolean): Boolean;
+function wbMastersForFile(const aFileName: string; aMasters: TStrings; aIsESM, aIsLight, aIsLocalized, aIsUpdate, aIsMedium: PBoolean): Boolean;
 var
   FileName : string;
   i        : Integer;
@@ -22957,8 +22957,8 @@ begin
     aIsESM^ := False;
   if Assigned(aIsLight) then
     aIsLight^ := False;
-  if Assigned(aIsOverlay) then
-    aIsOverlay^ := False;
+  if Assigned(aIsUpdate) then
+    aIsUpdate^ := False;
   if Assigned(aIsMedium) then
     aIsMedium^ := False;
   wbProgressLock;
@@ -22978,8 +22978,8 @@ begin
         aIsESM^ := _File.IsESM;
       if Assigned(aIsLight) then
         aIsLight^ := _File.IsLight;
-      if Assigned(aIsOverlay) then
-        aIsOverlay^ := _File.IsOverlay;
+      if Assigned(aIsUpdate) then
+        aIsUpdate^ := _File.IsUpdate;
       if Assigned(aIsLocalized) then
         aIsLocalized^ := _File.IsLocalized;
       if Assigned(aIsMedium) then
@@ -22994,14 +22994,14 @@ begin
   end;
 end;
 
-function wbMastersForFile(const aFileName: string; out aMasters: TDynStrings; aIsESM, aIsLight, aIsLocalized, aIsOverlay, aIsMedium: PBoolean): Boolean; overload;
+function wbMastersForFile(const aFileName: string; out aMasters: TDynStrings; aIsESM, aIsLight, aIsLocalized, aIsUpdate, aIsMedium: PBoolean): Boolean; overload;
 var
   sl : TStringList;
 begin
   aMasters := nil;
   sl := TStringList.Create;
   try
-    Result := wbMastersForFile(aFileName, sl, aIsESM, aIsLight, aIsLocalized, aIsOverlay, aIsMedium);
+    Result := wbMastersForFile(aFileName, sl, aIsESM, aIsLight, aIsLocalized, aIsUpdate, aIsMedium);
     if Result then
       aMasters := sl.ToStringArray;
   finally

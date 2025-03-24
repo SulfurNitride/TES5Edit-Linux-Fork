@@ -2851,9 +2851,9 @@ begin
                 Result := a._File.LoadOrder >= j;
             end;
             if Result and AsNew then begin
-              if mfHasOverlayFlag in a.miFlags then
+              if mfHasUpdateFlag in a.miFlags then
                 Exit(False);
-              if Assigned(a.miFile) and a._File.IsOverlay then
+              if Assigned(a.miFile) and a._File.IsUpdate then
                 Exit(False);
             end;
           end);
@@ -12543,8 +12543,8 @@ var
     end else
       TargetFile := SourceFile;
 
-    if TargetFile.IsOverlay then begin
-      ShowMessage('"'+TargetFile.Name+'" is an overlay module and can''t own any records.');
+    if TargetFile.IsUpdate then begin
+      ShowMessage('"'+TargetFile.Name+'" is an update module and can''t own any records.');
       Exit;
     end;
 
@@ -14768,7 +14768,7 @@ begin
     mniNavRenumberFormIDsFrom.Visible and
     wbIsLightSupported and
     Supports(Element, IwbFile, _File) and
-    not (_File.IsLight or _File.IsOverlay);
+    not (_File.IsLight or _File.IsUpdate);
 
   mniNavRenumberFormIDsInject.Visible :=
     mniNavRenumberFormIDsFrom.Visible and
@@ -19285,8 +19285,8 @@ begin
                 s := s + '<' + wbLightName + '>';
               if _File.Header.IsMedium then
                 s := s + '<Medium>';
-              if _File.Header.IsOverlay then
-                s := s + '<Overlay>';
+              if _File.Header.IsUpdate then
+                s := s + '<Update>';
               if _File.Header.IsLocalized then
                 s := s + '<Localized>';
             end;
@@ -20783,7 +20783,7 @@ begin
     Exit;
 
   FileID := FormID.FileID;
-  if wbIsLightSupported or wbPseudoLight or wbPseudoOverlay then begin
+  if wbIsLightSupported or wbPseudoLight or wbPseudoUpdate then begin
     _File := nil;
     for i := Low(Files) to High(Files) do
       if Files[i].LoadOrderFileID = FileID then begin

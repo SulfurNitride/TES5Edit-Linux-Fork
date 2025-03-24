@@ -398,10 +398,10 @@ begin
   if not wbIsMediumSupported then
     with vstModules.Header.Columns[7] do
       Options := Options - [coVisible];
-  if not wbIsOverlaySupported then
+  if not wbIsUpdateSupported then
     with vstModules.Header.Columns[6] do
       Options := Options - [coVisible];
-  if wbPseudoLight or wbPseudoMedium or wbPseudoOverlay then
+  if wbPseudoLight or wbPseudoMedium or wbPseudoUpdate then
     with vstModules.Header.Columns[5] do
       Options := Options - [coVisible];
 
@@ -806,7 +806,7 @@ begin
         3: Result := CmpBool(mfHasLightFlag in Module1.miFlags, mfHasLightFlag in Module2.miFlags);
         4: Result := CmpI32(Module1.miLoadOrder, Module2.miLoadOrder);
         5: Result := CompareText(Module1.miFileID.ToString, Module2.miFileID.ToString);
-        6: Result := CmpBool(mfHasOverlayFlag in Module1.miFlags, mfHasOverlayFlag in Module2.miFlags);
+        6: Result := CmpBool(mfHasUpdateFlag in Module1.miFlags, mfHasUpdateFlag in Module2.miFlags);
         7: Result := CmpBool(mfHasMediumFlag in Module1.miFlags, mfHasMediumFlag in Module2.miFlags);
       end;
     end else
@@ -843,7 +843,7 @@ begin
           3 : if mfHasLightFlag in miFlags then Celltext := wbLightName;
           4 : if miLoadOrder < 10000 then Celltext := miLoadOrder.ToString;
           5 : if miLoadOrder < 10000 then Celltext := miFileID.ToString;
-          6 : if mfHasOverlayFlag in miFlags then Celltext := 'Overlay';
+          6 : if mfHasUpdateFlag in miFlags then Celltext := 'Update';
           7 : if mfHasMediumFlag in miFlags then Celltext := 'Med';
         end
     else
