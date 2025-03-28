@@ -2083,15 +2083,17 @@ begin
   if Version = v4002 then
     FNifVersion := nfTES3
   // some 3rd party Oblivion meshes have user version 0
-  else if (Version = v20005) and (UserVersion in [0, 11]) and (UserVersion2 in [0, 11]) then
+  else if (Version = v10010) and (UserVersion = 0) and (UserVersion2 = 0) then
     FNifVersion := nfTES4
-  else if (Version = v20004) and (UserVersion in [10, 11]) and (UserVersion2 = 11) then
+  else if (Version = v1010101) and (UserVersion = 10) and (UserVersion2 = 4) then
     FNifVersion := nfTES4
   else if (Version = v1010106) and (UserVersion = 10) and (UserVersion2 = 5) then
     FNifVersion := nfTES4
   else if (Version = v10200) and (UserVersion = 10) and (UserVersion2 in [6, 7, 8, 9, 11]) then
     FNifVersion := nfTES4
-  else if (Version = v10010) then
+  else if (Version = v20004) and (UserVersion in [10, 11]) and (UserVersion2 = 11) then
+    FNifVersion := nfTES4
+  else if (Version = v20005) and (UserVersion in [0, 11]) and (UserVersion2 in [0, 11]) then
     FNifVersion := nfTES4
   else if (Version = v20207) and (UserVersion = 11) then
     FNifVersion := nfFO3
