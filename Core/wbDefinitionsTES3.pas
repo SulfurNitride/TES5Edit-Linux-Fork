@@ -331,7 +331,7 @@ begin
 
     if Assigned(MainRecord.ElementBySignature['FLTV']) then
       if MainRecord.ElementBySignature['FNAM'].Value = 'Short' then //Only occurs on shorts.
-        if (MainRecord.ElementBySignature['FLTV'].NativeValue = -92233720368547758.1) or
+        if (MainRecord.ElementBySignature['FLTV'].NativeValue = Single(-92233720368547758.1)) or
            (MainRecord.ElementBySignature['FLTV'].NativeValue = 0.04) or
            (MainRecord.ElementBySignature['FLTV'].Value = 'NaN') then
           Container.ElementNativeValues['FLTV'] := 0; //All errors are zero in the CS.
