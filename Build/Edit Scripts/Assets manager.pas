@@ -855,6 +855,7 @@ begin
   slAssetsExt.AddObject('.spt', atMesh); // speedtree is in mesh category
   slAssetsExt.AddObject('.ssf', atMesh); // FO4 bone weights is in mesh category
   slAssetsExt.AddObject('.swf', atInterface);
+  slAssetsExt.AddObject('.tga', atTexture); //TES3 Textures
   slAssetsExt.AddObject('.tri', atMesh); // morphs
   slAssetsExt.AddObject('.wav', atSound);
   slAssetsExt.AddObject('.xwm', atSound);
@@ -940,6 +941,109 @@ begin
   // GAME SPECIFIC ELEMENTS
   
   
+  // --------------------------------------------------------------------------------
+  // Morrowind
+  // --------------------------------------------------------------------------------
+  if wbGameMode = gmTES3 then begin
+
+	if (sig = 'ACTI') then
+	  ProcessAsset(ElementByPath(e, 'MODL'))
+
+	else if (sig = 'ALCH') then begin
+	  ProcessAsset(ElementByPath(e, 'MODL'));
+	  ProcessAsset(ElementByPath(e, 'TEXT'));
+	end
+
+	else if (sig = 'APPA') then begin
+	  ProcessAsset(ElementByPath(e, 'MODL'));
+	  ProcessAsset(ElementByPath(e, 'ITEX'));
+	end
+
+	else if (sig = 'ARMO') then begin
+	  ProcessAsset(ElementByPath(e, 'MODL'));
+	  ProcessAsset(ElementByPath(e, 'ITEX'));
+	end
+
+    else if (sig = 'BODY') then
+	  ProcessAsset(ElementByPath(e, 'MODL'))
+
+	else if (sig = 'BOOK') then begin
+	  ProcessAsset(ElementByPath(e, 'MODL'));
+	  ProcessAsset(ElementByPath(e, 'ITEX'));
+	end
+
+	else if (sig = 'BSGN') then
+	  ProcessAsset(ElementByPath(e, 'TNAM'))
+
+	else if (sig = 'CLOT') then begin
+	  ProcessAsset(ElementByPath(e, 'MODL'));
+	  ProcessAsset(ElementByPath(e, 'ITEX'));
+	end
+
+	else if (sig = 'CONT') then
+	  ProcessAsset(ElementByPath(e, 'MODL'))
+
+	else if (sig = 'CREA') then
+	  ProcessAsset(ElementByPath(e, 'MODL'))
+
+	else if (sig = 'DOOR') then
+	  ProcessAsset(ElementByPath(e, 'MODL'))
+
+	else if (sig = 'INGR') then begin
+	  ProcessAsset(ElementByPath(e, 'MODL'));
+	  ProcessAsset(ElementByPath(e, 'ITEX'));
+	end
+
+	else if (sig = 'LTEX') then
+	  ProcessAsset(ElementByPath(e, 'DATA'))
+
+	else if (sig = 'LIGH') then begin
+	  ProcessAsset(ElementByPath(e, 'MODL'));
+	  ProcessAsset(ElementByPath(e, 'ITEX'));
+	end
+
+	else if (sig = 'LOCK') then begin
+	  ProcessAsset(ElementByPath(e, 'MODL'));
+	  ProcessAsset(ElementByPath(e, 'ITEX'));
+	end
+
+	else if (sig = 'MGEF') then begin
+	  ProcessAsset(ElementByPath(e, 'ITEX'));
+	  ProcessAsset(ElementByPath(e, 'PTEX'));
+	end
+
+	else if (sig = 'MISC') then begin
+	  ProcessAsset(ElementByPath(e, 'MODL'));
+	  ProcessAsset(ElementByPath(e, 'ITEX'));
+	end
+
+	else if (sig = 'PROB') then begin
+	  ProcessAsset(ElementByPath(e, 'MODL'));
+	  ProcessAsset(ElementByPath(e, 'ITEX'));
+	end
+
+	else if (sig = 'REPA') then begin
+	  ProcessAsset(ElementByPath(e, 'MODL'));
+	  ProcessAsset(ElementByPath(e, 'ITEX'));
+	end
+
+	else if (sig = 'SOUN') then
+	  ProcessAsset(ElementByPath(e, 'FNAM'))
+
+	else if (sig = 'STAT') then
+	  ProcessAsset(ElementByPath(e, 'MODL'))
+
+	else if (sig = 'WEAP') then begin
+	  ProcessAsset(ElementByPath(e, 'MODL'));
+	  ProcessAsset(ElementByPath(e, 'ITEX'));
+	end
+
+    else
+      Exit;
+
+  end
+
+
   // --------------------------------------------------------------------------------
   // Oblivion
   // --------------------------------------------------------------------------------
