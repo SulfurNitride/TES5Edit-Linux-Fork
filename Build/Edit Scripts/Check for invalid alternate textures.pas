@@ -82,10 +82,10 @@ begin
    
   // specific ones
   if (sig = 'ARMO') or (sig = 'ARMA') then begin
-    CheckTextures(e, 'Male biped model\MODL', 'Male biped model\MODS');
-    CheckTextures(e, 'Male world model\MOD2', 'Male world model\MO2S');
-    CheckTextures(e, 'Female biped model\MOD3', 'Female biped model\MO3S');
-    CheckTextures(e, 'Female world model\MOD4', 'Female world model\MO4S');
+    CheckTextures(e, 'Male\Biped Model\MODL', 'Male\Biped Model\MODS');
+    CheckTextures(e, 'Male\World Model\MOD2', 'Male\World Model\MO2S');
+    CheckTextures(e, 'Female\Biped Model\MOD3', 'Female\Biped Model\MO3S');
+    CheckTextures(e, 'Female\World Model\MOD4', 'Female\World Model\MO4S');
   end
   else if sig = 'WEAP' then begin
     CheckTextures(e, 'Shell Casing Model\MOD2', 'Shell Casing Model\MO2S');

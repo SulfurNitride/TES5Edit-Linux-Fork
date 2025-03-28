@@ -1254,13 +1254,8 @@ begin
   else if (wbGameMode = gmFO3) or (wbGameMode = gmFNV) then begin
 
     if (sig = 'ARMA') or (sig = 'ARMO') then begin
-      ScanForAssets(ElementByPath(e, 'Male Biped Model'));
-      ScanForAssets(ElementByPath(e, 'Male World Model'));
-      ScanForAssets(ElementByPath(e, 'Female Biped Model'));
-      ScanForAssets(ElementByPath(e, 'Female World Model'));
-      ProcessAsset(ElementBySignature(e, 'MICO'));
-      ProcessAsset(ElementBySignature(e, 'ICO2'));
-      ProcessAsset(ElementBySignature(e, 'MIC2'));
+      ScanForAssets(ElementByPath(e, 'Male'));
+      ScanForAssets(ElementByPath(e, 'Female'));
     end
 
     else if (sig = 'CCRD') then
@@ -1413,10 +1408,10 @@ begin
       i1 := GetElementNativeValues(e, 'DNAM\Weight Slider - Male');
       i2 := GetElementNativeValues(e, 'DNAM\Weight Slider - Female');
       for i := 1 to 4 do begin
-        if i = 1 then s := 'Male Biped Model\MOD2'
-        else if i = 2 then s := 'Female Biped Model\MOD3'
-        else if i = 3 then s := 'Male 1st Person\MOD4'
-        else if i = 4 then s := 'Female 1st Person\MOD5';
+        if i = 1 then s := 'Biped Model\Male\MOD2'
+        else if i = 2 then s := 'Biped Model\Female\MOD3'
+        else if i = 3 then s := '1st Person\Male\MOD4'
+        else if i = 4 then s := '1st Person\Female\MOD5';
         ent := ElementByPath(e, s);
         if not Assigned(ent) then Continue;
         ProcessAsset(ent);
@@ -1437,9 +1432,8 @@ begin
     end
     
     else if (sig = 'ARMO') then begin
-      ScanForAssets(ElementByName(e, 'Male World Model'));
-      ScanForAssets(ElementByName(e, 'Female World Model'));
-      ScanForAssets(ElementByName(e, 'Icon 2 (Female)'));
+      ScanForAssets(ElementByPath(e, 'Male'));
+      ScanForAssets(ElementByPath(e, 'Female'));
     end
 
     else if (sig = 'CELL') then begin
@@ -1581,17 +1575,15 @@ begin
 	end;
 
     if sig = 'ARMA' then begin
-      ProcessAsset(ElementByPath(e, 'Male World Model\MOD2'));
-      ProcessAsset(ElementByPath(e, 'Female World Model\MOD3'));
+      ProcessAsset(ElementByPath(e, 'Male Biped Model\MOD2'));
+      ProcessAsset(ElementByPath(e, 'Female Biped Model\MOD3'));
       ProcessAsset(ElementByPath(e, 'Male 1st Person\MOD4'));
       ProcessAsset(ElementByPath(e, 'Female 1st Person\MOD5'));
     end
 
     else if sig = 'ARMO' then begin
-      ProcessAsset(ElementByPath(e, 'Male World Model\MOD2'));
-      ProcessAsset(ElementByPath(e, 'Female World Model\MOD4'));
-      ProcessAsset(ElementBySignature(e, 'ICO2'));
-      ProcessAsset(ElementBySignature(e, 'MIC2'));
+      ScanForAssets(ElementByPath(e, 'Male'));
+	  ScanForAssets(ElementByPath(e, 'Female'));
     end
 
     else if sig = 'BPTD' then begin
