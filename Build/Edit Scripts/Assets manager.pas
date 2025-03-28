@@ -720,8 +720,10 @@ end;
 //==========================================================================
 // detect asset type of element and process it
 procedure ProcessAsset(el: IInterface);
+const
+  sIconSigs = 'ALCH,AMMO,ARMO,BOOK,CLOT,INGR,KEYM,LIGH,MGEF,MISC,QUST,SGST,SLGM,WEAP';
 var
-  value, ext, s: string;
+  value, ext, s, s1: string;
   i, atype: integer;
 begin
   if not Assigned(el) then
@@ -731,13 +733,17 @@ begin
   if value = '' then
     Exit;
 
-  // [FO3/FNV] Hardcoded: model lists in CREA use creature model path
-  if (wbGameMode = gmFO3) or (wbGameMode = gmFNV) then begin
+  // [TES4/FO3/FNV] Hardcoded: model lists in CREA use creature model path
+  if ((wbGameMode = gmTES4) or (wbGameMode = gmFO3) or (wbGameMode = gmFNV)) and
+     ((Signature(CurrentRecord) = 'CREA') or (Signature(CurrentRecord) = 'NPC_')) then begin
     s := Path(el);
+	s1 := 'CREA \ ';
+	if (Signature(CurrentRecord) = 'NPC_') then
+	  s1 := 'NPC_ \ ';
     if SameText(s, 'CREA \ NIFZ - Model List \ Model') then
       value := ExtractFilePath(GetElementEditValues(CurrentRecord, 'Model\MODL')) + value
-    else if SameText(s, 'CREA \ KFFZ - Animations \ Animation') then
-      value := ExtractFilePath(GetElementEditValues(CurrentRecord, 'Model\MODL')) + 'Specialanims\' + value;
+	else if SameText(s, s1 + 'KFFZ - Animations \ Animation') then
+	  value := ExtractFilePath(GetElementEditValues(CurrentRecord, 'Model\MODL')) + 'SpecialAnims\' + value;
   end;
   
   // asset extension
@@ -755,8 +761,17 @@ begin
   else if (atype = atMesh) and SameText(ext, '.spt') then
     atype := atSpeedTree
   // hardcoded location for speedtree leaves billboards
-  else if (atype = atTexture) and ((wbGameMode = gmFO3) or (wbGameMode = gmFNV)) and (Signature(CurrentRecord) = 'TREE') then
-    value := 'Textures\Trees\Leaves\' + value;
+  else if (atype = atTexture) and
+          ((wbGameMode = gmTES4) or (wbGameMode = gmFO3) or (wbGameMode = gmFNV)) and
+          (Signature(CurrentRecord) = 'TREE') then
+    value := 'Textures\Trees\Leaves\' + value
+  else if (atype = atTexture) and (wbGameMode = gmTES4) and
+          ((Signature(el) = 'ICON') or (Signature(el) = 'ICO2')) then begin
+	if Pos(Signature(CurrentRecord), sIconSigs) > 0 then
+	  value := 'Textures\Menus\Icons\' + value;
+	if (Signature(CurrentRecord) = 'LTEX') then
+	  Value := 'Textures\Landscape\' + value;
+  end;
 
   value := NormalizePath(value, atype);
   
@@ -1047,12 +1062,189 @@ begin
   // --------------------------------------------------------------------------------
   // Oblivion
   // --------------------------------------------------------------------------------
-  if wbGameMode = gmTES4 then begin
-  
-    if (sig = 'WTHR') then begin
-      ProcessAsset(ElementByPath(e, 'DNAM'));
+  else if wbGameMode = gmTES4 then begin
+
+    if (sig = 'ACTI') then
+	  ScanForAssets(ElementByPath(e, 'Model'))
+
+    else if (sig = 'ALCH') then begin
+      ScanForAssets(ElementByPath(e, 'Model'));
+      ProcessAsset(ElementByPath(e, 'ICON'));
+    end
+
+    else if (sig = 'AMMO') then begin
+      ScanForAssets(ElementByPath(e, 'Model'));
+      ProcessAsset(ElementByPath(e, 'ICON'));
+    end
+
+    else if (sig = 'ANIO') then
+      ScanForAssets(ElementByPath(e, 'Model'))
+
+    else if (sig = 'APPA') then begin
+      ScanForAssets(ElementByPath(e, 'Model'));
+      ProcessAsset(ElementByPath(e, 'ICON'));
+    end
+
+    else if (sig = 'ARMO') then begin
+      ScanForAssets(ElementByPath(e, 'Male'));
+      ScanForAssets(ElementByPath(e, 'Female'));
+    end
+
+    else if (sig = 'BSGN') then
+      ProcessAsset(ElementByPath(e, 'ICON'))  
+
+    else if (sig = 'BOOK') then begin
+      ScanForAssets(ElementByPath(e, 'Model'));
+      ProcessAsset(ElementByPath(e, 'ICON'));
+    end
+
+    else if (sig = 'CLAS') then
+      ProcessAsset(ElementByPath(e, 'ICON'))
+
+    else if (sig = 'CLMT') then begin
+      ProcessAsset(ElementByPath(e, 'FNAM'));
+      ProcessAsset(ElementByPath(e, 'GNAM'));
+      ScanForAssets(ElementByPath(e, 'Model'));
+    end
+
+    else if (sig = 'CLOT') then begin
+      ScanForAssets(ElementByPath(e, 'Male'));
+      ScanForAssets(ElementByPath(e, 'Female'));
+    end
+
+    else if (sig = 'CONT') then
+      ScanForAssets(ElementByPath(e, 'Model'))
+
+    else if (sig = 'CREA') then begin
+      ScanForAssets(ElementByPath(e, 'Model'));
+      ScanForAssets(ElementByPath(e, 'NIFZ'));
+      ScanForAssets(ElementByPath(e, 'KFFZ'));
+      ProcessAsset(ElementByPath(e, 'NAM0'));
+      ProcessAsset(ElementByPath(e, 'NAM1'));
+    end
+
+    else if (sig = 'DOOR') then
+      ProcessAsset(ElementByPath(e, 'Model'))
+
+    else if (sig = 'EFSH') then begin
+      ProcessAsset(ElementByPath(e, 'ICON'));
+      ProcessAsset(ElementByPath(e, 'ICO2'));
+    end
+
+    else if (sig = 'EYES') then
+      ProcessAsset(ElementByPath(e, 'ICON'))
+
+    else if (sig = 'FACT') then
+      ScanForAssets(ElementByPath(e, 'Ranks'))
+
+    else if (sig = 'FLOR') then
+      ScanForAssets(ElementByPath(e, 'Model')) 
+
+    else if (sig = 'FURN') then
+      ScanForAssets(ElementByPath(e, 'Model')) 
+
+    else if (sig = 'GRAS') then
+      ScanForAssets(ElementByPath(e, 'Model'))
+
+    else if (sig = 'HAIR') then begin
+      ScanForAssets(ElementByPath(e, 'Model'));
+      ProcessAsset(ElementByPath(e, 'ICON'));
+    end
+
+    else if (sig = 'IDLE') then
+      ScanForAssets(ElementByPath(e, 'Model'))
+
+    else if (sig = 'INGR') then begin
+      ScanForAssets(ElementByPath(e, 'Model'));
+      ProcessAsset(ElementByPath(e, 'ICON'));
+    end
+
+    else if (sig = 'KEYM') then begin
+      ScanForAssets(ElementByPath(e, 'Model'));
+      ProcessAsset(ElementByPath(e, 'ICON'));
+    end
+
+    else if (sig = 'LTEX') then
+      ProcessAsset(ElementByPath(e, 'ICON'))
+
+    else if (sig = 'LIGH') then begin
+      ScanForAssets(ElementByPath(e, 'Model'));
+      ProcessAsset(ElementByPath(e, 'ICON'));
+    end
+
+    else if (sig = 'LSCR') then
+      ProcessAsset(ElementByPath(e, 'ICON'))
+
+    else if (sig = 'MGEF') then begin
+      ProcessAsset(ElementByPath(e, 'ICON'));
+      ScanForAssets(ElementByPath(e, 'Model'));
+    end
+
+    else if (sig = 'MISC') then begin
+      ScanForAssets(ElementByPath(e, 'Model'));
+      ProcessAsset(ElementByPath(e, 'ICON'));
+    end
+
+    else if (sig = 'NPC_') then begin
+      ScanForAssets(ElementByPath(e, 'Model'));
+      ScanForAssets(ElementByPath(e, 'KFFZ'));
+    end
+
+    else if (sig = 'QUST') then
+      ProcessAsset(ElementByPath(e, 'ICON'))
+
+    else if (sig = 'RACE') then begin
+      ScanForAssets(ElementByPath(e, 'Face Data'));
+      ScanForAssets(ElementByPath(e, 'Male Body Data'));
+      ScanForAssets(ElementByPath(e, 'Female Body Data'));
+    end
+
+    else if (sig = 'REGN') then
+      ProcessAsset(ElementByName(e, 'ICON'))
+
+    else if (sig = 'SGST') then begin
+      ScanForAssets(ElementByPath(e, 'Model'));
+      ProcessAsset(ElementByPath(e, 'ICON'));
+    end
+
+    else if (sig = 'SKIL') then
+      ProcessAsset(ElementByPath(e, 'ICON'))
+
+    else if (sig = 'SLGM') then begin
+      ScanForAssets(ElementByPath(e, 'Model'));
+      ProcessAsset(ElementByPath(e, 'ICON'));
+    end
+
+    else if (sig = 'SOUN') then
+      ProcessAsset(ElementByPath(e, 'FNAM'))
+
+    else if (sig = 'STAT') then
+      ScanForAssets(ElementByPath(e, 'Model'))
+
+    else if (sig = 'TREE') then begin
+      ScanForAssets(ElementByPath(e, 'Model'));
+      ProcessAsset(ElementByPath(e, 'ICON'));
+    end
+
+    else if (sig = 'WATR') then
+      ProcessAsset(ElementByPath(e, 'TNAM'))
+
+    else if (sig = 'WEAP') then begin
+      ScanForAssets(ElementByPath(e, 'Model'));
+      ProcessAsset(ElementByPath(e, 'ICON'));
+    end
+
+    else if (sig = 'WTHR') then begin
       ProcessAsset(ElementByPath(e, 'CNAM'));
-    end;   
+      ProcessAsset(ElementByPath(e, 'DNAM'));
+      ScanForAssets(ElementByPath(e, 'Precipitation Model'));
+    end    
+
+    else if (sig = 'WRLD') then
+      ProcessAsset(ElementByPath(e, 'ICON'))
+
+    else Exit;
+
   end
   
   

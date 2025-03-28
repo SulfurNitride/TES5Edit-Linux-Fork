@@ -1714,8 +1714,8 @@ begin
     wbByteArray(DELE, 'Version Control (Unused)', 8, cpIgnore),
     wbString(CNAM, 'Author', 0, cpTranslate).SetRequired,
     wbString(SNAM, 'Description', 0, cpTranslate),
-    wbRArray('Masters',
-      wbRStruct('Master', [
+    wbRArray('Master Files',
+      wbRStruct('Master File', [
         wbStringForward(MAST, 'Filename').SetRequired,
         wbUnused(DATA, 8).SetRequired
       ])).IncludeFlag(dfInternalEditOnly, not wbAllowMasterFilesEdit)
