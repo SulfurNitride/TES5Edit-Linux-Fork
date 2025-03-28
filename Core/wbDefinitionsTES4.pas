@@ -2068,7 +2068,7 @@ begin
     wbTexturedModel('Model', [MODL, MODB, MODT], []),
     wbCNTOs,
     wbSPLOs,
-    wbArrayS(NIFZ, 'Models', wbStringLC('Model')),
+    wbArrayS(NIFZ, 'Model List', wbStringLC('Model')),
     wbModelInfos(NIFT, 'Model List Textures').SetRequired,
     wbStruct(ACBS, 'Configuration', [
       wbInteger('Flags', itU32,
