@@ -2091,8 +2091,8 @@ begin
     FNifVersion := nfTES4
   else if (Version = v10200) and (UserVersion = 10) and (UserVersion2 in [6, 7, 8, 9, 11]) then
     FNifVersion := nfTES4
-  //else if (Version = v10010) then
-  //  FNifVersion := nfTES4
+  else if (Version = v10010) then
+    FNifVersion := nfTES4
   else if (Version = v20207) and (UserVersion = 11) then
     FNifVersion := nfFO3
   else if (Version = v20207) and (UserVersion = 12) and (UserVersion2 = 83) then
