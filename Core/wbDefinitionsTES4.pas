@@ -1866,12 +1866,16 @@ begin
       ).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbUnused(1)
     ]).SetRequired,
-    wbTexturedModel('Male Biped Model', [MODL, MODB, MODT], []),
-    wbTexturedModel('Male World Model', [MOD2, MO2B, MO2T], []),
-    wbString(ICON, 'Male Icon Filename'),
-    wbTexturedModel('Female Biped Model', [MOD3, MO3B, MO3T], []),
-    wbTexturedModel('Female World Model', [MOD4, MO4B, MO4T], []),
-    wbString(ICO2, 'Female Icon Filename'),
+    wbRStruct('Male', [
+      wbTexturedModel('Biped Model', [MODL, MODB, MODT], []),
+      wbTexturedModel('World Model', [MOD2, MO2B, MO2T], []),
+      wbString(ICON, 'Icon Image')
+    ]).IncludeFlag(dfAllowAnyMember),
+    wbRStruct('Female', [
+      wbTexturedModel('Biped Model', [MOD3, MO3B, MO3T], []),
+      wbTexturedModel('World Model', [MOD4, MO4B, MO4T], []),
+      wbString(ICO2, 'Icon Image')
+    ]).IncludeFlag(dfAllowAnyMember),
     wbStruct(DATA, 'Data', [
       wbInteger('Armor', itU16, wbDiv(100)),
       wbInteger('Value', itU32),
@@ -2025,12 +2029,16 @@ begin
       ).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbUnused(1)
     ]).SetRequired,
-    wbTexturedModel('Male Biped Model', [MODL, MODB, MODT], []),
-    wbTexturedModel('Male World Model', [MOD2, MO2B, MO2T], []),
-    wbString(ICON, 'Male Icon FileName'),
-    wbTexturedModel('Female Biped Model', [MOD3, MO3B, MO3T], []),
-    wbTexturedModel('Female World Model', [MOD4, MO4B, MO4T], []),
-    wbString(ICO2, 'Female Icon Filename'),
+    wbRStruct('Male', [
+      wbTexturedModel('Biped Model', [MODL, MODB, MODT], []),
+      wbTexturedModel('World Model', [MOD2, MO2B, MO2T], []),
+      wbString(ICON, 'Icon Image')
+    ]),
+    wbRStruct('Female', [
+      wbTexturedModel('Biped Model', [MOD3, MO3B, MO3T], []),
+      wbTexturedModel('World Model', [MOD4, MO4B, MO4T], []),
+      wbString(ICO2, 'Icon Image')
+    ]).IncludeFlag(dfAllowAnyMember),
     wbStruct(DATA, 'Data', [
       wbInteger('Value', itU32),
       wbFloat('Weight')

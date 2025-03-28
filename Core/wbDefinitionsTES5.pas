@@ -4616,10 +4616,16 @@ begin
     wbOBND(True),
     wbFULL,
     wbEnchantment,
-    wbTexturedModel('Male World Model', [MOD2, MO2T], [wbMO2S]),
-    wbICON,
-    wbTexturedModel('Female World Model', [MOD4, MO4T], [wbMO4S]),
-    wbICO2,
+    wbRStruct('Male', [
+      wbTexturedModel('World Model', [MOD2, MO2T], [wbMO2S]),
+      wbString(ICON, 'Icon Image'),
+      wbString(MICO, 'Message Icon')
+    ]).IncludeFlag(dfAllowAnyMember),
+    wbRStruct('Female', [
+      wbTexturedModel('World Model', [MOD4, MO4T], [wbMO4S]),
+      wbString(ICO2, 'Icon Image'),
+      wbString(MIC2, 'Message Icon')
+    ]).IncludeFlag(dfAllowAnyMember),
     wbBODTBOD2,
     wbDEST,
     wbYNAM,
@@ -4661,10 +4667,14 @@ begin
       wbByteArray('Unknown', 1),
       wbFloat('Weapon Adjust')
     ], cpNormal, True),
-    wbTexturedModel('Male Biped Model', [MOD2, MO2T], [wbMO2S]),
-    wbTexturedModel('Female Biped Model', [MOD3, MO3T], [wbMO3S]),
-    wbTexturedModel('Male 1st Person', [MOD4, MO4T], [wbMO4S]),
-    wbTexturedModel('Female 1st Person', [MOD5, MO5T], [wbMO5S]),
+    wbRStruct('Biped Model', [
+      wbTexturedModel('Male', [MOD2, MO2T], [wbMO2S]),
+      wbTexturedModel('Female', [MOD3, MO3T], [wbMO3S])
+    ]).IncludeFlag(dfAllowAnyMember),
+    wbRStruct('1st Person', [
+      wbTexturedModel('Male', [MOD4, MO4T], [wbMO4S]),
+      wbTexturedModel('Female', [MOD5, MO5T], [wbMO5S])
+    ]).IncludeFlag(dfAllowAnyMember),
     wbFormIDCK(NAM0, 'Male Skin Texture', [TXST, NULL]),
     wbFormIDCK(NAM1, 'Female Skin texture', [TXST, NULL]),
     wbFormIDCK(NAM2, 'Male Skin Texture Swap List', [FLST, NULL]),
