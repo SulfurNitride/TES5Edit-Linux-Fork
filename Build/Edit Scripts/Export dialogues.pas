@@ -95,7 +95,7 @@ begin
     ents := ElementByName(e, 'Leveled List Entries');
     for i := 0 to Pred(ElementCount(ents)) do begin
       ent := ElementByIndex(ents, i);
-      ent := LinksTo(ElementByPath(ent, 'LVLO\Reference'));
+      ent := LinksTo(ElementByPath(ent, 'LVLO\NPC'));
       GetRecordVoiceTypes2(ent, lstVoice);
     end;
   end
@@ -211,7 +211,7 @@ begin
     // NPC
     if ConditionFunction = 'GetIsID' then begin
       InfoCONDITION := ConditionFunction;
-      Elem := LinksTo(ElementByPath(Condition, 'CTDA\Referenceable Object'));
+      Elem := LinksTo(ElementByPath(Condition, 'CTDA\Base Object'));
       GetRecordVoiceTypes(Elem, lstVoiceCondition);
     end else
     // skip other functions
