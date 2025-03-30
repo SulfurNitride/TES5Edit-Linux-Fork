@@ -9702,6 +9702,7 @@ begin
     end;
   end;
 
+  var lYesToAll := False;
   for j := Low(Nodes) to High(Nodes) do begin
     NodeData := vstNav.GetNodeData(Nodes[j]);
     if not Assigned(NodeData) then
@@ -9783,9 +9784,23 @@ begin
           if Overrides[i].Equals(MainRecord) then k := i;
         end;
         // if it is not the last override and user confirms
-        if (k < Pred(Length(Overrides))) and (MessageDlg('Record '+MainRecord.Name+' has later overrides, update them too?', mtConfirmation, [mbYes, mbNo], 0) = mrYes) then begin
+        if (k < Pred(Length(Overrides))) then begin
+          var lYes := lYesToAll;
+          if not lYes then
+            case MessageDlg('Record '+MainRecord.Name+' has later overrides, update them too?', mtConfirmation, [mbYesToAll, mbYes, mbNo], 0) of
+              mrYes:
+                lYes := True;
+              mrYesToAll: begin
+                lYes := True;
+                lYesToAll := True;
+              end;
+            end;
           // happens when master record is selected which is not in the list of overrides, renumber all overrides
-          if k = -1 then k := 0;
+          if lYes then begin
+            if k = -1 then
+              k := 0;
+          end else
+            k := -1;
         end else
           k := -1;
       end;
