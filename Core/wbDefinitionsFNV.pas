@@ -4124,13 +4124,15 @@ begin
       wbTexturedModel('World Model', [MOD2, MO2T], [wbMO2S, nil]),
       wbString(ICON, 'Icon Image'),
       wbString(MICO, 'Message Icon')
-    ]).IncludeFlag(dfAllowAnyMember),
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
     wbRStruct('Female', [
       wbTexturedModel('Biped Model', [MOD3, MO3T], [wbMO3S, wbMOSD]),
       wbTexturedModel('World Model', [MOD4, MO4T], [wbMO4S, nil]),
       wbString(ICO2, 'Icon Image'),
       wbString(MIC2, 'Message Icon')
-    ]).IncludeFlag(dfAllowAnyMember),
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
     wbString(BMCT, 'Ragdoll Constraint Template'),
     wbDEST,
     wbREPL,
@@ -4181,13 +4183,15 @@ begin
       wbTexturedModel('World Model', [MOD2, MO2T], [wbMO2S, nil]),
       wbString(ICON, 'Icon Image'),
       wbString(MICO, 'Message Icon')
-    ]).IncludeFlag(dfAllowAnyMember),
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
     wbRStruct('Female', [
       wbTexturedModel('Biped Model', [MOD3, MO3T], [wbMO3S, wbMOSD]),
       wbTexturedModel('World Model', [MOD4, MO4T], [wbMO4S, nil]),
       wbString(ICO2, 'Icon Image'),
       wbString(MIC2, 'Message Icon')
-    ]).IncludeFlag(dfAllowAnyMember),
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
     wbETYPReq,
     wbStruct(DATA, 'Data', [
       wbInteger('Value', itS32),

@@ -8190,11 +8190,13 @@ end;
     wbRStruct('Biped Model', [
       wbTexturedModel('Male Biped Model',   [MOD2], [wbMOLM(MLM1), wbMO2C, wbMO2F]),
       wbTexturedModel('Female Biped Model', [MOD3], [wbMOLM(MLM2), wbMO3C, wbMO3F])
-    ]).IncludeFlag(dfAllowAnyMember),
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
     wbRStruct('1st Person', [
       wbTexturedModel('Male',    [MOD4], [wbMOLM(MLM3), wbMO4C, wbMO4F]),
       wbTexturedModel('Female',  [MOD5], [wbMOLM(MLM4), wbMO5C, wbMO5F])
     ]).IncludeFlag(dfAllowAnyMember),
+      .IncludeFlag(dfStructFirstNotRequired),
 
     wbString(MOD6, 'Male Alt Skeleton'),
     wbString(MOD7, 'Female Alt Skeleton'),

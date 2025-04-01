@@ -1870,12 +1870,14 @@ begin
       wbTexturedModel('Biped Model', [MODL, MODB, MODT], []),
       wbTexturedModel('World Model', [MOD2, MO2B, MO2T], []),
       wbString(ICON, 'Icon Image')
-    ]).IncludeFlag(dfAllowAnyMember),
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
     wbRStruct('Female', [
       wbTexturedModel('Biped Model', [MOD3, MO3B, MO3T], []),
       wbTexturedModel('World Model', [MOD4, MO4B, MO4T], []),
       wbString(ICO2, 'Icon Image')
-    ]).IncludeFlag(dfAllowAnyMember),
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
     wbStruct(DATA, 'Data', [
       wbInteger('Armor', itU16, wbDiv(100)),
       wbInteger('Value', itU32),
@@ -2033,12 +2035,14 @@ begin
       wbTexturedModel('Biped Model', [MODL, MODB, MODT], []),
       wbTexturedModel('World Model', [MOD2, MO2B, MO2T], []),
       wbString(ICON, 'Icon Image')
-    ]),
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
     wbRStruct('Female', [
       wbTexturedModel('Biped Model', [MOD3, MO3B, MO3T], []),
       wbTexturedModel('World Model', [MOD4, MO4B, MO4T], []),
       wbString(ICO2, 'Icon Image')
-    ]).IncludeFlag(dfAllowAnyMember),
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
     wbStruct(DATA, 'Data', [
       wbInteger('Value', itU32),
       wbFloat('Weight')

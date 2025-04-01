@@ -8568,12 +8568,14 @@ begin
       wbTexturedModel('World Model', [MOD2, MO2T], [wbMODC, wbMO2S, wbENLT, wbENLS, wbAUUV]),
       wbString(ICON, 'Icon Image'),
       wbString(MICO, 'Message Icon')
-    ]).IncludeFlag(dfAllowAnyMember),
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
     wbRStruct('Female', [
       wbTexturedModel('World Model', [MOD4, MO4T], [wbMODC, wbMO4S, wbENLT, wbENLS, wbAUUV]),
       wbString(ICO2, 'Icon Image'),
       wbString(MIC2, 'Message Icon')
-    ]).IncludeFlag(dfAllowAnyMember),
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
     wbBOD2,
     wbDEST,
     wbYNAM,
@@ -8649,11 +8651,13 @@ begin
     wbRStruct('Biped Model', [
       wbTexturedModel('Male', [MOD2, MO2T], [wbMO2C, wbMO2S, wbModelXFLG, wbENLT, wbENLS, wbAUUV, wbMO2F]),
       wbTexturedModel('Female', [MOD3, MO3T], [wbMO3C, wbMO3S, wbModelXFLG, wbENLT, wbENLS, wbAUUV, wbMO3F])
-    ]).IncludeFlag(dfAllowAnyMember),
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
     wbRStruct('1st Person', [
       wbTexturedModel('Male', [MOD4, MO4T], [wbMO4C, wbMO4S, wbENLT, wbENLS, wbAUUV, wbMO4F]),
       wbTexturedModel('Female', [MOD5, MO5T], [wbMO5C, wbMO5S, wbENLT, wbENLS, wbAUUV, wbMO5F])
-    ]).IncludeFlag(dfAllowAnyMember),
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
     wbFormIDCK(NAM0, 'Male Skin Texture', [TXST, NULL]),
     wbFormIDCK(NAM1, 'Female Skin Texture', [TXST, NULL]),
     wbFormIDCK(NAM2, 'Male Skin Texture Swap List', [FLST, NULL]),
