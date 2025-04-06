@@ -12986,6 +12986,7 @@ end;
     wbFormIDCk(LRNC, 'Learn Chance', [GLOB]),
     wbFormIDCk(JNAM, 'Max Build Count Global', [GLOB]),
     wbArrayS(FNAM, 'Recipe Filters', wbFormIDCk('Keyword', [KYWD])),
+    wbFormIDCk(CIFK, 'Instanced Filter Keyword', [KYWD]),
     wbInteger(RECF, 'Unknown', itU64, wbFlags([
       'Filter Not Required To Learn',
       'Unknown 1',
