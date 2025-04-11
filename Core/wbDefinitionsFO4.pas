@@ -7889,8 +7889,8 @@ begin
     wbInteger(IDLC, 'Animation Count', itU8, nil, cpBenign),
     wbFloat(IDLT, 'Idle Timer Setting', cpNormal, False),
     wbArray(IDLA, 'Animations', wbFormIDCk('Animation', [IDLE]), 0, nil, wbIDLAsAfterSet, cpNormal, False),
-    wbFormIDCk(QNAM, 'Unknown', [KYWD]),
-    wbGenericModel
+    wbGenericModel,
+    wbFormIDCk(QNAM, 'Flavor Anim Keyword', [KYWD])
   ], False, nil, cpNormal, False, nil, wbAnimationsAfterSet);
 
   wbRecord(PROJ, 'Projectile', [
