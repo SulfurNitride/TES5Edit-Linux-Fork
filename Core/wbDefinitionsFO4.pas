@@ -10492,6 +10492,7 @@ begin
     wbEDID,
     wbVMAD,
     wbOBND(True),
+    wbPTRN,
     wbFULL,
     wbKeywords,
     wbGenericModel,
