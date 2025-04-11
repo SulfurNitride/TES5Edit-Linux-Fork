@@ -154,7 +154,7 @@ procedure wbAVIFSkillAfterLoad(const aElement: IwbElement);
 procedure wbRPLDAfterLoad(const aElement: IwbElement);
 procedure wbWorldAfterLoad(const aElement: IwbElement);
 
-{>>> After Set Callbacks <<<} //28
+{>>> After Set Callbacks <<<} //30
 procedure wbATANsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbBODCsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbBODSsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -165,6 +165,8 @@ procedure wbContainerAfterSet(const aElement: IwbElement; const aOldValue, aNewV
 procedure wbCounterEffectsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbCTDAsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbConditionRunOnAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+procedure wbIdleMarkerPNAMAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+procedure wbIdleMarkerQNAMAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbLENSAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbMGEFAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbModelInfoAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -202,9 +204,11 @@ function wbFlagNavmeshIgnoreErosionDontSHow(const aElement: IwbElement): Boolean
 function wbFlagNavmeshGroundDontSHow(const aElement: IwbElement): Boolean;
 function wbFlagPartialFormDontShow(const aElement: IwbElement): Boolean;
 
-{>>> Don't Show Callbacks <<<} //10
+{>>> Don't Show Callbacks <<<} //12
 function wbCellInteriorDontShow(const aElement: IwbElement): Boolean;
 function wbCellExteriorDontShow(const aElement: IwbElement): Boolean;
+function wbIdleMarkerPNAMDontShow(const aElement: IwbElement): Boolean;
+function wbIdleMarkerQNAMDontShow(const aElement: IwbElement): Boolean;
 function wbModelInfoDontShow(const aElement: IwbElement): Boolean;
 function wbREGNGrassDontShow(const aElement: IwbElement): Boolean;
 function wbREGNImposterDontShow(const aElement: IwbElement): Boolean;
@@ -707,7 +711,7 @@ begin
   end;
 end;
 
-{>>> After Set Callbacks <<<} //28
+{>>> After Set Callbacks <<<} //30
 
 procedure wbATANsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
@@ -781,6 +785,26 @@ begin
   if aOldValue <> aNewValue then
     if aNewValue <> 2 then
       aElement.Container.ElementNativeValues['Reference'] := 0;
+end;
+
+procedure wbIdleMarkerPNAMAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+begin
+  if wbBeginInternalEdit then try
+    if (Assigned(aElement)) and (Assigned(aElement.ContainingMainRecord.ElementBySignature[QNAM])) then
+      aElement.ContainingMainRecord.ElementBySignature[QNAM].Remove;
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
+procedure wbIdleMarkerQNAMAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+begin
+  if wbBeginInternalEdit then try
+    if (Assigned(aElement)) and (Assigned(aElement.ContainingMainRecord.ElementBySignature[PNAM])) then
+      aElement.ContainingMainRecord.ElementBySignature[PNAM].Remove;
+  finally
+    wbEndInternalEdit;
+  end;
 end;
 
 procedure wbLENSAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -1286,7 +1310,7 @@ begin
   Result := not lMainRecord.CanBePartial;
 end;
 
-{>>> Don't Show Callbacks <<<} //10
+{>>> Don't Show Callbacks <<<} //12
 
 function wbCellInteriorDontShow(const aElement: IwbElement): Boolean;
 begin
@@ -1296,6 +1320,16 @@ end;
 function wbCellExteriorDontShow(const aElement: IwbElement): Boolean;
 begin
   Result := (aElement.ContainingMainRecord.ElementNativeValues[IsTES3('DATA\Flags', 'DATA')] and 1 = 0);
+end;
+
+function wbIdleMarkerPNAMDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := Assigned(aElement.ContainingMainRecord.ElementBySignature[QNAM]);
+end;
+
+function wbIdleMarkerQNAMDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := Assigned(aElement.ContainingMainRecord.ElementBySignature[PNAM]);
 end;
 
 function wbModelInfoDontShow(const aElement: IwbElement): Boolean;

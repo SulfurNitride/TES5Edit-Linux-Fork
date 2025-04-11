@@ -7890,7 +7890,12 @@ begin
     wbFloat(IDLT, 'Idle Timer Setting', cpNormal, False),
     wbArray(IDLA, 'Animations', wbFormIDCk('Animation', [IDLE]), 0, nil, wbIDLAsAfterSet, cpNormal, False),
     wbGenericModel,
-    wbFormIDCk(QNAM, 'Flavor Anim Keyword', [KYWD])
+    wbFormIDCk(PNAM, 'Anim Archtype', [KYWD])
+      .SetAfterSet(wbIdleMarkerPNAMAfterSet)
+      .SetDontShow(wbIdleMarkerPNAMDontShow),
+    wbFormIDCk(QNAM, 'Flavor Anim', [KYWD])
+      .SetAfterSet(wbIdleMarkerQNAMAfterSet)
+      .SetDontShow(wbIdleMarkerQNAMDontShow)
   ], False, nil, cpNormal, False, nil, wbAnimationsAfterSet);
 
   wbRecord(PROJ, 'Projectile', [
