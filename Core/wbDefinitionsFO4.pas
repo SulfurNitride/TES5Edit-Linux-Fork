@@ -4171,6 +4171,8 @@ end;
       wbUnknown(XCVR),
       wbXESP,
       wbOwnership,
+      wbRagdoll,
+      wbInteger(XHLT, 'Health %', itU32),
       wbFormIDCk(XEMI, 'Emittance', [LIGH, REGN]),
       wbFormIDCk(XMBR, 'MultiBound Reference', [REFR]),
       wbEmpty(XIS2, 'Ignored by Sandbox'),
