@@ -8195,7 +8195,7 @@ end;
     wbRStruct('1st Person', [
       wbTexturedModel('Male',    [MOD4], [wbMOLM(MLM3), wbMO4C, wbMO4F]),
       wbTexturedModel('Female',  [MOD5], [wbMOLM(MLM4), wbMO5C, wbMO5F])
-    ]).IncludeFlag(dfAllowAnyMember),
+    ]).IncludeFlag(dfAllowAnyMember)
       .IncludeFlag(dfStructFirstNotRequired),
 
     wbString(MOD6, 'Male Alt Skeleton'),
@@ -19333,9 +19333,7 @@ end;
       ).SetRequired
        .IncludeFlag(dfCollapsed, wbCollapseFlags)
     ]),
-    wbFormIDCk(CNAM, 'Climate', [CLMT])
-      .SetDefaultNativeValue(351)
-      .SetIsRemovable(wbWorldClimateIsRemovable),
+    wbFormIDCk(CNAM, 'Climate', [CLMT]).SetDefaultNativeValue(351),
     wbFormIDCk(NAM2, 'Water', [WATR])
       .SetDefaultNativeValue(24)
       .SetIsRemovable(wbWorldWaterIsRemovable),

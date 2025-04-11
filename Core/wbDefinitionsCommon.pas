@@ -983,10 +983,12 @@ begin
         end else begin
           Container.Add(NAM2)
         end;
-        if PNAM and $10 = 16 then begin
-          Container.RemoveElement(CNAM)
-        end else begin
-          Container.Add(CNAM)
+        if not wbIsStarfield then begin        
+          if PNAM and $10 = 16 then begin
+            Container.RemoveElement(CNAM)
+          end else begin
+            Container.Add(CNAM);
+          end;
         end;
         if wbIsFallout3 then begin
           if PNAM and $20 = 32 then begin
