@@ -10633,8 +10633,8 @@ begin
       .SetDefaultNativeValue(1.0)
       .SetRequired,
     wbString(NAM0, 'Gobo'),
-    wbFormIDCk(LNAM, 'Lens', [LENS]),
     wbFormIDCk(SNAM, 'Sound', [SNDR]),
+    wbFormIDCk(LNAM, 'Lens', [LENS]),
     wbFormIDCk(WGDR, 'God Rays', [GDRY])
   ]);
 
