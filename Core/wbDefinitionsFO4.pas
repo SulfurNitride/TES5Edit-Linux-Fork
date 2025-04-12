@@ -12176,6 +12176,15 @@ begin
     wbRArrayS('Lit Water',
       wbFormIDCk(XLTW, 'Water', [REFR])
     ),
+    wbRArrayS('Reflected/Refracted By',
+        wbStructSK(XPWR, [0], 'Water', [
+          wbFormIDCk('Reference', [REFR]),
+          wbInteger('Type', itU32, wbFlags([
+            'Reflection',
+            'Refraction'
+          ]))
+        ], cpNormal, False, nil, 1)
+      ),
     wbStruct(XALP, 'Alpha', [
       wbInteger('Cutoff', itU8),
       wbInteger('Base', itU8)
