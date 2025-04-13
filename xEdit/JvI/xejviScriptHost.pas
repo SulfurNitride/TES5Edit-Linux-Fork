@@ -216,48 +216,6 @@ begin
     end else
       JvInterpreterError(ieDirectInvalidArgument, 0); // or  ieNotEnoughParams, ieIncompatibleTypes or others.
   end
-  else if SameText(Identifier, 'RecordFromFileByFormID') then begin
-    var lFile: IwbFile;
-    var lFormID: TwbFormID;
-    case Args.Count of
-    0, 1: JvInterpreterError(ieNotEnoughParams, -1);
-    2:
-      begin
-        // detect if first arg is file by name or interface
-        if VarIsStr(Args.Values[0]) then
-        begin
-          for i := Low(Files) to High(Files) do
-            if SameText(Args.Values[0], Files[i].FileName) then
-            begin
-              lFile := Files[i];
-              Break;
-            end;
-        end
-        else if not Supports(IInterface(Args.Values[0]), IwbFile, lFile) then
-          JvInterpreterError(ieIncompatibleTypes, -1);
-
-        // determine if second arg is form id as integer or string
-        if VarIsStr(Args.Values[1]) then
-          lFormID := TwbFormID.FromStr(string(Args.Values[1]))
-        else if VarIsNumeric(Args.Values[1]) then
-          lFormID := TwbFormID.FromVar(Args.Values[1]);
-
-        if lFile.IsLight then
-          lFormID.ObjectID := lFormID.ObjectID and $FFF
-        else if lFile.IsMedium then
-          lFormID.ObjectID := lFormID.ObjectID and $FFFF
-        else
-          lFormID.ObjectID := lFormID.ObjectID and $FFFFFF;
-
-        lFormID.FileID := lFile.LoadOrderFileID;
-
-        Value := lFile.RecordByFormID[lformID, True, True];
-        Done := True;
-      end
-    else
-      JvInterpreterError(ieTooManyParams, -1);
-    end;
-  end
   else if SameText(Identifier, 'RecordByHexFormID') then begin
     if (Args.Count = 1) and VarIsStr(Args.Values[0]) then begin
       Value := Null;
