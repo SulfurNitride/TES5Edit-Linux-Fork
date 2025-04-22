@@ -422,7 +422,10 @@ begin
   end else
     wbDataPath := IncludeTrailingPathDelimiter(wbDataPath);
 
-  wbOutputPath := wbDataPath;
+  if wbIsOblivionR then
+    wbOutputPath := GetInstallPathBySteamID('2623190') + '\OblivionRemastered\Content\Dev\ObvData\Data\'
+  else
+    wbOutputPath := wbDataPath;
 
   if wbFindCmdLineParam('O', s) and (Length(s) > 0) then
     if s[1] = '.' then
@@ -553,7 +556,7 @@ var
 procedure DetectAppMode;
 const
   SourceModes : array of string = ['plugins', 'saves'];
-  GameModes: array of string = ['tes5vr', 'fo4vr', 'tes3', 'tes4', 'tes5', 'enderalse', 'enderal', 'sse', 'fo3', 'fnv', 'fo4', 'fo76', 'sf1'];
+  GameModes: array of string = ['tes5vr', 'fo4vr', 'tes3', 'tes4', 'tes4r', 'tes5', 'enderalse', 'enderal', 'sse', 'fo3', 'fnv', 'fo4', 'fo76', 'sf1'];
   ToolModes: array of string = [
     'edit', 'view', 'lodgen', 'script', 'translate', 'onamupdate', 'masterupdate', 'masterrestore',
     'setesm', 'clearesm', 'sortandclean', 'sortandcleanmasters',
@@ -766,6 +769,15 @@ begin
     ToolSources        := [tsPlugins];
   end
 
+  else if isMode('TES4R') then begin
+    wbGameMode         := gmTES4R;
+    wbAppName          := 'TES4R';
+    wbGameName         := 'Oblivion Remastered';
+    wbGameSteamID      := '2623190';
+    ToolModes          := wbAlwaysMode;
+    ToolSources        := [tsPlugins];
+  end
+
   else if isMode('TES5') then begin
     wbGameMode         := gmTES5;
     wbAppName          := 'TES5';
@@ -885,7 +897,7 @@ begin
   end
 
   else begin
-    ShowMessage('Application name must contain FNV, FO3, FO4, FO4VR, FO76, SSE, TES4, TES5, TES5VR, Enderal, or EnderalSE, SF1 to select game.');
+    ShowMessage('Application name must contain FNV, FO3, FO4, FO4VR, FO76, SSE, TES4, TES4R, TES5, TES5VR, Enderal, or EnderalSE, SF1 to select game.');
     Exit(False);
   end;
 
@@ -963,6 +975,11 @@ begin
       end;
       wbLoadBSAs            := True;
       wbAllowInternalEdit   := false;
+      wbCanSortINFO         := True;
+    end;
+    gmTES4R: begin
+      wbLoadBSAs            := False;
+      wbAllowInternalEdit   := False;
       wbCanSortINFO         := True;
     end;
     gmTES5, gmEnderal, gmTES5VR, gmSSE, gmEnderalSE: begin
@@ -1257,6 +1274,9 @@ begin
       tsSaves:   DefineTES4Saves;
       tsPlugins: DefineTES4;
     end;
+    gmTES4R: case wbToolSource of
+      tsPlugins: DefineTES4;           
+    end;
     gmTES5, gmTES5VR, gmEnderal, gmSSE, gmEnderalSE: case wbToolSource of
       tsSaves:   DefineTES5Saves;
       tsPlugins: DefineTES5;
@@ -1436,7 +1456,7 @@ begin
   except end;
 
   case wbGameMode of
-    gmTES3, gmTES4,  gmTES5, gmEnderal, gmSSE, gmTES5VR, gmEnderalSE:
+    gmTES3, gmTES4, gmTES4R,  gmTES5, gmEnderal, gmSSE, gmTES5VR, gmEnderalSE:
       xeIconResource := 'xTESICON';
     gmFO3, gmFNV, gmFO4, gmFO4VR, gmFO76:
       xeIconResource := 'xFOICON';

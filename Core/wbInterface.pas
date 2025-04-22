@@ -4917,6 +4917,7 @@ function wbDefsToPath(const aDefs: TwbDefPath): string;
 
 function wbIsMorrowind: Boolean; inline;
 function wbIsOblivion: Boolean; inline;
+function wbIsOblivionR: Boolean; inline;
 function wbIsFallout3: Boolean; inline;
 function wbIsFalloutNV: Boolean; inline;
 function wbIsSkyrim: Boolean; inline;
@@ -5505,6 +5506,11 @@ end;
 function wbIsOblivion: Boolean; inline;
 begin
   Result := wbGameMode in [gmTES4];
+end;
+
+function wbIsOblivionR: Boolean; Inline;
+begin
+  Result := wbGameMode in [gmTES4R]
 end;
 
 function wbIsFallout3: Boolean; inline;

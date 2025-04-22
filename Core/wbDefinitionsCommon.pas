@@ -4736,7 +4736,7 @@ end;
 
 function wbModelInfos(aSignature: TwbSignature; aName: string = ''; aDontShow  : TwbDontShowCallback = nil): IwbRecordMemberDef;
 begin
-  if wbGameMode >= gmTES5 then
+  if (wbGameMode >= gmTES5) and not (wbIsOblivionR) then
     raise Exception.Create('Not Supported');
 
   if aName = '' then
