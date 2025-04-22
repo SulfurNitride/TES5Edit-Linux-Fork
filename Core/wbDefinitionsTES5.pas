@@ -9586,14 +9586,14 @@ begin
   ]);
 
   wbTints := wbRArray('Tint Masks', wbRStruct('Tint Assets', [
-    wbRArray('Tint Layer', wbRStruct('Texture', [
+    wbRStruct('Tint Layer', [
       wbInteger(TINI, 'Index', itU16),
       wbString(TINT, 'File Name'),
       {>>> When set to None TINP does not exist Needs routine to add when
       changing the Mask Type <<<}
       wbInteger(TINP, 'Mask Type', itU16, wbTintMaskTypeEnum),
       wbFormIDCk(TIND, 'Preset Default', [CLFM, NULL])
-    ])),
+    ]),
     wbRArray('Presets', wbRStruct('Preset', [
       wbFormIDCk(TINC, 'Color', [CLFM, NULL]),
       wbFloat(TINV, 'Default Value'),
