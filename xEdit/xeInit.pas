@@ -777,6 +777,7 @@ begin
     wbGameMode         := gmTES4R;
     wbAppName          := 'TES4R';
     wbGameName         := 'Oblivion Remastered';
+    wbGameMasterEsm    := 'Oblivion.esm';
     wbGameSteamID      := '2623190';
     ToolModes          := wbAlwaysMode;
     ToolSources        := [tsPlugins];
