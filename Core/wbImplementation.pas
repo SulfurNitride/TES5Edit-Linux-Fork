@@ -24778,7 +24778,19 @@ begin
              GroupRecord.AddElement(MainRecord);
              (GroupRecord as IwbGroupRecordInternal).SetModified(True);
              (GroupRecord as IwbGroupRecordInternal).Sort;
-          end;
+        end;
+        10: begin
+             if wbIsFallout4 or wbIsFallout76 or wbIsStarfield then begin
+               OldGroup.RemoveElement(MainRecord);
+               if OldGroup.ElementCount = 0 then
+                 OldGroup.Remove
+               else
+                 (OldGroup as IwbGroupRecordInternal).SetModified(True);
+               GroupRecord.AddElement(MainRecord);
+               (GroupRecord as IwbGroupRecordInternal).SetModified(True);
+               (GroupRecord as IwbGroupRecordInternal).Sort;
+             end;
+        end;
       else
         Assert(False);
       end;
