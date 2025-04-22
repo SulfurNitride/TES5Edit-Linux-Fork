@@ -2604,12 +2604,12 @@ begin
         // should never be false
         if not Supports(Container.Elements[j], IwbContainerElementRef, Entry) then
           Continue;
-        Cache.Entries[j].Index := Entry.ElementNativeValues['Tint Layer\Texture\TINI'];
-        s := Entry.ElementEditValues['Tint Layer\Texture\TINP'];
+        Cache.Entries[j].Index := Entry.ElementNativeValues['Tint Layer\TINI'];
+        s := Entry.ElementEditValues['Tint Layer\TINP'];
         // add texture name
         if s <> '' then
           s := '[' + s + '] ';
-        s := s + ChangeFileExt(ExtractFileName(Entry.ElementEditValues['Tint Layer\Texture\TINT']), '');
+        s := s + ChangeFileExt(ExtractFileName(Entry.ElementEditValues['Tint Layer\TINT']), '');
         Cache.Entries[j].Name := s;
       end;
     end;
