@@ -1495,7 +1495,9 @@ begin
       ProcessAsset(ElementByPath(e, 'Male Behavior Graph\Model\MODL'));
       ProcessAsset(ElementByPath(e, 'Female Behavior Graph\Model\MODL'));
       ProcessAsset(ElementByPath(e, 'Head Data\Male Head Data\Model'));
-      ProcessAsset(ElementByPath(e, 'Head Data\Female Head Data\Model'));
+      ScanForAssets(ElementByPath(e, 'Head Data\Male Head Data\Tint Masks'));
+	  ProcessAsset(ElementByPath(e, 'Head Data\Female Head Data\Model'));
+	  ScanForAssets(ElementByPath(e, 'Head Data\Female Head Data\Tint Masks'));
     end
 
     else if (sig = 'SNDR') then
