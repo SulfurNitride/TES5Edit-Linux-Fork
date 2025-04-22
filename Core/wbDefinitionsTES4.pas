@@ -1959,6 +1959,8 @@ begin
       .SetDontShow(wbCellExteriorDontShow),
     wbFormIDCk(XCWT, 'Water', [WATR]).SetDefaultNativeValue(24),
     wbOwnership([XCCM, XCLW, XCMT]),
+    IsTES4R(wbUnknown(XTLI), nil),
+    IsTES4R(wbUnknown(XLRL), nil),
     wbStruct(XCLC, 'Grid', [
       wbInteger('X', itS32),
       wbInteger('Y', itS32)
@@ -3417,6 +3419,8 @@ begin
     wbRagdoll,
     wbXSCL,
     wbInteger(XSOL, 'Contained Soul', itU8, wbSoulGemEnum),
+    IsTES4R(wbUnknown(XAAG), nil),
+    IsTES4R(wbUnknown(XACN), nil),
     wbDATAPosRot
   ], True).SetAddInfo(wbPlacedAddInfo)
           .SetAfterLoad(wbREFRAfterLoad);
@@ -3909,5 +3913,23 @@ begin
   if wbToolMode = tmLODgen then
     wbNexusModsUrl := 'https://www.nexusmods.com/oblivion/mods/15781';
   wbHEDRVersion := 1.0;
+
+  if wbIsOblivionR then begin
+    SetLength(wbOfficialDLC, 14);
+    wbOfficialDLC[0] := 'DLCBattlehornCastle.esp';
+    wbOfficialDLC[1] := 'DLCFrostcrag.esp';
+    wbOfficialDLC[2] := 'DLCHorseArmor.esp';
+    wbOfficialDLC[3] := 'DLCMehrunesRazor.esp';
+    wbOfficialDLC[4] := 'DLCOrrery.esp';
+    wbOfficialDLC[5] := 'DLCShiveringIsles.esp';
+    wbOfficialDLC[6] := 'DLCSpellTomes.esp';
+    wbOfficialDLC[7] := 'DLCThievesDen.esp';
+    wbOfficialDLC[8] := 'DLCVileLair.esp';
+    wbOfficialDLC[9] := 'Knights.esp';
+    wbOfficialDLC[10] := 'AltarESPMain.esp';
+    wbOfficialDLC[11] := 'AltarDeluxe.esp';
+    wbOfficialDLC[12] := 'AltarGymNavigation.esp';
+    wbOfficialDLC[13] := 'TamrielLeveledRegion.esp';
+  end;
 end;
 end.

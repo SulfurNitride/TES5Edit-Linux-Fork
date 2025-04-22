@@ -362,7 +362,7 @@ function wbIsFlag(aFlag: Integer; const aValue: IwbValueDef; aIsUnused: Boolean 
 function wbIsNotFlag(aFlag: Integer; const aSignature: TwbSignature; const aValue: IwbValueDef; aIsUnused: Boolean = True): IwbRecordMemberDef; overload;
 function wbIsNotFlag(aFlag: Integer; const aValue: IwbValueDef; aIsUnused: Boolean = True): IwbValueDef; overload;
 
-{>>> Game Mode IfThen Defs <<<} //32
+{>>> Game Mode IfThen Defs <<<} //34
 function IsTES3(const aDef1, aDef2: String): string; overload;
 function IsTES3(const aDef1, aDef2: TwbSignature): TwbSignature; overload;
 function IsTES4(const aDef1, aDef2: Integer): Integer; overload;
@@ -370,6 +370,8 @@ function IsTES4(const aDef1, aDef2: IwbRecordMemberDef): IwbRecordMemberDef; ove
 function IsTES4(const aDef1, aDef2: IwbValueDef): IwbValueDef; overload;
 function IsTES4(const aDef1, aDef2: String): string; overload;
 function IsTES4(const aDef1, aDef2: TwbSignature): TwbSignature; overload;
+function IsTES4R(const aDef1, aDef2: Integer): Integer; overload;
+function IsTES4R(const aDef1, aDef2: IwbRecordMemberDef): IwbRecordMemberDef; overload;
 function IsTES4FO3(const aDef1, aDef2: IwbValueDef): IwbValueDef; overload;
 function IsTES4FO3(const aDef1, aDef2: String): string; overload;
 function IsFO3(const aDef1, aDef2: Integer): Integer; overload;
@@ -2634,7 +2636,7 @@ begin
 
   aValue := Faction.Value;
 
-  if wbIsOblivion then begin
+  if wbIsOblivion or wbIsOblivionR then begin
     var NativeReaction := Reaction.NativeValue;
 
     aValue := IntToStr(NativeReaction) + ' ' + aValue;
@@ -3809,7 +3811,7 @@ begin
       ]).IncludeFlag(dfMustBeUnion);
 end;
 
-{>>> wbGameMode IfThen Defs <<<} //32
+{>>> wbGameMode IfThen Defs <<<} //34
 
 function IsTES3(const aDef1, aDef2: string): string;
 begin
@@ -3857,6 +3859,20 @@ function IsTES4(const aDef1, aDef2: TwbSignature): TwbSignature;
 begin
   Result := aDef2;
   if wbIsOblivion then
+    Result := aDef1
+end;
+
+function IsTES4R(const aDef1, aDef2: Integer): Integer;
+begin
+  Result := aDef2;
+  if wbIsOblivionR then
+    Result := aDef1
+end;
+
+function IsTES4R(const aDef1, aDef2: IwbRecordMemberDef): IwbRecordMemberDef;
+begin
+  Result := aDef2;
+  if wbIsOblivionR then
     Result := aDef1
 end;
 
@@ -4463,7 +4479,26 @@ end;
 
 function wbModelInfo(aSignature: TwbSignature; aName: string = ''): IwbRecordMemberDef;
 begin
-  if wbGameMode >= gmTES5 then begin
+  if (wbIsOblivionR) or (wbGameMode < gmTES5) then begin
+    if aName = '' then
+      aName := 'Textures';
+
+    if not wbDecodeTextureHashes then
+      Exit(wbByteArray(aSignature, aName, 0, cpIgnore).SetDontShow(wbNeverShow));
+
+    var TextureFile := wbStruct('Texture', [
+      wbInteger('File Hash (PC)', itU64, wbFileHashCallback),
+      wbInteger('File Hash (Console)', itU64, wbFileHashCallback),
+      wbInteger('Folder Hash', itU64, wbFolderHashCallback)
+    ]).SetSummaryKey([2,0])
+      .SetSummaryDelimiter('')
+      .SetSummaryMemberPrefixSuffix(0, '', '')
+      .SetSummaryMemberPrefixSuffix(2, '', '\')
+      .IncludeFlag(dfSummaryMembersNoName)
+      .IncludeFlag(dfCollapsed, wbCollapseModelInfoTexture);
+
+    Result := wbArray(aSignature, aName, TextureFile).IncludeFlag(dfCollapsed, wbCollapseModelInfoTextures);
+  end else begin
     if aName = '' then
       aName := 'Model Information';
 
@@ -4538,25 +4573,6 @@ begin
       ]).SetSummaryKey([1]),
       NewModelInfo
     ], cpNormal, False, wbModelInfoDontShow, wbModelInfoGetCP).IncludeFlag(dfCollapsed, wbCollapseModelInfo);
-  end else begin
-    if aName = '' then
-      aName := 'Textures';
-
-    if not wbDecodeTextureHashes then
-      Exit(wbByteArray(aSignature, aName, 0, cpIgnore).SetDontShow(wbNeverShow));
-
-    var TextureFile := wbStruct('Texture', [
-      wbInteger('File Hash (PC)', itU64, wbFileHashCallback),
-      wbInteger('File Hash (Console)', itU64, wbFileHashCallback),
-      wbInteger('Folder Hash', itU64, wbFolderHashCallback)
-    ]).SetSummaryKey([2,0])
-      .SetSummaryDelimiter('')
-      .SetSummaryMemberPrefixSuffix(0, '', '')
-      .SetSummaryMemberPrefixSuffix(2, '', '\')
-      .IncludeFlag(dfSummaryMembersNoName)
-      .IncludeFlag(dfCollapsed, wbCollapseModelInfoTexture);
-
-    Result := wbArray(aSignature, aName, TextureFile).IncludeFlag(dfCollapsed, wbCollapseModelInfoTextures);
   end;
 
 end;
@@ -4587,8 +4603,8 @@ end;
 function wbEnchantment(aCapacity: Boolean = False): IwbRecordMemberDef;
 begin
   var aName := IsFO3('Object Effect', 'Enchantment');
-  var aSig1 := IsTES4(ENAM, EITM);
-  var aSig2 := IsTES4(ANAM, EAMT);
+  var aSig1 := IfThen(wbGameMode in [gmTES4, gmTES4R], ENAM, EITM);
+  var aSig2 := IfThen(wbGameMode in [gmTES4, gmTES4R], ANAM, EAMT);
 
   Result := wbFormIDCk(aSig1, aName, [ENCH]);
   if aCapacity then
@@ -4636,7 +4652,7 @@ begin
         ]).SetSummaryKeyOnValue([0]),
         wbFormIDCkNoReach(XOWN, 'Owner', [FACT, NPC_])),
       wbInteger(XRNK, 'Faction rank', itS32),
-      IsTES4(
+      IfThen(wbGameMode in [gmTES4, gmTES4R],
         wbFormIDCk(XGLB, 'Global', [GLOB]),
         nil)
     ], aSkipSigs, cpNormal, False, nil, True)
@@ -4655,26 +4671,19 @@ function wbTexturedModel(aSubRecordName     : string;
 var
   Members : array of IwbRecordMemberDef;
 begin
-  SetLength(Members,
-    Length(aTextureSubRecords) +
-    1 +            //Model Filename
-    IsTES4(1, 0) + //Bound Radius if TES4
-    IsSF1(0, 1)    //Model Info if not SF1
-  );
-
-  Members[0] := wbString(aSignatures[0], 'Model Filename');
-  if wbIsOblivion then begin
-    Members[1] := wbFloat(aSignatures[1], 'Bound Radius', cpBenign);
-    Members[2] := wbModelInfo(aSignatures[2]);
-  end else if not wbIsStarfield then begin
-    Members[1] := wbModelInfo(aSignatures[1]);
-  end;
-
-  for var i := Low(aTextureSubRecords) to High(aTextureSubRecords) do
-    Members[Length(Members) - Length(aTextureSubRecords) + i] := aTextureSubRecords[i];
-
   Result :=
-    wbRStruct(aSubRecordName, Members, nil, cpNormal, False, nil, True)
+    wbRStruct(aSubRecordName, [
+      wbString(aSignatures[0], 'Model Filename'),
+      IfThen(wbGameMode in [gmTES4, gmTES4R], wbFloat(aSignatures[1], 'Bound Radius', cpBenign), nil),
+      IfThen(not wbIsStarfield, wbModelInfo(aSignatures[IfThen(wbGameMode in [gmTES4, gmTES4R], 2, 1)]), nil),
+      aTextureSubRecords[0],
+      aTextureSubRecords[1],
+      aTextureSubRecords[2],
+      aTextureSubRecords[3],
+      aTextureSubRecords[4],
+      aTextureSubRecords[5],
+      aTextureSubRecords[6]
+    ], nil, cpNormal, False, nil, True)
       .SetSummaryKey([0])
       .IncludeFlag(dfSummaryMembersNoName)
       .IncludeFlag(dfSummaryNoSortKey)
@@ -4835,7 +4844,7 @@ function wbHeadPart(aHeadPartIndexEnum: IwbEnumDef = nil; aModel: IwbRecordMembe
 begin
   var wbICON: IwbRecordMemberDef := nil;
 
-  if wbGameMode = gmTES4 then
+  if wbGameMode in [gmTES4, gmTES4R] then
     wbICON := wbString(ICON, 'Icon FileName')
   else if wbGameMode = gmFNV then
     wbICON :=
@@ -4851,11 +4860,11 @@ begin
       ]);
 
   Result :=
-    wbRStructSK([0], IfThen(wbGameMode < gmTES5, 'Part', 'Head Part'), [
-      wbInteger(INDX, IfThen(wbGameMode < gmTES5, 'Index', 'Head Part Number'), itU32, aHeadPartIndexEnum),
-      IfThen(wbGameMode < gmTES5, aModel, nil),
-      IfThen(wbGameMode < gmTES5, nil, wbFormIDCk(HEAD, 'Head', [HDPT, NULL])),
-      IfThen(wbGameMode < gmTES5, wbICON, nil)
+    wbRStructSK([0], IfThen(wbIsOblivion or wbIsOblivionR or wbIsFallout3, 'Part', 'Head Part'), [
+      wbInteger(INDX, IfThen(wbIsOblivion or wbIsOblivionR or wbIsFallout3, 'Index', 'Head Part Number'), itU32, aHeadPartIndexEnum),
+      IfThen(wbIsOblivion or wbIsOblivionR or wbIsFallout3, aModel, nil),
+      IfThen(wbIsOblivion or wbIsOblivionR or wbIsFallout3, nil, wbFormIDCk(HEAD, 'Head', [HDPT, NULL])),
+      IfThen(wbIsOblivion or wbIsOblivionR or wbIsFallout3, wbICON, nil)
     ]).SetSummaryKey([0, 1])
       .SetSummaryMemberPrefixSuffix(0, '[', ']')
       .SetSummaryDelimiter(' ')
@@ -5158,14 +5167,14 @@ begin
 
   wbBodyPartIndexEnum :=
     wbEnum([
-      {0}        'Upper Body',
-      {1} IsTES4('Lower Body',
-                'Left Hand'),
-      {2} IsTES4('Hand',
-                'Right Hand'),
-      {3} IsTES4('Foot',
-                'Upper Body Texture'),
-      {4} IsTES4('Tail', '')
+      {0}                                         'Upper Body',
+      {1} IfThen(wbGameMode in [gmTES4, gmTES4R], 'Lower Body',
+                                                  'Left Hand'),
+      {2} IfThen(wbGameMode in [gmTES4, gmTES4R], 'Hand',
+                                                  'Right Hand'),
+      {3} IfThen(wbGameMode in [gmTES4, gmTES4R], 'Foot',
+                                                  'Upper Body Texture'),
+      {4} IfThen(wbGameMode in [gmTES4, gmTES4R], 'Tail', '')
     ]);
 
   wbBoolEnum :=
@@ -5946,7 +5955,7 @@ begin
       wbStructSK(XNAM, [0], 'Relation', [
         wbFormIDCkNoReach('Faction', [FACT, RACE]),
         wbInteger('Modifier', itS32),
-        IsTES4(
+        IfThen(wbGameMode in [gmTES4, gmTES4R],
           nil,
           wbInteger('Group Combat Reaction', itU32,
             wbEnum([
@@ -6012,7 +6021,8 @@ begin
         .IncludeFlag(dfCollapsed));
 
   wbRegionSounds :=
-    wbArrayS(IfThen(wbGameMode < gmTES5, RDSD, RDSA), 'Sounds', wbStructSK([0], 'Sound', [
+    wbArrayS(IfThen(wbIsOblivion or wbIsOblivionR or wbIsFallout3, RDSD, RDSA), 'Sounds',
+      wbStructSK([0], 'Sound', [
         wbFormIDCk('Sound', [SNDR, SOUN, NULL]),
         wbInteger('Flags', itU32,
           wbFlags([

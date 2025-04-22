@@ -419,13 +419,12 @@ begin
 
     if wbDataPath <> '' then
       wbDataPath := IncludeTrailingPathDelimiter(wbDataPath) + DataName[wbGameMode = gmTES3] + '\';
+    if wbIsOblivionR then
+      wbDataPath := GetInstallPathBySteamID('2623190') + '\OblivionRemastered\Content\Dev\ObvData\Data\'
   end else
     wbDataPath := IncludeTrailingPathDelimiter(wbDataPath);
 
-  if wbIsOblivionR then
-    wbOutputPath := GetInstallPathBySteamID('2623190') + '\OblivionRemastered\Content\Dev\ObvData\Data\'
-  else
-    wbOutputPath := wbDataPath;
+  wbOutputPath := wbDataPath;
 
   if wbFindCmdLineParam('O', s) and (Length(s) > 0) then
     if s[1] = '.' then
@@ -466,6 +465,9 @@ begin
     // VR games don't create ini file in My Games by default, use the one in the game folder
     if (wbGameMode in [gmTES5VR, gmFO4VR, gmSF1]) and not FileExists(wbTheGameIniFileName) then
       wbTheGameIniFileName := ExtractFilePath(ExcludeTrailingPathDelimiter(wbDataPath)) + '\' + ExtractFileName(wbTheGameIniFileName);
+
+    if wbIsOblivionR then
+      wbTheGameIniFileName :=  GetInstallPathBySteamID('2623190') + '\OblivionRemastered\Content\Dev\ObvData\Oblivion.ini';
   end;
 
   if not wbFindCmdLineParam('CustomIni', wbCustomIniFileName) then begin
@@ -518,6 +520,8 @@ begin
         wbPluginsFileName := wbPluginsFileName + wbGameName + '\Plugins.txt'
       else if (wbGameMode = gmFNV) and isEpicNV then
         wbPluginsFileName := wbPluginsFileName + wbGameName + '_Epic' + '\Plugins.txt'
+      else if wbIsOblivionR then
+        wbPluginsFileName :=  GetInstallPathBySteamID('2623190') + '\OblivionRemastered\Content\Dev\ObvData\Data\Plugins.txt'
       else
         wbPluginsFileName := wbPluginsFileName + wbGameName2 + '\Plugins.txt';
     end;
@@ -1043,7 +1047,7 @@ begin
   end;
 
   // Was gmTES5, but is now gmEnderal
-  if wbGameMode <= gmEnderal then
+  if (wbGameMode <= gmEnderal) or wbIsOblivionR then
     wbAddDefaultLEncodingsIfMissing(False)
   else begin
     wbLEncodingDefault[False] := TEncoding.UTF8;

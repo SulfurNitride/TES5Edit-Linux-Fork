@@ -1591,6 +1591,8 @@ const
   WWED : TwbSignature = 'WWED'; { New To Starfield }
   WX00 : TwbSignature = 'WX00'; { New To Starfield }
   WZMD : TwbSignature = 'WZMD'; { New To Fallout 4 }
+  XAAG : TwbSignature = 'XAAG'; { New to Oblivion Remastered }
+  XACN : TwbSignature = 'XACN'; { New to Oblivion Remastered }
   XACR : TwbSignature = 'XACR'; { EXTRA_ACTIVATEREF. 12 bytes }
   XACT : TwbSignature = 'XACT'; { EXTRA_ACTION. 4 bytes }
   XALD : TwbSignature = 'XALD'; { New To Starfield }
@@ -1738,6 +1740,7 @@ const
   XSRD : TwbSignature = 'XSRD';
   XSRF : TwbSignature = 'XSRF';
   XTEL : TwbSignature = 'XTEL';
+  XTLI : TwbSignature = 'XTLI'; { New to Oblivion Remastered }
   XTNM : TwbSignature = 'XTNM'; { New To Skyrim }
   XTRG : TwbSignature = 'XTRG';
   XTRI : TwbSignature = 'XTRI';
