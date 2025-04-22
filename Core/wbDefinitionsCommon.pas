@@ -4671,19 +4671,26 @@ function wbTexturedModel(aSubRecordName     : string;
 var
   Members : array of IwbRecordMemberDef;
 begin
+
+  SetLength(Members,
+    Length(aTextureSubRecords) +
+    1 +
+    IfThen(wbGameMode in [gmTES4, gmTES4R], 1, 0) +
+    IsSF1(0, 1)
+  );
+
+    Members[0] := wbString(aSignatures[0], 'Model Filename');
+    if wbGameMode in [gmTES4, gmTES4R] then begin
+      Members[1] := wbFloat(aSignatures[1], 'Bound Radius', cpBenign);
+      Members[2] := wbModelInfo(aSignatures[2]);
+    end else if not wbIsStarfield then
+      Members[1] := wbModelInfo(aSignatures[1]);
+
+    for var i := Low(aTextureSubRecords) to High(aTextureSubRecords) do
+      Members[Length(Members) - Length(aTextureSubRecords) + i] := aTextureSubRecords[i];
+
   Result :=
-    wbRStruct(aSubRecordName, [
-      wbString(aSignatures[0], 'Model Filename'),
-      IfThen(wbGameMode in [gmTES4, gmTES4R], wbFloat(aSignatures[1], 'Bound Radius', cpBenign), nil),
-      IfThen(not wbIsStarfield, wbModelInfo(aSignatures[IfThen(wbGameMode in [gmTES4, gmTES4R], 2, 1)]), nil),
-      aTextureSubRecords[0],
-      aTextureSubRecords[1],
-      aTextureSubRecords[2],
-      aTextureSubRecords[3],
-      aTextureSubRecords[4],
-      aTextureSubRecords[5],
-      aTextureSubRecords[6]
-    ], nil, cpNormal, False, nil, True)
+    wbRStruct(aSubRecordName, Members, nil, cpNormal, False, nil, True)
       .SetSummaryKey([0])
       .IncludeFlag(dfSummaryMembersNoName)
       .IncludeFlag(dfSummaryNoSortKey)
