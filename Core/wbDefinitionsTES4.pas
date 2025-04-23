@@ -3420,7 +3420,7 @@ begin
     wbXSCL,
     wbInteger(XSOL, 'Contained Soul', itU8, wbSoulGemEnum),
     IsTES4R(wbUnknown(XAAG), nil),
-    IsTES4R(wbUnknown(XACN), nil),
+    IsTES4R(wbStringForward(XACN, 'Unknown', 128).IncludeFlag(dfHasZeroTerminator), nil),
     wbDATAPosRot
   ], True).SetAddInfo(wbPlacedAddInfo)
           .SetAfterLoad(wbREFRAfterLoad);

@@ -383,7 +383,7 @@ begin
           RootKey := HKEY_CURRENT_USER;
           regPath := sSureAIRegKey + wbGameNameReg + '\';
         end;
-        gmFO76, gmSF1: begin
+        gmFO76, gmSF1, gmTES4R: begin
           regPath := sUninstallRegKey + wbGameNameReg + '\';
         end;
       end;
@@ -402,7 +402,7 @@ begin
       gmTES3, gmTES4, gmFO3, gmFNV, gmTES5, gmFO4, gmSSE, gmTES5VR, gmFO4VR:
                   regKey := 'Installed Path';
       gmEnderal, gmEnderalSE:  regKey := 'Install_Path';
-      gmFO76, gmSF1:     regKey := 'InstallLocation';
+      gmFO76, gmSF1, gmTES4R:  regKey := 'InstallLocation';
       end;
 
       wbDataPath := ReadString(regKey);
@@ -418,9 +418,12 @@ begin
     end;
 
     if wbDataPath <> '' then
-      wbDataPath := IncludeTrailingPathDelimiter(wbDataPath) + DataName[wbGameMode = gmTES3] + '\';
-    if wbIsOblivionR then
-      wbDataPath := GetInstallPathBySteamID('2623190') + '\OblivionRemastered\Content\Dev\ObvData\Data\'
+    begin
+      if wbIsOblivionR then
+        wbDataPath := IncludeTrailingPathDelimiter(wbDataPath) + 'OblivionRemastered\Content\Dev\ObvData\Data\'
+      else
+        wbDataPath := IncludeTrailingPathDelimiter(wbDataPath) + DataName[wbGameMode = gmTES3] + '\';
+    end;
   end else
     wbDataPath := IncludeTrailingPathDelimiter(wbDataPath);
 
@@ -464,10 +467,9 @@ begin
 
     // VR games don't create ini file in My Games by default, use the one in the game folder
     if (wbGameMode in [gmTES5VR, gmFO4VR, gmSF1]) and not FileExists(wbTheGameIniFileName) then
-      wbTheGameIniFileName := ExtractFilePath(ExcludeTrailingPathDelimiter(wbDataPath)) + '\' + ExtractFileName(wbTheGameIniFileName);
-
-    if wbIsOblivionR then
-      wbTheGameIniFileName :=  GetInstallPathBySteamID('2623190') + '\OblivionRemastered\Content\Dev\ObvData\Oblivion.ini';
+      wbTheGameIniFileName := ExtractFilePath(ExcludeTrailingPathDelimiter(wbDataPath)) + '\' + ExtractFileName(wbTheGameIniFileName)
+    else if wbIsOblivionR and not FileExists(wbTheGameIniFileName) then
+      wbTheGameIniFileName := ExtractFilePath(ExcludeTrailingPathDelimiter(wbDataPath)) + 'Oblivion.ini';
   end;
 
   if not wbFindCmdLineParam('CustomIni', wbCustomIniFileName) then begin
@@ -499,7 +501,11 @@ begin
         Free;
       end;
     end;
-    
+
+    // Oblivion Remastered has a hard coded path and ignores ini settings
+    if wbIsOblivionR then
+      s := 'Saved\SaveGames\';
+
     wbSavePath := PathRelativeToFull(wbMyGamesTheGamePath, s);
   end;
   wbSavePath := IncludeTrailingPathDelimiter(wbSavePath);
@@ -521,7 +527,7 @@ begin
       else if (wbGameMode = gmFNV) and isEpicNV then
         wbPluginsFileName := wbPluginsFileName + wbGameName + '_Epic' + '\Plugins.txt'
       else if wbIsOblivionR then
-        wbPluginsFileName :=  GetInstallPathBySteamID('2623190') + '\OblivionRemastered\Content\Dev\ObvData\Data\Plugins.txt'
+        wbPluginsFileName :=  IncludeTrailingPathDelimiter(wbDataPath) + 'Plugins.txt'
       else
         wbPluginsFileName := wbPluginsFileName + wbGameName2 + '\Plugins.txt';
     end;
@@ -531,7 +537,12 @@ begin
   // settings in the ini file next to app, or in the same folder with plugins.txt
   xeSettingsFileName := wbProgramPath + wbAppName + wbToolName + '.ini';
   if not FileExists(xeSettingsFileName) then
-    xeSettingsFileName := ChangeFileExt(wbPluginsFileName, '.'+LowerCase(wbAppName)+'viewsettings');
+  begin
+    if wbIsOblivionR then
+      xeSettingsFileName := GetCSIDLShellFolder(CSIDL_LOCAL_APPDATA) + wbGameName2 + '\Plugins.'+LowerCase(wbAppName)+'viewsettings'
+    else
+      xeSettingsFileName := ChangeFileExt(wbPluginsFileName, '.'+LowerCase(wbAppName)+'viewsettings');
+  end;
 
   wbBackupPath := '';
   if not (wbDontSave or wbFindCmdLineParam('B', wbBackupPath)) then
@@ -776,8 +787,11 @@ begin
   else if isMode('TES4R') then begin
     wbGameMode         := gmTES4R;
     wbAppName          := 'TES4R';
-    wbGameName         := 'Oblivion Remastered';
+    wbGameName         := 'Oblivion';
+    wbGameExeName      := 'Oblivion Remastered';
+    wbGameName2        := 'Oblivion Remastered';
     wbGameMasterEsm    := 'Oblivion.esm';
+    wbGameNameReg      := 'Steam App 2623190';
     wbGameSteamID      := '2623190';
     ToolModes          := wbAlwaysMode;
     ToolSources        := [tsPlugins];
