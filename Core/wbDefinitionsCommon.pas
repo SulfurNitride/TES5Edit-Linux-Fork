@@ -536,7 +536,7 @@ begin
     Result := ' in ' + Result;
   end;
 
-  if wbGameMode in [gmTES4, gmFO3, gmFNV] then begin
+  if wbGameMode in [gmTES4, gmTES4R, gmFO3, gmFNV] then begin
     Result := Result + ' in ' + aMainRecord.ElementEditValues['QSTI'];
   end;
 
@@ -2636,7 +2636,7 @@ begin
 
   aValue := Faction.Value;
 
-  if wbIsOblivion or wbIsOblivionR then begin
+  if wbIsOblivion then begin
     var NativeReaction := Reaction.NativeValue;
 
     aValue := IntToStr(NativeReaction) + ' ' + aValue;
@@ -4479,7 +4479,7 @@ end;
 
 function wbModelInfo(aSignature: TwbSignature; aName: string = ''): IwbRecordMemberDef;
 begin
-  if (wbIsOblivionR) or (wbGameMode < gmTES5) then begin
+  if wbGameMode < gmTES5 then begin
     if aName = '' then
       aName := 'Textures';
 
@@ -4752,7 +4752,7 @@ end;
 
 function wbModelInfos(aSignature: TwbSignature; aName: string = ''; aDontShow  : TwbDontShowCallback = nil): IwbRecordMemberDef;
 begin
-  if (wbGameMode >= gmTES5) and not (wbIsOblivionR) then
+  if wbGameMode >= gmTES5 then
     raise Exception.Create('Not Supported');
 
   if aName = '' then
@@ -4867,11 +4867,11 @@ begin
       ]);
 
   Result :=
-    wbRStructSK([0], IfThen(wbIsOblivion or wbIsOblivionR or wbIsFallout3, 'Part', 'Head Part'), [
-      wbInteger(INDX, IfThen(wbIsOblivion or wbIsOblivionR or wbIsFallout3, 'Index', 'Head Part Number'), itU32, aHeadPartIndexEnum),
-      IfThen(wbIsOblivion or wbIsOblivionR or wbIsFallout3, aModel, nil),
-      IfThen(wbIsOblivion or wbIsOblivionR or wbIsFallout3, nil, wbFormIDCk(HEAD, 'Head', [HDPT, NULL])),
-      IfThen(wbIsOblivion or wbIsOblivionR or wbIsFallout3, wbICON, nil)
+    wbRStructSK([0], IfThen(wbIsOblivion or wbIsFallout3, 'Part', 'Head Part'), [
+      wbInteger(INDX, IfThen(wbIsOblivion or wbIsFallout3, 'Index', 'Head Part Number'), itU32, aHeadPartIndexEnum),
+      IfThen(wbIsOblivion or wbIsFallout3, aModel, nil),
+      IfThen(wbIsOblivion or wbIsFallout3, nil, wbFormIDCk(HEAD, 'Head', [HDPT, NULL])),
+      IfThen(wbIsOblivion or wbIsFallout3, wbICON, nil)
     ]).SetSummaryKey([0, 1])
       .SetSummaryMemberPrefixSuffix(0, '[', ']')
       .SetSummaryDelimiter(' ')
@@ -6028,7 +6028,7 @@ begin
         .IncludeFlag(dfCollapsed));
 
   wbRegionSounds :=
-    wbArrayS(IfThen(wbIsOblivion or wbIsOblivionR or wbIsFallout3, RDSD, RDSA), 'Sounds',
+    wbArrayS(IfThen(wbIsOblivion or wbIsFallout3, RDSD, RDSA), 'Sounds',
       wbStructSK([0], 'Sound', [
         wbFormIDCk('Sound', [SNDR, SOUN, NULL]),
         wbInteger('Flags', itU32,
@@ -6431,25 +6431,25 @@ Can't properly represent that with current record definition methods.
         IsFO3(
           wbWeatherTimeOfDay('Clouds (Unused)'),
           wbWeatherTimeOfDay('Effect Lighting'))),
-      IfThen((wbGameMode > gmFNV) and not wbIsOblivionR,
+      IfThen(wbGameMode > gmFNV,
         wbFromVersion(31, wbWeatherTimeOfDay('Cloud LOD Diffuse')),
         nil),
-      IfThen((wbGameMode > gmFNV) and not wbIsOblivionR,
+      IfThen(wbGameMode > gmFNV,
         wbFromVersion(31, wbWeatherTimeOfDay('Cloud LOD Ambient')),
         nil),
-      IfThen((wbGameMode > gmFNV) and not wbIsOblivionR,
+      IfThen(wbGameMode > gmFNV,
         wbFromVersion(31, wbWeatherTimeOfDay('Fog Far')),
         nil),
-      IfThen((wbGameMode > gmFNV) and not wbIsOblivionR,
+      IfThen(wbGameMode > gmFNV,
         wbFromVersion(35, wbWeatherTimeOfDay('Sky Statics')),
         nil),
-      IfThen((wbGameMode > gmFNV) and not wbIsOblivionR,
+      IfThen(wbGameMode > gmFNV,
         wbFromVersion(37, wbWeatherTimeOfDay('Water Multiplier')),
         nil),
-      IfThen((wbGameMode > gmFNV) and not wbIsOblivionR,
+      IfThen(wbGameMode > gmFNV,
         wbFromVersion(37, wbWeatherTimeOfDay('Sun Glare')),
         nil),
-      IfThen((wbGameMode > gmFNV) and not wbIsOblivionR,
+      IfThen(wbGameMode > gmFNV,
         wbFromVersion(37, wbWeatherTimeOfDay('Moon Glare')),
         nil),
       IsFO4Plus(
@@ -6467,16 +6467,16 @@ Can't properly represent that with current record definition methods.
       wbFloat('Day - Far'),
       wbFloat('Night - Near'),
       wbFloat('Night - Far'),
-      IfThen((wbGameMode > gmTES4) and not wbIsOblivionR,
+      IfThen((wbGameMode > gmTES4R),
         wbFloat('Day - Power').SetDefaultNativeValue(1),
         nil),
-      IfThen((wbGameMode > gmTES4) and not wbIsOblivionR,
+      IfThen((wbGameMode > gmTES4R),
         wbFloat('Night - Power').SetDefaultNativeValue(1),
         nil),
-      IfThen((wbGameMode > gmFNV) and not wbIsOblivionR,
+      IfThen(wbGameMode > gmFNV,
         wbFloat('Day - Max').SetDefaultNativeValue(1),
         nil),
-      IfThen((wbGameMode > gmFNV) and not wbIsOblivionR,
+      IfThen(wbGameMode > gmFNV,
         wbFloat('Night - Max').SetDefaultNativeValue(1),
         nil),
       IsFO4Plus(

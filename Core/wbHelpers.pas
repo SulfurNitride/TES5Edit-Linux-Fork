@@ -300,7 +300,7 @@ begin
     Exit;
   aMainRecord.Tag;
 
-  if wbGameMode = gmTES4 then
+  if wbGameMode in [gmTES4, gmTES4R] then
     RefPath := 'Reference'
   else
     RefPath := 'LVLO\Reference';
@@ -1170,7 +1170,7 @@ begin
     // TMemIniFile reads from string list directly, not supported by MO
     with TIniFile.Create(iniName) do try
       with TStringList.Create do try
-        if wbGameMode in [gmTES4, gmFO3, gmFNV] then begin
+        if wbGameMode in [gmTES4, gmTES4R, gmFO3, gmFNV] then begin
           s := StringReplace(ReadString('Archive', 'sArchiveList', ''), ',' ,#10, [rfReplaceAll]);
           // Update.bsa is hardcoded to load in FNV
           if wbGameMode = gmFNV then begin
@@ -1238,7 +1238,7 @@ begin
         mIni := TIniFile.Create(IniName);
         try
           with TStringList.Create do try
-            if wbGameMode in [gmTES4, gmFO3, gmFNV] then begin
+            if wbGameMode in [gmTES4, gmTES4R, gmFO3, gmFNV] then begin
               s := CheckAddFilesToString(mIni, cIni, 'Archive', 'sArchiveList');
               // Update.bsa is hardcoded to load in FNV
               if wbGameMode = gmFNV then begin

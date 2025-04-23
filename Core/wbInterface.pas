@@ -58,7 +58,7 @@ var
     Major   : 4;
     Minor   : 1;
     Release : 5;
-    Build   : 'm';
+    Build   : 'n';
     Title   : '';
   );
 
@@ -4828,7 +4828,7 @@ var
 
 type
   //keep ordered by release date
-  TwbGameMode   = (gmTES3, gmTES4, gmFO3, gmFNV, gmTES5, gmEnderal, gmFO4, gmSSE, gmTES5VR, gmEnderalSE, gmFO4VR, gmFO76, gmSF1, gmTES4R);
+  TwbGameMode   = (gmTES3, gmTES4, gmTES4R, gmFO3, gmFNV, gmTES5, gmEnderal, gmFO4, gmSSE, gmTES5VR, gmEnderalSE, gmFO4VR, gmFO76, gmSF1);
   TwbGameModes  = set of TwbGameMode;
 
   TwbToolMode   = (tmView, tmEdit, tmDump, tmExport, tmOnamUpdate, tmMasterUpdate, tmMasterRestore, tmLODgen, tmScript,
@@ -4895,12 +4895,14 @@ var
   wbSimplePluginsTxt: TwbGameModes = [ //plugins.txt contains only the active plugins
     gmTES3,
     gmTES4,
+    gmTES4R,
     gmFO3,
     gmFNV,
     gmTES5,
     gmEnderal];
 
   wbOrderFromPluginsTxt: TwbGameModes = [ //load order given by order in plugins.txt
+    gmTES4R,
     gmTES5,
     gmEnderal,
     gmSSE,
@@ -5505,7 +5507,7 @@ end;
 
 function wbIsOblivion: Boolean; inline;
 begin
-  Result := wbGameMode in [gmTES4];
+  Result := wbGameMode in [gmTES4, gmTES4R];
 end;
 
 function wbIsOblivionR: Boolean; Inline;

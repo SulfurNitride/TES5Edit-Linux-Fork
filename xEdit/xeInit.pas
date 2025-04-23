@@ -1062,7 +1062,7 @@ begin
   end;
 
   // Was gmTES5, but is now gmEnderal
-  if (wbGameMode <= gmEnderal) or wbIsOblivionR then
+  if wbGameMode <= gmEnderal then
     wbAddDefaultLEncodingsIfMissing(False)
   else begin
     wbLEncodingDefault[False] := TEncoding.UTF8;
