@@ -2256,7 +2256,7 @@ begin
       wbUnused(3),
       wbFloat('Rushing Attack Distance Mult').SetDefaultNativeValue(1),
       wbInteger('Do Not Acquire', itU32, wbBoolEnum)
-    ], cpNormal, True, nil, 31),
+    ], cpNormal, True, nil, 30),
     wbStruct(CSAD, 'Advanced', [
       wbFloat('Dodge Fatigue Mod Mult').SetDefaultNativeValue(-20),
       wbFloat('Dodge Fatigue Mod Base'),
