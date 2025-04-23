@@ -571,7 +571,7 @@ var
 procedure DetectAppMode;
 const
   SourceModes : array of string = ['plugins', 'saves'];
-  GameModes: array of string = ['tes5vr', 'fo4vr', 'tes3', 'tes4', 'tes4r', 'tes5', 'enderalse', 'enderal', 'sse', 'fo3', 'fnv', 'fo4', 'fo76', 'sf1'];
+  GameModes: array of string = ['tes4r', 'tes5vr', 'fo4vr', 'tes3', 'tes4', 'tes5', 'enderalse', 'enderal', 'sse', 'fo3', 'fnv', 'fo4', 'fo76', 'sf1'];
   ToolModes: array of string = [
     'edit', 'view', 'lodgen', 'script', 'translate', 'onamupdate', 'masterupdate', 'masterrestore',
     'setesm', 'clearesm', 'sortandclean', 'sortandcleanmasters',
