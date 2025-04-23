@@ -1960,7 +1960,14 @@ begin
     wbFormIDCk(XCWT, 'Water', [WATR]).SetDefaultNativeValue(24),
     wbOwnership([XCCM, XCLW, XCMT]),
     IsTES4R(wbUnknown(XTLI), nil),
-    IsTES4R(wbUnknown(XLRL), nil),
+    IsTES4R(wbArray(XLRL, 'Unknown',
+      wbStruct('Unknown', [
+        wbInteger('Unknown', itu32),
+        wbInteger('Unknown', itu32),
+        wbUnknown(4),
+        wbUnknown(4),
+        wbInteger('Unknown', itu32)
+      ])), nil),
     wbStruct(XCLC, 'Grid', [
       wbInteger('X', itS32),
       wbInteger('Y', itS32)
