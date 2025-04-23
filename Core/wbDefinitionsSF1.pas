@@ -1982,6 +1982,8 @@ begin
     Exit(4);
   if lComponentName = 'UniquePatternPlacementInfo_Component' then
     Exit(5);
+  if lComponentName = 'BGSOverlayDesignatedPlacementInfo_Component' then
+    Exit(6);
 end;
 
 function wbBFCDAT2Decider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
@@ -6701,6 +6703,7 @@ end;
         'BGSObjectWindowFilter_Component',
         'BGSOrbitalDataComponent_Component',
         'BGSOrbitedDataComponent_Component',
+        'BGSOverlayDesignatedPlacementInfo_Component',
         'BGSPapyrusScripts_Component',
         'BGSPathingData_Component',
         'BGSPlanetContentManagerContentProperties_Component',
@@ -6826,11 +6829,11 @@ end;
         {0} wbUnknown,
             //BlockHeightAdjustment_Component
         {1} wbStruct('Block Height Adjustments', [
-              wbArray('Rows',
-                wbArray('Columns',
-                  wbStruct('Block Height Adjustment', [
-                    wbFloat,
-                    wbFloat
+              wbArray('Data',
+                wbArray('Row',
+                  wbStruct('Column', [
+                    wbFloat('Terrain Height', cpNormal, True, 1, 0, nil, wbNormalizeToRange(-800.0, 800.0)),
+                    wbFloat('Water Height', cpNormal, True, 1, 0, nil, wbNormalizeToRange(-800.0, 800.0))
                   ]).IncludeFlag(dfCollapsed)
                 , 16).IncludeFlag(dfCollapsed)
               , 16).IncludeFlag(dfCollapsed)
@@ -6840,12 +6843,10 @@ end;
             .IncludeFlag(dfCollapsed),
             // SurfaceTreePatternSwapInfo_Component
         {2} wbStruct('Surface Tree Pattern Swap', [
-              wbUnknown
-              {wbArray('Forms', wbStruct('Form', [
-                wbFormIDCk('Pattern', [SFPT]),
-                wbInteger('Unknown', itS8),
-                wbUnknown(4)
-              ]), -1)}
+              wbArray('Forms', wbStruct('Form', [
+                wbFormIDCk('Surface Pattern', [SFPT]),
+                wbUnknown(1)
+              ]), -1)
             ]),
             //BGSBlockEditorMetaData_Component
         {3} wbStruct('Block Creation Meta Data', [
@@ -6876,7 +6877,7 @@ end;
         //BGSOrbitedDataComponent_Component
         wbRStruct('Component Data - DATA', [
           wbUnion(DATA, 'Data', wbBFCDATADecider, [
-            wbUnknown,
+        {0} wbUnknown,
             //BGSStarDataComponent_Component
             wbStruct('', [
               wbLenString('Catalogue ID'),
@@ -6890,7 +6891,7 @@ end;
               wbInteger('Temperature in K', itU32)
             ]),
             //BGSOrbitedDataComponent_Component
-            wbStruct('', [
+        {1} wbStruct('', [
               wbDouble('Gravity Well', cpNormal, False, 1, Low(Integer)),
               wbFloat('Mass (in SM)', cpNormal, False, 1/1.98847E30, 2),
 //              wbFloat('Mass (in Earth Masses)', cpNormal, False, 1/5.972E24, 3),
@@ -6898,7 +6899,7 @@ end;
               wbFloat('Surface Gravity')
             ]),
             //BGSOrbitalDataComponent_Component
-            wbStruct('', [
+        {2} wbStruct('', [
               wbDouble('Major Axis', cpNormal, False, 1, Low(Integer)),
               wbDouble('Minor Axis', cpNormal, False, 1, Low(Integer)),
               wbDouble('Aphelion', cpNormal, False, 1, Low(Integer)),
@@ -6911,7 +6912,7 @@ end;
               wbInteger('Geostationary Orbit', itU8, wbBoolEnum)
             ]),
             //UniqueOverlayList_Component
-            wbStruct('', [
+        {3} wbStruct('', [
               wbArray('Worldspaces',
                 wbStruct('Worldspace', [
                   wbFormIDCk('Worldspace', [WRLD]),
@@ -6921,7 +6922,7 @@ end;
               , -1).IncludeFlag(dfNotAlignable)
             ]),
             //UniquePatternPlacementInfo_Component
-             wbStruct('', [
+        {4} wbStruct('', [
               wbFormIDCK('Planet', [PNDT, NULL]),
               wbStruct('Position', [
                 wbLongitudeDouble,
@@ -6933,6 +6934,16 @@ end;
                 .SetSummaryDelimiter(', ')
                 .IncludeFlag(dfSummaryMembersNoName)
                 .IncludeFlag(dfCollapsed, wbCollapsePosRot)
+            ]),
+            //BGSOverlayDesignatedPlacementInfo_Component
+        {5} wbStruct('', [
+              wbArray('Overlay Designated Placement Info',
+                wbStruct('Placement Info', [
+                  wbFormIDCk('Overlay Worldspace', [WRLD]),
+                  wbInteger('X', itS32),
+                  wbInteger('Y', itS32)
+                ]), -1)
+                  .IncludeFlag(dfCollapsed)
             ])
           ]).IncludeFlag(dfUnionStaticResolve)
         ]),
@@ -8176,10 +8187,16 @@ end;
       wbInteger('Detection Sound Value', itU8),
       wbFloat('Health Bar Offset')
     ], cpNormal, True),
-    wbTexturedModel('Male Biped Model',   [MOD2], [wbMOLM(MLM1), wbMO2C, wbMO2F]),
-    wbTexturedModel('Female Biped Model', [MOD3], [wbMOLM(MLM2), wbMO3C, wbMO3F]),
-    wbTexturedModel('Male 1st Person',    [MOD4], [wbMOLM(MLM3), wbMO4C, wbMO4F]),
-    wbTexturedModel('Female 1st Person',  [MOD5], [wbMOLM(MLM4), wbMO5C, wbMO5F]),
+    wbRStruct('Biped Model', [
+      wbTexturedModel('Male Biped Model',   [MOD2], [wbMOLM(MLM1), wbMO2C, wbMO2F]),
+      wbTexturedModel('Female Biped Model', [MOD3], [wbMOLM(MLM2), wbMO3C, wbMO3F])
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
+    wbRStruct('1st Person', [
+      wbTexturedModel('Male',    [MOD4], [wbMOLM(MLM3), wbMO4C, wbMO4F]),
+      wbTexturedModel('Female',  [MOD5], [wbMOLM(MLM4), wbMO5C, wbMO5F])
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
 
     wbString(MOD6, 'Male Alt Skeleton'),
     wbString(MOD7, 'Female Alt Skeleton'),
@@ -12238,6 +12255,7 @@ end;
       ]),
       wbInteger('Reset Hours', itU16, wbDiv(2730))
     ]),
+    wbFormIDCk(TPIC, 'Topic', [DIAL]),
     wbFormIDCk(DNAM, 'Shared INFO', [INFO]),
     wbFormIDCk(GNAM, 'INFO group', [INFO]),
 
@@ -12968,6 +12986,7 @@ end;
     wbFormIDCk(LRNC, 'Learn Chance', [GLOB]),
     wbFormIDCk(JNAM, 'Max Build Count Global', [GLOB]),
     wbArrayS(FNAM, 'Recipe Filters', wbFormIDCk('Keyword', [KYWD])),
+    wbFormIDCk(CIFK, 'Instanced Filter Keyword', [KYWD]),
     wbInteger(RECF, 'Unknown', itU64, wbFlags([
       'Filter Not Required To Learn',
       'Unknown 1',
@@ -13079,7 +13098,7 @@ end;
   end;
 
   {subrecords checked against Starfield.esm}
-  wbRecord(NPC_, 'Non-Player Character (Actor)',
+  wbRecord(NPC_, 'Non-Player Character',
     wbFlags(wbFlagsList([
       {0x00000400} 10, 'Unknown 10',
       {0x00040000} 18, 'Compressed',
@@ -18417,41 +18436,61 @@ end;
     wbFormIDCk(CNAM, 'Surface Pattern Style', [NULL, PTST]).SetRequired,
 
     wbStruct(BNAM, 'Surface Blocks', [
-      wbArray('Rows',
-        wbArray('Columns',
-          wbFormIDCk('Surface Block', [SFBK]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole)
+      wbArray('Data',
+        wbArray('Row',
+          wbFormIDCk('Column', [SFBK]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole)
         , 16).IncludeFlag(dfCollapsed)
       , 16)
       .IncludeFlag(dfCollapsed)
     ])
     .SetSummaryKeyOnValue([0])
     .IncludeFlag(dfCollapsed),
-//    .SetRequired,
 
-    wbStruct(FNAM, 'Surface Blocks', [
-      wbArray('Rows',
-        wbArray('Columns',
-          wbFormIDCk('Surface Block', [SFBK]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole)
+    wbStruct(FNAM, 'Master - Surface Block Forms', [
+      wbArray('Data',
+        wbArray('Row',
+          wbFormIDCk('Column', [SFBK]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole)
         , 16).IncludeFlag(dfCollapsed)
       , 16)
       .IncludeFlag(dfCollapsed)
     ])
     .SetSummaryKeyOnValue([0])
     .IncludeFlag(dfCollapsed)
-    .SetRequired,
+    .IncludeFlag(dfNoCopyAsOverride),   // CK does not copy this on overrides
 
-    wbStruct(GNAM, 'Surface Blocks', [
-      wbArray('Rows',
-        wbArray('Columns',
-          wbInteger('Surface Block', itS8)
+    wbStruct(GNAM, 'Master - Surface Block Rotations', [
+      wbArray('Data',
+        wbArray('Row',
+          wbInteger('Column', itS8)
         , 16).IncludeFlag(dfCollapsed)
       , 16)
       .IncludeFlag(dfCollapsed)
     ])
     .SetSummaryKeyOnValue([0])
     .IncludeFlag(dfCollapsed)
-    .SetRequired,
+    .IncludeFlag(dfNoCopyAsOverride),   // CK does not copy this on overrides
 
+    wbStruct(EFRM, 'Override - Surface Block Forms', [
+      wbArray('Data',
+        wbArray('Row',
+          wbFormIDCk('Column', [SFBK]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole)
+        , 16).IncludeFlag(dfCollapsed)
+      , 16)
+      .IncludeFlag(dfCollapsed)
+    ])
+    .SetSummaryKeyOnValue([0])
+    .IncludeFlag(dfCollapsed),
+
+    wbStruct(EORI, 'Override - Surface Block Rotations', [
+      wbArray('Data',
+        wbArray('Row',
+          wbInteger('Column', itS8)
+        , 16).IncludeFlag(dfCollapsed)
+      , 16)
+      .IncludeFlag(dfCollapsed)
+    ])
+    .SetSummaryKeyOnValue([0])
+    .IncludeFlag(dfCollapsed),
     wbArray(DNAM, 'Worldspaces', wbFormIDCk('Worldspace', [WRLD]))
   ]);
 
@@ -18463,8 +18502,8 @@ end;
     ])), [
     wbEDID,
     wbBaseFormComponents,
-    wbUnknown(CNAM).SetRequired,
-    wbUnknown(DNAM).SetRequired,
+    wbUnknown(CNAM),  // CK does not copy this on overrides
+    wbUnknown(DNAM),  // CK does not copy this on overrides
 
     wbArray(ENAM, 'Surface Patterns', wbFormIDCk('Surface Pattern', [SFPT]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole), 65536).IncludeFlag(dfCollapsed),
     wbArray(ENAM, 'Surface Patterns', wbFormIDCk('Surface Pattern', [SFPT]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole), 65536).IncludeFlag(dfCollapsed),
@@ -18472,8 +18511,8 @@ end;
     wbRArray('Surface Pattern Data', wbRStruct('Surface Patterns', [
       wbArray(FNAM, 'Surface Patterns', wbFormIDCk('Surface Pattern', [SFPT]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole), 65536).IncludeFlag(dfCollapsed),
       wbArray(GNAM, 'Unknown', wbinteger('Unknown', itS8), 65536).IncludeFlag(dfCollapsed)
-    ]), 2),
-    wbString(NAM1, 'Filter').SetRequired
+    ]), 2).IncludeFlag(dfNoCopyAsOverride),   // CK does not copy this on overrides
+    wbString(NAM1, 'Filter').IncludeFlag(dfNoCopyAsOverride)   // CK does not copy this on overrides
   ]);
 
   var wbSPCHQuestStage :=
@@ -19261,7 +19300,8 @@ end;
     wbEDID,
     wbREFL,
     wbFormIDCk(RFDP, 'Reflection Parent', [WTHS]),
-    wbRDIF
+    wbRDIF,
+    wbConditions
   ]);
 
   {subrecords checked against Starfield.esm}
@@ -19293,9 +19333,7 @@ end;
       ).SetRequired
        .IncludeFlag(dfCollapsed, wbCollapseFlags)
     ]),
-    wbFormIDCk(CNAM, 'Climate', [CLMT])
-      .SetDefaultNativeValue(351)
-      .SetIsRemovable(wbWorldClimateIsRemovable),
+    wbFormIDCk(CNAM, 'Climate', [CLMT]).SetDefaultNativeValue(351),
     wbFormIDCk(NAM2, 'Water', [WATR])
       .SetDefaultNativeValue(24)
       .SetIsRemovable(wbWorldWaterIsRemovable),

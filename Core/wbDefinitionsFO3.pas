@@ -3641,14 +3641,20 @@ begin
     wbSCRI,
     wbEnchantment,
     wbBMDT,
-    wbTexturedModel('Male Biped Model', [MODL, MODT], [wbMODS, wbMODD]),
-    wbTexturedModel('Male World Model', [MOD2, MO2T], [wbMO2S, nil]),
-    wbString(ICON, 'Male Icon Filename'),
-    wbString(MICO, 'Male Message Icon Filename'),
-    wbTexturedModel('Female Biped Model', [MOD3, MO3T], [wbMO3S, wbMOSD]),
-    wbTexturedModel('Female World Model', [MOD4, MO4T], [wbMO4S, nil]),
-    wbString(ICO2, 'Female Icon Filename'),
-    wbString(MIC2, 'Female Message Icon Filename'),
+    wbRStruct('Male', [
+      wbTexturedModel('Biped Model', [MODL, MODT], [wbMODS, wbMODD]),
+      wbTexturedModel('World Model', [MOD2, MO2T], [wbMO2S, nil]),
+      wbString(ICON, 'Icon Image'),
+      wbString(MICO, 'Message Icon')
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
+    wbRStruct('Female', [
+      wbTexturedModel('Biped Model', [MOD3, MO3T], [wbMO3S, wbMOSD]),
+      wbTexturedModel('World Model', [MOD4, MO4T], [wbMO4S, nil]),
+      wbString(ICO2, 'Icon Image'),
+      wbString(MIC2, 'Message Icon')
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
     wbString(BMCT, 'Ragdoll Constraint Template'),
     wbDEST,
     wbREPL,
@@ -3672,14 +3678,20 @@ begin
     wbOBND(True),
     wbFULL,
     wbBMDT,
-    wbTexturedModel('Male Biped Model', [MODL, MODT], [wbMODS, wbMODD]),
-    wbTexturedModel('Male World Model', [MOD2, MO2T], [wbMO2S, nil]),
-    wbString(ICON, 'Male Icon Filename'),
-    wbString(MICO, 'Male Message Icon Filename'),
-    wbTexturedModel('Female Biped Model', [MOD3, MO3T], [wbMO3S, wbMOSD]),
-    wbTexturedModel('Female World Model', [MOD4, MO4T], [wbMO4S, nil]),
-    wbString(ICO2, 'Female Icon Filename'),
-    wbString(MIC2, 'Female Message Icon Filename'),
+    wbRStruct('Male', [
+      wbTexturedModel('Biped Model', [MODL, MODT], [wbMODS, wbMODD]),
+      wbTexturedModel('World Model', [MOD2, MO2T], [wbMO2S, nil]),
+      wbString(ICON, 'Icon Image'),
+      wbString(MICO, 'Message Icon')
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
+    wbRStruct('Female', [
+      wbTexturedModel('Biped Model', [MOD3, MO3T], [wbMO3S, wbMOSD]),
+      wbTexturedModel('World Model', [MOD4, MO4T], [wbMO4S, nil]),
+      wbString(ICO2, 'Icon Image'),
+      wbString(MIC2, 'Message Icon')
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
     wbETYPReq,
     wbStruct(DATA, 'Data', [
       wbInteger('Value', itS32),
@@ -4125,8 +4137,8 @@ begin
 
   wbRecord(DIAL, 'Dialog Topic', [
     wbEDIDReqKC,
-    wbRArrayS('Quests', wbFormIDCkNoReach(QSTI, 'Quest', [QUST], False, cpBenign)),
-    wbRArrayS('Quests?', wbFormIDCkNoReach(QSTR, 'Quest?', [QUST], False, cpBenign)),
+    wbQSTI,
+    wbQSTR,
     wbFULL,
     wbFloat(PNAM, 'Priority')
       .SetDefaultNativeValue(50)

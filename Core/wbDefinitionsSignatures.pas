@@ -446,6 +446,7 @@ const
   EFIT : TwbSignature = 'EFIT';
   EFIX : TwbSignature = 'EFIX';
   EFME : TwbSignature = 'EFME';
+  EFRM : TwbSignature = 'EFRM'; { New To Starfield }
   EFSD : TwbSignature = 'EFSD';
   EFSH : TwbSignature = 'EFSH';
   EFSQ : TwbSignature = 'EFSQ'; { New To Starfield }
@@ -462,6 +463,7 @@ const
   ENLS : TwbSignature = 'ENLS'; { New To Fallout 76 }
   ENLT : TwbSignature = 'ENLT'; { New To Fallout 76 }
   ENTM : TwbSignature = 'ENTM'; { New To Fallout 76 }
+  EORI : TwbSignature = 'EORI'; { New To Starfield }
   EOVR : TwbSignature = 'EOVR'; { New to Starfield }
   EPCD : TwbSignature = 'EPCD'; { New To Fallout 76 0.2.782.0 }
   EPEG : TwbSignature = 'EPEG'; { New To Fallout 76 0.2.782.0 }
@@ -1589,6 +1591,8 @@ const
   WWED : TwbSignature = 'WWED'; { New To Starfield }
   WX00 : TwbSignature = 'WX00'; { New To Starfield }
   WZMD : TwbSignature = 'WZMD'; { New To Fallout 4 }
+  XAAG : TwbSignature = 'XAAG'; { New to Oblivion Remastered }
+  XACN : TwbSignature = 'XACN'; { New to Oblivion Remastered }
   XACR : TwbSignature = 'XACR'; { EXTRA_ACTIVATEREF. 12 bytes }
   XACT : TwbSignature = 'XACT'; { EXTRA_ACTION. 4 bytes }
   XALD : TwbSignature = 'XALD'; { New To Starfield }
@@ -1736,6 +1740,7 @@ const
   XSRD : TwbSignature = 'XSRD';
   XSRF : TwbSignature = 'XSRF';
   XTEL : TwbSignature = 'XTEL';
+  XTLI : TwbSignature = 'XTLI'; { New to Oblivion Remastered }
   XTNM : TwbSignature = 'XTNM'; { New To Skyrim }
   XTRG : TwbSignature = 'XTRG';
   XTRI : TwbSignature = 'XTRI';

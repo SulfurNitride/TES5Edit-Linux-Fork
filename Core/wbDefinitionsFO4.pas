@@ -4171,6 +4171,8 @@ end;
       wbUnknown(XCVR),
       wbXESP,
       wbOwnership,
+      wbRagdoll,
+      wbInteger(XHLT, 'Health %', itU32),
       wbFormIDCk(XEMI, 'Emittance', [LIGH, REGN]),
       wbFormIDCk(XMBR, 'MultiBound Reference', [REFR]),
       wbEmpty(XIS2, 'Ignored by Sandbox'),
@@ -6072,8 +6074,7 @@ begin
       {2} wbString(CIS2, 'Parameter #2')
       ]).SetToStr(wbConditionToStr)
         .IncludeFlag(dfCollapsed, wbCollapseConditions)
-    ).SetCountPath(CITC)
-     .IncludeFlag(dfNotAlignable);
+    ).SetCountPath(CITC);
 
   wbICON := wbString(ICON, 'Inventory Image');
   wbMICO := wbString(MICO, 'Message Icon');
@@ -6615,12 +6616,18 @@ begin
     wbPTRN,
     wbFULL,
     wbEnchantment,
-    wbTexturedModel('Male World Model', [MOD2, MO2T], [wbMODC, wbMO2S, nil]),
-    wbString(ICON, 'Male Inventory Image'),
-    wbString(MICO, 'Male Message Icon'),
-    wbTexturedModel('Female World Model', [MOD4, MO4T], [wbMODC, wbMO4S, nil]),
-    wbString(ICO2, 'Female Inventory Image'),
-    wbString(MIC2, 'Female Message Icon'),
+    wbRStruct('Male', [
+      wbTexturedModel('World Model', [MOD2, MO2T], [wbMODC, wbMO2S, nil]),
+      wbString(ICON, 'Icon Image'),
+      wbString(MICO, 'Message Icon')
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
+    wbRStruct('Female', [
+      wbTexturedModel('World Model', [MOD4, MO4T], [wbMODC, wbMO4S, nil]),
+      wbString(ICO2, 'Icon Image'),
+      wbString(MIC2, 'Message Icon')
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
     wbBOD2,
     wbDEST,
     wbYNAM,
@@ -6684,10 +6691,16 @@ begin
       wbByteArray('Unknown', 1),
       wbFloat('Weapon Adjust')
     ], cpNormal, True),
-    wbTexturedModel('Male Biped Model', [MOD2, MO2T], [wbMO2C, wbMO2S, wbMO2F]),
-    wbTexturedModel('Female Biped Model', [MOD3, MO3T], [wbMO3C, wbMO3S, wbMO3F]),
-    wbTexturedModel('Male 1st Person', [MOD4, MO4T], [wbMO4C, wbMO4S, wbMO4F]),
-    wbTexturedModel('Female 1st Person', [MOD5, MO5T], [wbMO5C, wbMO5S, wbMO5F]),
+    wbRStruct('Biped Model', [
+      wbTexturedModel('Male', [MOD2, MO2T], [wbMO2C, wbMO2S, wbMO2F]),
+      wbTexturedModel('Female', [MOD3, MO3T], [wbMO3C, wbMO3S, wbMO3F])
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
+    wbRStruct('1st Person', [
+      wbTexturedModel('Male', [MOD4, MO4T], [wbMO4C, wbMO4S, wbMO4F]),
+      wbTexturedModel('Female', [MOD5, MO5T], [wbMO5C, wbMO5S, wbMO5F])
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
     wbFormIDCK(NAM0, 'Male Skin Texture', [TXST, NULL]),
     wbFormIDCK(NAM1, 'Female Skin Texture', [TXST, NULL]),
     wbFormIDCK(NAM2, 'Male Skin Texture Swap List', [FLST, NULL]),
@@ -7876,8 +7889,13 @@ begin
     wbInteger(IDLC, 'Animation Count', itU8, nil, cpBenign),
     wbFloat(IDLT, 'Idle Timer Setting', cpNormal, False),
     wbArray(IDLA, 'Animations', wbFormIDCk('Animation', [IDLE]), 0, nil, wbIDLAsAfterSet, cpNormal, False),
-    wbFormIDCk(QNAM, 'Unknown', [KYWD]),
-    wbGenericModel
+    wbGenericModel,
+    wbFormIDCk(PNAM, 'Anim Archtype', [KYWD])
+      .SetAfterSet(wbIdleMarkerPNAMAfterSet)
+      .SetDontShow(wbIdleMarkerPNAMDontShow),
+    wbFormIDCk(QNAM, 'Flavor Anim', [KYWD])
+      .SetAfterSet(wbIdleMarkerQNAMAfterSet)
+      .SetDontShow(wbIdleMarkerQNAMDontShow)
   ], False, nil, cpNormal, False, nil, wbAnimationsAfterSet);
 
   wbRecord(PROJ, 'Projectile', [
@@ -10474,6 +10492,7 @@ begin
     wbEDID,
     wbVMAD,
     wbOBND(True),
+    wbPTRN,
     wbFULL,
     wbKeywords,
     wbGenericModel,
@@ -10620,8 +10639,8 @@ begin
       .SetDefaultNativeValue(1.0)
       .SetRequired,
     wbString(NAM0, 'Gobo'),
-    wbFormIDCk(LNAM, 'Lens', [LENS]),
     wbFormIDCk(SNAM, 'Sound', [SNDR]),
+    wbFormIDCk(LNAM, 'Lens', [LENS]),
     wbFormIDCk(WGDR, 'God Rays', [GDRY])
   ]);
 
@@ -10949,7 +10968,7 @@ begin
     ], cpNormal, False, nil, 1)
   ]);
 
-  wbRecord(NPC_, 'Non-Player Character (Actor)',
+  wbRecord(NPC_, 'Non-Player Character',
     wbFlags(wbFlagsList([
       {0x00000400} 10, 'Unknown 10',
       {0x00040000} 18, 'Compressed',
@@ -12157,6 +12176,15 @@ begin
     wbRArrayS('Lit Water',
       wbFormIDCk(XLTW, 'Water', [REFR])
     ),
+    wbRArrayS('Reflected/Refracted By',
+        wbStructSK(XPWR, [0], 'Water', [
+          wbFormIDCk('Reference', [REFR]),
+          wbInteger('Type', itU32, wbFlags([
+            'Reflection',
+            'Refraction'
+          ]))
+        ], cpNormal, False, nil, 1)
+      ),
     wbStruct(XALP, 'Alpha', [
       wbInteger('Cutoff', itU8),
       wbInteger('Base', itU8)

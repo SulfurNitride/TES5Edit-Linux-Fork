@@ -95,7 +95,7 @@ begin
     ents := ElementByName(e, 'Leveled List Entries');
     for i := 0 to Pred(ElementCount(ents)) do begin
       ent := ElementByIndex(ents, i);
-      ent := LinksTo(ElementByPath(ent, 'LVLO\Reference'));
+      ent := LinksTo(ElementByPath(ent, 'LVLO\NPC'));
       GetRecordVoiceTypes2(ent, lstVoice);
     end;
   end
@@ -211,7 +211,7 @@ begin
     // NPC
     if ConditionFunction = 'GetIsID' then begin
       InfoCONDITION := ConditionFunction;
-      Elem := LinksTo(ElementByPath(Condition, 'CTDA\Referenceable Object'));
+      Elem := LinksTo(ElementByPath(Condition, 'CTDA\Base Object'));
       GetRecordVoiceTypes(Elem, lstVoiceCondition);
     end else
     // skip other functions
@@ -253,7 +253,7 @@ begin
     // not sure about how to combine voice types from several conditions, for now just OR
     lstVoice.AddStrings(lstVoiceCondition);
     
-    {// if condition is ORed then combine voice lists
+    // if condition is ORed then combine voice lists
     if GetElementNativeValues(Condition, 'CTDA\Type') and 1 > 0 then
       lstVoice.AddStrings(lstVoiceCondition)
     // otherwise intersect (AND)
@@ -262,7 +262,6 @@ begin
         if lstVoiceCondition.IndexOf(lstVoice[j]) = -1 then
           lstVoice.Delete(j);
     end;
-    }
     lstVoiceCondition.Clear;
   end;
   
@@ -271,17 +270,21 @@ end;
 
 //============================================================================
 // get a list of voice types for INFO record
-procedure InfoVoiceTypes(Info: IInterface; lstVoice: TStringList);
+procedure InfoVoiceTypes(Info: IInterface; lstVoice: TStringList; QuestConditions: IInterface);
 var
   Elem, Dialogue: IInterface;
   Conditions: IInterface;
   Scene, Actions, Action: IInterface;
   i, j, Alias: integer;
   bAliasFound: Boolean;
+  lstVoiceQuestConditions: TStringList;
 begin
   if not Assigned(lstVoice) then
-    Exit;
-
+    Exit; 
+    
+  lstVoiceQuestConditions := TStringList.Create; 
+  lstVoiceQuestConditions.Duplicates := dupIgnore; 
+  lstVoiceQuestConditions.Sorted := True;
   lstVoice.Clear;
   
   // check Speaker
@@ -294,8 +297,22 @@ begin
   end;
   
   // check Conditions
+  if QuestConditions <> nil then
+    GetConditionsVoiceTypes(QuestConditions, lstVoiceQuestConditions);
   if ElementExists(Info, 'Conditions') then
     GetConditionsVoiceTypes(ElementByName(Info, 'Conditions'), lstVoice);
+  if (lstVoice.Count = 0) and (lstVoiceQuestConditions.Count <> 0) then
+    // Info has no conditions, but quest does, defer to those.
+    lstVoice.AddStrings(lstVoiceQuestConditions);
+  if (lstVoice.Count <> 0) and (lstVoiceQuestConditions.Count <> 0) then
+    // Take the intersection of voices from the Info and Quest Conditions.
+    begin
+      for i := Pred(lstVoice.Count) downto 0 do
+        if lstVoiceQuestConditions.IndexOf(lstVoice[i]) = -1 then
+          lstVoice.Delete(i);
+      if lstVoice.Count = 0 then
+        AddMessage('Warning: Info conditions conflict with quest conditions: ' + Name(Info));   
+    end;  
   
   // check Scene aliases if above has no result
   if lstVoice.Count <> 0 then
@@ -359,10 +376,13 @@ var
   Responses, Response: IInterface;
   ResponseNumber: integer;
   VoiceFileName, VoiceFilePath: string;
+  Conditions: IInterface;
 begin
   lstDial := TStringList.Create;
   lstDial.Duplicates := dupIgnore;
   lstDial.Sorted := True;
+  // Conditions on quest itself
+  Conditions := ElementByPath(Quest, 'Quest Dialogue Conditions\Conditions'); 
 
   // scan for all DIAL references of quest
   for i := 0 to Pred(ReferencedByCount(Quest)) do begin
@@ -408,7 +428,7 @@ begin
         Continue;
 
       // list of voice types for INFO
-      InfoVoiceTypes(Info, lstVoice);
+      InfoVoiceTypes(Info, lstVoice, Conditions);
       AddDebug('Voices: ' + Trim(lstVoice.CommaText));
       
       for r := 0 to Pred(ElementCount(Responses)) do begin

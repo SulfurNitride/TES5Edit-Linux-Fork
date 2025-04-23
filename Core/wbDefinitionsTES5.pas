@@ -1053,7 +1053,7 @@ begin
   if not wbTryGetContainerRefFromUnionOrValue(aElement, Container) then
     Exit;
 
-  if not wbTryGetMainRecord(Container.ElementByName['Parameter #1'], MainRecord) then
+  if not wbTryGetMainRecord(Container.ElementByName['Quest'], MainRecord) then
     Exit;
 
   MainRecord := MainRecord.WinningOverride;
@@ -2604,12 +2604,12 @@ begin
         // should never be false
         if not Supports(Container.Elements[j], IwbContainerElementRef, Entry) then
           Continue;
-        Cache.Entries[j].Index := Entry.ElementNativeValues['Tint Layer\Texture\TINI'];
-        s := Entry.ElementEditValues['Tint Layer\Texture\TINP'];
+        Cache.Entries[j].Index := Entry.ElementNativeValues['Tint Layer\TINI'];
+        s := Entry.ElementEditValues['Tint Layer\TINP'];
         // add texture name
         if s <> '' then
           s := '[' + s + '] ';
-        s := s + ChangeFileExt(ExtractFileName(Entry.ElementEditValues['Tint Layer\Texture\TINT']), '');
+        s := s + ChangeFileExt(ExtractFileName(Entry.ElementEditValues['Tint Layer\TINT']), '');
         Cache.Entries[j].Name := s;
       end;
     end;
@@ -4493,8 +4493,7 @@ begin
       {2} wbString(CIS2, 'Parameter #2')
       ]).SetToStr(wbConditionToStr)
         .IncludeFlag(dfCollapsed, wbCollapseConditions)
-    ).SetCountPath(CITC)
-     .IncludeFlag(dfNotAlignable);
+    ).SetCountPath(CITC);
 
   wbYNAM := wbFormIDCk(YNAM, 'Sound - Pick Up', [SNDR]);
   wbZNAM := wbFormIDCk(ZNAM, 'Sound - Put Down', [SNDR]);
@@ -4617,10 +4616,18 @@ begin
     wbOBND(True),
     wbFULL,
     wbEnchantment,
-    wbTexturedModel('Male World Model', [MOD2, MO2T], [wbMO2S]),
-    wbICON,
-    wbTexturedModel('Female World Model', [MOD4, MO4T], [wbMO4S]),
-    wbICO2,
+    wbRStruct('Male', [
+      wbTexturedModel('World Model', [MOD2, MO2T], [wbMO2S]),
+      wbString(ICON, 'Icon Image'),
+      wbString(MICO, 'Message Icon')
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
+    wbRStruct('Female', [
+      wbTexturedModel('World Model', [MOD4, MO4T], [wbMO4S]),
+      wbString(ICO2, 'Icon Image'),
+      wbString(MIC2, 'Message Icon')
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
     wbBODTBOD2,
     wbDEST,
     wbYNAM,
@@ -4662,10 +4669,16 @@ begin
       wbByteArray('Unknown', 1),
       wbFloat('Weapon Adjust')
     ], cpNormal, True),
-    wbTexturedModel('Male Biped Model', [MOD2, MO2T], [wbMO2S]),
-    wbTexturedModel('Female Biped Model', [MOD3, MO3T], [wbMO3S]),
-    wbTexturedModel('Male 1st Person', [MOD4, MO4T], [wbMO4S]),
-    wbTexturedModel('Female 1st Person', [MOD5, MO5T], [wbMO5S]),
+    wbRStruct('Biped Model', [
+      wbTexturedModel('Male', [MOD2, MO2T], [wbMO2S]),
+      wbTexturedModel('Female', [MOD3, MO3T], [wbMO3S])
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
+    wbRStruct('1st Person', [
+      wbTexturedModel('Male', [MOD4, MO4T], [wbMO4S]),
+      wbTexturedModel('Female', [MOD5, MO5T], [wbMO5S])
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
     wbFormIDCK(NAM0, 'Male Skin Texture', [TXST, NULL]),
     wbFormIDCK(NAM1, 'Female Skin texture', [TXST, NULL]),
     wbFormIDCK(NAM2, 'Male Skin Texture Swap List', [FLST, NULL]),
@@ -8733,7 +8746,7 @@ begin
     .SetSummaryMemberPrefixSuffix(3, 'when (', ')')
     .SetSummaryMemberPrefixSuffix(5, 'at (', ')');
 
-  wbRecord(NPC_, 'Non-Player Character (Actor)',
+  wbRecord(NPC_, 'Non-Player Character',
     wbFlags(wbFlagsList([
       10, 'Unknown 10',
       18, 'Compressed',
@@ -9573,14 +9586,14 @@ begin
   ]);
 
   wbTints := wbRArray('Tint Masks', wbRStruct('Tint Assets', [
-    wbRArray('Tint Layer', wbRStruct('Texture', [
+    wbRStruct('Tint Layer', [
       wbInteger(TINI, 'Index', itU16),
       wbString(TINT, 'File Name'),
       {>>> When set to None TINP does not exist Needs routine to add when
       changing the Mask Type <<<}
       wbInteger(TINP, 'Mask Type', itU16, wbTintMaskTypeEnum),
       wbFormIDCk(TIND, 'Preset Default', [CLFM, NULL])
-    ])),
+    ]),
     wbRArray('Presets', wbRStruct('Preset', [
       wbFormIDCk(TINC, 'Color', [CLFM, NULL]),
       wbFloat(TINV, 'Default Value'),

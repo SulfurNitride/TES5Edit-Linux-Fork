@@ -2061,7 +2061,9 @@ begin
     AddFunction(cInterface, 'wbGridCell', JvInterpreter_wbGridCell, 2, [varEmpty, varEmpty], varRecord);
 
     //AddIntfGet(IwbElement, 'Name', IwbElement_Name, 0, [VarEmpty], varEmpty);
+    AddConst(cUnit, 'gmTES3', ord(gmTES3));
     AddConst(cUnit, 'gmTES4', ord(gmTES4));
+    AddConst(cUnit, 'gmTES4R', ord(gmTES4R));
     AddConst(cUnit, 'gmTES5', ord(gmTES5));
     AddConst(cUnit, 'gmTES5VR', ord(gmTES5VR));
     AddConst(cUnit, 'gmFO3', ord(gmFO3));

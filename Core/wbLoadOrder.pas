@@ -39,7 +39,7 @@ type
     mfHasESMFlag,
     mfHasLightFlag,
     mfHasMediumFlag,
-    mfHasOverlayFlag,
+    mfHasUpdateFlag,
     mfHasLocalizedFlag,
     mfHasESMExtension,
     mfIsESM,
@@ -259,7 +259,7 @@ var
   IsESM      ,
   IsLight    ,
   IsMedium   ,
-  IsOverlay  ,
+  IsUpdate   ,
   IsLocalized: Boolean;
   lIsActive  : Boolean;
   sl         : TStringList;
@@ -322,7 +322,7 @@ begin
 
         miDateTime := wbGetLastWriteTime(wbDataPath + miOriginalName);
 
-        if not wbMastersForFile(wbDataPath+miOriginalName, miMasterNames, @IsESM, @IsLight, @IsLocalized, @IsOverlay, @IsMedium) then
+        if not wbMastersForFile(wbDataPath+miOriginalName, miMasterNames, @IsESM, @IsLight, @IsLocalized, @IsUpdate, @IsMedium) then
           Continue;
 
         if IsESM then begin
@@ -341,15 +341,15 @@ begin
           if the extension is .esl then
             force 0x100 flag
         }
-        if IsOverlay then begin
+        if IsUpdate then begin
           if {(Length(miMasterNames) < 1) or} IsLight or IsMedium then
-            IsOverlay := False;
+            IsUpdate := False;
         end else
           if miExtension in [meESL] then
             Include(miFlags, mfHasLightFlag);
 
-        if IsOverlay then
-          Include(miFlags, mfHasOverlayFlag);
+        if IsUpdate then
+          Include(miFlags, mfHasUpdateFlag);
 
         if IsLight then
           Include(miFlags, mfHasLightFlag);
@@ -567,12 +567,12 @@ begin
         Include(miFlags, mfIsESM);
       end;
     end;
-    if wbIsOverlaySupported then begin
+    if wbIsUpdateSupported then begin
       with TwbModuleInfo.AddNewModule('<new file>.esp', True)^ do
-        Include(miFlags, mfHasOverlayFlag);
+        Include(miFlags, mfHasUpdateFlag);
       with TwbModuleInfo.AddNewModule('<new file>.esp', True)^ do begin
         Include(miFlags, mfHasESMFlag);
-        Include(miFlags, mfHasOverlayFlag);
+        Include(miFlags, mfHasUpdateFlag);
         Include(miFlags, mfIsESM);
       end;
     end;
@@ -596,9 +596,9 @@ begin
           Include(miFlags, mfIsESM);
         end;
       end;
-      if wbIsOverlaySupported then begin
+      if wbIsUpdateSupported then begin
         with TwbModuleInfo.AddNewModule('<new file>.esm', True)^ do begin
-          Include(miFlags, mfHasOverlayFlag);
+          Include(miFlags, mfHasUpdateFlag);
           Include(miFlags, mfHasESMFlag);
           Include(miFlags, mfIsESM);
         end;
@@ -613,9 +613,9 @@ begin
         Include(miFlags, mfHasLightFlag);
         Include(miFlags, mfIsESM);
       end;
-      if wbIsOverlaySupported then begin
+      if wbIsUpdateSupported then begin
         with TwbModuleInfo.AddNewModule('<new file>.esl', True)^ do begin
-          Include(miFlags, mfHasOverlayFlag);
+          Include(miFlags, mfHasUpdateFlag);
           Include(miFlags, mfHasESMFlag);
           Include(miFlags, mfIsESM);
         end;
@@ -729,8 +729,8 @@ begin
     Result := Result + '<ESM>';
   if mfHasLightFlag in miFlags then
     Result := Result + '<Light>';
-  if mfHasOverlayFlag in miFlags then
-    Result := Result + '<Overlay>';
+  if mfHasUpdateFlag in miFlags then
+    Result := Result + '<Update>';
   if mfHasLocalizedFlag in miFlags then
     Result := Result + '<Localized>';
   if mfMastersMissing in miFlags then
@@ -945,8 +945,8 @@ var
         miLoadOrder := NewLoadOrderCount;
         NewLoadOrder[NewLoadOrderCount] := aModule;
         Inc(NewLoadOrderCount);
-        if not (wbPseudoLight or wbPseudoOverlay) then
-          if (mfHasOverlayFlag in miFlags) and not wbIgnoreOverlay then begin
+        if not (wbPseudoLight or wbPseudoUpdate) then
+          if (mfHasUpdateFlag in miFlags) and not wbIgnoreUpdate then begin
             miFileID := TwbFileID.Invalid;
           end else if (mfHasLightFlag in miFlags) and not wbIgnoreLight then begin
             if _NextLightSlot > TwbFileID.MaxLightSlot then

@@ -33,7 +33,7 @@ begin
   r := WinningOverride(r);
 
   if Signature(r) = 'ARMO' then
-    s := GetElementEditValues(r, 'Male world model\MOD2')
+    s := GetElementEditValues(r, 'Male\World Model\MOD2')
   else
     s := GetElementEditValues(r, 'Model\MODL');
  

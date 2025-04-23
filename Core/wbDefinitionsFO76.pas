@@ -7627,8 +7627,7 @@ begin
       {2} wbString(CIS2, 'Parameter #2')
       ]).SetToStr(wbConditionToStr)
         .IncludeFlag(dfCollapsed, wbCollapseConditions)
-    ).SetCountPath(CITC)
-     .IncludeFlag(dfNotAlignable);
+    ).SetCountPath(CITC);
 
   wbCNDCs :=
     wbRArray('Condition Infos',
@@ -8171,7 +8170,7 @@ begin
     wbUnused(1),
     wbInteger('Level Max', itU8),
     wbUnused(1),
-    wbInteger('Addon IndexParent Combination Index', itS16{, wbOBTEAddonIndexToStr, nil, cpNormal, True, nil, nil, -1}),
+    wbInteger('Parent Combination Index', itS16{, wbOBTEAddonIndexToStr, nil, cpNormal, True, nil, nil, -1}),
     wbInteger('Default', itU8, wbBoolEnum),
     wbArray('Keywords', wbFormIDCk('Keyword', [KYWD, NULL]), -4),
     wbInteger('Min Level For Ranks', itU8),
@@ -8565,12 +8564,18 @@ begin
     wbFTAGs,
     wbFULL,
     wbEnchantment,
-    wbTexturedModel('Male World Model', [MOD2, MO2T], [wbMODC, wbMO2S, wbENLT, wbENLS, wbAUUV]),
-    wbString(ICON, 'Male Inventory Image'),
-    wbString(MICO, 'Male Message Icon'),
-    wbTexturedModel('Female World Model', [MOD4, MO4T], [wbMODC, wbMO4S, wbENLT, wbENLS, wbAUUV]),
-    wbString(ICO2, 'Female Inventory Image'),
-    wbString(MIC2, 'Female Message Icon'),
+    wbRStruct('Male', [
+      wbTexturedModel('World Model', [MOD2, MO2T], [wbMODC, wbMO2S, wbENLT, wbENLS, wbAUUV]),
+      wbString(ICON, 'Icon Image'),
+      wbString(MICO, 'Message Icon')
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
+    wbRStruct('Female', [
+      wbTexturedModel('World Model', [MOD4, MO4T], [wbMODC, wbMO4S, wbENLT, wbENLS, wbAUUV]),
+      wbString(ICO2, 'Icon Image'),
+      wbString(MIC2, 'Message Icon')
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
     wbBOD2,
     wbDEST,
     wbYNAM,
@@ -8643,10 +8648,16 @@ begin
       wbByteArray('Unknown', 1),
       wbFloat('Weapon Adjust')
     ], cpNormal, True),
-    wbTexturedModel('Male Biped Model', [MOD2, MO2T], [wbMO2C, wbMO2S, wbModelXFLG, wbENLT, wbENLS, wbAUUV, wbMO2F]),
-    wbTexturedModel('Female Biped Model', [MOD3, MO3T], [wbMO3C, wbMO3S, wbModelXFLG, wbENLT, wbENLS, wbAUUV, wbMO3F]),
-    wbTexturedModel('Male 1st Person', [MOD4, MO4T], [wbMO4C, wbMO4S, wbENLT, wbENLS, wbAUUV, wbMO4F]),
-    wbTexturedModel('Female 1st Person', [MOD5, MO5T], [wbMO5C, wbMO5S, wbENLT, wbENLS, wbAUUV, wbMO5F]),
+    wbRStruct('Biped Model', [
+      wbTexturedModel('Male', [MOD2, MO2T], [wbMO2C, wbMO2S, wbModelXFLG, wbENLT, wbENLS, wbAUUV, wbMO2F]),
+      wbTexturedModel('Female', [MOD3, MO3T], [wbMO3C, wbMO3S, wbModelXFLG, wbENLT, wbENLS, wbAUUV, wbMO3F])
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
+    wbRStruct('1st Person', [
+      wbTexturedModel('Male', [MOD4, MO4T], [wbMO4C, wbMO4S, wbENLT, wbENLS, wbAUUV, wbMO4F]),
+      wbTexturedModel('Female', [MOD5, MO5T], [wbMO5C, wbMO5S, wbENLT, wbENLS, wbAUUV, wbMO5F])
+    ]).IncludeFlag(dfAllowAnyMember)
+      .IncludeFlag(dfStructFirstNotRequired),
     wbFormIDCK(NAM0, 'Male Skin Texture', [TXST, NULL]),
     wbFormIDCK(NAM1, 'Female Skin Texture', [TXST, NULL]),
     wbFormIDCK(NAM2, 'Male Skin Texture Swap List', [FLST, NULL]),
@@ -13538,7 +13549,7 @@ begin
     ], cpNormal, False, nil, 1)
   ]);
 
-  wbRecord(NPC_, 'Non-Player Character (Actor)',
+  wbRecord(NPC_, 'Non-Player Character',
     wbFlags(wbFlagsList([
       {0x00000400} 10, 'Unknown 10',
       {0x00040000} 18, 'Compressed',
@@ -17475,8 +17486,8 @@ begin
     ])), [
     wbEDID,
     wbXALG,
-    wbLString(ANAM, 'Title'), //Possibly male version
-    wbLString(BNAM), //Possibly female version
+    wbLString(ANAM, 'Male Title'),
+    wbLString(BNAM, 'Female Title'),
     wbInteger(PTPR, 'Is Prefix', itU8, wbBoolEnum),
     wbInteger(PTSU, 'Is Suffix', itU8, wbBoolEnum),
     wbUnknown(PTDS), //Only shows up on ones labeled with DEL so most likely a deleted flag

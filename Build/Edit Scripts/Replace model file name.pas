@@ -7,7 +7,7 @@ unit ReplaceLtex;
 const
   sReplaceWhat = '\dungeons\'; // replace what substring
   sReplaceWith = '\dwemer\'; // replace with substring
-  sModelElements = 'Model\MODL,Male world model\MOD2,Female world model\MOD3,Female world model\MOD4,Male 1st Person\MOD4,Female 1st Person\MOD5';
+  sModelElements = 'Model\MODL,Male World Model,Female World Model,Male\Biped Model\MODL,Male\World Model\MOD2,Female\Biped Model\MOD3,Female\World Model\MOD4,Biped Model\Male\MOD2,Biped Model\Female\MOD3,1st Person\Male\MOD4,1st Person\Male\MOD5';
 
 var
   slModel: TStringList;

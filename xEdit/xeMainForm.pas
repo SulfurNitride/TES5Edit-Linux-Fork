@@ -963,6 +963,9 @@ type
     FilterByEditorID: Boolean;
     FilterEditorID: string;
 
+    FilterByElementValue: Boolean;
+    FilterElementValue: string;
+
     FilterByName: Boolean;
     FilterName: string;
 
@@ -2848,9 +2851,9 @@ begin
                 Result := a._File.LoadOrder >= j;
             end;
             if Result and AsNew then begin
-              if mfHasOverlayFlag in a.miFlags then
+              if mfHasUpdateFlag in a.miFlags then
                 Exit(False);
-              if Assigned(a.miFile) and a._File.IsOverlay then
+              if Assigned(a.miFile) and a._File.IsUpdate then
                 Exit(False);
             end;
           end);
@@ -9699,6 +9702,7 @@ begin
     end;
   end;
 
+  var lYesToAll := False;
   for j := Low(Nodes) to High(Nodes) do begin
     NodeData := vstNav.GetNodeData(Nodes[j]);
     if not Assigned(NodeData) then
@@ -9780,9 +9784,23 @@ begin
           if Overrides[i].Equals(MainRecord) then k := i;
         end;
         // if it is not the last override and user confirms
-        if (k < Pred(Length(Overrides))) and (MessageDlg('Record '+MainRecord.Name+' has later overrides, update them too?', mtConfirmation, [mbYes, mbNo], 0) = mrYes) then begin
+        if (k < Pred(Length(Overrides))) then begin
+          var lYes := lYesToAll;
+          if not lYes then
+            case MessageDlg('Record '+MainRecord.Name+' has later overrides, update them too?', mtConfirmation, [mbYesToAll, mbYes, mbNo], 0) of
+              mrYes:
+                lYes := True;
+              mrYesToAll: begin
+                lYes := True;
+                lYesToAll := True;
+              end;
+            end;
           // happens when master record is selected which is not in the list of overrides, renumber all overrides
-          if k = -1 then k := 0;
+          if lYes then begin
+            if k = -1 then
+              k := 0;
+          end else
+            k := -1;
         end else
           k := -1;
       end;
@@ -11263,6 +11281,7 @@ begin
     FilterByReferencesInjectedStatus or
     FilterByEditorID or
     FilterByName or
+    FilterByElementValue or
     FilterBySignature or
     FilterByBaseEditorID or
     FilterByBaseName or
@@ -11560,6 +11579,7 @@ begin
     FilterByReferencesInjectedStatus or
     FilterByEditorID or
     FilterByName or
+    FilterByElementValue or
     FilterBySignature or
     FilterByBaseEditorID or
     FilterByBaseName or
@@ -12538,8 +12558,8 @@ var
     end else
       TargetFile := SourceFile;
 
-    if TargetFile.IsOverlay then begin
-      ShowMessage('"'+TargetFile.Name+'" is an overlay module and can''t own any records.');
+    if TargetFile.IsUpdate then begin
+      ShowMessage('"'+TargetFile.Name+'" is an update module and can''t own any records.');
       Exit;
     end;
 
@@ -12809,7 +12829,7 @@ begin
           end;
         end;
 
-        wbCurrentProgress := 'Processed Records: ' + k.ToString;
+        wbCurrentProgress := 'Processed Records: ' + Integer(k + 1).ToString;
       end;
       if AnyErrors then begin
         pgMain.ActivePage := tbsMessages;
@@ -12993,6 +13013,9 @@ begin
 
       FilterByEditorID := cbByEditorID.Checked;
       FilterEditorID := edEditorID.Text;
+
+      FilterByElementValue := cbByElementValue.Checked;
+      FilterElementValue := edElementValue.Text;
 
       FilterByName := cbByName.Checked;
       FilterName := edName.Text;
@@ -13220,6 +13243,7 @@ begin
     FilterRequiresReference or
     FilterByEditorID or
     FilterByName or
+    FilterByElementValue or
     Assigned(Signatures) or
     FilterDeleted or
     FilterScripted;
@@ -13243,6 +13267,28 @@ begin
         Boolean(Script.CallFunction('Filter', [MainRecord]));
     end;
 
+    function CheckContainerForElementValue(const aElement: IwbElement; const aValue: string): Boolean;
+    var
+      Container: IwbContainerElementRef;
+      i: integer;
+    begin
+      Result := False;
+      if not Assigned(aElement) then Exit;
+
+      if not Supports(aElement, IwbContainerElementRef, Container) then Exit;
+
+      if Container.ElementCount = 0 then
+      begin
+        if Pos(aValue, UpperCase(aElement.Value)) > 0 then
+          Result := True;
+      end
+      else
+        for i := 0 to Pred(Container.ElementCount) do
+        begin
+          Result := CheckContainerForElementValue(Container.Elements[i], aValue);
+          if Result then Break;
+        end;
+    end;
   var
     i: Integer;
   begin
@@ -13278,6 +13324,7 @@ begin
                 (Assigned(Signatures) and not Signatures.Find(MainRecord.Signature, Dummy)) or
                 (FilterByEditorID and (Pos(AnsiUpperCase(FilterEditorID), AnsiUpperCase(MainRecord.EditorID)) < 1)) or
                 (FilterByName and (Pos(AnsiUpperCase(FilterName), AnsiUpperCase(MainRecord.DisplayName[True])) < 1)) or
+                (FilterByElementValue and not CheckContainerForElementValue(MainRecord, UpperCase(FilterElementValue))) or
 
                 (FilterRequiresReference and
                   (
@@ -14736,7 +14783,7 @@ begin
     mniNavRenumberFormIDsFrom.Visible and
     wbIsLightSupported and
     Supports(Element, IwbFile, _File) and
-    not (_File.IsLight or _File.IsOverlay);
+    not (_File.IsLight or _File.IsUpdate);
 
   mniNavRenumberFormIDsInject.Visible :=
     mniNavRenumberFormIDsFrom.Visible and
@@ -19253,8 +19300,8 @@ begin
                 s := s + '<' + wbLightName + '>';
               if _File.Header.IsMedium then
                 s := s + '<Medium>';
-              if _File.Header.IsOverlay then
-                s := s + '<Overlay>';
+              if _File.Header.IsUpdate then
+                s := s + '<Update>';
               if _File.Header.IsLocalized then
                 s := s + '<Localized>';
             end;
@@ -20751,7 +20798,7 @@ begin
     Exit;
 
   FileID := FormID.FileID;
-  if wbIsLightSupported or wbPseudoLight or wbPseudoOverlay then begin
+  if wbIsLightSupported or wbPseudoLight or wbPseudoUpdate then begin
     _File := nil;
     for i := Low(Files) to High(Files) do
       if Files[i].LoadOrderFileID = FileID then begin

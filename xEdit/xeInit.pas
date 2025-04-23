@@ -383,7 +383,7 @@ begin
           RootKey := HKEY_CURRENT_USER;
           regPath := sSureAIRegKey + wbGameNameReg + '\';
         end;
-        gmFO76, gmSF1: begin
+        gmFO76, gmSF1, gmTES4R: begin
           regPath := sUninstallRegKey + wbGameNameReg + '\';
         end;
       end;
@@ -402,7 +402,7 @@ begin
       gmTES3, gmTES4, gmFO3, gmFNV, gmTES5, gmFO4, gmSSE, gmTES5VR, gmFO4VR:
                   regKey := 'Installed Path';
       gmEnderal, gmEnderalSE:  regKey := 'Install_Path';
-      gmFO76, gmSF1:     regKey := 'InstallLocation';
+      gmFO76, gmSF1, gmTES4R:  regKey := 'InstallLocation';
       end;
 
       wbDataPath := ReadString(regKey);
@@ -418,7 +418,12 @@ begin
     end;
 
     if wbDataPath <> '' then
-      wbDataPath := IncludeTrailingPathDelimiter(wbDataPath) + DataName[wbGameMode = gmTES3] + '\';
+    begin
+      if wbIsOblivionR then
+        wbDataPath := IncludeTrailingPathDelimiter(wbDataPath) + 'OblivionRemastered\Content\Dev\ObvData\Data\'
+      else
+        wbDataPath := IncludeTrailingPathDelimiter(wbDataPath) + DataName[wbGameMode = gmTES3] + '\';
+    end;
   end else
     wbDataPath := IncludeTrailingPathDelimiter(wbDataPath);
 
@@ -462,7 +467,9 @@ begin
 
     // VR games don't create ini file in My Games by default, use the one in the game folder
     if (wbGameMode in [gmTES5VR, gmFO4VR, gmSF1]) and not FileExists(wbTheGameIniFileName) then
-      wbTheGameIniFileName := ExtractFilePath(ExcludeTrailingPathDelimiter(wbDataPath)) + '\' + ExtractFileName(wbTheGameIniFileName);
+      wbTheGameIniFileName := ExtractFilePath(ExcludeTrailingPathDelimiter(wbDataPath)) + '\' + ExtractFileName(wbTheGameIniFileName)
+    else if wbIsOblivionR and not FileExists(wbTheGameIniFileName) then
+      wbTheGameIniFileName := ExtractFilePath(ExcludeTrailingPathDelimiter(wbDataPath)) + 'Oblivion.ini';
   end;
 
   if not wbFindCmdLineParam('CustomIni', wbCustomIniFileName) then begin
@@ -494,7 +501,11 @@ begin
         Free;
       end;
     end;
-    
+
+    // Oblivion Remastered has a hard coded path and ignores ini settings
+    if wbIsOblivionR then
+      s := 'Saved\SaveGames\';
+
     wbSavePath := PathRelativeToFull(wbMyGamesTheGamePath, s);
   end;
   wbSavePath := IncludeTrailingPathDelimiter(wbSavePath);
@@ -515,6 +526,8 @@ begin
         wbPluginsFileName := wbPluginsFileName + wbGameName + '\Plugins.txt'
       else if (wbGameMode = gmFNV) and isEpicNV then
         wbPluginsFileName := wbPluginsFileName + wbGameName + '_Epic' + '\Plugins.txt'
+      else if wbIsOblivionR then
+        wbPluginsFileName :=  IncludeTrailingPathDelimiter(wbDataPath) + 'Plugins.txt'
       else
         wbPluginsFileName := wbPluginsFileName + wbGameName2 + '\Plugins.txt';
     end;
@@ -524,7 +537,12 @@ begin
   // settings in the ini file next to app, or in the same folder with plugins.txt
   xeSettingsFileName := wbProgramPath + wbAppName + wbToolName + '.ini';
   if not FileExists(xeSettingsFileName) then
-    xeSettingsFileName := ChangeFileExt(wbPluginsFileName, '.'+LowerCase(wbAppName)+'viewsettings');
+  begin
+    if wbIsOblivionR then
+      xeSettingsFileName := GetCSIDLShellFolder(CSIDL_LOCAL_APPDATA) + wbGameName2 + '\Plugins.'+LowerCase(wbAppName)+'viewsettings'
+    else
+      xeSettingsFileName := ChangeFileExt(wbPluginsFileName, '.'+LowerCase(wbAppName)+'viewsettings');
+  end;
 
   wbBackupPath := '';
   if not (wbDontSave or wbFindCmdLineParam('B', wbBackupPath)) then
@@ -553,7 +571,7 @@ var
 procedure DetectAppMode;
 const
   SourceModes : array of string = ['plugins', 'saves'];
-  GameModes: array of string = ['tes5vr', 'fo4vr', 'tes3', 'tes4', 'tes5', 'enderalse', 'enderal', 'sse', 'fo3', 'fnv', 'fo4', 'fo76', 'sf1'];
+  GameModes: array of string = ['tes4r', 'tes5vr', 'fo4vr', 'tes3', 'tes4', 'tes5', 'enderalse', 'enderal', 'sse', 'fo3', 'fnv', 'fo4', 'fo76', 'sf1'];
   ToolModes: array of string = [
     'edit', 'view', 'lodgen', 'script', 'translate', 'onamupdate', 'masterupdate', 'masterrestore',
     'setesm', 'clearesm', 'sortandclean', 'sortandcleanmasters',
@@ -766,6 +784,19 @@ begin
     ToolSources        := [tsPlugins];
   end
 
+  else if isMode('TES4R') then begin
+    wbGameMode         := gmTES4R;
+    wbAppName          := 'TES4R';
+    wbGameName         := 'Oblivion';
+    wbGameExeName      := 'Oblivion Remastered';
+    wbGameName2        := 'Oblivion Remastered';
+    wbGameMasterEsm    := 'Oblivion.esm';
+    wbGameNameReg      := 'Steam App 2623190';
+    wbGameSteamID      := '2623190';
+    ToolModes          := wbAlwaysMode;
+    ToolSources        := [tsPlugins];
+  end
+
   else if isMode('TES5') then begin
     wbGameMode         := gmTES5;
     wbAppName          := 'TES5';
@@ -885,7 +916,7 @@ begin
   end
 
   else begin
-    ShowMessage('Application name must contain FNV, FO3, FO4, FO4VR, FO76, SSE, TES4, TES5, TES5VR, Enderal, or EnderalSE, SF1 to select game.');
+    ShowMessage('Application name must contain FNV, FO3, FO4, FO4VR, FO76, SSE, TES4, TES4R, TES5, TES5VR, Enderal, or EnderalSE, SF1 to select game.');
     Exit(False);
   end;
 
@@ -965,6 +996,11 @@ begin
       wbAllowInternalEdit   := false;
       wbCanSortINFO         := True;
     end;
+    gmTES4R: begin
+      wbLoadBSAs            := False;
+      wbAllowInternalEdit   := False;
+      wbCanSortINFO         := True;
+    end;
     gmTES5, gmEnderal, gmTES5VR, gmSSE, gmEnderalSE: begin
       wbVWDInTemporary      := True;
       wbLoadBSAs            := True;  // localization won't work otherwise
@@ -1026,7 +1062,7 @@ begin
   end;
 
   // Was gmTES5, but is now gmEnderal
-  if wbGameMode <= gmEnderal then
+  if (wbGameMode <= gmEnderal) or wbIsOblivionR then
     wbAddDefaultLEncodingsIfMissing(False)
   else begin
     wbLEncodingDefault[False] := TEncoding.UTF8;
@@ -1257,6 +1293,9 @@ begin
       tsSaves:   DefineTES4Saves;
       tsPlugins: DefineTES4;
     end;
+    gmTES4R: case wbToolSource of
+      tsPlugins: DefineTES4;           
+    end;
     gmTES5, gmTES5VR, gmEnderal, gmSSE, gmEnderalSE: case wbToolSource of
       tsSaves:   DefineTES5Saves;
       tsPlugins: DefineTES5;
@@ -1301,19 +1340,19 @@ begin
     if FindCmdLineSwitch('PseudoMedium') then
       wbPseudoMedium := True;
 
-  if FindCmdLineSwitch('IgnoreOverlay') then
-    wbIgnoreOverlay := True
+  if FindCmdLineSwitch('IgnoreUpdate') then
+    wbIgnoreUpdate := True
   else
-    if FindCmdLineSwitch('PseudoOverlay') then
-      wbPseudoOverlay := True;
+    if FindCmdLineSwitch('PseudoUpdate') then
+      wbPseudoUpdate := True;
 	  
   if wbComplexFileFileID then begin
     wbIgnoreLight := False;
 	wbPseudoLight := False;
 	wbIgnoreMedium := False;
 	wbPseudoMedium := False;
-	wbIgnoreOverlay := False;
-    wbPseudoOverlay := False;
+	wbIgnoreUpdate := False;
+    wbPseudoUpdate := False;
   end;
 
   if FindCmdLineSwitch('SimpleFormIDs') then
@@ -1436,7 +1475,7 @@ begin
   except end;
 
   case wbGameMode of
-    gmTES3, gmTES4,  gmTES5, gmEnderal, gmSSE, gmTES5VR, gmEnderalSE:
+    gmTES3, gmTES4, gmTES4R,  gmTES5, gmEnderal, gmSSE, gmTES5VR, gmEnderalSE:
       xeIconResource := 'xTESICON';
     gmFO3, gmFNV, gmFO4, gmFO4VR, gmFO76:
       xeIconResource := 'xFOICON';

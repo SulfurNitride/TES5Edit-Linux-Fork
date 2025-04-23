@@ -178,9 +178,9 @@ var
   wbPseudoMedium                     : Boolean    = False;
   wbHasAddedLightSupport             : Boolean    = False;
   wbHasAddedMediumSupport            : Boolean    = False;
-  wbIgnoreOverlay                    : Boolean    = False;
-  wbPseudoOverlay                    : Boolean    = False;
   wbAllowEditGameMaster              : Boolean    = False;
+  wbIgnoreUpdate                     : Boolean    = False;
+  wbPseudoUpdate                     : Boolean    = False;
   wbAllowDirectSave                  : Boolean    = False;
   wbAllowDirectSaveFor               : TStringList;
   wbAllowMasterFilesEdit             : Boolean    = False;          //must be set before DefineDefs
@@ -1485,8 +1485,8 @@ type
     fsLightCompatible,
     fsPseudoMedium,
     fsMediumCompatible,
-    fsPseudoOverlay,
-    fsOverlayCompatible,
+    fsPseudoUpdate,
+    fsUpdateCompatible,
     fsIsOfficial,
     fsCompareToHasSameMasters,
     fsAddToMap,
@@ -1580,9 +1580,9 @@ type
     function GetIsMediumDirect: Boolean;
     procedure SetIsMedium(Value: Boolean);
 
-    function GetIsOverlay: Boolean;
-    function GetIsOverlayDirect: Boolean;
-    procedure SetIsOverlay(Value: Boolean);
+    function GetIsUpdate: Boolean;
+    function GetIsUpdateDirect: Boolean;
+    procedure SetIsUpdate(Value: Boolean);
 
     function GetIsLocalized: Boolean;
     procedure SetIsLocalized(Value: Boolean);
@@ -1696,9 +1696,9 @@ type
       read GetIsMedium
       write SetIsMedium;
 
-    property IsOverlay: Boolean
-      read GetIsOverlay
-      write SetIsOverlay;
+    property IsUpdate: Boolean
+      read GetIsUpdate
+      write SetIsUpdate;
 
     property IsLocalized: Boolean
       read GetIsLocalized
@@ -1807,7 +1807,7 @@ type
     function IsCompressed: Boolean; inline;
     function IsLight: Boolean; inline;
     function IsMedium: Boolean; inline;
-    function IsOverlay: Boolean; inline;
+    function IsUpdate: Boolean; inline;
     function CantWait: Boolean; inline;
     function HasLODtree: Boolean; inline;
 
@@ -1821,7 +1821,7 @@ type
     procedure SetVisibleWhenDistant(aValue: Boolean);
     procedure SetLight(aValue: Boolean);
     procedure SetMedium(aValue: Boolean);
-    procedure SetOverlay(aValue: Boolean);
+    procedure SetUpdate(aValue: Boolean);
   end;
 
   PwbMainRecordStructFlags3 = ^TwbMainRecordStructFlags3;
@@ -1959,8 +1959,8 @@ type
     procedure SetIsLight(aValue: Boolean);
     function GetIsMedium: Boolean;
     procedure SetIsMedium(aValue: Boolean);
-    function GetIsOverlay: Boolean;
-    procedure SetIsOverlay(aValue: Boolean);
+    function GetIsUpdate: Boolean;
+    procedure SetIsUpdate(aValue: Boolean);
 
     procedure UpdateRefs;
 
@@ -2120,9 +2120,9 @@ type
     property IsMedium: Boolean
       read GetIsMedium
       write SetIsMedium;
-    property IsOverlay: Boolean
-      read GetIsOverlay
-      write SetIsOverlay;
+    property IsUpdate: Boolean
+      read GetIsUpdate
+      write SetIsUpdate;
 
     property ConflictAll: TConflictAll
       read GetConflictAll
@@ -4730,8 +4730,9 @@ function wbStringEnumSummary(const aNames       : array of string;
                                                 : IwbStringDefFormater; overload;
 
 
-function wbDiv(aValue : Integer)
-                      : IwbIntegerDefFormater;
+function wbDiv(aValue     : Integer;
+               aPrecision : Integer = wbFloatDigits)
+                          : IwbIntegerDefFormater;
 function wbMul(aValue : Integer)
                       : IwbIntegerDefFormater;
 function wbCallback(const aToStr : TwbIntToStrCallback;
@@ -4827,7 +4828,7 @@ var
 
 type
   //keep ordered by release date
-  TwbGameMode   = (gmTES3, gmTES4, gmFO3, gmFNV, gmTES5, gmEnderal, gmFO4, gmSSE, gmTES5VR, gmEnderalSE, gmFO4VR, gmFO76, gmSF1);
+  TwbGameMode   = (gmTES3, gmTES4, gmFO3, gmFNV, gmTES5, gmEnderal, gmFO4, gmSSE, gmTES5VR, gmEnderalSE, gmFO4VR, gmFO76, gmSF1, gmTES4R);
   TwbGameModes  = set of TwbGameMode;
 
   TwbToolMode   = (tmView, tmEdit, tmDump, tmExport, tmOnamUpdate, tmMasterUpdate, tmMasterRestore, tmLODgen, tmScript,
@@ -4916,6 +4917,7 @@ function wbDefsToPath(const aDefs: TwbDefPath): string;
 
 function wbIsMorrowind: Boolean; inline;
 function wbIsOblivion: Boolean; inline;
+function wbIsOblivionR: Boolean; inline;
 function wbIsFallout3: Boolean; inline;
 function wbIsFalloutNV: Boolean; inline;
 function wbIsSkyrim: Boolean; inline;
@@ -4925,7 +4927,7 @@ function wbIsFallout76: Boolean; inline;
 function wbIsStarfield: Boolean; inline;
 function wbIsLightSupported: Boolean; inline;
 function wbIsMediumSupported: Boolean; inline;
-function wbIsOverlaySupported: Boolean; inline;
+function wbIsUpdateSupported: Boolean; inline;
 
 procedure ReportDefs;
 
@@ -5506,6 +5508,11 @@ begin
   Result := wbGameMode in [gmTES4];
 end;
 
+function wbIsOblivionR: Boolean; Inline;
+begin
+  Result := wbGameMode in [gmTES4R]
+end;
+
 function wbIsFallout3: Boolean; inline;
 begin
   Result := wbGameMode in [gmFO3, gmFNV];
@@ -5551,7 +5558,7 @@ begin
   Result := (wbGameMode in [gmSF1]) or wbHasAddedMediumSupport;
 end;
 
-function wbIsOverlaySupported: Boolean; inline;
+function wbIsUpdateSupported: Boolean; inline;
 begin
   Result := wbGameMode in [gmSF1];
 end;
@@ -7675,9 +7682,10 @@ type
   TwbDivDef = class(TwbIntegerDefFormater)
   private
     ddValue: Integer;
+    ddPrecision: Integer;
   protected
     constructor Clone(const aSource: TwbDef); override;
-    constructor Create(aValue: Integer);
+    constructor Create(aValue: Integer; aPrecision: Integer);
 
     {---IwbIntegerDefFormater---}
     function ToString(aInt: Int64; const aElement: IwbElement; aForSummary: Boolean): string; override;
@@ -8137,14 +8145,14 @@ begin
 end;
 
 function wbStringMgefCode(const aSignature : TwbSignature;
-                    const aName      : string;
-                          aSize      : Integer = 0;
-                          aPriority  : TwbConflictPriority = cpNormal;
-                          aRequired  : Boolean = False;
-                          aDontShow  : TwbDontShowCallback = nil;
-                          aAfterSet  : TwbAfterSetCallback = nil;
-                          aGetCP     : TwbGetConflictPriority = nil)
-                                     : IwbSubRecordWithBaseStringDef; overload;
+                          const aName      : string;
+                                aSize      : Integer = 0;
+                                aPriority  : TwbConflictPriority = cpNormal;
+                                aRequired  : Boolean = False;
+                                aDontShow  : TwbDontShowCallback = nil;
+                                aAfterSet  : TwbAfterSetCallback = nil;
+                                aGetCP     : TwbGetConflictPriority = nil)
+                                           : IwbSubRecordWithBaseStringDef; overload;
 begin
   Result := wbSubRecord(aSignature, aName, wbStringMgefCode('', aSize, aPriority), nil, aAfterSet, aPriority, aRequired, False, aDontShow, aGetCP) as IwbSubRecordWithBaseStringDef;
 end;
@@ -9991,10 +9999,11 @@ begin
   Result := TwbEnumDef.Create(True, aNames, aSparseNames);
 end;
 
-function wbDiv(aValue : Integer)
-                      : IwbIntegerDefFormater;
+function wbDiv(aValue     : Integer;
+               aPrecision : Integer = wbFloatDigits)
+                          : IwbIntegerDefFormater;
 begin
-  Result := TwbDivDef.Create(aValue);
+  Result := TwbDivDef.Create(aValue, aPrecision);
 end;
 
 function wbMul(aValue : Integer)
@@ -19134,12 +19143,13 @@ end;
 constructor TwbDivDef.Clone(const aSource: TwbDef);
 begin
   with aSource as TwbDivDef do
-    Self.Create(ddValue).AfterClone(aSource);
+    Self.Create(ddValue, ddPrecision).AfterClone(aSource);
 end;
 
-constructor TwbDivDef.Create(aValue: Integer);
+constructor TwbDivDef.Create(aValue: Integer; aPrecision: Integer);
 begin
   ddValue := aValue;
+  ddPrecision := aPrecision;
   inherited Create;
 end;
 
@@ -19158,7 +19168,7 @@ end;
 
 function TwbDivDef.ToEditValue(aInt: Int64; const aElement: IwbElement): string;
 begin
-  Result := FloatToStrF(aInt / ddValue, ffFixed, 99, wbFloatDigits);
+  Result := FloatToStrF(aInt / ddValue, ffFixed, 99, ddPrecision);
 end;
 
 function TwbDivDef.ToSortKey(aInt: Int64; const aElement: IwbElement): string;
@@ -19170,7 +19180,7 @@ end;
 
 function TwbDivDef.ToString(aInt: Int64; const aElement: IwbElement; aForSummary: Boolean): string;
 begin
-  Result := FloatToStrF(aInt / ddValue, ffFixed, 99, wbFloatDigits);
+  Result := FloatToStrF(aInt / ddValue, ffFixed, 99, ddPrecision);
   Used(aElement, Result);
 end;
 
@@ -20737,9 +20747,9 @@ begin
       ((_Flags and $00000200) <> 0);
 end;
 
-function TwbMainRecordStructFlags.IsOverlay: Boolean;
+function TwbMainRecordStructFlags.IsUpdate: Boolean;
 begin
-  Result := wbIsOverlaySupported and
+  Result := wbIsUpdateSupported and
     ((_Flags and $00000200) <> 0);
 end;
 
@@ -20795,7 +20805,7 @@ begin
     if aValue then begin
       _Flags := _Flags or $00000400;
       SetLight(False);
-      SetOverlay(False);
+      SetUpdate(False);
     end else
       _Flags := _Flags and not $00000400;
 end;
@@ -20807,7 +20817,7 @@ begin
       if aValue then begin
         _Flags := _Flags or $00000100;
         SetMedium(False);
-        SetOverlay(False);
+        SetUpdate(False);
       end else
         _Flags := _Flags and not $00000100;
     end else
@@ -20817,9 +20827,9 @@ begin
         _Flags := _Flags and not $00000200;
 end;
 
-procedure TwbMainRecordStructFlags.SetOverlay(aValue: Boolean);
+procedure TwbMainRecordStructFlags.SetUpdate(aValue: Boolean);
 begin
-  if wbIsOverlaySupported then
+  if wbIsUpdateSupported then
     if aValue then begin
       _Flags := _Flags or $00000200;
       SetLight(False);
