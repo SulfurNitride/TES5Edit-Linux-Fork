@@ -1960,7 +1960,14 @@ begin
       .SetDontShow(wbCellExteriorDontShow),
     wbFormIDCk(XCWT, 'Water', [WATR]).SetDefaultNativeValue(24),
     wbOwnership([XCCM, XCLW, XCMT]),
-    IsTES4R(wbUnknown(XTLI), nil),
+    IsTES4R(
+      wbInteger(XTLI, 'Threat Level', itU32,
+        wbEnum([],[
+        1, 'Easy',
+        2, 'Medium',
+        3, 'Hard'
+        ])).SetDefaultNativeValue(2),
+      nil),
     IsTES4R(wbArray(XLRL, 'Unknown',
       wbStruct('Unknown', [
         wbInteger('Unknown', itu32),
