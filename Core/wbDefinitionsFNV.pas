@@ -28,8 +28,6 @@ var
   wbVatsValueFunctionEnum: IwbEnumDef;
   wbWeaponAnimTypeEnum: IwbEnumDef;
 
-function wbCreaLevelDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
-
 procedure DefineFNV;
 
 implementation
@@ -4505,10 +4503,13 @@ begin
            ])),
       {04} wbInteger('Fatigue', itU16, nil, cpNormal, False, wbActorTemplateUseStats),
       {06} wbInteger('Barter gold', itU16, nil, cpNormal, False, wbActorTemplateUseAIData),
-      {08} wbUnion('Level', wbCreaLevelDecider, [
-             wbInteger('Level', itS16, nil, cpNormal, False, wbActorTemplateUseStats),
-             wbInteger('Level Mult', itS16, wbDiv(1000), cpNormal, False, wbActorTemplateUseStats)
-           ], cpNormal, False, wbActorTemplateUseStats),
+      {08} wbUnion('Level', wbACBSLevelDecider, [
+             wbInteger('Level', itU16),
+             wbInteger('Level Mult', itU16, wbDiv(1000, 2))
+               .SetAfterLoad(wbACBSLevelMultAfterLoad)
+               .SetDefaultNativeValue(1000)
+           ]).SetAfterSet(wbACBSLevelMultAfterSet)
+             .SetDontShow(wbActorTemplateUseStats),
       {10} wbInteger('Calc min', itU16, nil, cpNormal, False, wbActorTemplateUseStats),
       {12} wbInteger('Calc max', itU16, nil, cpNormal, False, wbActorTemplateUseStats),
       {14} wbInteger('Speed Multiplier', itU16, nil, cpNormal, False, wbActorTemplateUseStats),
@@ -7031,10 +7032,13 @@ begin
            ])),
       {04} wbInteger('Fatigue', itU16, nil, cpNormal, True, wbActorTemplateUseStats),
       {06} wbInteger('Barter gold', itU16, nil, cpNormal, False, wbActorTemplateUseAIData),
-      {08} wbUnion('Level', wbCreaLevelDecider, [
-             wbInteger('Level', itS16, nil, cpNormal, True, wbActorTemplateUseStats),
-             wbInteger('Level Mult', itS16, wbDiv(1000), cpNormal, True, wbActorTemplateUseStats)
-           ], cpNormal, True, wbActorTemplateUseStats),
+      {08} wbUnion('Level', wbACBSLevelDecider, [
+             wbInteger('Level', itU16),
+             wbInteger('Level Mult', itU16, wbDiv(1000, 2))
+               .SetAfterLoad(wbACBSLevelMultAfterLoad)
+               .SetDefaultNativeValue(1000)
+           ]).SetAfterSet(wbACBSLevelMultAfterSet)
+             .SetDontShow(wbActorTemplateUseStats),
       {10} wbInteger('Calc min', itU16, nil, cpNormal, True, wbActorTemplateUseStats),
       {12} wbInteger('Calc max', itU16, nil, cpNormal, True, wbActorTemplateUseStats),
       {14} wbInteger('Speed Multiplier', itU16, nil, cpNormal, True, wbActorTemplateUseStats),

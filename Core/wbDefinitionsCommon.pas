@@ -149,12 +149,14 @@ function wbPlacedAddInfo(const aMainRecord: IwbMainRecord): string;
 function wbROADAddInfo(const aMainRecord: IwbMainRecord): string;
 function wbSCENAddInfo(const aMainRecord: IwbMainRecord): string;
 
-{>>> After Load Callbacks <<<} //3
+{>>> After Load Callbacks <<<} //4
+procedure wbACBSLevelMultAfterLoad(const aElement: IwbElement);
 procedure wbAVIFSkillAfterLoad(const aElement: IwbElement);
 procedure wbRPLDAfterLoad(const aElement: IwbElement);
 procedure wbWorldAfterLoad(const aElement: IwbElement);
 
-{>>> After Set Callbacks <<<} //30
+{>>> After Set Callbacks <<<} //31
+procedure wbACBSLevelMultAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbATANsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbBODCsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbBODSsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -611,7 +613,21 @@ begin
   end;
 end;
 
-{>>> After Load Callbacks <<<} //3
+{>>> After Load Callbacks <<<} //4
+
+procedure wbACBSLevelMultAfterLoad(const aElement: IwbElement);
+begin
+  if wbBeginInternalEdit then try
+    if Assigned(aElement) then begin
+      if aElement.NativeValue > 10000 then
+        aElement.NativeValue := 10000;
+      if aElement.NativeValue < 100 then
+        aElement.NativeValue := 100;
+    end;
+  finally
+    wbEndInternalEdit;
+  end;
+end;
 
 procedure wbAVIFSkillAfterLoad(const aElement: IwbElement);
 begin
@@ -714,7 +730,19 @@ begin
   end;
 end;
 
-{>>> After Set Callbacks <<<} //30
+{>>> After Set Callbacks <<<} //31
+
+procedure wbACBSLevelMultAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+begin
+  if Assigned(aElement) and (aElement.Name = 'Level Mult') then begin
+    if aNewValue = aOldValue then
+      Exit;
+    if aNewValue > 10000 then
+      aElement.NativeValue := 10000;
+    if aNewValue < 100 then
+      aElement.NativeValue := 100;
+  end;
+end;
 
 procedure wbATANsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin

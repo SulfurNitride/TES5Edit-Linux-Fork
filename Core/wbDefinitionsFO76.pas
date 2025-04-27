@@ -13590,10 +13590,11 @@ begin
         {0x80000000} 'Invulnerable'
       ])),
       wbInteger('XP Value Offset', itS16, nil, cpNormal, True, nil{wbActorTemplateUseStats}),
-      wbUnion('Level', wbNPCLevelDecider, [
-        wbInteger('Level', itS16, nil, cpNormal, True, nil{wbActorTemplateUseStats}),
-        wbInteger('Level Mult', itS16, wbDiv(1000), cpNormal, True, nil{wbActorTemplateUseStats})
-      ], cpNormal, True, nil{wbActorTemplateUseStats}),
+      wbUnion('Level', wbACBSLevelDecider, [
+        wbInteger('Level', itU16),
+        wbInteger('Level Mult', itU16, wbDiv(1000, 2))
+          .SetAfterLoad(wbACBSLevelMultAfterLoad)
+      ]).SetAfterSet(wbACBSLevelMultAfterSet),
       wbInteger('Calc min level', itU16, nil, cpNormal, True, nil{wbActorTemplateUseStats}),
       wbInteger('Calc max level', itU16, nil, cpNormal, True, nil{wbActorTemplateUseStats}),
       wbInteger('Disposition Base', itS16),

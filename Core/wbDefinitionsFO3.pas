@@ -3941,10 +3941,14 @@ begin
       ).IncludeFlag(dfCollapsed, wbCollapseFlags),
       {04} wbInteger('Fatigue', itU16).SetDontShow(wbActorTemplateUseStats),
       {06} wbInteger('Barter gold', itU16).SetDontShow(wbActorTemplateUseAIData),
-      {08} wbUnion('Level', wbCreaLevelDecider, [
-             wbInteger('Level', itS16).SetDontShow(wbActorTemplateUseStats),
-             wbInteger('Level Mult', itS16, wbDiv(1000)).SetDontShow(wbActorTemplateUseStats)
-           ]).SetDontShow(wbActorTemplateUseStats),
+      {08} wbUnion('Level', wbACBSLevelDecider, [
+             wbInteger('Level', itU16),//.SetDontShow(wbActorTemplateUseStats),
+             wbInteger('Level Mult', itU16, wbDiv(1000, 2))
+               .SetAfterLoad(wbACBSLevelMultAfterLoad)
+               .SetDefaultNativeValue(1000)
+               //.SetDontShow(wbActorTemplateUseStats)
+           ]).SetAfterSet(wbACBSLevelMultAfterSet)
+             .SetDontShow(wbActorTemplateUseStats),
       {10} wbInteger('Calc min', itU16).SetDontShow(wbActorTemplateUseStats),
       {12} wbInteger('Calc max', itU16).SetDontShow(wbActorTemplateUseStats),
       {14} wbInteger('Speed Multiplier', itU16).SetDontShow(wbActorTemplateUseStats),
@@ -6304,10 +6308,13 @@ begin
       ).IncludeFlag(dfCollapsed, wbCollapseFlags),
       {04} wbInteger('Fatigue', itU16).SetDontShow(wbActorTemplateUseStats),
       {06} wbInteger('Barter gold', itU16).SetDontShow(wbActorTemplateUseAIData),
-      {08} wbUnion('Level', wbCreaLevelDecider, [
-             wbInteger('Level', itS16).SetDontShow(wbActorTemplateUseStats),
-             wbInteger('Level Mult', itS16, wbDiv(1000)).SetDontShow(wbActorTemplateUseStats)
-           ]).SetDontShow(wbActorTemplateUseStats),
+      {08} wbUnion('Level', wbACBSLevelDecider, [
+             wbInteger('Level', itU16),
+             wbInteger('Level Mult', itU16, wbDiv(1000, 2))
+               .SetAfterLoad(wbACBSLevelMultAfterLoad)
+               .SetDefaultNativeValue(1000)
+           ]).SetAfterSet(wbACBSLevelMultAfterSet)
+             .SetDontShow(wbActorTemplateUseStats),
       {10} wbInteger('Calc min', itU16).SetDontShow(wbActorTemplateUseStats),
       {12} wbInteger('Calc max', itU16).SetDontShow(wbActorTemplateUseStats),
       {14} wbInteger('Speed Multiplier', itU16).SetDontShow(wbActorTemplateUseStats),
