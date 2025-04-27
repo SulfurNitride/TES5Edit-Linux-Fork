@@ -13013,7 +13013,7 @@ begin
           wbStructExSK([0, 2], [3], 'Base Data', [
             wbInteger('Level', itU16),
             wbUnused(2),
-            wbFormIDCk('Reference', sigBaseObjects),
+            wbFormIDCk('Item', sigBaseObjects),
             wbInteger('Count', itU16).SetDefaultNativeValue(1),
             wbEmpty('Chance None'),
             wbUnused(2)
@@ -13026,7 +13026,7 @@ begin
           wbStructExSK([0, 2], [3], 'Base Data', [
             wbInteger('Level', itU16),
             wbUnused(2),
-            wbFormIDCk('Reference', sigBaseObjects),
+            wbFormIDCk('Item', sigBaseObjects),
             wbInteger('Count', itU16).SetDefaultNativeValue(1),
             wbInteger('Chance None', itU8),
             wbUnused(1)
@@ -13062,7 +13062,7 @@ begin
         wbStructExSK([0, 2], [3], 'Base Data', [
           wbInteger('Level', itU16),
           wbUnused(2),
-          wbFormIDCk('Reference', [NPC_, LVLN]),
+          wbFormIDCk('NPC', [NPC_, LVLN]),
           wbInteger('Count', itS16).SetDefaultNativeValue(1),
           wbInteger('Chance None', itU8),
           wbUnused(1)
@@ -13089,7 +13089,7 @@ begin
 
   var wbLeveledListEntryPackIn :=
     wbRStructExSK([0], [1], 'Leveled List Entry', [
-      wbFormIDCk(LVLO, 'Reference', sigBaseObjects),
+      wbFormIDCk(LVLO, 'Pack In', sigBaseObjects),
       //wbCOED,
       //wbCTDAs,
       wbLVOV,
@@ -17015,7 +17015,7 @@ begin
         wbStructExSK([0, 2], [3], 'Base Data', [
           wbInteger('Level', itU16),
           wbUnused(2),
-          wbFormIDCk('Reference', [PCRD]),
+          wbFormIDCk('Perk Card', [PCRD]),
           wbInteger('Count', itS16),
           wbInteger('Chance None', itU8),
           wbUnused(1)
