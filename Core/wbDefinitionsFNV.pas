@@ -1483,20 +1483,6 @@ begin
     Exit(1);
 end;
 
-function wbCreaLevelDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
-var
-  Container: IwbContainer;
-  i: Int64;
-begin
-  Result := 0;
-  if not wbTryGetContainerFromUnion(aElement, Container) then
-    Exit;
-
-  i := Container.ElementByName['Flags'].NativeValue;
-  if i and $00000080 <> 0 then
-    Result := 1;
-end;
-
 function wbFLSTLNAMIsSorted(const aContainer: IwbContainer): Boolean;
 var
   rEDID      : IwbRecord;
