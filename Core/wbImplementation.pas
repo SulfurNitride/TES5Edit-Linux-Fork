@@ -15859,9 +15859,9 @@ end;
 function TwbSubRecord.IsElementRemovable(const aElement: IwbElement): Boolean;
 begin
   Result := IsElementEditable(aElement)
-    and not (dfArrayStaticSize in srValueDef.DefFlags)
     and (srsIsArray in srStates)
     and Assigned(srValueDef)
+    and not (dfArrayStaticSize in srValueDef.DefFlags)
     and ( (srValueDef as IwbArrayDef).ElementCount <= 0 )
     and ( (dfArrayCanBeEmpty in srValueDef.DefFlags) or (Length(cntElements) > 1) );
 
