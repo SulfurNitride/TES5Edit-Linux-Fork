@@ -5272,7 +5272,7 @@ begin
           end;
         end;
 
-        if ((wbToolMode in wbPluginModes) or xeQuickClean or xeQuickEdit) and (wbGameMode in [gmTES4, gmTES4R, gmFO3, gmFO4, gmFO4VR, gmFO76, gmFNV, gmTES5, gmTES5VR, gmSSE, gmEnderal, gmEnderalSE, gmSF1]) then begin
+        if ((wbToolMode in wbPluginModes) or xeQuickClean or xeQuickEdit) and not wbIsMorrowind then begin
           Modules.DeactivateAll;
 
           if (xePluginToUse <> '') or not xeQuickClean then
@@ -11356,7 +11356,7 @@ begin
               IsDeleted := False;
               if (wbIsSkyrim or wbIsFallout3 or wbIsFallout4 or wbIsFallout76 or wbIsStarfield) and ((Signature = 'ACHR') or (Signature = 'ACRE')) then
                 IsPersistent := True
-              else if wbGameMode in [gmTES4, gmTES4R] then
+              else if wbIsOblivion then
                 IsPersistent := False;
               if not IsPersistent then
                 if wbUDRSetZ and GetPosition(Position) then begin
@@ -14805,8 +14805,8 @@ begin
   mniNavCheckForCircularLeveledLists.Visible :=
     mniNavCheckForErrors.Visible;
 
-  mniNavSetVWDAuto.Visible := mniNavCheckForErrors.Visible and (wbGameMode in [gmTES4, gmTES4R]);
-  mniNavSetVWDAutoInto.Visible := mniNavCheckForErrors.Visible and (wbGameMode in [gmTES4, gmTES4R]);
+  mniNavSetVWDAuto.Visible := mniNavCheckForErrors.Visible and wbIsOblivion;
+  mniNavSetVWDAutoInto.Visible := mniNavCheckForErrors.Visible and wbIsOblivion;
   mniNavLOManagersDirtyInfo.Visible := mniNavCheckForErrors.Visible and (Length(LOOTPluginInfos) <> 0);
 
   if wbManualCleaningAllow then begin
@@ -17522,7 +17522,7 @@ begin
   NodeDatas[2].Element := MainRecord.RecordBySignature['EDID'];
   NodeDatas[3].Element := MainRecord.RecordBySignature['FULL'];
 
-  if wbGameMode in [gmTES4, gmTES4R] then begin
+  if wbIsOblivion then begin
     NodeDatas[4].Element := MainRecord.RecordBySignature['ENAM'];
 
     Rec := MainRecord.RecordBySignature['DATA'];
@@ -17559,7 +17559,7 @@ begin
   NodeDatas[2].Element := MainRecord.RecordBySignature['EDID'];
   NodeDatas[3].Element := MainRecord.RecordBySignature['FULL'];
 
-  if wbGameMode in [gmTES4, gmTES4R] then begin
+  if wbIsOblivion then begin
     NodeDatas[4].Element := MainRecord.RecordBySignature['ENAM'];
 
     Rec := MainRecord.RecordBySignature['BMDT'];
@@ -20255,7 +20255,7 @@ begin
   {Weapon Name}
   NodeDatas[3].Element := MainRecord.RecordBySignature['FULL'];
 
-  if wbGameMode in [gmTES4, gmTES4R] then begin
+  if wbIsOblivion then begin
     {Enchantment}
     NodeDatas[4].Element := MainRecord.RecordBySignature['ENAM'];
 
@@ -20493,9 +20493,9 @@ begin
         SetupTreeView(vstSpreadsheetArmor);
         SetupTreeView(vstSpreadSheetAmmo);
 
-        tbsWEAPSpreadsheet.TabVisible := (wbGameMode in [gmTES4, gmTES4R]) or wbIsSkyrim;
-        tbsARMOSpreadsheet.TabVisible := (wbGameMode in [gmTES4, gmTES4R]) or wbIsSkyrim;
-        tbsAMMOSpreadsheet.TabVisible := (wbGameMode in [gmTES4, gmTES4R]) or wbIsSkyrim;
+        tbsWEAPSpreadsheet.TabVisible := wbIsOblivion or wbIsSkyrim;
+        tbsARMOSpreadsheet.TabVisible := wbIsOblivion or wbIsSkyrim;
+        tbsAMMOSpreadsheet.TabVisible := wbIsOblivion or wbIsSkyrim;
 
         if wbForceTerminate then begin
           GeneralProgressNoAbortCheck('Loading of modules got terminated early. Editing is disabled.');

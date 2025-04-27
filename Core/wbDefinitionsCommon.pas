@@ -536,7 +536,7 @@ begin
     Result := ' in ' + Result;
   end;
 
-  if wbGameMode in [gmTES4, gmTES4R, gmFO3, gmFNV] then begin
+  if wbIsOblivion or wbIsFallout3 then begin
     Result := Result + ' in ' + aMainRecord.ElementEditValues['QSTI'];
   end;
 
@@ -4603,8 +4603,8 @@ end;
 function wbEnchantment(aCapacity: Boolean = False): IwbRecordMemberDef;
 begin
   var aName := IsFO3('Object Effect', 'Enchantment');
-  var aSig1 := IfThen(wbGameMode in [gmTES4, gmTES4R], ENAM, EITM);
-  var aSig2 := IfThen(wbGameMode in [gmTES4, gmTES4R], ANAM, EAMT);
+  var aSig1 := IsTES4(ENAM, EITM);
+  var aSig2 := IsTES4(ANAM, EAMT);
 
   Result := wbFormIDCk(aSig1, aName, [ENCH]);
   if aCapacity then
@@ -4652,7 +4652,7 @@ begin
         ]).SetSummaryKeyOnValue([0]),
         wbFormIDCkNoReach(XOWN, 'Owner', [FACT, NPC_])),
       wbInteger(XRNK, 'Faction rank', itS32),
-      IfThen(wbGameMode in [gmTES4, gmTES4R],
+      IsTES4(
         wbFormIDCk(XGLB, 'Global', [GLOB]),
         nil)
     ], aSkipSigs, cpNormal, False, nil, True)
@@ -4675,12 +4675,12 @@ begin
   SetLength(Members,
     Length(aTextureSubRecords) +
     1 +
-    IfThen(wbGameMode in [gmTES4, gmTES4R], 1, 0) +
+    IsTES4(1, 0) +
     IsSF1(0, 1)
   );
 
     Members[0] := wbString(aSignatures[0], 'Model Filename');
-    if wbGameMode in [gmTES4, gmTES4R] then begin
+    if wbIsOblivion then begin
       Members[1] := wbFloat(aSignatures[1], 'Bound Radius', cpBenign);
       Members[2] := wbModelInfo(aSignatures[2]);
     end else if not wbIsStarfield then
@@ -4851,7 +4851,7 @@ function wbHeadPart(aHeadPartIndexEnum: IwbEnumDef = nil; aModel: IwbRecordMembe
 begin
   var wbICON: IwbRecordMemberDef := nil;
 
-  if wbGameMode in [gmTES4, gmTES4R] then
+  if wbIsOblivion then
     wbICON := wbString(ICON, 'Icon FileName')
   else if wbGameMode = gmFNV then
     wbICON :=
@@ -5174,14 +5174,14 @@ begin
 
   wbBodyPartIndexEnum :=
     wbEnum([
-      {0}                                         'Upper Body',
-      {1} IfThen(wbGameMode in [gmTES4, gmTES4R], 'Lower Body',
-                                                  'Left Hand'),
-      {2} IfThen(wbGameMode in [gmTES4, gmTES4R], 'Hand',
-                                                  'Right Hand'),
-      {3} IfThen(wbGameMode in [gmTES4, gmTES4R], 'Foot',
-                                                  'Upper Body Texture'),
-      {4} IfThen(wbGameMode in [gmTES4, gmTES4R], 'Tail', '')
+      {0}        'Upper Body',
+      {1} IsTES4('Lower Body',
+                 'Left Hand'),
+      {2} IsTES4('Hand',
+                 'Right Hand'),
+      {3} IsTES4('Foot',
+                 'Upper Body Texture'),
+      {4} IsTES4('Tail', '')
     ]);
 
   wbBoolEnum :=
@@ -5962,7 +5962,7 @@ begin
       wbStructSK(XNAM, [0], 'Relation', [
         wbFormIDCkNoReach('Faction', [FACT, RACE]),
         wbInteger('Modifier', itS32),
-        IfThen(wbGameMode in [gmTES4, gmTES4R],
+        IsTES4(
           nil,
           wbInteger('Group Combat Reaction', itU32,
             wbEnum([

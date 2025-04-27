@@ -316,7 +316,7 @@ end;
 
 function wbLODSettingsFileName(const WorldspaceID: string): string;
 begin
-  if wbGameMode in [gmTES4, gmTES4R] then
+  if wbIsOblivion then
     Result := ''
   else if wbIsFallout3 then
     Result := 'lodsettings\' + WorldspaceID + '.dlodsettings'
