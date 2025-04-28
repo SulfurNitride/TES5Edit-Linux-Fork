@@ -2931,22 +2931,24 @@ begin
   if not wbTrySetContainer(aElement, aType, CER) then
     Exit;
 
-  var eSCDA := CER.ElementBySignature[IsTES3(SCDT, SCDA)];
-  var eSCTX := CER.ElementBySignature[SCTX];
+  var SCDA := CER.ElementBySignature[SCDA];
+  if wbIsMorrowind then
+    SCDA := CER.ElementBySignature[SCDT];
+  var SCTX := CER.ElementBySignature[SCTX];
 
-  if not Assigned(eSCDA) then begin
-    aValue := IfThen(Assigned(eSCTX), '<Source not compiled>', '<Empty>');
+  if not Assigned(SCDA) then begin
+    aValue := IfThen(Assigned(SCTX), '<Source not compiled>', '<Empty>');
     Exit;
   end;
 
-  if not Assigned(eSCTX) then begin
+  if not Assigned(SCTX) then begin
     aValue := '<Source missing>';
     Exit;
   end;
 
   with TStringList.Create do
   try
-    Text := eSCTX.Value;
+    Text := SCTX.Value;
 
     for var i := Pred(Count) downto 0 do begin
       var s := Strings[i].Trim;
