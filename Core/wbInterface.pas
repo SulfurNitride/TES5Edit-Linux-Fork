@@ -823,6 +823,7 @@ type
   IwbNamedDef = interface;
   IwbValueDef = interface;
   IwbMainRecord = interface;
+  IwbSubRecord = interface;
 
   TwbElementState = (
     esModified,
@@ -1051,6 +1052,7 @@ type
     function GetElementType: TwbElementType;
     function GetContainer: IwbContainer;
     function GetContainingMainRecord: IwbMainRecord;
+    function GetContainingSubRecord: IwbSubRecord;
     function GetFile: IwbFile;
     function GetReferenceFile: IwbFile;
     function GetSortOrder: Integer;
@@ -1170,6 +1172,8 @@ type
       read GetContainer;
     property ContainingMainRecord: IwbMainRecord
       read GetContainingMainRecord;
+    property ContainingSubRecord: IwbSubRecord
+      read GetContainingSubRecord;
     property _File: IwbFile
       read GetFile;
     property ReferenceFile: IwbFile

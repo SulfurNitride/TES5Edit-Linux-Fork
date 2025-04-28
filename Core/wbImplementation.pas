@@ -358,6 +358,7 @@ type
     function ResetLeafFirst: Boolean; virtual;
     function GetContainer: IwbContainer;
     function GetContainingMainRecord: IwbMainRecord; virtual;
+    function GetContainingSubRecord: IwbSubRecord; virtual;
     function GetFile: IwbFile; virtual;
     function GetReferenceFile: IwbFile; virtual;
     function GetSortOrder: Integer;
@@ -1569,6 +1570,7 @@ type
 
     {--- IwbSubRecord ---}
     function GetSubRecordHeaderSize: Integer;
+    function GetContainingSubRecord: IwbSubRecord; Override;
 
     {--- IwbSortableContainer ---}
     function GetSorted: Boolean;
@@ -15517,6 +15519,11 @@ begin
   srDef.ToString(Result, Self, ctCheck);
 end;
 
+function TwbSubRecord.GetContainingSubRecord: IwbSubRecord;
+begin
+  Result := Self;
+end;
+
 function TwbSubRecord.GetDataPrefixSize: Integer;
 begin
   Result := srArraySizePrefix;
@@ -19170,6 +19177,14 @@ function TwbElement.GetContainingMainRecord: IwbMainRecord;
 begin
   if Assigned(eContainer) then
     Result := IwbContainer(eContainer).ContainingMainRecord
+  else
+    Result := nil;
+end;
+
+function TwbElement.GetContainingSubRecord: IwbSubRecord;
+begin
+  if Assigned(eContainer) then
+    Result := IwbContainer(eContainer).ContainingSubRecord
   else
     Result := nil;
 end;
