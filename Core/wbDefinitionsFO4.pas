@@ -6024,8 +6024,8 @@ begin
 
   wbConditions :=
     wbRArray('Conditions',
-      wbRStruct('Condition', [
-      {0} wbStruct(CTDA, '', [
+      wbRStructSK([0], 'Condition', [
+      {0} wbStructSK(CTDA, [3, 5, 6], '', [
           {0} wbInteger('Type', itU8, wbConditionTypeToStr, wbConditionTypeToInt).SetAfterSet(wbConditionTypeAfterSet),
           {1} wbUnused(3),
           {2} wbUnion('Comparison Value', wbConditionCompValueDecider, [

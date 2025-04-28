@@ -1493,10 +1493,10 @@ begin
   wbConditions :=
     wbRArray('Conditions',
       wbRUnion('Condition', [
-      {0} wbStruct(CTDA, 'Condition', wbConditionMembers, cpNormal, False, nil, 7)
+      {0} wbStructSK(CTDA, [3, 5, 6], 'Condition', wbConditionMembers, cpNormal, False, nil, 7)
             .SetToStr(wbConditionToStr)
             .IncludeFlag(dfCollapsed, wbCollapseConditions),
-      {1} wbStruct(CTDT, 'Condition', wbConditionMembers, cpNormal, False, nil, 7)
+      {1} wbStructSK(CTDT, [3, 5, 6], 'Condition', wbConditionMembers, cpNormal, False, nil, 7)
             .SetToStr(wbConditionToStr)
             .IncludeFlag(dfCollapsed, wbCollapseConditions)
       ]));
