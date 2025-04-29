@@ -1158,7 +1158,11 @@ begin
     wbEnchantment //[ENCH]
   ]).SetFormIDBase($40);
 
-  wbRecord(CONT, 'Container', [
+  wbRecord(CONT, 'Container',
+    wbFlags(wbFlagsList([
+      10, 'Corpses Persist',
+      13, 'Blocked'
+    ])), [
     wbEditorID,
     wbDeleted,
     wbModel.SetRequired,
