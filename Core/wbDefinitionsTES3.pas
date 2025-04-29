@@ -2365,7 +2365,11 @@ begin
   ]).SetFormIDBase($40)
     .SetSummaryKey([2]);
 
-  wbRecord(WEAP, 'Weapon', [
+  wbRecord(WEAP, 'Weapon',
+    wbFlags(wbFlagsList([
+      10, 'References Persist',
+      13, 'Blocked'
+    ])), [
     wbEditorID,
     wbDeleted,
     wbModel.SetRequired,
