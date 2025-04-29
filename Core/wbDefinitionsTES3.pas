@@ -867,8 +867,8 @@ begin
       wbInteger('Number of Records', itU32)
     ]).SetRequired
       .IncludeFlag(dfInternalEditOnly, not wbAllowMasterFilesEdit),
-    wbRArray('Masters',
-      wbRStruct('Master', [
+    wbRArray('Master Files',
+      wbRStruct('Master File', [
         wbStringForward(MAST, 'Filename').SetRequired,
         wbInteger(DATA, 'Master Size', itU64, nil, cpIgnore, True)
     ])).IncludeFlag(dfInternalEditOnly, not wbAllowMasterFilesEdit)
