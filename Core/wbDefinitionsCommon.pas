@@ -5885,7 +5885,8 @@ begin
       wbFloat('Version'),
       wbInteger('Number of Records', itU32),
       wbInteger('Next Object ID', itU32, wbNextObjectIDToString, wbNextObjectIDToInt)
-    ]).SetRequired;
+    ]).SetRequired
+      .IncludeFlag(dfInternalEditOnly, not wbAllowMasterFilesEdit);
 
   wbKWDAs :=
     wbArrayS(KWDA, 'Keywords',

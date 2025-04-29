@@ -865,7 +865,8 @@ begin
       wbString('Author', 32),
       wbString('Description', 256),
       wbInteger('Number of Records', itU32)
-    ]).SetRequired,
+    ]).SetRequired
+      .IncludeFlag(dfInternalEditOnly, not wbAllowMasterFilesEdit),
     wbRArray('Masters',
       wbRStruct('Master', [
         wbStringForward(MAST, 'Filename').SetRequired,
