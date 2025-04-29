@@ -119,7 +119,7 @@ object frmModuleSelect: TfrmModuleSelect
         MinWidth = 70
         Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAllowFocus, coUseCaptionAlignment, coEditable, coStyleColor]
         Position = 5
-        Text = 'Overlay'
+        Text = 'Update'
         Width = 70
       end
       item
