@@ -116,7 +116,6 @@ object frmOptions: TfrmOptions
         Top = 61
         Width = 189
         Height = 17
-        Hint = 'Default only track MGEF and game settings'
         Caption = 'Show tip on start'
         TabOrder = 9
       end
