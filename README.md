@@ -64,7 +64,7 @@ Getting started with xEdit development requires a properly configured Delphi env
 
 ### Install Delphi
 
-If you don't already have a Delphi environment, we recommend using [Delphi 11 Community Edition](https://www.embarcadero.com/products/delphi/starter).
+If you don't already have a Delphi environment, we recommend using [Delphi 12 Community Edition](https://www.embarcadero.com/products/delphi/starter).
 
 ### Install Dependencies
 
@@ -77,25 +77,25 @@ If you don't already have a Delphi environment, we recommend using [Delphi 11 Co
   - **enable** the _Do not store the Explicit properties into the DFM_ option.
 - Exit Delphi.
 - Clone the xEdit repo (if you haven't already) and initialize submodules (run `git submodule update --init --recursive` from the git root).
-- Navigate to the _External\jcl\jcl\source\include\\_ directory and copy **jcl.template.inc** to **jcld28win32.inc**. To build xEdit 64 bit, copy **jcl.template.inc** again, to **jcld28win64.inc**
-- Open _External\jcl\jcl\packages\JclPackagesD280.groupproj_.
+- Navigate to the _External\jcl\jcl\source\include\\_ directory and copy **jcl.template.inc** to **jcld29win32.inc**. To build xEdit 64 bit, copy **jcl.template.inc** again, to **jcld29win64.inc**
+- Open _External\jcl\jcl\packages\JclPackagesD290.groupproj_.
 - Build All, then install all packages (non-runtime packages with green icons).
 - Restart Delphi.
-- Open _External\jvcl\jvcl\packages\D28 Packages.groupproj_.
+- Open _External\jvcl\jvcl\packages\D29 Packages.groupproj_.
 - Navigate to Tools &rarr; Options.
 - Under Language &rarr; Delphi, add the below paths to the _Library_ option:
-  - _{TES5Edit repo}\External\jcl\jcl\lib\d28\win32_
+  - _{TES5Edit repo}\External\jcl\jcl\lib\d29\win32_
   - _{TES5Edit repo}\External\jcl\jcl\source\include_
 - Build All, then install all packages (non-runtime packages with green icons).
 - Restart Delphi.
 - Navigate to Tools &rarr; Options.
 - Under Language &rarr; Delphi, add the below path to the _Library_ option:
-  - _{TES5Edit repo}\External\jvcl\jvcl\lib\d28\win32_
+  - _{TES5Edit repo}\External\jvcl\jvcl\lib\d29\win32_
 - Restart Delphi.
-- Open _External\VirtualTrees\Packages\RAD Studio 11\VirtualTreeView.groupproj_.
-- Build All, then install **VirtualTreesD28.bpl**.
-- Open _External\FileContainer\FileContainer28.groupproj_.
-- Build All, then install **FileContainerD28.bpl**.
+- Open _External\VirtualTrees\Packages\RAD Studio 12\VirtualTreeView.groupproj_.
+- Build All, then install **VirtualTreesD29.bpl**.
+- Open _External\FileContainer\FileContainer29.groupproj_.
+- Build All, then install **FileContainerD29.bpl**.
 
 ### Important Note
 
@@ -105,19 +105,20 @@ If you don't have commercial [DevExpress](https://www.devexpress.com/) component
 
 Rename the xEdit executable based on the following table:
 
-| Game               | Executable Name     |
-|--------------------|---------------------|
-| Enderal            | `EnderalEdit.exe`   |
-| Enderal SE         | `EnderalSEEdit.exe` |
-| Oblivion           | `TES4Edit.exe`      |
-| Skyrim             | `TES5Edit.exe`      |
-| Skyrim SE          | `SSEEdit.exe`       |
-| Skyrim VR          | `TES5VREdit.exe`    |
-| Fallout 3          | `FO3Edit.exe`       |
-| Fallout: New Vegas | `FNVEdit.exe`       |
-| Fallout 4          | `FO4Edit.exe`       |
-| Fallout 4 VR       | `FO4VREdit.exe`     |
-| Fallout 76         | `FO76Edit.exe`      |
+| Game                | Executable Name     |
+|---------------------|---------------------|
+| Enderal             | `EnderalEdit.exe`   |
+| Enderal SE          | `EnderalSEEdit.exe` |
+| Oblivion            | `TES4Edit.exe`      |
+| Oblivion Remastered | `TES4Edit.exe`      |
+| Skyrim              | `TES5Edit.exe`      |
+| Skyrim SE           | `SSEEdit.exe`       |
+| Skyrim VR           | `TES5VREdit.exe`    |
+| Fallout 3           | `FO3Edit.exe`       |
+| Fallout: New Vegas  | `FNVEdit.exe`       |
+| Fallout 4           | `FO4Edit.exe`       |
+| Fallout 4 VR        | `FO4VREdit.exe`     |
+| Fallout 76          | `FO76Edit.exe`      |
 
 ## xEdit Updates
 
