@@ -5102,29 +5102,25 @@ begin
     if not Assigned(HEDR) then
       raise Exception.Create('File ' + GetFileName + ' has a file header with missing HEDR subrecord');
 
+
+    if flModule.miExtension = meESM then
+      SetIsESM(True);
+
+    if wbIsLightSupported and (flModule.miExtension = meESL) then begin
+      SetIsESM(True);
+      SetIsLight(True);
+    end;
+
     if wbIsStarfield then begin
-      if GetIsUpdateDirect then begin
-        if GetIsLightDirect then begin
+      if GetIsUpdateDirect and (GetIsLightDirect or GetIsMediumDirect) then
           SetIsUpdate(False);
-          SetIsLight(True);
-        end else if GetIsMediumDirect then begin
-          SetIsUpdate(False);
-          SetIsMedium(True);
-        end;
+
+      if flModule.miExtension = meESP then begin
+        if wbRedPill then
+          raise Exception.Create('".esp" modules can not be saved in ' + wbAppName + wbToolName)
+        else
+          FileHeader.ElementEditValues['CNAM'] := 'RedPill';
       end;
-
-      if flModule.miExtension in [meESM, meESL] then
-        SetIsESM(True);
-      if not GetIsUpdateDirect then begin
-        if flModule.miExtension = meESL then
-          SetIsLight(True);
-      end;
-
-      if (flModule.miExtension = meESP) and not wbRedPill then
-        raise Exception.Create('".esp" modules can not be saved in ' + wbAppName + wbToolName);
-
-      if wbRedPill then
-        FileHeader.ElementEditValues['CNAM'] := 'RedPill';
     end;
 
     inherited;
