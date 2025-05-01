@@ -677,25 +677,6 @@ begin
   end;
 end;
 
-procedure wbCREAAfterLoad(const aElement: IwbElement);
-var
-  Container: IwbContainer;
-begin
-  if not Assigned(aElement) then
-    Exit;
-
-  if wbBeginInternalEdit then try
-    if Supports(aElement, IwbContainer, Container) then begin
-      if not Assigned(Container.ElementByName['Factions']) then begin
-        Container.Add('Factions', True);
-        Container.ElementByPath['Factions\SNAM\Faction'].NativeValue := $13;
-      end;
-    end;
-  finally
-    wbEndInternalEdit
-  end;
-end;
-
 {function wbEDDXDontShow(const aElement: IwbElement): Boolean;
 var
   MainRecord : IwbMainRecord;
@@ -2212,7 +2193,7 @@ begin
         ])),
         wbSoundTypeSounds
       ]))
-  ], True).SetAfterLoad(wbCREAAfterLoad);
+  ], True);
 
   wbRecord(CSTY, 'Combat Style', [
     wbEDID,
