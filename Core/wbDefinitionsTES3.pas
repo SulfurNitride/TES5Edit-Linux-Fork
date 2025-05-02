@@ -860,13 +860,12 @@ begin
 
   wbRecord(TES3, 'Main File Header', [
     wbStruct(HEDR, 'Header', [
-      wbFloat('Version', cpNormal, False, 1, 2),
+      wbFloat('Version', cpNormal, False, 1, 2).IncludeFlag(dfInternalEditOnly, not wbAllowEditHEDRVersion),
       wbRecordFlags,
       wbString('Author', 32),
       wbString('Description', 256),
       wbInteger('Number of Records', itU32)
-    ]).SetRequired
-      .IncludeFlag(dfInternalEditOnly, not wbAllowMasterFilesEdit),
+    ]).SetRequired,
     wbRArray('Master Files',
       wbRStruct('Master File', [
         wbStringForward(MAST, 'Filename').SetRequired,

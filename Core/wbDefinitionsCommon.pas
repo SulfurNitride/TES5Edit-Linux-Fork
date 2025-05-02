@@ -5882,11 +5882,10 @@ begin
 
   wbHEDR :=
     wbStruct(HEDR, 'Header', [
-      wbFloat('Version'),
+      wbFloat('Version').IncludeFlag(dfInternalEditOnly, not wbAllowEditHEDRVersion),
       wbInteger('Number of Records', itU32),
       wbInteger('Next Object ID', itU32, wbNextObjectIDToString, wbNextObjectIDToInt)
-    ]).SetRequired
-      .IncludeFlag(dfInternalEditOnly, not wbAllowMasterFilesEdit);
+    ]).SetRequired;
 
   wbKWDAs :=
     wbArrayS(KWDA, 'Keywords',
