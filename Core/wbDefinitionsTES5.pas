@@ -7602,7 +7602,7 @@ begin
       {0x04} 'Exclusive'
     ])),
     wbFormIDCk(SNAM, 'Starting Topic', [DIAL], False, cpNormal, True)
-  ]);
+  ]).SetAddInfo(wbDLBRAddInfo);
 
   wbRecord(MUST, 'Music Track', [
     wbEDID,
@@ -7900,7 +7900,7 @@ begin
       ]))
     ]),
     wbConditions
-  ]);
+  ]).SetAddInfo(wbSCENAddInfo);
 
   wbRecord(ASTP, 'Association Type', [
     wbEDID,

@@ -496,55 +496,63 @@ uses
 {>>> Add Info Callbacks <<<} //10
 
 function wbCellAddInfo(const aMainRecord: IwbMainRecord): string;
-var
-  Rec : IwbRecord;
 begin
+  if not Assigned(aMainRecord) then
+    Exit;
+
   Result := aMainRecord.ElementEditValues['Worldspace'];
   if Result <> '' then
     Result := ' in ' + Result;
 
   if not aMainRecord.IsPersistent then begin
-    Rec := aMainRecord.RecordBySignature['XCLC'];
-    if Assigned(Rec) then
-      Result := Result + ' at ' + Rec.Elements[0].Value + ',' + Rec.Elements[1].Value;
+    var lRecord := aMainRecord.RecordBySignature['XCLC'];
+    if Assigned(lRecord) then
+      Result := Result + ' at ' + lRecord.Elements[0].Value + ',' + lRecord.Elements[1].Value;
   end;
 end;
 
 function wbDIALAddInfo(const aMainRecord: IwbMainRecord): string;
 begin
+  if not Assigned(aMainRecord) then
+    Exit;
+
   if wbIsSkyrim then
     Result := aMainRecord.ElementEditValues['QNAM']
   else
     Result := aMainRecord.ElementEditValues['Quest'];
 
-  if Result <> '' then begin
+  if Result <> '' then
     Result := ' in ' + Result;
-  end;
 end;
 
 function wbDLBRAddInfo(const aMainRecord: IwbMainRecord): string;
 begin
-  Result := aMainRecord.ElementEditValues['Quest'];
-  if Result <> '' then begin
+  if not Assigned(aMainRecord) then
+    Exit;
+
+  if wbIsSkyrim then
+    Result := aMainRecord.ElementEditValues['QNAM']
+  else
+    Result := aMainRecord.ElementEditValues['Quest'];
+
+  if Result <> '' then
     Result := ' in ' + Result;
-  end;
 end;
 
 function wbINFOAddInfo(const aMainRecord: IwbMainRecord): string;
-var
-  Response : string;
 begin
+  if not Assigned(aMainRecord) then
+    Exit;
+
   Result := aMainRecord.ElementEditValues['Topic'];
-  if Result <> '' then begin
+  if Result <> '' then
     Result := ' in ' + Result;
-  end;
 
-  if wbIsOblivion or wbIsFallout3 then begin
+  if wbIsOblivion or wbIsFallout3 then
     Result := Result + ' in ' + aMainRecord.ElementEditValues['QSTI'];
-  end;
 
   if Result <> '' then begin
-    Response := Trim(aMainRecord.ElementValues['Responses\Response\NAM1']);
+    var Response := Trim(aMainRecord.ElementValues['Responses\Response\NAM1']);
     if Response <> '' then
       Result := '''''' + Response + '''''' + Result;
   end;
@@ -552,14 +560,19 @@ end;
 
 function wbLANDAddInfo(const aMainRecord: IwbMainRecord): string;
 begin
+  if not Assigned(aMainRecord) then
+    Exit;
+
   Result := aMainRecord.ElementEditValues['Cell'];
-  if Result <> '' then begin
+  if Result <> '' then
     Result := ' in ' + Result;
-  end;
 end;
 
 function wbNAVMAddInfo(const aMainRecord: IwbMainRecord): string;
 begin
+  if not Assigned(aMainRecord) then
+    Exit;
+
   Result := aMainRecord.ElementEditValues['Cell'];
   if Result <> '' then
     Result := ' in ' + Result;
@@ -567,30 +580,35 @@ end;
 
 function wbPGRDAddInfo(const aMainRecord: IwbMainRecord): string;
 begin
+  if not Assigned(aMainRecord) then
+    Exit;
+
   Result := aMainRecord.ElementEditValues['Cell'];
   if Result <> '' then
     Result := ' in ' + Result;
 end;
 
 function wbPlacedAddInfo(const aMainRecord: IwbMainRecord): string;
-var
-  Cell      : IwbMainRecord;
-  Container : IwbContainer;
-  Grid      : TwbGridCell;
-  Position  : TwbVector;
 begin
+  if not Assigned(aMainRecord) then
+    Exit;
+
   Result := aMainRecord.ElementEditValues['Cell'];
   if Result <> '' then
     Result := ' in ' + Result;
 
   if not aMainRecord.IsDeleted then begin
     Result := 'Places ' + Trim(aMainRecord.RecordBySignature['NAME'].Value) + Result;
-    if Supports(aMainRecord.Container, IwbGroupRecord, Container) then
-      Cell := IwbGroupRecord(Container).ChildrenOf;
 
-    if Assigned(Cell) and Cell.IsPersistent and aMainRecord.GetPosition(Position) then begin
-      Grid := wbPositionToGridCell(Position);
-      Result := Result + ' at ' + IntToStr(Grid.X) + ',' + IntToStr(Grid.Y);
+    var lCell        : IwbMainRecord;
+    var lGroupRecord : IwbGroupRecord;
+    if Supports(aMainRecord.Container, IwbGroupRecord, lGroupRecord) then
+      lCell := lGroupRecord.ChildrenOf;
+
+    var lPosition : TwbVector;
+    if Assigned(lCell) and lCell.IsPersistent and aMainRecord.GetPosition(lPosition) then begin
+      var lGrid := wbPositionToGridCell(lPosition);
+      Result := Result + ' at ' + IntToStr(lGrid.X) + ',' + IntToStr(lGrid.Y);
     end;
 
     if aMainRecord.HasPrecombinedMesh then
@@ -600,6 +618,9 @@ end;
 
 function wbROADAddInfo(const aMainRecord: IwbMainRecord): string;
 begin
+  if not Assigned(aMainRecord) then
+    Exit;
+
   Result := aMainRecord.ElementEditValues['Worldspace'];
   if Result <> '' then
     Result := ' in ' + Result;
@@ -607,7 +628,14 @@ end;
 
 function wbSCENAddInfo(const aMainRecord: IwbMainRecord): string;
 begin
-  Result := aMainRecord.ElementEditValues['Quest'];
+  if not Assigned(aMainRecord) then
+    Exit;
+
+  if wbIsSkyrim then
+    Result := aMainRecord.ElementEditValues['QNAM']
+  else
+    Result := aMainRecord.ElementEditValues['Quest'];
+
   if Result <> '' then begin
     Result := ' in ' + Result;
   end;
