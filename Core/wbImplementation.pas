@@ -5116,7 +5116,7 @@ begin
           SetIsUpdate(False);
 
       if flModule.miExtension = meESP then begin
-        if wbRedPill then
+        if not wbRedPill then
           raise Exception.Create('".esp" modules can not be saved in ' + wbAppName + wbToolName)
         else
           FileHeader.ElementEditValues['CNAM'] := 'RedPill';

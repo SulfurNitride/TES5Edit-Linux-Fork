@@ -4,6 +4,21 @@ If you share your mods on Nexus Mods and use xEdit as a major component in devel
 
 xEdit is crucial to our shared modding community and your contribution - no matter the size - is invaluable and deeply appreciated.
 
+# What's New in xEdit 4.1.5o?
+
+## Bugfixes / Minor Changes
+
+* #1425 - Multiple Definition updates. Scripts may need updates.
+    * [TES4/TES4R] CREA - Remove AfterLoad, wasn't actually needed and was causing an issue with Delta Patches.
+    * [TES4R] CELL \ XTLI - Decoded as Thread Level.
+    * [TES4R] REFR \ XAAG - Appears to be a GUID, decoded as such for now. Scripts should Get/Set edit value as proper GUID string.
+    * [ALL] Conditions - Add proper Sort Keys to enable correct Alignment.
+    * [ALL] Conditions - When changing function it should not update the view for relevant field types.
+    * [ALL] CREA/NPC_ \ ACBS - Update Level handling to respect the range constraint enforced by the Game/CKs.
+    * [ALL] Fix crash when right clicking container children.
+    * UI - Renamed Overlay to Update on the Module Selection Form.
+    * xEdit - Force file flags based on file extension for all game modes where applicable.
+
 # What's New in xEdit 4.1.5n?
 
 ## Oblivion Remaster support
@@ -72,7 +87,8 @@ end;
     * Scripting/API: Add procedure AddMastersIfMissing to add multiple masters to a file with option to sort or silent add.
 * #1398 - [SF1] QUST\QDUP added from patch 1.14.74
 * #1396 - [TES3] Major decoding work.
-* #1393 - Multiple Definition updates
+* #1393 - Multiple Definition updates.  Scripts may need updates.
+    * [ALL] Leveled Lists had "Reference" renamed to a list specific name. Scripts will need updates.
     * [TES4] wbConditionFunctions - Add 3 missing OBSE Functions
     * [TES4] - Collapse wbEffects to a single Variable
     * [FO3/FNV] IDLE - Update ANAM
