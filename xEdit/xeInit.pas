@@ -1148,11 +1148,16 @@ begin
         xeVeryQuickShowConflicts := True;
 
     if (FindCmdLineSwitch('quickclean') or FindCmdLineSwitch('qc')
-      or ExeName.Contains('quickclean') or ExeName.Contains('qc')) and (wbToolSource in [tsPlugins]) then
+      or ExeName.Contains('quickclean') or ExeName.Contains('qc')) and (wbToolSource in [tsPlugins]) then begin
+      if wbCanSortINFO then
+        wbFillPNAM := True;
       xeQuickClean := True;
+    end;
 
     if (FindCmdLineSwitch('quickautoclean') or FindCmdLineSwitch('qac')
       or ExeName.Contains('quickautoclean') or ExeName.Contains('qac')) and (wbToolSource in [tsPlugins]) then begin
+      if wbCanSortINFO then
+        wbFillPNAM := True;
       xeQuickClean := True;
       xeQuickCleanAutoSave := xeQuickClean;
     end;
