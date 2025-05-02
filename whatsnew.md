@@ -4,6 +4,19 @@ If you share your mods on Nexus Mods and use xEdit as a major component in devel
 
 xEdit is crucial to our shared modding community and your contribution - no matter the size - is invaluable and deeply appreciated.
 
+# What's New in xEdit 4.1.5o?
+
+## Bugfixes / Minor Changes
+
+* #1425 - Multiple Definition updates. Scripts may need updates.
+    * [TES4/TES4R] CREA - Remove AfterLoad, wasn't actually needed and was causing an issue with Delta Patches.
+    * [TES4R] CELL \ XTLI - Decoded as Thread Level.
+    * [TES4R] REFR \ XAAG - Appears to be a GUID, decoded as such for now. Scripts should Get/Set edit value as proper GUID string.
+    * [ALL] Conditions - Add proper Sort Keys to enable correct Alignment.
+    * [ALL] CREA/NPC_ \ ACBS - Update Level handling to respect the range constraint enforced by the Game/CKs.
+    * UI - Renamed Overlay to Update on the Module Selection Form.
+    * xEdit - Force file flags based on file extension for all game modes where applicable.
+
 # What's New in xEdit 4.1.5n?
 
 ## Oblivion Remaster support
