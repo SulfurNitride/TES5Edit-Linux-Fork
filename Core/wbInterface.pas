@@ -178,6 +178,7 @@ var
   wbPseudoMedium                     : Boolean    = False;
   wbHasAddedLightSupport             : Boolean    = False;
   wbHasAddedMediumSupport            : Boolean    = False;
+  wbAllowEditHEDRVersion             : Boolean    = False;
   wbAllowEditGameMaster              : Boolean    = False;
   wbIgnoreUpdate                     : Boolean    = False;
   wbPseudoUpdate                     : Boolean    = False;
