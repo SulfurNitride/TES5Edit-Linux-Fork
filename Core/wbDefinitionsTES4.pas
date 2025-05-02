@@ -1467,7 +1467,10 @@ begin
     wbRArrayS('Items',
       wbStructSK(CNTO, [0], 'Item', [
         wbFormIDCk('Item', [ALCH, AMMO, APPA, ARMO, BOOK, CLOT, INGR, KEYM, LIGH, LVLI, MISC, SGST, SLGM, WEAP]),
-        wbInteger('Count', itS32).SetDefaultNativeValue(1)
+        wbInteger('Count', itS32)
+          .SetAfterSet(wbCNTOCountAfterSet)
+          .SetAfterLoad(wbCNTOCountAfterLoad)
+          .SetDefaultNativeValue(1)
       ]).SetToStr(wbItemToStr)
         .IncludeFlag(dfCollapsed, wbCollapseItems));
 

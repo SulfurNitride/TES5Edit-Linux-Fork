@@ -149,18 +149,20 @@ function wbPlacedAddInfo(const aMainRecord: IwbMainRecord): string;
 function wbROADAddInfo(const aMainRecord: IwbMainRecord): string;
 function wbSCENAddInfo(const aMainRecord: IwbMainRecord): string;
 
-{>>> After Load Callbacks <<<} //4
+{>>> After Load Callbacks <<<} //5
 procedure wbACBSLevelMultAfterLoad(const aElement: IwbElement);
 procedure wbAVIFSkillAfterLoad(const aElement: IwbElement);
+procedure wbCNTOCountAfterLoad(const aElement: IwbElement);
 procedure wbRPLDAfterLoad(const aElement: IwbElement);
 procedure wbWorldAfterLoad(const aElement: IwbElement);
 
-{>>> After Set Callbacks <<<} //31
+{>>> After Set Callbacks <<<} //32
 procedure wbACBSLevelMultAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbATANsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbBODCsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbBODSsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbCNTOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+procedure wbCNTOCountAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbConditionsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbConditionTypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbContainerAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -641,7 +643,7 @@ begin
   end;
 end;
 
-{>>> After Load Callbacks <<<} //4
+{>>> After Load Callbacks <<<} //5
 
 procedure wbACBSLevelMultAfterLoad(const aElement: IwbElement);
 begin
@@ -668,6 +670,20 @@ begin
     var lValue := aElement.NativeValue;
     if lValue > 3 then
       lValue := 0;
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
+procedure wbCNTOCountAfterLoad(const aElement: IwbElement);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    var lValue := aElement.NativeValue;
+    if lValue < 0 then
+      lValue := lValue * -1;
   finally
     wbEndInternalEdit;
   end;
@@ -747,7 +763,7 @@ begin
   end;
 end;
 
-{>>> After Set Callbacks <<<} //31
+{>>> After Set Callbacks <<<} //32
 
 procedure wbACBSLevelMultAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
@@ -788,6 +804,23 @@ end;
 procedure wbCNTOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
   wbCounterAfterSet('COCT - Count', aElement);
+end;
+
+procedure wbCNTOCountAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if VarSameValue(aOldValue, aNewValue) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    var lValue := aElement.NativeValue;
+    if lValue < 0 then
+      lValue := lValue * -1;
+  finally
+    wbEndInternalEdit;
+  end;
 end;
 
 procedure wbConditionsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
