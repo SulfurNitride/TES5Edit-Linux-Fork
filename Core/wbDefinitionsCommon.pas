@@ -645,13 +645,15 @@ end;
 
 procedure wbACBSLevelMultAfterLoad(const aElement: IwbElement);
 begin
+  if not Assigned(aElement) then
+    Exit;
+
   if wbBeginInternalEdit then try
-    if Assigned(aElement) then begin
-      if aElement.NativeValue > 10000 then
-        aElement.NativeValue := 10000;
-      if aElement.NativeValue < 100 then
-        aElement.NativeValue := 100;
-    end;
+    var lValue := aElement.NativeValue;
+    if lValue > 10000 then
+      lValue := 10000;
+    if lValue < 100 then
+      lValue := 100;
   finally
     wbEndInternalEdit;
   end;
@@ -663,30 +665,33 @@ begin
     Exit;
 
   if wbBeginInternalEdit then try
-    if aElement.NativeValue > 3 then
-      aElement.NativeValue := 0;
+    var lValue := aElement.NativeValue;
+    if lValue > 3 then
+      lValue := 0;
   finally
     wbEndInternalEdit;
   end;
 end;
 
 procedure wbRPLDAfterLoad(const aElement: IwbElement);
-var
-  Container : IwbContainer;
-  a, b      : Single;
-  NeedsFlip : Boolean;
 begin
+  if not Assigned(aElement) then
+    Exit;
+
   if wbBeginInternalEdit then try
-    if not Supports(aElement, IwbContainer, Container) then
+    var lContainerElementRef : IwbContainerElementRef;
+    if not Supports(aElement, IwbContainerElementRef, lContainerElementRef) then
       Exit;
-    NeedsFlip := False;
-    if Container.ElementCount > 1 then begin
-      a := StrToFloat((Container.Elements[0] as IwbContainer).Elements[0].Value);
-      b := StrToFloat((Container.Elements[Pred(Container.ElementCount)] as IwbContainer).Elements[0].Value);
+
+    var NeedsFlip := False;
+    var lCount := lContainerElementRef.ElementCount;
+    if lCount > 1 then begin
+      var a := StrToFloat((lContainerElementRef.Elements[0] as IwbContainerElementRef).Elements[0].Value);
+      var b := StrToFloat((lContainerElementRef.Elements[Pred(lCount)] as IwbContainerElementRef).Elements[0].Value);
       case CompareValue(a, b) of
         EqualsValue: begin
-          a := StrToFloat((Container.Elements[0] as IwbContainer).Elements[1].Value);
-          b := StrToFloat((Container.Elements[Pred(Container.ElementCount)] as IwbContainer).Elements[1].Value);
+          a := StrToFloat((lContainerElementRef.Elements[0] as IwbContainerElementRef).Elements[1].Value);
+          b := StrToFloat((lContainerElementRef.Elements[Pred(lCount)] as IwbContainerElementRef).Elements[1].Value);
           NeedsFlip := CompareValue(a, b) = GreaterThanValue;
         end;
         GreaterThanValue:
@@ -694,67 +699,51 @@ begin
       end;
     end;
     if NeedsFlip then
-      Container.ReverseElements;
+      lContainerElementRef.ReverseElements;
   finally
     wbEndInternalEdit;
   end;
 end;
 
 procedure wbWorldAfterLoad(const aElement: IwbElement);
+
   function OutOfRange(aValue: Integer; aRange: Integer = 256): Boolean;
-    begin
-      Result := (aValue < -aRange) or (aValue > aRange);
-    end;
-var
-  MainRecord : IwbMainRecord;
-  Container  : IwbContainer;
-  rCLSZ      : IwbRecord;
-  rVISI      : IwbRecord;
+  begin
+    Result := (aValue < -aRange) or (aValue > aRange);
+  end;
+
 begin
-  wbWorldAfterSet(aElement, 0, 0);
+  if not Assigned(aElement) then
+    Exit;
+
+  wbWorldAfterSet(aElement, 0, 1);
 
   if wbBeginInternalEdit then try
-
-    if not Supports(aElement, IwbMainRecord, MainRecord) then
+    var lMainRecord : IwbMainRecord;
+    if not Supports(aElement, IwbMainRecord, lMainRecord) then
       Exit;
 
-    if wbRemoveOffsetData then
-      if not wbIsStarfield then
-        if MainRecord._File.LoadOrder = 0 then
-	        MainRecord.RemoveElement('Large References');
+    if wbRemoveOffsetData then begin
+      if wbIsSkyrim or wbIsFallout4 or wbIsFallout76 and (lMainRecord._File.LoadOrder = 0) then
+	        lMainRecord.RemoveElement('Large References');
+      if wbIsFallout4 or wbIsFallout76 or wbIsStarfield then
+        lMainRecord.RemoveElement(CLSZ);
+      if wbIsFallout76 then
+        lMainRecord.RemoveElement(VISI);
+    end;
 
     // large values in worldspace bounds cause stutter and performance issues in game (reported by Arthmoor)
     // CK can occasionally set them wrong, so make a warning
-    if Supports(MainRecord.ElementByName['Worldspace Bounds'], IwbContainer, Container) then
-      if OutOfRange(StrToIntDef(Container.ElementEditValues['NAM0\X'], 0)) or
-         OutOfRange(StrToIntDef(Container.ElementEditValues['NAM0\Y'], 0)) or
-         OutOfRange(StrToIntDef(Container.ElementEditValues['NAM9\X'], 0)) or
-         OutOfRange(StrToIntDef(Container.ElementEditValues['NAM9\Y'], 0))
+    var lContainerElementRef : IwbContainerElementRef;
+    if Supports(lMainRecord.ElementByName['Worldspace Bounds'], IwbContainerElementRef, lContainerElementRef) then
+      if OutOfRange(StrToIntDef(lContainerElementRef.ElementEditValues['NAM0\X'], 0)) or
+         OutOfRange(StrToIntDef(lContainerElementRef.ElementEditValues['NAM0\Y'], 0)) or
+         OutOfRange(StrToIntDef(lContainerElementRef.ElementEditValues['NAM9\X'], 0)) or
+         OutOfRange(StrToIntDef(lContainerElementRef.ElementEditValues['NAM9\Y'], 0))
       then
-        wbProgressCallback('<Warning: Worldspace Bounds in ' + MainRecord.Name + ' are abnormally large and can cause performance issues in game>');
+        wbProgressCallback('<Warning: Worldspace Bounds in ' + lMainRecord.Name + ' are abnormally large and can cause performance issues in game>');
   finally
     wbEndInternalEdit;
-  end;
-
-  if wbBeginInternalEdit then try
-
-    if not wbRemoveOffsetData then
-      Exit;
-
-    if not Supports(aElement, IwbContainer, Container) then
-      Exit;
-
-    Container.RemoveElement(CLSZ);
-    Container.RemoveElement(VISI);
-  finally
-    wbEndInternalEdit;
-  end else begin
-    rCLSZ := Container.RecordBySignature[CLSZ];
-    rVISI := Container.RecordBySignature[VISI];
-    if Assigned(rCLSZ) then
-      Container.RemoveElement(rCLSZ);
-    if Assigned(rVISI) then
-      Container.RemoveElement(rVISI);
   end;
 end;
 
