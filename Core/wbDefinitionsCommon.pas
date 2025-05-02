@@ -751,13 +751,22 @@ end;
 
 procedure wbACBSLevelMultAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
-  if Assigned(aElement) and (aElement.Name = 'Level Mult') then begin
-    if aNewValue = aOldValue then
-      Exit;
-    if aNewValue > 10000 then
-      aElement.NativeValue := 10000;
-    if aNewValue < 100 then
-      aElement.NativeValue := 100;
+  if not Assigned(aElement) then
+    Exit;
+
+  if VarSameValue(aOldValue, aNewValue) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    if aElement.Name = 'Level Mult' then begin
+      if aNewValue > 10000 then
+        aElement.NativeValue := 10000;
+
+      if aNewValue < 100 then
+        aElement.NativeValue := 100;
+    end;
+  finally
+    wbEndInternalEdit;
   end;
 end;
 
@@ -787,30 +796,33 @@ begin
 end;
 
 procedure wbConditionTypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-var
-  OldValue, NewValue : Integer;
-  Container          : IwbContainerElementRef;
 begin
+  if not Assigned(aElement) then
+    Exit;
+
   if VarSameValue(aOldValue, aNewValue) then
     Exit;
 
-  if not Supports(aElement, IwbContainerElementRef, Container) then
-    Exit;
+  if wbBeginInternalEdit then try
+    var lContainerElementRef : IwbContainerElementRef;
+    if not Supports(aElement, IwbContainerElementRef, lContainerElementRef) then
+      Exit;
 
-  // reset value if "use global" has changed
-  OldValue := aOldValue and 4;
-  NewValue := aNewValue and 4;
+    // reset value if "use global" has changed
+    var OldValue := aOldValue and 4;
+    var NewValue := aNewValue and 4;
+    if OldValue <> NewValue then
+      lContainerElementRef.ElementNativeValues['..\Comparison Value'] := 0;
 
-  if OldValue <> NewValue then
-    Container.ElementNativeValues['..\Comparison Value'] := 0;
-
-  if (aNewValue and 2) and wbIsFallout3 then begin
-    Container.ElementNativeValues['..\Run On'] := 1;
-    if Integer(Container.ElementNativeValues['..\Run On']) = 1 then
-      aElement.NativeValue := Byte(aNewValue) and not 2;
+    if (aNewValue and 2) and wbIsFallout3 then begin
+      lContainerElementRef.ElementNativeValues['..\Run On'] := 1;
+      if Integer(lContainerElementRef.ElementNativeValues['..\Run On']) = 1 then
+        aElement.NativeValue := Byte(aNewValue) and not 2;
+    end;
+  finally
+    wbEndInternalEdit;
   end;
 end;
-
 
 procedure wbContainerAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
@@ -830,15 +842,30 @@ end;
 
 procedure wbConditionRunOnAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
-  if aOldValue <> aNewValue then
+  if not Assigned(aElement) then
+    Exit;
+
+  if VarSameValue(aOldValue, aNewValue) then
+    Exit;
+
+  if wbBeginInternalEdit then try
     if aNewValue <> 2 then
       aElement.Container.ElementNativeValues['Reference'] := 0;
+  finally
+    wbEndInternalEdit;
+  end;
 end;
 
 procedure wbIdleMarkerPNAMAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if VarSameValue(aOldValue, aNewValue) then
+    Exit;
+
   if wbBeginInternalEdit then try
-    if (Assigned(aElement)) and (Assigned(aElement.ContainingMainRecord.ElementBySignature[QNAM])) then
+    if Assigned(aElement.ContainingMainRecord.ElementBySignature[QNAM]) then
       aElement.ContainingMainRecord.ElementBySignature[QNAM].Remove;
   finally
     wbEndInternalEdit;
@@ -847,8 +874,14 @@ end;
 
 procedure wbIdleMarkerQNAMAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if VarSameValue(aOldValue, aNewValue) then
+    Exit;
+
   if wbBeginInternalEdit then try
-    if (Assigned(aElement)) and (Assigned(aElement.ContainingMainRecord.ElementBySignature[PNAM])) then
+    if Assigned(aElement.ContainingMainRecord.ElementBySignature[PNAM]) then
       aElement.ContainingMainRecord.ElementBySignature[PNAM].Remove;
   finally
     wbEndInternalEdit;
@@ -866,52 +899,65 @@ begin
 end;
 
 procedure wbModelInfoAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-var
-  Addons    : IwbContainerElementRef;
-  Container : IwbContainerElementRef;
-  Headers   : IwbContainerElementRef;
-  Materials : IwbContainerElementRef;
-  Textures  : IwbContainerElementRef;
 begin
-  if not Supports(aElement, IwbContainerElementRef, Container) then
+  if not Assigned(aElement) then
     Exit;
 
-  if Container.ElementCount < 4 then
+  if VarSameValue(aOldValue, aNewValue) then
     Exit;
 
-  Container.BeginUpdate;
+  var lContainerElementRef : IwbContainerElementRef;
+  if not Supports(aElement, IwbContainerElementRef, lContainerElementRef) then
+    Exit;
+
+  if lContainerElementRef.ElementCount < 4 then
+    Exit;
+
+  lContainerElementRef.BeginUpdate;
   try
-    if not Supports(Container.Elements[0], IwbContainerElementRef, Headers) then
-      Exit;
-    if not Supports(Container.Elements[1], IwbContainerElementRef, Textures) then
-      Exit;
-    if not Supports(Container.Elements[2], IwbContainerElementRef, Addons) then
-      Exit;
-    if not Supports(Container.Elements[3], IwbContainerElementRef, Materials) then
+    var lHeaders : IwbContainerElementRef;
+    if not Supports(lContainerElementRef.Elements[0], IwbContainerElementRef, lHeaders) then
       Exit;
 
-    var MinHeaders := 0;
-    if Materials.ElementCount > 0 then
-      MinHeaders := 4
-    else if Addons.ElementCount > 0 then
-      MinHeaders := 2
-    else if Textures.ElementCount > 0 then
-      MinHeaders := 1;
+    var lTextures : IwbContainerElementRef;
+    if not Supports(lContainerElementRef.Elements[1], IwbContainerElementRef, lTextures) then
+      Exit;
 
-    while Headers.ElementCount < MinHeaders do
-      Headers.Add('');
+    var lAddons : IwbContainerElementRef;
+    if not Supports(lContainerElementRef.Elements[2], IwbContainerElementRef, lAddons) then
+      Exit;
 
-    if Headers.ElementCount > 0 then
-      if Headers.Elements[0].NativeValue <> Textures.ElementCount then
-        Headers.Elements[0].NativeValue := Textures.ElementCount;
-    if Headers.ElementCount > 1 then
-      if Headers.Elements[1].NativeValue <> Addons.ElementCount then
-        Headers.Elements[1].NativeValue := Addons.ElementCount;
-    if Headers.ElementCount > 3 then
-      if Headers.Elements[3].NativeValue <> Materials.ElementCount then
-        Headers.Elements[3].NativeValue := Materials.ElementCount;
+    var lMaterials : IwbContainerElementRef;
+    if not Supports(lContainerElementRef.Elements[3], IwbContainerElementRef, lMaterials) then
+      Exit;
+
+    var lMinHeaders := 0;
+    var lMaterialCount := lMaterials.ElementCount;
+    var lAddonCount := lAddons.ElementCount;
+    var lTextureCount := lTextures.ElementCount;
+
+    if lMaterialCount > 0 then
+      lMinHeaders := 4
+    else if lAddons.ElementCount > 0 then
+      lMinHeaders := 2
+    else if lTextures.ElementCount > 0 then
+      lMinHeaders := 1;
+
+    var lHeaderCount := lHeaders.ElementCount;
+    while lHeaderCount < lMinHeaders do
+      lHeaders.Add('');
+
+    if lHeaderCount > 0 then
+      if lHeaders.Elements[0].NativeValue <> lTextureCount then
+        lHeaders.Elements[0].NativeValue := lTextureCount;
+    if lHeaderCount > 1 then
+      if lHeaders.Elements[1].NativeValue <> lAddonCount then
+        lHeaders.Elements[1].NativeValue := lAddonCount;
+    if lHeaderCount > 3 then
+      if lHeaders.Elements[3].NativeValue <> lMaterialCount then
+        lHeaders.Elements[3].NativeValue := lMaterialCount;
   finally
-    Container.EndUpdate;
+    lContainerElementRef.EndUpdate;
   end;
 end;
 
@@ -934,28 +980,34 @@ begin
 end;
 
 procedure wbPERKPRKETypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-var
-  Container: IwbContainerElementRef;
 begin
-  if not (aOldValue <> aNewValue) then
+  if not Assigned(aElement) then
     Exit;
 
-  if not Supports(aElement.Container, IwbContainerElementRef, Container) then
+  if VarSameValue(aOldValue, aNewValue) then
     Exit;
 
-  if not Supports(Container.Container, IwbContainerElementRef, Container) then
-    Exit;
+  if wbBeginInternalEdit then try
+    var lContainerElementRef : IwbContainerElementRef;
+    if not Supports(aElement.Container, IwbContainerElementRef, lContainerElementRef) then
+      Exit;
 
-  Container.RemoveElement('DATA');
-  Container.Add('DATA', True);
-  Container.RemoveElement('Perk Conditions');
-  Container.RemoveElement('Entry Point Function Parameters');
+    if not Supports(lContainerElementRef.Container, IwbContainerElementRef, lContainerElementRef) then
+      Exit;
 
-  if not (aNewValue = 2) then
-    Exit;
+    lContainerElementRef.RemoveElement('DATA');
+    lContainerElementRef.Add('DATA', True);
+    lContainerElementRef.RemoveElement('Perk Conditions');
+    lContainerElementRef.RemoveElement('Entry Point Function Parameters');
 
-  Container.Add('EPFT', True);
-  Container.ElementNativeValues['DATA\Entry Point\Function'] := 2;
+    if not (aNewValue = 2) then
+      Exit;
+
+    lContainerElementRef.Add('EPFT', True);
+    lContainerElementRef.ElementNativeValues['DATA\Entry Point\Function'] := 2;
+  finally
+    wbEndInternalEdit;
+  end;
 end;
 
 procedure wbPRKRsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -999,104 +1051,117 @@ begin
 end;
 
 procedure wbUpdateSameParentUnions(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-var
-  lContainer: IwbContainerElementRef;
 begin
-  if not Assigned(aElement) or not Supports(aElement.Container, IwbContainerElementRef, lContainer) then
+  if not Assigned(aElement) then
     Exit;
-  for var lElementIdx := 0 to Pred(lContainer.ElementCount) do
-    //will trigger Unions to re-evaluate their type and fix themselves
-    var lResolvedDef := lContainer.Elements[lElementIdx].ResolvedValueDef;
+
+  if VarSameValue(aOldValue, aNewValue) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    var lContainerElementRef : IwbContainerElementRef;
+    if not Supports(aElement.Container, IwbContainerElementRef, lContainerElementRef) then
+      Exit;
+
+    for var lElementIdx := 0 to Pred(lContainerElementRef.ElementCount) do
+      //will trigger Unions to re-evaluate their type and fix themselves
+      var lResolvedDef := lContainerElementRef.Elements[lElementIdx].ResolvedValueDef;
+  finally
+    wbEndInternalEdit;
+  end;
 end;
 
 procedure wbWorldAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-var
-  Container : IwbContainer;
-  PNAM      : Variant;
 begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if VarSameValue(aOldValue, aNewValue) then
+    Exit;
+
   if wbBeginInternalEdit then try
-    if not Supports(aElement, IwbContainer, Container) then
+    var lContainerElementRef : IwbContainerElementRef;
+    if not Supports(aElement, IwbContainerElementRef, lContainerElementRef) then
       Exit;
-    if wbIsOblivion then begin
-	    if Assigned(Container.RecordBySignature[WNAM]) then begin
-	      Container.RemoveElement(CNAM);
-		    Container.RemoveElement(NAM2);
-		    Container.RemoveElement(ICON);
-		    Container.RemoveElement(MNAM);
+
+    if wbIsOblivion then
+	    if Assigned(lContainerElementRef.RecordBySignature[WNAM]) then begin
+	      lContainerElementRef.RemoveElement(CNAM);
+		    lContainerElementRef.RemoveElement(NAM2);
+		    lContainerElementRef.RemoveElement(ICON);
+		    lContainerElementRef.RemoveElement(MNAM);
 	    end else begin
-        Container.Add(CNAM);
-	      Container.Add(NAM2);
-		    Container.Add(MNAM);
-	    end;
-    end else begin
-      if Assigned(Container.ElementByName['Parent Worldspace']) then begin
-      PNAM := Container.ElementNativeValues['Parent Worldspace\PNAM'];
-        if PNAM and $01 = 1 then begin
-          Container.RemoveElement(DNAM)
-        end else begin
-          Container.Add(DNAM)
-        end;
-        if PNAM and $02 = 2 then begin
-          Container.RemoveElement('LOD Data')
-        end else begin
-          Container.Add('LOD Data')
-        end;
-        if PNAM and $04 = 4 then begin
+        lContainerElementRef.Add(CNAM);
+	      lContainerElementRef.Add(NAM2);
+		    lContainerElementRef.Add(MNAM);
+	    end
+    else
+      if Assigned(lContainerElementRef.ElementByName['Parent Worldspace']) then begin
+        var lFlags := lContainerElementRef.ElementNativeValues['Parent Worldspace\PNAM'];
+        if lFlags and $01 = 1 then
+          lContainerElementRef.RemoveElement(DNAM)
+        else
+          lContainerElementRef.Add(DNAM);
+
+        if lFlags and $02 = 2 then
+          lContainerElementRef.RemoveElement('LOD Data')
+        else
+          lContainerElementRef.Add('LOD Data');
+
+        if lFlags and $04 = 4 then begin
           if wbIsFallout3 then
-            Container.RemoveElement('Icon')
+            lContainerElementRef.RemoveElement('Icon')
           else
-            Container.RemoveElement(ICON);
-          Container.RemoveElement(MNAM)
-        end else begin
-          Container.Add(MNAM)
-        end;
-        if PNAM and $08 = 8 then begin
-          Container.RemoveElement(NAM2)
-        end else begin
-          Container.Add(NAM2)
-        end;
-        if not wbIsStarfield then begin        
-          if PNAM and $10 = 16 then begin
-            Container.RemoveElement(CNAM)
-          end else begin
-            Container.Add(CNAM);
-          end;
-        end;
-        if wbIsFallout3 then begin
-          if PNAM and $20 = 32 then begin
-            Container.RemoveElement(INAM)
-          end else begin
-            Container.Add(INAM)
-          end;
-        end;
+            lContainerElementRef.RemoveElement(ICON);
+          lContainerElementRef.RemoveElement(MNAM)
+        end else
+          lContainerElementRef.Add(MNAM);
+
+        if lFlags and $08 = 8 then
+          lContainerElementRef.RemoveElement(NAM2)
+        else
+          lContainerElementRef.Add(NAM2);
+
+        if lFlags and $10 = 16 then
+          lContainerElementRef.RemoveElement(CNAM)
+        else if not wbIsStarfield then
+          lContainerElementRef.Add(CNAM);
+
+        if wbIsFallout3 and (lFlags and $20 = 32) then
+            lContainerElementRef.RemoveElement(INAM)
+          else
+            lContainerElementRef.Add(INAM);
+
       end else begin
-        Container.Add(DNAM);
-        Container.Add('LOD Data');
-        Container.Add(MNAM);
-        Container.Add(NAM2);
-        Container.Add(CNAM);
+        lContainerElementRef.Add(DNAM);
+        lContainerElementRef.Add('LOD Data');
+        lContainerElementRef.Add(MNAM);
+        lContainerElementRef.Add(NAM2);
+        if not wbIsStarfield then        
+          lContainerElementRef.Add(CNAM);
         if wbIsFallout3 then
-          Container.Add(INAM);
+          lContainerElementRef.Add(INAM);
       end;
-    end;
   finally
     wbEndInternalEdit
   end;
 end;
 
 procedure wbWwiseKeywordMappingTemplateAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-var
-  Container : IwbContainer;
-  Sounds    : IwbElement;
 begin
   if not Assigned(aElement) then
     Exit;
-  if aOldValue = aNewValue then
+
+  if VarSameValue(aOldValue, aNewValue) then
     Exit;
-  Container := aElement.Container;
-  Sounds := Container.ElementByPath['Sound Mappings'];
-  if Assigned(Sounds) then
-    Sounds.Remove;
+
+  if wbBeginInternalEdit then try
+    var lSounds := aElement.Container.ElementByPath['Sound Mappings'];
+    if Assigned(lSounds) then
+      lSounds.Remove;
+  finally
+    wbEndInternalEdit;
+  end;
 end;
 
 {>>> Count Callbacks <<<} //8
