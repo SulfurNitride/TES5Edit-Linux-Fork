@@ -1206,6 +1206,9 @@ begin
   if FindCmdLineSwitch('IgnoreWorldMHDT') then
     wbIgnoreWorldMHDT := True;
 
+  if FindCmdLineSwitch('AllowEditHEDRVersion') then
+    wbAllowEditHEDRVersion := True;
+
   if xeQuickClean then begin
     wbFixupPGRD := True;
     wbAllowInternalEdit := True;
