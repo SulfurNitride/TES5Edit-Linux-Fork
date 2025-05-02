@@ -1736,7 +1736,7 @@ var
 begin
   if not (VarIsOrdinal(aOldValue) and VarIsOrdinal(aNewValue)) then
     Exit;
-  if aOldValue = aNewValue then
+  if VarSameValue(aOldValue, aNewValue) then
     Exit;
   if not Assigned(aElement) or not Supports(aElement.Container, IwbContainerElementRef, lContainer) then
     Exit;
@@ -1762,7 +1762,7 @@ var
 begin
   if not (VarIsOrdinal(aOldValue) and VarIsOrdinal(aNewValue)) then
     Exit;
-  if aOldValue = aNewValue then
+  if VarSameValue(aOldValue, aNewValue) then
     Exit;
   if not Assigned(aElement) or not Supports(aElement.Container, IwbContainerElementRef, lContainer) then
     Exit;
@@ -1784,7 +1784,7 @@ var
 begin
   if not (VarIsOrdinal(aOldValue) and VarIsOrdinal(aNewValue)) then
     Exit;
-  if aOldValue = aNewValue then
+  if VarSameValue(aOldValue, aNewValue) then
     Exit;
   if not Assigned(aElement) or not Supports(aElement.Container, IwbContainerElementRef, lContainer) then
     Exit;
@@ -1806,7 +1806,7 @@ var
 begin
   if not (VarIsOrdinal(aOldValue) and VarIsOrdinal(aNewValue)) then
     Exit;
-  if aOldValue = aNewValue then
+  if VarSameValue(aOldValue, aNewValue) then
     Exit;
   if not Assigned(aElement) or not Supports(aElement.Container, IwbContainerElementRef, lContainer) then
     Exit;
@@ -11599,7 +11599,7 @@ end;
         begin
           if not (VarIsOrdinal(aOldValue) and VarIsOrdinal(aNewValue)) then
             Exit;
-          if aOldValue = aNewValue then
+          if VarSameValue(aOldValue, aNewValue) then
             Exit;
           if not Assigned(aElement) then
             Exit;

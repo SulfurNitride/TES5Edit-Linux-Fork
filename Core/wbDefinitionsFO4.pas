@@ -9650,7 +9650,7 @@ begin
         begin
           if not (VarIsOrdinal(aOldValue) and VarIsOrdinal(aNewValue)) then
             Exit;
-          if aOldValue = aNewValue then
+          if VarSameValue(aOldValue, aNewValue) then
             Exit;
           if not Assigned(aElement) then
             Exit;
