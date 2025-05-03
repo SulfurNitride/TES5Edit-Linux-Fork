@@ -17690,7 +17690,7 @@ begin
   if Assigned(dcEndPtr) then begin
     dcDataBasePtr := PByte(dcBasePtr) + wbSizeOfMainRecordStruct;
     if grStruct.grsGroupSize < wbSizeOfMainRecordStruct then
-      raise Exception.CreateFmt('GRUP "%s" size is invalid.', [PwbSignature(@grStruct.grsLabel)^]);
+      raise Exception.CreateFmt('[%s] %s size is invalid.', [GetFile.FileName, GetName]);
 
     dcDataEndPtr := PByte(dcBasePtr) + grStruct.grsGroupSize;
     dcEndPtr := dcDataEndPtr;
