@@ -18,6 +18,7 @@ xEdit is crucial to our shared modding community and your contribution - no matt
     * [ALL] Fix crash when right clicking container children.
     * UI - Renamed Overlay to Update on the Module Selection Form.
     * xEdit - Force file flags based on file extension for all game modes where applicable.
+    * xEdit - Fix enless loading due to GRUP headers in modules have a size too small for their own data.
 
 # What's New in xEdit 4.1.5n?
 
