@@ -17689,6 +17689,9 @@ var
 begin
   if Assigned(dcEndPtr) then begin
     dcDataBasePtr := PByte(dcBasePtr) + wbSizeOfMainRecordStruct;
+    if grStruct.grsGroupSize < wbSizeOfMainRecordStruct then
+      raise Exception.CreateFmt('GRUP "%s" size is invalid.', [PwbSignature(@grStruct.grsLabel)^]);
+
     dcDataEndPtr := PByte(dcBasePtr) + grStruct.grsGroupSize;
     dcEndPtr := dcDataEndPtr;
     if not recSkipped then
