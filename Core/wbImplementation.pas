@@ -17689,6 +17689,9 @@ var
 begin
   if Assigned(dcEndPtr) then begin
     dcDataBasePtr := PByte(dcBasePtr) + wbSizeOfMainRecordStruct;
+    if grStruct.grsGroupSize < wbSizeOfMainRecordStruct then
+      raise Exception.CreateFmt('[%s] %s size is invalid.', [GetFile.FileName, GetName]);
+
     dcDataEndPtr := PByte(dcBasePtr) + grStruct.grsGroupSize;
     dcEndPtr := dcDataEndPtr;
     if not recSkipped then
