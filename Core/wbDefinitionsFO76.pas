@@ -13130,7 +13130,9 @@ begin
     ], cpNormal, True),
     wbConditions,
     wbLLCT,
-    wbRArrayS('Leveled List Entries', wbLeveledListEntryNPC).SetCountPath(LLCT),
+    wbRArrayS('Leveled List Entries', wbLeveledListEntryNPC)
+      .SetCountPath(LLCT)
+      .SetRequired,
     wbArrayS(LLKC, 'Filter Keyword Chances',
       wbStructSK([0], 'Filter', [
         wbFormIDCk('Keyword', [KYWD]),
@@ -13168,7 +13170,9 @@ begin
     ], cpNormal, True),
     wbConditions,
     wbLLCT,
-    wbRArrayS('Leveled List Entries', wbLeveledListEntryItem).SetCountPath(LLCT),
+    wbRArrayS('Leveled List Entries', wbLeveledListEntryItem)
+      .SetCountPath(LLCT)
+      .SetRequired,
     wbArrayS(LLKC, 'Filter Keyword Chances',
       wbStructSK([0], 'Filter', [
         wbFormIDCk('Keyword', [KYWD]),
@@ -13203,7 +13207,9 @@ begin
     //wbCTDAs,
     //wbFormIDCk(LVLG, 'Use Global', [GLOB]),
     wbLLCT,
-    wbRArrayS('Leveled List Entries', wbLeveledListEntryPackIn).SetCountPath(LLCT),
+    wbRArrayS('Leveled List Entries', wbLeveledListEntryPackIn)
+      .SetCountPath(LLCT)
+      .SetRequired,
     {
     wbArrayS(LLKC, 'Filter Keyword Chances',
       wbStructSK([0], 'Filter', [
@@ -17038,7 +17044,9 @@ begin
       wbInteger('', itU16, wbLVLFFlags)
     ], cpNormal, True),
     wbLLCT,
-    wbRArrayS('Leveled List Entries', wbLeveledListEntryPerkCard).SetCountPath(LLCT),
+    wbRArrayS('Leveled List Entries', wbLeveledListEntryPerkCard)
+      .SetCountPath(LLCT)
+      .SetRequired,
     wbUnknown(LVCL),
     wbUnknown(LVUO)
   ]);

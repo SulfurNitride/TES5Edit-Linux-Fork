@@ -10689,7 +10689,8 @@ begin
         wbCOED
       ]).SetSummaryMemberMaxDepth(0, 1)
         .IncludeFlag(dfCollapsed, wbCollapseLeveledItems)
-    ).SetCountPath(LLCT),
+    ).SetCountPath(LLCT)
+     .SetRequired,
     wbFilterKeywordChances,
     wbGenericModel
   ]).SetAfterLoad(wbLLEAfterLoad);
@@ -10712,7 +10713,8 @@ begin
         wbCOED
       ]).SetSummaryMemberMaxDepth(0, 1)
         .IncludeFlag(dfCollapsed, wbCollapseLeveledItems)
-    ).SetCountPath(LLCT),
+    ).SetCountPath(LLCT)
+     .SetRequired,
     wbFilterKeywordChances,
     wbFormIDCk(LVSG, 'Epic Loot Chance', [GLOB]),
     wbLStringKC(ONAM, 'Override Name', 0, cpTranslate)
@@ -10735,6 +10737,7 @@ begin
       ]).SetSummaryMemberMaxDepth(0, 1)
         .IncludeFlag(dfCollapsed, wbCollapseLeveledItems)
     ).SetCountPath(LLCT)
+     .SetRequired
   ]);
 
   wbMGEFType := wbInteger('Archetype', itU32, wbEnum([

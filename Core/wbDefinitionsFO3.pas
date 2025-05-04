@@ -6125,7 +6125,7 @@ begin
         wbCOED
       ]).SetSummaryMemberMaxDepth(0, 1)
         .IncludeFlag(dfCollapsed, wbCollapseLeveledItems)
-    ),
+    ).SetRequired,
     wbGenericModel
   ]);
 
@@ -6145,7 +6145,7 @@ begin
         wbCOED
       ]).SetSummaryMemberMaxDepth(0, 1)
         .IncludeFlag(dfCollapsed, wbCollapseLeveledItems)
-    ),
+    ).SetRequired,
     wbGenericModel
   ]);
 
@@ -6167,7 +6167,7 @@ begin
         wbCOED
       ]).SetSummaryMemberMaxDepth(0, 1)
         .IncludeFlag(dfCollapsed, wbCollapseLeveledItems)
-    )
+    ).SetRequired
   ]);
 
   wbRecord(MGEF, 'Base Effect', [

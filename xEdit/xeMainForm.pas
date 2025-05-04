@@ -3056,8 +3056,10 @@ begin
                     Assert(Assigned(LeveledListEntries));
                     Assert(LeveledListEntries.ElementCount = 1);
                     LeveledListEntry := LeveledListEntries.Elements[0] as IwbContainerElementRef;
+                    if not wbIsOblivion then
+                      LeveledListEntry := LeveledListEntry.Elements[0] as IwbContainerElementRef;
                     Assert(Assigned(LeveledListEntry));
-                    LeveledListEntry.ElementByName['Reference'].EditValue := MainRecord2.EditValue;
+                    LeveledListEntry.Elements[2].EditValue := MainRecord2.EditValue;
                     LeveledListEntry.ElementByName['Count'].EditValue := '1';
                     LeveledListEntry.ElementByName['Level'].EditValue := '1';
                     MainRecord.EditorID := EditorID;
@@ -14894,11 +14896,14 @@ begin
   end;
 
   mniNavCopyAsWrapper.Visible := False;
-  if (wbGameMode <= gmFNV) and mniNavCopyAsOverride.Visible and IsMainRecord then
+  if not (wbIsFallout76 or wbIsMorrowind) and mniNavCopyAsOverride.Visible and IsMainRecord then
     mniNavCopyAsWrapper.Visible :=
-      (MainRecord.Signature = 'LVLN') or
+      (MainRecord.Signature = 'LVLB') or
       (MainRecord.Signature = 'LVLC') or
       (MainRecord.Signature = 'LVLI') or
+      (MainRecord.Signature = 'LVLN') or
+      (MainRecord.Signature = 'LVLP') or
+      (MainRecord.Signature = 'LVSC') or
       (MainRecord.Signature = 'LVSP');
   mniNavCopyAsSpawnRateOverride.Visible :=
     mniNavCopyAsWrapper.Visible;

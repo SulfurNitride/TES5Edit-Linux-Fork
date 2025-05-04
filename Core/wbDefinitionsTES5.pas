@@ -8474,7 +8474,8 @@ begin
         wbCOED
       ]).SetSummaryMemberMaxDepth(0, 1)
         .IncludeFlag(dfCollapsed, wbCollapseLeveledItems)
-    ).SetCountPath(LLCT),
+    ).SetCountPath(LLCT)
+     .SetRequired,
     wbGenericModel
   ]);
 
@@ -8497,6 +8498,7 @@ begin
       ]).SetSummaryMemberMaxDepth(0, 1)
         .IncludeFlag(dfCollapsed, wbCollapseLeveledItems)
     ).SetCountPath(LLCT)
+     .SetRequired
   ]);
 
    wbRecord(LVSP, 'Leveled Spell', [
@@ -8515,6 +8517,7 @@ begin
       ]).SetSummaryMemberMaxDepth(0, 1)
         .IncludeFlag(dfCollapsed, wbCollapseLeveledItems)
     ).SetCountPath(LLCT)
+     .SetRequired
   ]);
 
   wbMGEFType := wbInteger('Archtype', itU32, wbEnum([
