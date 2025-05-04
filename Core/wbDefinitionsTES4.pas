@@ -2912,7 +2912,7 @@ begin
       wbFloat('Constant Effect enchantment factor'),
       wbFloat('Constant Effect barter factor')
     ], cpNormal, True, nil, 10).SetRequired,
-    wbArrayS(ESCE, 'Counter Effects', wbStringMgefCode('Counter Effect Code', 4))
+    wbArrayS(ESCE, 'Counter Effects', wbInteger('Counter Effect Code', itU32, wbChar4))
       .SetCountPathOnValue('DATA\Counter Effect Count', False)
   ]).SetAfterLoad(wbMGEFAfterLoad)
     .IncludeFlag(dfIndexEditorID);;
