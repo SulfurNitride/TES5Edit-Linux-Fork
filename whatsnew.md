@@ -59,7 +59,7 @@ Added support to load Oblivion Remaster content. There is a new game mode argume
 
 ## Scripting improvements
 
-`function RecordFromFileByFormID(aeFile: IwbFile|string; aiFormID: integer|string): IwbElement` can be used to get a main record interface.
+`function RecordFromFileByFormID(aeFile: IwbFile|string; aiFormID: integer|string): IwbMainRecord` can be used to get a main record interface.
 The file can be specified using a file interface or a string consisting of the module filename.
 The FormID can be specified using an integer value or a string.
 You can mix and match.
