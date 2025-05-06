@@ -4379,7 +4379,7 @@ begin
         .SetSummaryMemberPrefixSuffix(1, '', ')')
         .SetSummaryDelimiter(', ')
         .IncludeFlag(dfSummaryMembersNoName)
-        .IncludeFlag(dfCollapsed),
+        .IncludeFlag(dfCollapsed, wbCollapseOther),
       wbVec3Pos,
       wbStruct('Rotation (Quaternion?)', [
         wbFloat('q1'),
@@ -4391,7 +4391,7 @@ begin
         .SetSummaryMemberPrefixSuffix(3, '', ')')
         .SetSummaryDelimiter(', ')
         .IncludeFlag(dfSummaryMembersNoName)
-        .IncludeFlag(dfCollapsed)
+        .IncludeFlag(dfCollapsed, wbCollapseDirectionRotation)
     ], aPriority);
 end;
 
@@ -4408,7 +4408,7 @@ begin
       wbByteColors('Z+').IncludeFlag(dfSummaryNoName),
       wbByteColors('Z-').IncludeFlag(dfSummaryNoName)
     ]).SetSummaryKey([0, 1, 2, 3, 4, 5])
-      .IncludeFlag(dfCollapsed),
+      .IncludeFlag(dfCollapsed, wbCollapseDirectionRotation),
     IsFO76(
       wbUnused(4),
       IsSF1(
@@ -4433,7 +4433,7 @@ begin
       wbByteColors('Z+').IncludeFlag(dfSummaryNoName),
       wbByteColors('Z-').IncludeFlag(dfSummaryNoName)
     ]).SetSummaryKey([0, 1, 2, 3, 4, 5])
-      .IncludeFlag(dfCollapsed),
+      .IncludeFlag(dfCollapsed, wbCollapseDirectionRotation),
     IsFO76(
       wbUnused(4),
       IsSF1(
@@ -4786,7 +4786,7 @@ begin
       .SetSummaryKey([0, 1])
       .SetSummaryMemberPrefixSuffix(1, '[Rank: ', ']')
       .SetSummaryDelimiter(' ')
-      .IncludeFlag(dfCollapsed)
+      .IncludeFlag(dfCollapsed, wbCollapseOwnership)
       .IncludeFlag(dfSummaryMembersNoName)
       .IncludeFlag(dfSummaryNoSortKey);
 end;
@@ -5025,14 +5025,14 @@ begin
           wbByteColors('High Noon'),
           wbByteColors('Midnight')
         ]).SetSummaryKey([0,1,2,3,4,5])
-          .IncludeFlag(dfCollapsed),
+          .IncludeFlag(dfCollapsed, wbCollapseWeatherTimeOfDay),
         wbStruct(aName, [
           wbByteColors('Sunrise'),
 	        wbByteColors('Day'),
 	        wbByteColors('Sunset'),
 	        wbByteColors('Night')
         ]).SetSummaryKey([0,1,2,3])
-          .IncludeFlag(dfCollapsed)
+          .IncludeFlag(dfCollapsed, wbCollapseWeatherTimeOfDay)
       ]).IncludeFlag(dfUnionStaticResolve)
   else if wbIsFallout4 or wbIsFallout76 or wbIsStarfield then
     Struct :=
@@ -5057,7 +5057,7 @@ begin
 
   wbWeatherTimeOfDay :=
     Struct.IncludeFlag(dfSummaryMembersNoName)
-          .IncludeFlag(dfCollapsed)
+          .IncludeFlag(dfCollapsed, wbCollapseWeatherTimeOfDay)
 end;
 
 {>>> Common Definitions <<<}
@@ -5980,7 +5980,8 @@ begin
         wbFormIDCk('Keyword', [KYWD,NULL])
       ).SetCountPathOnValue(KSIZ, False)
        .SetRequired
-    ]).SetSummaryKey([1]);
+    ]).SetSummaryKey([1])
+      .IncludeFlag(dfCollapsed, wbCollapseKeywords);
 
   wbRagdoll :=
     wbRStruct('Ragdoll Data', [
@@ -5990,7 +5991,7 @@ begin
           wbUnused(3),
           wbVec3PosRot
         ]).SetSummaryKey([0])
-          .IncludeFlag(dfCollapsed)
+          .IncludeFlag(dfCollapsed, wbCollapseRagdoll)
       ).IncludeFlag(dfNotAlignable),
       IsTES4(
         nil,
@@ -6034,7 +6035,7 @@ begin
       .SetSummaryDelimiter(' ')
       .IncludeFlag(dfSummaryNoSortKey)
       .IncludeFlag(dfSummaryMembersNoName)
-      .IncludeFlag(dfCollapsed);
+      .IncludeFlag(dfCollapsed, wbCollapseModelInfoTexture);
 
   var wbLandFlags :=
       wbFlags([
@@ -6062,7 +6063,7 @@ begin
     .IncludeFlagOnValue(dfSummaryMembersNoName)
     .SetDontShow(wbCellInteriorDontShow)
     .SetIsRemovable(wbCellGridIsRemovable)
-    .IncludeFlag(dfCollapsed);
+    .IncludeFlag(dfCollapsed, wbCollapseOther);
 
   wbCinematicIMAD :=
     wbRStruct('Cinematic', [
@@ -6130,7 +6131,7 @@ begin
         .SetSummaryKey([1, 0])
         .SetSummaryMemberPrefixSuffix(0, '{', '}')
         .SetSummaryDelimiter(' ')
-        .IncludeFlag(dfCollapsed)
+        .IncludeFlag(dfCollapsed, wbCollapseSounds)
         .IncludeFlag(dfSummaryMembersNoName)
         .IncludeFlag(dfSummaryNoSortKey)
       ).SetAfterSet(wbNPCActorSoundsAfterSet);
@@ -6152,7 +6153,7 @@ begin
         .SetSummaryMemberPrefixSuffix(0, '[', ']')
         .SetSummaryDelimiter(' ')
         .IncludeFlag(dfSummaryMembersNoName)
-        .IncludeFlag(dfCollapsed));
+        .IncludeFlag(dfCollapsed, wbCollapseSounds));
 
   wbRegionSounds :=
     wbArrayS(IfThen(wbIsOblivion or wbIsFallout3, RDSD, RDSA), 'Sounds',
@@ -6168,7 +6169,8 @@ begin
         IsTES4FO3(
           wbInteger('Chance', itU32, wbScaledInt4ToStr, wbScaledInt4ToInt),
           wbFloat('Chance'))
-      ])).SetDontShow(wbREGNSoundDontShow);
+      ])).SetDontShow(wbREGNSoundDontShow)
+         .IncludeFlag(dfCollapsed, wbCollapseSounds);
 
   wbSoundDescriptorSounds :=
     wbRArray('Sounds',
@@ -6186,7 +6188,7 @@ begin
         .SetSummaryMemberPrefixSuffix(1, '{Chance: ', '}')
         .IncludeFlag(dfSummaryMembersNoName)
         .IncludeFlag(dfSummaryNoSortKey)
-        .IncludeFlag(dfCollapsed)
+        .IncludeFlag(dfCollapsed, wbCollapseSounds)
     ).SetRequired;
 
   wbXLOD := wbArray(XLOD, 'Distant LOD Data', wbFloat('Unknown'), 3);
@@ -6199,9 +6201,10 @@ begin
         wbArray('Max Heights',
           wbArray('Row',
             wbInteger('Column', itU8),
-          IsSF1(50, 32)).IncludeFlag(dfCollapsed),
-        IsSF1(50, 32)).IncludeFlag(dfCollapsed)
-      ]));
+          IsSF1(50, 32)).IncludeFlag(dfCollapsed, wbCollapseMaxHeightData),
+        IsSF1(50, 32)).IncludeFlag(dfCollapsed, wbCollapseMaxHeightData)
+      ]).SetSummaryKeyOnValue([0, 1])
+        .IncludeFlag(dfCollapsed, wbCollapseMaxHeightData));
 
   wbMODT := wbModelInfo(MODT);
   wbDMDT := wbModelInfo(DMDT);
@@ -6255,10 +6258,11 @@ begin
             .SetSummaryMemberPrefixSuffix(0, '' + '(', '')
             .SetSummaryMemberPrefixSuffix(2, '', ')')
             .IncludeFlag(dfSummaryMembersNoName)
-            .IncludeFlag(dfCollapsed, wbCollapseVec3),
+            .IncludeFlag(dfCollapsed, wbCollapseVertices),
         33).SetSummaryName('Columns')
-           .IncludeFlag(dfCollapsed),
-      33).SetSummaryName('Rows'));
+           .IncludeFlag(dfCollapsed, wbCollapseVertices),
+      33).SetSummaryName('Rows')
+         .IncludeFlag(dfCollapsed, wbCollapseVertices));
 
   //TES4,FO3,FNV,TES5,FO4,FO76,SF1
   wbLandHeights :=
@@ -6270,8 +6274,9 @@ begin
           wbArray('Row',
             wbInteger('Column', itS8),
           33).SetSummaryName('Columns')
-             .IncludeFlag(dfCollapsed),
-        33).SetSummaryName('Rows'),
+             .IncludeFlag(dfCollapsed, wbCollapseVertices),
+        33).SetSummaryName('Rows')
+           .IncludeFlag(dfCollapsed, wbCollapseVertices),
         wbUnused(3)
       ]));
 
@@ -6288,8 +6293,9 @@ begin
           ]).SetToStr(wbRGBAToStr)
             .IncludeFlag(dfCollapsed, wbCollapseVec3),
         33).SetSummaryName('Columns')
-           .IncludeFlag(dfCollapsed),
-      33).SetSummaryName('Rows'));
+           .IncludeFlag(dfCollapsed, wbCollapseVertices),
+      33).SetSummaryName('Rows')
+         .IncludeFlag(dfCollapsed, wbCollapseVertices));
 
   //TES4,FO3,FNV,TES5,FO4,FO76
   wbLandLayers :=
@@ -6307,8 +6313,8 @@ begin
             .SetSummaryPrefixSuffixOnValue(3, 'on Layer [', ']')
             .IncludeFlagOnValue(dfSummaryMembersNoName)
             .IncludeFlagOnValue(dfSummaryNoSortKey)
-            .IncludeFlag(dfCollapsed)
-        ]).IncludeFlag(dfCollapsed),
+            .IncludeFlag(dfCollapsed, wbCollapseOther)
+        ]).IncludeFlag(dfCollapsed, wbCollapseOther),
         wbRStructSK([0], 'Alpha Layer', [
           wbStructSK(ATXT, [1, 3], 'Alpha Layer Header', [
             wbFormIDCk('Texture', [LTEX, NULL]),
@@ -6321,7 +6327,7 @@ begin
             .SetSummaryPrefixSuffixOnValue(3, 'on Layer [', ']')
             .IncludeFlagOnValue(dfSummaryMembersNoName)
             .IncludeFlagOnValue(dfSummaryNoSortKey)
-            .IncludeFlag(dfCollapsed),
+            .IncludeFlag(dfCollapsed, wbCollapseOther),
           IfThen(wbSimpleRecords,
             wbByteArray(VTXT, 'Alpha Layer Data'),
             wbArrayS(VTXT, 'Alpha Layer Data',
@@ -6332,11 +6338,11 @@ begin
               ]).SetSummaryKey([2,0])
                 .SetSummaryMemberPrefixSuffix(0, ' at Position [', ']')
                 .SetSummaryMemberPrefixSuffix(2, 'Opacity: [', ']')
-                .IncludeFlag(dfCollapsed)
+                .IncludeFlag(dfCollapsed, wbCollapseOther)
                 .IncludeFlag(dfSummaryMembersNoName)
                 .IncludeFlag(dfSummaryNoSortKey)
-            ).IncludeFlag(dfCollapsed))
-        ]).IncludeFlag(dfCollapsed)
+            ).IncludeFlag(dfCollapsed, wbCollapseOther))
+        ]).IncludeFlag(dfCollapsed, wbCollapseOther)
       ]));
 
 
@@ -6433,7 +6439,7 @@ Can't properly represent that with current record definition methods.
           wbString(BNAM, 'Layer #3').SetDefaultEditValue('Sky\Alpha.dds')
         ).SetRequired
       ]).IncludeFlag(dfAllowAnyMember)
-        .IncludeFlag(dfCollapsed)
+        .IncludeFlag(dfCollapsed, wbCollapseWeatherCloudTextures)
         .IncludeFlag(dfStructFirstNotRequired)
         .SetRequired,
       wbRStruct('Cloud Textures', [
@@ -6467,7 +6473,7 @@ Can't properly represent that with current record definition methods.
         wbString(K0TX, 'Layer #27'),
         wbString(L0TX, 'Layer #28')
       ]).IncludeFlag(dfAllowAnyMember)
-        .IncludeFlag(dfCollapsed)
+        .IncludeFlag(dfCollapsed, wbCollapseWeatherCloudTextures)
         .IncludeFlag(dfStructFirstNotRequired));
 
   //FO3,FNV,TES5,FO4,FO76,SF1
@@ -6475,14 +6481,17 @@ Can't properly represent that with current record definition methods.
     IfThen(wbIsFallout3,
 	    wbArray(ONAM, 'Cloud Speeds',
 		    wbInteger('Layer', itU8),
-      4),
+      4)
+      .IncludeFlag(dfCollapsed, wbCollapseWeatherCloudSpeed),
 	    wbRStruct('Cloud Speeds', [
 	      wbArray(RNAM, 'Y Speeds',
 		      wbInteger('Layer', itU8, wbWeatherCloudSpeedToStr, wbWeatherCloudSpeedToInt).SetDefaultEditValue('0'),
-		    32).IncludeFlag(dfNotAlignable),
+		    32).IncludeFlag(dfNotAlignable)
+           .IncludeFlag(dfCollapsed, wbCollapseWeatherCloudSpeed),
 		    wbArray(QNAM, 'X Speeds',
 		      wbInteger('Layer', itU8, wbWeatherCloudSpeedToStr, wbWeatherCloudSpeedToInt).SetDefaultEditValue('0'),
 	    	32).IncludeFlag(dfNotAlignable)
+           .IncludeFlag(dfCollapsed, wbCollapseWeatherCloudSpeed)
            .SetRequired
 	    ])).SetRequired;
 
@@ -6533,7 +6542,7 @@ Can't properly represent that with current record definition methods.
             .IncludeFlag(dfSummaryNoName)),
           nil)
       ]).SetSummaryKey([0,1,2,3,4,5,6,7])
-        .IncludeFlag(dfCollapsed),
+        .IncludeFlag(dfCollapsed, wbCollapseWeatherCloudAlphas),
     32).IncludeFlag(dfNotAlignable)
        .SetRequired;
 
@@ -6674,7 +6683,7 @@ Can't properly represent that with current record definition methods.
         .SetSummaryPrefixSuffixOnValue(1, '[', ']')
         .SetSummaryDelimiterOnValue(' ')
         .IncludeFlagOnValue(dfSummaryMembersNoName)
-        .IncludeFlag(dfCollapsed));
+        .IncludeFlag(dfCollapsed, wbCollapseSounds));
 
   //TES5,FO4,FO76,SF1
   wbWeatherImageSpaces :=
@@ -6779,16 +6788,16 @@ Can't properly represent that with current record definition methods.
             wbInteger('Y', itS16, nil, cpIgnore),
             wbInteger('X', itS16, nil, cpIgnore)
           ]).SetSummaryKey([0])
-            .IncludeFlag(dfCollapsed),
-        -1).IncludeFlag(dfCollapsed)
+            .IncludeFlag(dfCollapsed, wbCollapsePlacement),
+        -1).IncludeFlag(dfCollapsed, wbCollapsePlacement)
            .IncludeFlag(dfNotAlignable)
       ]).SetSummaryKeyOnValue([1,0])
         .SetSummaryPrefixSuffixOnValue(0, 'Y: ', '')
         .SetSummaryPrefixSuffixOnValue(1, 'X: ', '')
         .SetSummaryDelimiterOnValue(', ')
-        .IncludeFlag(dfCollapsed)
+        .IncludeFlag(dfCollapsed, wbCollapsePlacement)
     ).SetDontShow(wbNeverShow)
-     .IncludeFlag(dfCollapsed)
+     .IncludeFlag(dfCollapsed, wbCollapseOther)
      .IncludeFlag(dfFastAssign)
      .IncludeFlag(dfNoCopyAsOverride)
      .IncludeFlag(dfNotAlignable);
@@ -6833,15 +6842,15 @@ Can't properly represent that with current record definition methods.
               .SetSummaryMemberPrefixSuffix(2, 'TL: ','')
               .SetSummaryMemberPrefixSuffix(3, 'TR: ','')
               .SetSummaryDelimiter(', ')
-              .IncludeFlag(dfCollapsed),
+              .IncludeFlag(dfCollapsed, wbCollapseObjectBounds),
           wbMHDTColumnsCounter)
             .SetSummaryName('Columns')
-            .IncludeFlag(dfCollapsed)
+            .IncludeFlag(dfCollapsed, wbCollapseObjectBounds)
             .IncludeFlag(dfNotAlignable)
         ).SetSummaryName('Rows')
-         .IncludeFlag(dfCollapsed)
+         .IncludeFlag(dfCollapsed, wbCollapseObjectBounds)
          .IncludeFlag(dfNotAlignable))
-    ]).IncludeFlag(dfCollapsed)
+    ]).IncludeFlag(dfCollapsed, wbCollapseOther)
       .IncludeFlag(dfFastAssign)
       .IncludeFlag(dfNoCopyAsOverride, not wbIsFallout4);
 
@@ -6853,7 +6862,7 @@ Can't properly represent that with current record definition methods.
     ]).SetSummaryKeyOnValue([0, 1])
       .SetSummaryPrefixSuffixOnValue(0, '(X: ', ', ')
       .SetSummaryPrefixSuffixOnValue(1, 'Y: ', ')')
-      .IncludeFlag(dfCollapsed);
+      .IncludeFlag(dfCollapsed, wbCollapseObjectBounds);
 
   //FO3,FNV,TES5,FO4,FO76,SF1
   wbWorldLODData :=
@@ -6872,7 +6881,7 @@ Can't properly represent that with current record definition methods.
       .SetSummaryPrefixSuffixOnValue(1, 'Water: ', '')
       .SetSummaryDelimiterOnValue(', ')
       .SetIsRemovable(wbWorldLandDataIsRemovable)
-      .IncludeFlag(dfCollapsed);
+      .IncludeFlag(dfCollapsed, wbCollapseOther);
 
   //TES4,FO3,FNV,TES5,FO4,FO76,SF1
   wbWorldMapData :=
@@ -6884,7 +6893,7 @@ Can't properly represent that with current record definition methods.
         .SetSummaryMemberPrefixSuffix(0, '(X: ', '')
         .SetSummaryMemberPrefixSuffix(1, 'Y: ', ')')
         .SetSummaryDelimiter(', ')
-        .IncludeFlag(dfCollapsed),
+        .IncludeFlag(dfCollapsed, wbCollapseObjectBounds),
       wbStruct('Cell Coordinates', [
         wbStruct('NW Cell', [
           wbInteger('X', itS16),
@@ -6893,7 +6902,7 @@ Can't properly represent that with current record definition methods.
           .SetSummaryMemberPrefixSuffix(0, '(X: ', '')
           .SetSummaryMemberPrefixSuffix(1, 'Y: ', ')')
           .SetSummaryDelimiter(', ')
-          .IncludeFlag(dfCollapsed),
+          .IncludeFlag(dfCollapsed, wbCollapseObjectBounds),
         wbStruct('SE Cell', [
           wbInteger('X', itS16),
           wbInteger('Y', itS16)
@@ -6901,12 +6910,12 @@ Can't properly represent that with current record definition methods.
           .SetSummaryMemberPrefixSuffix(0, '(X: ', '')
           .SetSummaryMemberPrefixSuffix(1, 'Y: ', ')')
           .SetSummaryDelimiter(', ')
-          .IncludeFlag(dfCollapsed)
+          .IncludeFlag(dfCollapsed, wbCollapseObjectBounds)
       ]).SetSummaryKey([0, 1])
         .SetSummaryMemberPrefixSuffix(0, '[NW', '')
         .SetSummaryMemberPrefixSuffix(1, 'SE', ']')
         .SetSummaryDelimiter(', ')
-        .IncludeFlag(dfCollapsed),
+        .IncludeFlag(dfCollapsed, wbCollapseObjectBounds),
       IsTES5(
         wbStruct('Camera Data', [
           wbFloat('Min Height').SetDefaultNativeValue(50000),
@@ -6979,7 +6988,7 @@ Can't properly represent that with current record definition methods.
           wbInteger('Material Type', itU32, wbWorldImpactMaterialEnum),
           wbFormIDCkNoReach('Original Data', [IPCT]),
           wbFormIDCk('New Data', [IPCT, NULL])
-        ])).IncludeFlag(dfCollapsed),
+        ])).IncludeFlag(dfCollapsed, wbCollapseOther),
       wbStruct(IMPF, 'Footstep Materials', [
         wbString('ConcSolid', 30),
         wbString('ConcBroken', 30),
@@ -6992,8 +7001,8 @@ Can't properly represent that with current record definition methods.
         wbString('Grass', 30),
         wbString('Water', 30)
       ]).SetRequired
-        .IncludeFlag(dfCollapsed)
-    ]).IncludeFlag(dfCollapsed);
+        .IncludeFlag(dfCollapsed, wbCollapseOther)
+    ]).IncludeFlag(dfCollapsed, wbCollapseOther);
 
   //FO76,SF1
   wbWorldRegionEditorMap :=
@@ -7009,7 +7018,7 @@ Can't properly represent that with current record definition methods.
         .SetSummaryPrefixSuffixOnValue(1, 'Y: ', '), ')
         .SetSummaryPrefixSuffixOnValue(2, 'Max(X: ', ', ')
         .SetSummaryPrefixSuffixOnValue(3, 'Y: ', ')]')
-        .IncludeFlag(dfCollapsed)
+        .IncludeFlag(dfCollapsed, wbCollapseObjectBounds)
     ]);
 
   //FO76,SF1
@@ -7023,7 +7032,7 @@ Can't properly represent that with current record definition methods.
           .SetSummaryMemberPrefixSuffix(0, '(X: ', '')
           .SetSummaryMemberPrefixSuffix(1, 'Y: ', ')')
           .SetSummaryDelimiter(', ')
-          .IncludeFlag(dfCollapsed)
+          .IncludeFlag(dfCollapsed, wbCollapsePlacement)
       ).IncludeFlagOnValue(dfArrayCanBeEmpty)
        .IncludeFlag(dfNotAlignable),
       wbArray(WHGT, 'Water Heights',
@@ -7062,13 +7071,13 @@ Can't properly represent that with current record definition methods.
       wbArray(OFST, 'Offsets',
         wbArray('Row',
           wbInteger('Cell', itU32, nil, cpIgnore),
-        wbWorldColumnsCounter)
-        .SetSummaryName('Cells')
-        .IncludeFlag(dfCollapsed)
-        .IncludeFlag(dfNotAlignable)
+          wbWorldColumnsCounter
+        ).SetSummaryName('Cells')
+         .IncludeFlag(dfCollapsed, wbCollapseOther)
+         .IncludeFlag(dfNotAlignable)
       ).SetDontShow(wbNeverShow)
        .SetSummaryName('Rows')
-       .IncludeFlag(dfCollapsed)
+       .IncludeFlag(dfCollapsed, wbCollapseOther)
        .IncludeFlag(dfFastAssign)
        .IncludeFlag(dfNoCopyAsOverride)
        .IncludeFlag(dfNotAlignable));
@@ -7080,13 +7089,13 @@ Can't properly represent that with current record definition methods.
       wbArray(CLSZ, 'Cell Sizes',
         wbArray('Row',
           wbInteger('Cell', itU32, nil, cpIgnore),
-        wbWorldColumnsCounter)
-          .SetSummaryName('Cells')
-          .IncludeFlag(dfCollapsed)
-          .IncludeFlag(dfNotAlignable)
+          wbWorldColumnsCounter
+        ).SetSummaryName('Cells')
+         .IncludeFlag(dfCollapsed, wbCollapseObjectBounds)
+         .IncludeFlag(dfNotAlignable)
       ).SetDontShow(wbNeverShow)
        .SetSummaryName('Rows')
-       .IncludeFlag(dfCollapsed)
+       .IncludeFlag(dfCollapsed, wbCollapseObjectBounds)
        .IncludeFlag(dfFastAssign)
        .IncludeFlag(dfNoCopyAsOverride)
        .IncludeFlag(dfNotAlignable));
@@ -7101,19 +7110,19 @@ Can't properly represent that with current record definition methods.
             wbFormIDCK('Cell', [CELL, NULL], false, cpIgnore),
           wbWorldColumnsCounter)
             .SetSummaryName('Cells')
-            .IncludeFlag(dfCollapsed)
+            .IncludeFlag(dfCollapsed, wbCollapseOther)
             .IncludeFlag(dfNotAlignable),
         wbWorldRowsCounter)
           .SetSummaryName('Columns')
-          .IncludeFlag(dfCollapsed)
+          .IncludeFlag(dfCollapsed, wbCollapseOther)
           .IncludeFlag(dfNotAlignable),
         wbStruct('Dimensions', [
           wbInteger('Min Y', itS16, nil, cpIgnore),
           wbInteger('Min X', itS16, nil, cpIgnore),
           wbInteger('Rows', itU32, nil, cpIgnore)
-        ])
+        ]).IncludeFlag(dfCollapsed, wbCollapseObjectBounds)
       ]).SetDontShow(wbNeverShow)
-        .IncludeFlag(dfCollapsed)
+        .IncludeFlag(dfCollapsed, wbCollapseOther)
         .IncludeFlag(dfFastAssign)
         .IncludeFlag(dfNoCopyAsOverride));
 end;

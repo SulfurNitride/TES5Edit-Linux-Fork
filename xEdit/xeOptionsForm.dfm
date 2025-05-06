@@ -12,7 +12,6 @@ object frmOptions: TfrmOptions
   Font.Name = 'Tahoma'
   Font.Style = []
   KeyPreview = True
-  OldCreateOrder = False
   Position = poMainFormCenter
   ShowHint = True
   OnClose = FormClose
@@ -21,7 +20,6 @@ object frmOptions: TfrmOptions
   DesignSize = (
     466
     436)
-  PixelsPerInch = 96
   TextHeight = 13
   object pcOptions: TPageControl
     Left = 0
@@ -48,7 +46,7 @@ object frmOptions: TfrmOptions
         Width = 233
         Height = 17
         Caption = 'Hide ignored'
-        TabOrder = 1
+        TabOrder = 2
       end
       object cbHideNeverShow: TCheckBox
         Left = 16
@@ -56,7 +54,7 @@ object frmOptions: TfrmOptions
         Width = 233
         Height = 17
         Caption = 'Hide "never shown"'
-        TabOrder = 2
+        TabOrder = 4
       end
       object cbLoadBSAs: TCheckBox
         Left = 16
@@ -67,7 +65,7 @@ object frmOptions: TfrmOptions
           'Skip loading BSA and BA2 archives. Some functions like LOD gener' +
           'ation and localization may not work properly if disabled.'
         Caption = 'Load BSAs (requires restart)'
-        TabOrder = 3
+        TabOrder = 8
       end
       object cbSimpleRecords: TCheckBox
         Left = 16
@@ -76,7 +74,7 @@ object frmOptions: TfrmOptions
         Height = 17
         Hint = 'Display binary data as hex arrays'
         Caption = 'Simple records LAND, NAVI, NAVM, CELL, WRLD (requires restart)'
-        TabOrder = 6
+        TabOrder = 16
       end
       object cbShowUnsavedHint: TCheckBox
         Left = 266
@@ -84,7 +82,7 @@ object frmOptions: TfrmOptions
         Width = 189
         Height = 17
         Caption = 'Show Unsaved Hint'
-        TabOrder = 4
+        TabOrder = 1
       end
       object cbTrackAllEditorID: TCheckBox
         Left = 266
@@ -93,7 +91,7 @@ object frmOptions: TfrmOptions
         Height = 17
         Hint = 'Default only track MGEF and game settings'
         Caption = 'Track all EditorID'
-        TabOrder = 5
+        TabOrder = 3
       end
       object cbActorTemplateHide: TCheckBox
         Left = 16
@@ -101,15 +99,15 @@ object frmOptions: TfrmOptions
         Width = 233
         Height = 17
         Caption = 'Hide templated fields on actors'
-        TabOrder = 7
+        TabOrder = 6
       end
       object cbShowGroupRecordCount: TCheckBox
         Left = 16
-        Top = 151
+        Top = 131
         Width = 243
         Height = 17
         Caption = 'Show elements count for group records'
-        TabOrder = 8
+        TabOrder = 10
       end
       object cbShowTip: TCheckBox
         Left = 266
@@ -117,23 +115,23 @@ object frmOptions: TfrmOptions
         Width = 189
         Height = 17
         Caption = 'Show tip on start'
-        TabOrder = 9
+        TabOrder = 5
       end
       object cbShowFileFlags: TCheckBox
         Left = 16
-        Top = 174
+        Top = 154
         Width = 243
         Height = 17
         Caption = 'Show file header flags'
-        TabOrder = 10
+        TabOrder = 12
       end
       object cbAlignArrayElements: TCheckBox
         Left = 16
-        Top = 227
-        Width = 439
+        Top = 178
+        Width = 243
         Height = 17
         Caption = 'Align alignable array elements'
-        TabOrder = 11
+        TabOrder = 14
       end
       object cbPatron: TCheckBox
         Left = 266
@@ -143,7 +141,7 @@ object frmOptions: TfrmOptions
         BiDiMode = bdRightToLeftReadingOnly
         Caption = 'I am a patron or donor'
         ParentBiDiMode = False
-        TabOrder = 12
+        TabOrder = 7
       end
       object cbNoGitHubCheck: TCheckBox
         Left = 266
@@ -153,7 +151,7 @@ object frmOptions: TfrmOptions
         BiDiMode = bdRightToLeftReadingOnly
         Caption = 'Don'#39't check for GitHub update'
         ParentBiDiMode = False
-        TabOrder = 13
+        TabOrder = 11
       end
       object cbNoNexusModsCheck: TCheckBox
         Left = 266
@@ -163,7 +161,7 @@ object frmOptions: TfrmOptions
         BiDiMode = bdRightToLeftReadingOnly
         Caption = 'Don'#39't check for NexusMods update'
         ParentBiDiMode = False
-        TabOrder = 14
+        TabOrder = 9
       end
       object cbResetModifiedOnSave: TCheckBox
         Left = 265
@@ -173,7 +171,7 @@ object frmOptions: TfrmOptions
         BiDiMode = bdRightToLeftReadingOnly
         Caption = 'Reset Modified (Bold) on Save'
         ParentBiDiMode = False
-        TabOrder = 15
+        TabOrder = 13
       end
       object cbAlwaysSaveOnam: TCheckBox
         Left = 265
@@ -183,11 +181,11 @@ object frmOptions: TfrmOptions
         BiDiMode = bdRightToLeftReadingOnly
         Caption = 'Always save ONAM'
         ParentBiDiMode = False
-        TabOrder = 16
+        TabOrder = 15
       end
       object cbManualCleaningHide: TCheckBox
         Left = 16
-        Top = 250
+        Top = 224
         Width = 439
         Height = 17
         Caption = 'Hide Manual Cleaning functions'
@@ -211,7 +209,7 @@ object frmOptions: TfrmOptions
       end
       object lblTypesToCollapse: TLabel
         Left = 16
-        Top = 231
+        Top = 303
         Width = 263
         Height = 13
         Caption = 'Types to Collapse by Default (requires restart)'
@@ -236,7 +234,7 @@ object frmOptions: TfrmOptions
         Width = 220
         Height = 17
         Caption = 'Object Bounds (except TES4)'
-        TabOrder = 1
+        TabOrder = 2
       end
       object cbCollapseConditions: TCheckBox
         Left = 16
@@ -244,23 +242,23 @@ object frmOptions: TfrmOptions
         Width = 89
         Height = 17
         Caption = 'Conditions'
-        TabOrder = 2
+        TabOrder = 3
       end
       object cbCollapseFactionRelations: TCheckBox
-        Left = 235
+        Left = 327
         Top = 62
         Width = 220
         Height = 17
         Caption = 'Faction Relations'
-        TabOrder = 3
+        TabOrder = 6
       end
       object cbCollapseModels: TCheckBox
         Left = 16
         Top = 85
-        Width = 439
+        Width = 305
         Height = 17
         Caption = 'Models / 1st Person Models / Biped Models / World Models'
-        TabOrder = 4
+        TabOrder = 8
       end
       object cbCollapseItems: TCheckBox
         Left = 16
@@ -268,23 +266,23 @@ object frmOptions: TfrmOptions
         Width = 220
         Height = 17
         Caption = 'Items / Components'
-        TabOrder = 5
+        TabOrder = 9
       end
       object cbCollapseScriptProperties: TCheckBox
         Left = 16
         Top = 177
-        Width = 439
+        Width = 145
         Height = 17
-        Caption = 'Script Properties (only TES5, FO4, and FO76)'
-        TabOrder = 6
+        Caption = 'Script Properties (TES5+)'
+        TabOrder = 18
       end
       object cbCollapseBenignArray: TCheckBox
         Left = 16
-        Top = 200
+        Top = 225
         Width = 220
         Height = 17
         Caption = 'Arrays with Benign Conflict Priority'
-        TabOrder = 7
+        TabOrder = 23
       end
       object cbCollapseLeveledItems: TCheckBox
         Left = 235
@@ -292,23 +290,23 @@ object frmOptions: TfrmOptions
         Width = 220
         Height = 17
         Caption = 'Leveled List Entries (except FO76)'
-        TabOrder = 8
+        TabOrder = 11
       end
       object cbCollapseObjectProperties: TCheckBox
         Left = 16
         Top = 154
         Width = 439
         Height = 17
-        Caption = 'Actor Value Properties (only FO4 and FO76)'
-        TabOrder = 9
+        Caption = 'Actor Value Properties (FO4 and FO76)'
+        TabOrder = 15
       end
       object cbCollapseEquipSlots: TCheckBox
         Left = 16
         Top = 131
-        Width = 220
+        Width = 213
         Height = 17
-        Caption = 'Race Equip Slots (only FO4 and FO76)'
-        TabOrder = 10
+        Caption = 'Race Equip Slots (FO4 and FO76)'
+        TabOrder = 12
       end
       object cbCollapseFactions: TCheckBox
         Left = 138
@@ -316,23 +314,231 @@ object frmOptions: TfrmOptions
         Width = 91
         Height = 17
         Caption = 'Factions'
-        TabOrder = 11
+        TabOrder = 4
       end
       object cbCollapseRGBA: TCheckBox
         Left = 16
-        Top = 255
+        Top = 327
         Width = 213
         Height = 17
         Caption = 'Colors (RGB/A)'
-        TabOrder = 12
+        TabOrder = 34
       end
       object cbCollapseVec3: TCheckBox
         Left = 235
-        Top = 255
+        Top = 327
         Width = 213
         Height = 17
         Caption = 'Vector3 (XYZ)'
+        TabOrder = 36
+      end
+      object cbCollapsePosRot: TCheckBox
+        Left = 235
+        Top = 350
+        Width = 213
+        Height = 17
+        Caption = 'PosRot Vec (XYZ,XYZ)'
+        TabOrder = 39
+      end
+      object cbCollapseNavmesh: TCheckBox
+        Left = 138
+        Top = 39
+        Width = 91
+        Height = 17
+        Caption = 'Navmesh'
+        TabOrder = 1
+      end
+      object cbCollapseKeywords: TCheckBox
+        Left = 140
+        Top = 108
+        Width = 89
+        Height = 17
+        Caption = 'Keywords'
+        TabOrder = 10
+      end
+      object cbCollapseAliases: TCheckBox
+        Left = 235
+        Top = 131
+        Width = 86
+        Height = 17
+        Caption = 'Aliases'
         TabOrder = 13
+      end
+      object cbCollapseScriptData: TCheckBox
+        Left = 235
+        Top = 177
+        Width = 145
+        Height = 17
+        Caption = 'Script Data (TES3, TES4)'
+        TabOrder = 19
+      end
+      object cbCollapseFlags: TCheckBox
+        Left = 16
+        Top = 350
+        Width = 62
+        Height = 17
+        Caption = 'Flags'
+        TabOrder = 37
+      end
+      object cbCollapseSounds: TCheckBox
+        Left = 327
+        Top = 131
+        Width = 62
+        Height = 17
+        Caption = 'Sounds'
+        TabOrder = 14
+      end
+      object cbCollapseFragments: TCheckBox
+        Left = 16
+        Top = 200
+        Width = 145
+        Height = 17
+        Caption = 'Script Fragments (TES5+)'
+        TabOrder = 20
+      end
+      object cbCollapsePlacement: TCheckBox
+        Left = 235
+        Top = 154
+        Width = 86
+        Height = 17
+        Caption = 'Placement'
+        TabOrder = 16
+      end
+      object cbCollapseVertices: TCheckBox
+        Left = 327
+        Top = 154
+        Width = 86
+        Height = 17
+        Caption = 'Vertices'
+        TabOrder = 17
+      end
+      object cbCollapsePerk: TCheckBox
+        Left = 235
+        Top = 200
+        Width = 86
+        Height = 17
+        Caption = 'Perk'
+        TabOrder = 21
+      end
+      object cbCollapseOther: TCheckBox
+        Left = 327
+        Top = 271
+        Width = 86
+        Height = 17
+        Caption = 'Other'
+        TabOrder = 33
+      end
+      object cbCollapseRange: TCheckBox
+        Left = 235
+        Top = 225
+        Width = 86
+        Height = 17
+        Caption = 'Range'
+        TabOrder = 24
+      end
+      object cbCollapseARMABoneData: TCheckBox
+        Left = 138
+        Top = 327
+        Width = 86
+        Height = 17
+        Caption = 'ARMA Bone'
+        TabOrder = 35
+      end
+      object cbCollapseRACEBoneData: TCheckBox
+        Left = 138
+        Top = 350
+        Width = 86
+        Height = 17
+        Caption = 'RACE Bone'
+        TabOrder = 38
+      end
+      object cbCollapseLocations: TCheckBox
+        Left = 327
+        Top = 225
+        Width = 86
+        Height = 17
+        Caption = 'Locations'
+        TabOrder = 25
+      end
+      object cbCollapseTransforms: TCheckBox
+        Left = 235
+        Top = 271
+        Width = 86
+        Height = 17
+        Caption = 'Transforms'
+        TabOrder = 32
+      end
+      object cbCollapseHeadParts: TCheckBox
+        Left = 235
+        Top = 248
+        Width = 86
+        Height = 17
+        Caption = 'HeadParts'
+        TabOrder = 28
+      end
+      object cbCollapseBodyParts: TCheckBox
+        Left = 327
+        Top = 248
+        Width = 86
+        Height = 17
+        Caption = 'BodyParts'
+        TabOrder = 29
+      end
+      object cbCollapseDestruction: TCheckBox
+        Left = 16
+        Top = 248
+        Width = 86
+        Height = 17
+        Caption = 'Destruction'
+        TabOrder = 26
+      end
+      object cbCollapseOwnership: TCheckBox
+        Left = 143
+        Top = 248
+        Width = 86
+        Height = 17
+        Caption = 'Ownership'
+        TabOrder = 27
+      end
+      object cbCollapseRagdoll: TCheckBox
+        Left = 143
+        Top = 271
+        Width = 86
+        Height = 17
+        Caption = 'Ragdoll'
+        TabOrder = 31
+      end
+      object cbCollapseFactionRanks: TCheckBox
+        Left = 235
+        Top = 62
+        Width = 86
+        Height = 17
+        Caption = 'Faction Ranks'
+        TabOrder = 5
+      end
+      object cbCollapseBaseFormComponent: TCheckBox
+        Left = 16
+        Top = 271
+        Width = 127
+        Height = 17
+        Caption = 'BaseForm Component'
+        TabOrder = 30
+      end
+      object cbCollapseModelInfo: TCheckBox
+        Left = 327
+        Top = 85
+        Width = 86
+        Height = 17
+        Caption = 'Model Info'
+        TabOrder = 7
+      end
+      object cbCollapseDirectionRotation: TCheckBox
+        Left = 327
+        Top = 200
+        Width = 114
+        Height = 17
+        Caption = 'Direction Rotation'
+        TabOrder = 22
       end
     end
     object tsCleaning: TTabSheet
@@ -369,14 +575,14 @@ object frmOptions: TfrmOptions
         Width = 112
         Height = 17
         Caption = 'Set Z position to'
-        TabOrder = 2
+        TabOrder = 3
       end
       object edUDRSetScaleValue: TEdit
         Left = 149
         Top = 69
         Width = 84
         Height = 21
-        TabOrder = 3
+        TabOrder = 2
       end
       object edUDRSetZValue: TEdit
         Left = 149
@@ -468,7 +674,7 @@ object frmOptions: TfrmOptions
         Width = 114
         Height = 22
         Style = [cbStandardColors, cbExtendedColors, cbIncludeDefault, cbCustomColor, cbPrettyNames, cbCustomColors]
-        TabOrder = 0
+        TabOrder = 2
         OnChange = clbConflictThisChange
       end
       object cbConflictThis: TComboBox
@@ -486,7 +692,7 @@ object frmOptions: TfrmOptions
         Width = 201
         Height = 21
         Style = csDropDownList
-        TabOrder = 2
+        TabOrder = 3
         OnChange = cbConflictAllChange
       end
       object clbConflictAll: TColorBox
@@ -495,7 +701,7 @@ object frmOptions: TfrmOptions
         Width = 114
         Height = 22
         Style = [cbStandardColors, cbExtendedColors, cbIncludeDefault, cbCustomColor, cbPrettyNames, cbCustomColors]
-        TabOrder = 3
+        TabOrder = 4
         OnChange = clbConflictAllChange
       end
       object pnlFontRecords: TPanel
@@ -513,7 +719,7 @@ object frmOptions: TfrmOptions
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
-        TabOrder = 4
+        TabOrder = 5
         OnClick = pnlFontRecordsClick
       end
       object pnlFontMessages: TPanel
@@ -531,7 +737,7 @@ object frmOptions: TfrmOptions
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
-        TabOrder = 5
+        TabOrder = 6
         OnClick = pnlFontRecordsClick
       end
       object pnlFontViewer: TPanel
@@ -549,7 +755,7 @@ object frmOptions: TfrmOptions
         Font.Name = 'Tahoma'
         Font.Style = []
         ParentFont = False
-        TabOrder = 6
+        TabOrder = 7
         OnClick = pnlFontRecordsClick
       end
       object edColumnWidth: TEdit
@@ -557,14 +763,14 @@ object frmOptions: TfrmOptions
         Top = 212
         Width = 51
         Height = 21
-        TabOrder = 7
+        TabOrder = 8
       end
       object edRowHeight: TEdit
         Left = 223
         Top = 212
         Width = 51
         Height = 21
-        TabOrder = 8
+        TabOrder = 9
       end
       object sedAutoCompareSelectedLimit: TSpinEdit
         Left = 297
@@ -573,7 +779,7 @@ object frmOptions: TfrmOptions
         Height = 22
         MaxValue = 999999
         MinValue = 0
-        TabOrder = 9
+        TabOrder = 10
         Value = 0
       end
       object sedNavChangeDelay: TSpinEdit
@@ -583,7 +789,7 @@ object frmOptions: TfrmOptions
         Height = 22
         MaxValue = 999999
         MinValue = 0
-        TabOrder = 10
+        TabOrder = 11
         Value = 0
       end
       object cbRequireCtrlForDblClick: TCheckBox
@@ -592,7 +798,7 @@ object frmOptions: TfrmOptions
         Width = 280
         Height = 17
         Caption = 'Selection forms require holding CTRL for double click'
-        TabOrder = 11
+        TabOrder = 12
       end
       object cbFocusAddedElement: TCheckBox
         Left = 16
@@ -602,7 +808,7 @@ object frmOptions: TfrmOptions
         Caption = 
           'Focus newly added elements in View (can be inverted by holding C' +
           'TRL)'
-        TabOrder = 12
+        TabOrder = 13
       end
       object cbShrinkButtons: TCheckBox
         Left = 16
@@ -610,7 +816,7 @@ object frmOptions: TfrmOptions
         Width = 439
         Height = 17
         Caption = 'Shrink SpeedButtons in the top right corner of the main form '
-        TabOrder = 13
+        TabOrder = 0
       end
     end
     object tbsUITheme: TTabSheet
@@ -701,7 +907,7 @@ object frmOptions: TfrmOptions
         Height = 17
         Hint = 'Set FormID index to the number of masters if greater'
         Caption = 'Clamp FormIDs'
-        TabOrder = 0
+        TabOrder = 4
       end
       object cbShowFlagEnumValue: TCheckBox
         Left = 16
@@ -714,7 +920,7 @@ object frmOptions: TfrmOptions
         Caption = 
           'Show values of flags and enumerations (requires restart, interfe' +
           'res with scripts)'
-        TabOrder = 1
+        TabOrder = 3
       end
       object cbSortINFO: TCheckBox
         Left = 16
@@ -723,7 +929,7 @@ object frmOptions: TfrmOptions
         Height = 17
         Hint = 'Sort INFOs in DIAL by previous INFO'
         Caption = 'Sort INFOs (requires restart)'
-        TabOrder = 2
+        TabOrder = 1
       end
       object cbFillPNAM: TCheckBox
         Left = 32
@@ -732,7 +938,7 @@ object frmOptions: TfrmOptions
         Height = 17
         Hint = 'Fill missing PNAM in INFO records'
         Caption = 'Fill missing PNAM (requires restart)'
-        TabOrder = 3
+        TabOrder = 2
       end
       object cbSortFLST: TCheckBox
         Left = 16
@@ -744,7 +950,7 @@ object frmOptions: TfrmOptions
           'orms, unsorted FLST prevents them from being merged in merged pa' +
           'tch.'
         Caption = '[FO3/FNV] Sort FLST'
-        TabOrder = 4
+        TabOrder = 0
       end
       object cbManualCleaningAllow: TCheckBox
         Left = 16
@@ -760,7 +966,7 @@ object frmOptions: TfrmOptions
         Width = 233
         Height = 24
         Caption = 'Decode Texture Hashes (requires restart)'
-        TabOrder = 7
+        TabOrder = 6
       end
       object cbConvertIntFormID: TCheckBox
         Left = 16
@@ -770,7 +976,7 @@ object frmOptions: TfrmOptions
         Caption = 
           'Allow use of integer FormIDs (requires '#39'0x'#39' prefix on hex FormID' +
           's)'
-        TabOrder = 8
+        TabOrder = 7
       end
     end
   end

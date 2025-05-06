@@ -8159,7 +8159,7 @@ begin
     wbUnused(1),
     wbInteger('Parent Combination Index', itS16{, wbOBTEAddonIndexToStr, nil, cpNormal, True, nil, nil, -1}),
     wbInteger('Default', itU8, wbBoolEnum),
-    wbArray('Keywords', wbFormIDCk('Keyword', [KYWD, NULL]), -4),
+    wbArray('Keywords', wbFormIDCk('Keyword', [KYWD, NULL]), -4).IncludeFlag(dfCollapsed, wbCollapseKeywords),
     wbInteger('Min Level For Ranks', itU8),
     wbInteger('Alt Levels Per Tier', itU8),
     wbArray('Includes', wbStruct('Include', [
@@ -8862,8 +8862,7 @@ begin
     wbInteger(CNAM, 'Precombined Object Level XY', itU8),
     wbInteger(ZNAM, 'Precombined Object Level Z', itU8),
     wbByteArray(TVDT, 'Unknown', 0, cpNormal),
-    wbMHDTCELL
-    .IncludeFlag(dfCollapsed),
+    wbMHDTCELL,
     wbFormIDCk(LTMP, 'Lighting Template', [LGTM, NULL], False, cpNormal, True),
 
     {>>> XCLW sometimes has $FF7FFFFF and causes invalid floation point <<<}
@@ -9507,7 +9506,13 @@ begin
       wbLString(MNAM, 'Male Title', 0, cpTranslate),
       wbLString(FNAM, 'Female Title', 0, cpTranslate),
       wbString(INAM, 'Insignia (unused)')
-    ]);
+    ]).SetSummaryKey([0,1,2])
+      .SetSummaryMemberPrefixSuffix(0, 'Rank: ', '')
+      .SetSummaryMemberPrefixSuffix(1, 'M-Title: "', '"')
+      .SetSummaryMemberPrefixSuffix(2, 'F-Title: "', '"')
+      .SetSummaryDelimiter(', ')
+      .IncludeFlag(dfSummaryNoSortKey)
+      .IncludeFlag(dfCollapsed, wbCollapseFactionRanks);
 
   wbRecord(FACT, 'Faction', [
     wbEDID,
@@ -10074,9 +10079,9 @@ begin
           wbFormID('Reference'),
           wbArrayS('Triangles',
             wbInteger('Triangle', itU16).SetLinksToCallback(wbTriangleLinksTo),
-          -2).IncludeFlag(dfCollapsed)
-        ]).IncludeFlag(dfCollapsed)
-      ).IncludeFlag(dfCollapsed)
+          -2).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
+        ]).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
+      ).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
     )
   ]).SetAddInfo(wbNAVMAddInfo);
 
@@ -10093,20 +10098,20 @@ begin
            64, 'Not Edited'
           ])),
         wbArray('Unknown', wbFloat, 4),
-        wbArrayS('Edge Links', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed),
-        wbArrayS('Preferred Edge Links', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed),
+        wbArrayS('Edge Links', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
+        wbArrayS('Preferred Edge Links', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
         wbArrayS('Door Links',
           wbStructSK([1], 'Door Link', [
             wbInteger('CRC Hash', itU32, wbCRCValuesEnum).SetDefaultEditValue('PathingDoor'),
             wbFormIDCk('Door Ref', [REFR])
           ]).SetSummaryKey([1])
-            .IncludeFlag(dfCollapsed)
+            .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
             .IncludeFlag(dfSummaryMembersNoName),
-        -1).IncludeFlag(dfCollapsed),
+        -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
         wbStruct('Optional Island Data', [
           wbInteger('Has Island Data', itU8, wbBoolEnum).SetAfterSet(wbUpdateSameParentUnions),
           wbUnion('Island Data', wbNAVIIslandDataDecider, [
-            wbStruct('Unused', [wbEmpty('Unused')]).IncludeFlag(dfCollapsed),
+            wbStruct('Unused', [wbEmpty('Unused')]).IncludeFlag(dfCollapsed, wbCollapseOther),
             wbStruct('Island Data', [
               wbVec3('Min'),
               wbVec3('Max'),
@@ -10115,19 +10120,19 @@ begin
                   wbInteger('Vertex 0', itU16),
                   wbInteger('Vertex 1', itU16),
                   wbInteger('Vertex 2', itU16)
-                ]).IncludeFlag(dfCollapsed),
-              -1).IncludeFlag(dfCollapsed)
-                 .IncludeFlag(dfNotAlignable),
+                ]).IncludeFlag(dfCollapsed, wbCollapseVertices),
+              -1).IncludeFlag(dfCollapsed, wbCollapseVertices)
+                 .IncludeFlag(dfNotAlignable, wbCollapseNavmesh),
               wbArray('Vertices',
                 wbVec3('Vertex'),
-              -1).IncludeFlag(dfCollapsed)
+              -1).IncludeFlag(dfCollapsed, wbCollapseVertices)
                  .IncludeFlag(dfNotAlignable)
             ]).SetSummaryKey([2])
-              .IncludeFlag(dfCollapsed)
+              .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
               .IncludeFlag(dfSummaryMembersNoName)
-          ]).IncludeFlag(dfCollapsed)
+          ]).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
         ]).SetSummaryKey([1])
-          .IncludeFlag(dfCollapsed)
+          .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
           .IncludeFlag(dfSummaryMembersNoName),
         wbStruct('Pathing Cell', [
           wbInteger('CRC Hash', itU32, wbCRCValuesEnum).SetDefaultEditValue('PathingCell'),
@@ -10140,35 +10145,35 @@ begin
               .SetSummaryMemberPrefixSuffix(0, 'Y: ', '>')
               .SetSummaryMemberPrefixSuffix(1, '<X: ', '')
               .SetSummaryDelimiter(', ')
-              .IncludeFlag(dfCollapsed)
+              .IncludeFlag(dfCollapsed, wbCollapsePlacement)
               .IncludeFlag(dfSummaryMembersNoName),
             wbFormIDCk('Parent Cell', [CELL])
-          ]).IncludeFlag(dfCollapsed)
+          ]).IncludeFlag(dfCollapsed, wbCollapsePlacement)
         ]).SetSummaryKey([1, 2])
-          .IncludeFlag(dfCollapsed)
+          .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
           .IncludeFlag(dfSummaryMembersNoName)
       ]).SetSummaryKeyOnValue([0, 7, 6])
         .SetSummaryPrefixSuffixOnValue(0, '', '')
         .SetSummaryPrefixSuffixOnValue(7, 'in ', '')
         .SetSummaryPrefixSuffixOnValue(6, 'is island with ', '')
-        .IncludeFlag(dfCollapsed)
+        .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
         .IncludeFlag(dfFastAssign)
         .IncludeFlag(dfSummaryMembersNoName)
-    ).IncludeFlag(dfCollapsed),
+    ).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
     wbStruct(NVPP, 'Precomputed Pathing', [
       wbArray('Precomputed Paths',
         wbArray('Path',
           wbFormIDCk('Navmesh', [NAVM]),
-        -1).IncludeFlag(dfCollapsed),
-      -1).IncludeFlag(dfCollapsed),
+        -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
+      -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
       wbArrayS('Road Marker Index',
         wbStructSK([1], 'Road Marker', [
           wbFormIDCk('Navmesh', [NAVM]),
           wbInteger('Index', itU32)
-        ]).IncludeFlag(dfCollapsed),
-      -1).IncludeFlag(dfCollapsed)
-    ]).IncludeFlag(dfCollapsed),
-    wbArrayS(NVSI, 'Deleted Navmeshes', wbFormIDCk('Navmesh', [NAVM]) ).IncludeFlag(dfCollapsed)
+        ]).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
+      -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
+    ]).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
+    wbArrayS(NVSI, 'Deleted Navmeshes', wbFormIDCk('Navmesh', [NAVM]) ).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
   ]);
 
    wbRecord(EXPL, 'Explosion', [
@@ -14477,7 +14482,14 @@ begin
           wbString(SCCM, 'Comments'),
           wbFormIDCk(VTCK, 'Voice Types', [NPC_, FACT, FLST, VTYP, NULL]),
           wbEmpty(ALED, 'Alias End', cpNormal, True)
-        ], [], cpNormal, False, nil, False, nil, wbContainerAfterSet),
+        ], [], cpNormal, False, nil, False, nil, wbContainerAfterSet)
+          .SetSummaryKey([1, 2])
+          .SetSummaryDelimiter(' ')
+          .SetSummaryMemberPrefixSuffix(0, 'Ref [', ']')
+          .SetSummaryMemberPrefixSuffix(1, '', '')
+          .SetSummaryMemberPrefixSuffix(2, '{', '}')
+          .IncludeFlag(dfSummaryMembersNoName)
+          .IncludeFlag(dfCollapsed, wbCollapseAliases),
 
         // Location Alias
         wbRStructSK([0], 'Alias', [
@@ -14505,13 +14517,24 @@ begin
           wbConditions,
           wbInteger(ALCC, 'Closest To Alias', itS32, wbQuestAliasToStr, wbStrToAlias),
           wbEmpty(ALED, 'Alias End', cpNormal, True)
-        ]),
+        ]).SetSummaryKey([1, 2])
+          .SetSummaryDelimiter(' ')
+          .SetSummaryMemberPrefixSuffix(0, 'Loc [', ']')
+          .SetSummaryMemberPrefixSuffix(1, '', '')
+          .SetSummaryMemberPrefixSuffix(2, '{', '}')
+          .IncludeFlag(dfSummaryMembersNoName)
+          .IncludeFlag(dfCollapsed, wbCollapseAliases),
 
         // Ref Collection Alias
         wbRStructSK([0], 'Alias', [
           wbInteger(ALCS, 'Collection Alias ID', itU32),
           wbInteger(ALMI, 'Max Initial Fill Count', itU8)
-        ])
+        ]).SetSummaryKey([1])
+          .SetSummaryDelimiter(' ')
+          .SetSummaryMemberPrefixSuffix(0, 'RefCol [', ']')
+          .SetSummaryMemberPrefixSuffix(1, 'Max Init Fill [', ']')
+          .IncludeFlag(dfSummaryMembersNoName)
+          .IncludeFlag(dfCollapsed, wbCollapseAliases)
 
       ])
     ),
@@ -14940,10 +14963,10 @@ begin
     wbFormIDCk(SADD, 'Subgraph Additive Race', [RACE]),
     wbRArray('Subgraph Data',
       wbRStruct('Data', [
-        wbRArray('Actor Keywords', wbFormIDCk(SAKD, 'Keyword', [KYWD])),
+        wbRArray('Actor Keywords', wbFormIDCk(SAKD, 'Keyword', [KYWD])).IncludeFlag(dfCollapsed, wbCollapseKeywords),
         wbString(SGNM, 'Behaviour Graph'),
         wbRArray('Animation Paths', wbString(SAPT, 'Path'), cpNormal, True),
-        wbRArray('Target Keywords', wbFormIDCk(STKD, 'Keyword', [KYWD])),
+        wbRArray('Target Keywords', wbFormIDCk(STKD, 'Keyword', [KYWD])).IncludeFlag(dfCollapsed, wbCollapseKeywords),
         // Values greater than $10000 sets a bool. Reading this "closes" the current record.
         wbStruct(SRAF, 'Flags', [
           wbInteger('Role', itU16, wbEnum([
@@ -15656,9 +15679,9 @@ begin
       wbRegionSounds,
       wbRArray('Sounds', wbStruct(RDSN, 'Sound', [
         wbFormIDCk('Sound', [SNDR, NULL]),
-        wbArray('Keywords', wbFormIDCk('Keyword', [KYWD]), -1),
+        wbArray('Keywords', wbFormIDCk('Keyword', [KYWD]), -1).IncludeFlag(dfCollapsed, wbCollapseKeywords),
         wbFloat('Chance')
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseSounds),
 
             {--- Map ---}
       wbLString(RDMP, 'Map Name', 0, cpTranslate, False, wbREGNMapDontShow),
@@ -16266,11 +16289,11 @@ begin
     wbFormIDCk(ENAM, 'Exterior Tail', [SNDR]),
     wbFormIDCk(VNAM, 'VATS Descriptor', [SNDR]),
     wbFloat(TNAM, 'VATS Threshold'),
-    wbRArray('Keywords', wbFormIDCk(KNAM, 'Keyword', [KYWD])),
+    wbRArray('Keywords', wbFormIDCk(KNAM, 'Keyword', [KYWD])).IncludeFlag(dfCollapsed, wbCollapseKeywords),
     wbRArrayS('Sounds', wbStructSK(RNAM, [0], 'Sound', [
       wbInteger('Reverb Class', itU32, wbReverbClassEnum),
       wbFormIDCk('Descriptor', [SNDR])
-    ]))
+    ])).IncludeFlag(dfCollapsed, wbCollapseSounds)
   ]);
 
   wbRecord(LAYR, 'Layer',
@@ -16508,8 +16531,8 @@ begin
       ]), wbOMODDataIncludeCounter, cpNormal, False, nil, wbOMODincludeAfterSet),
       wbObjectModProperties
     ], cpNormal, False, nil, -1, nil, wbOMODdataAfterSet),
-    wbArray(MNAM, 'Target OMOD Keywords', wbFormIDCk('Keyword', [KYWD])),
-    wbArray(FNAM, 'Filter Keywords', wbFormIDCk('Keyword', [KYWD])),
+    wbArray(MNAM, 'Target OMOD Keywords', wbFormIDCk('Keyword', [KYWD])).IncludeFlag(dfCollapsed, wbCollapseKeywords),
+    wbArray(FNAM, 'Filter Keywords', wbFormIDCk('Keyword', [KYWD])).IncludeFlag(dfCollapsed, wbCollapseKeywords),
     wbFormIDCk(LNAM, 'Loose Mod', sigBaseObjects),
     wbFormIDCk(DNAM, 'Dependant Mod', [OMOD,NULL]),
     wbFormIDCk(ENAM, 'Condition Form', [CNDF]),
@@ -16517,7 +16540,7 @@ begin
     wbInteger(NAM1, 'Priority', itU8),
     wbFormIDCk(ARTC, 'Art Object', [ARTO]),
     wbByteArray(NAM2, 'Unused', 0),
-    wbArray(NAM3, 'Attribute Descriptor Keywords', wbFormIDCk('Keyword', [KYWD])),
+    wbArray(NAM3, 'Attribute Descriptor Keywords', wbFormIDCk('Keyword', [KYWD])).IncludeFlag(dfCollapsed, wbCollapseKeywords),
     wbFLTR,
     wbString(OBST, 'Obstacle')
   ]);
@@ -16599,7 +16622,7 @@ begin
         .SetRequired
       ])
       .SetSummaryKey([0, 1])
-      .IncludeFlag(dfCollapsed)
+      .IncludeFlag(dfCollapsed, wbCollapsePlacement)
     ),
     wbUnknown(VNAM, cpNormal, True),
     wbRArray('Original Coordinates?',
@@ -16608,7 +16631,7 @@ begin
         wbInteger('Y', itS32)
       ])
       .SetSummaryKeyOnValue([0, 1])
-      .IncludeFlag(dfCollapsed)
+      .IncludeFlag(dfCollapsed, wbCollapsePlacement)
     ),
     wbUnknown(VNAM, cpNormal, True)
   ]);
