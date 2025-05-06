@@ -25,7 +25,7 @@ Less frequently updated already renamed packages can be found on the following p
 - [TES5VREdit](http://www.nexusmods.com/skyrim/mods/25859)
 - [SSEEdit](http://www.nexusmods.com/skyrimspecialedition/mods/164)
 - [FO76Edit](https://www.nexusmods.com/fallout76/mods/30)
-- [SF16Edit](https://www.nexusmods.com/starfield/mods/239)
+- [SF1Edit](https://www.nexusmods.com/starfield/mods/239)
 - [Mirror](https://github.com/TES5Edit/TES5Edit/releases)
 
 ### xLODGen Releases
