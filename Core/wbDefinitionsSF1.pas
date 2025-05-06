@@ -6834,8 +6834,9 @@ end;
         {2} wbStruct('Surface Tree Pattern Swap', [
               wbArray('Forms', wbStruct('Form', [
                 wbFormIDCk('Surface Pattern', [SFPT]),
-                wbUnknown(1)
-              ]), -1)
+                wbUnknown(1),
+                wbUnknown(4) // present on all array entries except last - is usually an index to the pattern array, sometimes with an offset adjustment
+              ], cpNormal, False, nil, 2), -1)
             ]),
             //BGSBlockEditorMetaData_Component
         {3} wbStruct('Block Creation Meta Data', [
@@ -18514,7 +18515,7 @@ end;
     wbEDID,
     wbBaseFormComponents,
     wbUnknown(CNAM).IncludeFlag(dfNoCopyAsOverride),  // CK does not copy this on overrides
-    wbUnknown(DNAM).IncludeFlag(dfNoCopyAsOverride),  // CK does not copy this on overrides
+    wbInteger(DNAM, 'Edge Size', itU32).IncludeFlag(dfNoCopyAsOverride),  // CK does not copy this on overrides
 
     wbArray(ENAM, 'Surface Patterns', wbFormIDCk('Surface Pattern', [SFPT]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole), 65536).IncludeFlag(dfCollapsed, wbCollapseOther),
     wbArray(ENAM, 'Surface Patterns', wbFormIDCk('Surface Pattern', [SFPT]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole), 65536).IncludeFlag(dfCollapsed, wbCollapseOther),
