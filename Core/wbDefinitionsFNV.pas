@@ -4854,7 +4854,13 @@ begin
       wbString(MNAM, 'Male', 0, cpTranslate),
       wbString(FNAM, 'Female', 0, cpTranslate),
       wbString(INAM, 'Insignia (Unused)')
-    ]);
+    ]).SetSummaryKey([0,1,2])
+      .SetSummaryMemberPrefixSuffix(0, 'Rank: ', '')
+      .SetSummaryMemberPrefixSuffix(1, 'M-Title: "', '"')
+      .SetSummaryMemberPrefixSuffix(2, 'F-Title: "', '"')
+      .SetSummaryDelimiter(', ')
+      .IncludeFlag(dfSummaryNoSortKey)
+      .IncludeFlag(dfCollapsed, wbCollapseFactionRanks);
 
   wbRecord(FACT, 'Faction', [
     wbEDIDReq,
@@ -5329,11 +5335,11 @@ begin
           .SetSummaryMemberPrefixSuffix(0, 'Y: ', '>')
           .SetSummaryMemberPrefixSuffix(1, '<X: ', '')
           .SetSummaryDelimiter(', ')
-          .IncludeFlag(dfCollapsed)
+          .IncludeFlag(dfCollapsed, wbCollapsePlacement)
           .IncludeFlag(dfSummaryMembersNoName),
         wbVec3,
         wbUnion('Island Data', wbNAVINVMIDecider, [
-          wbStruct('Unused', [wbEmpty('Unused')]).IncludeFlag(dfCollapsed),
+          wbStruct('Unused', [wbEmpty('Unused')]).IncludeFlag(dfCollapsed, wbCollapseOther),
           wbStruct('Island Data', [
             wbVec3('Min'),
             wbVec3('Max'),
@@ -5342,35 +5348,35 @@ begin
             wbArray('Vertices',
               wbVec3('Vertex')
             ).SetCountPath('Vertex Count', True)
-             .IncludeFlag(dfCollapsed)
+             .IncludeFlag(dfCollapsed, wbCollapseVertices)
              .IncludeFlag(dfNotAlignable),
             wbArray('Triangles',
               wbStruct('Triangle', [
                 wbInteger('Vertex 0', itU16),
                 wbInteger('Vertex 1', itU16),
                 wbInteger('Vertex 2', itU16)
-              ]).IncludeFlag(dfCollapsed)
+              ]).IncludeFlag(dfCollapsed, wbCollapseVertices)
             ).SetCountPath('Triangle Count', True)
-             .IncludeFlag(dfCollapsed)
+             .IncludeFlag(dfCollapsed, wbCollapseVertices)
              .IncludeFlag(dfNotAlignable)
           ]).SetSummaryKey([5])
-            .IncludeFlag(dfCollapsed)
-        ]).IncludeFlag(dfCollapsed),
+            .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
+        ]).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
         wbUnknown
       ]).SetSummaryKeyOnValue([1,2,5])
         .SetSummaryPrefixSuffixOnValue(1, '', '')
         .SetSummaryPrefixSuffixOnValue(2, 'in ', '')
         .SetSummaryPrefixSuffixOnValue(5, 'is island with ', '')
-        .IncludeFlag(dfCollapsed)
-    ).IncludeFlag(dfCollapsed),
+        .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
+    ).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
     wbRArrayS('Navmesh Connections',
       wbStructSK(NVCI, [0], 'Connection', [
         wbFormIDCk('Navmesh', [NAVM]),
-        wbArrayS('Standard', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed),
-        wbArrayS('Preferred', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed),
-        wbArrayS('Door Links', wbFormIDCk('Door', [REFR]), -1).IncludeFlag(dfCollapsed)
-      ]).IncludeFlag(dfCollapsed)
-    ).IncludeFlag(dfCollapsed)
+        wbArrayS('Standard', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
+        wbArrayS('Preferred', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
+        wbArrayS('Door Links', wbFormIDCk('Door', [REFR]), -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
+      ]).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
+    ).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
   ]);
 
   wbRecord(NAVM, 'Navmesh',
@@ -7569,7 +7575,8 @@ begin
       .SetSummaryMemberPrefixSuffix(0, '', '')
       .SetSummaryDelimiter(' ')
       .IncludeFlag(dfSummaryNoSortKey)
-      .IncludeFlag(dfSummaryMembersNoName).IncludeFlag(dfCollapsed), 7),
+      .IncludeFlag(dfSummaryMembersNoName)
+      .IncludeFlag(dfCollapsed, wbCollapseObjectProperties), 7),
       wbUnused(2),
       wbFloat('Male Height'),
       wbFloat('Female Height'),

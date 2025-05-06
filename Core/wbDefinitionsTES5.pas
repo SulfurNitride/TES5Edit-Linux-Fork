@@ -4796,8 +4796,7 @@ begin
       .SetIsRemovable(wbCellLightingIsRemovable),
 
     wbTVDT,
-    wbMHDTCELL
-    .IncludeFlag(dfCollapsed),
+    wbMHDTCELL,
     wbFormIDCk(LTMP, 'Lighting Template', [LGTM, NULL], False, cpNormal, True),
     wbByteArray(LNAM, 'Unknown', 0, cpIgnore), // leftover flags, they are now in XCLC
 
@@ -4814,7 +4813,7 @@ begin
         wbVec3('Unknown Velocity'),
         wbByteArray('Unknown', 4)
       ]))
-    .IncludeFlag(dfCollapsed)
+    .IncludeFlag(dfCollapsed, wbCollapseOther)
     .IncludeFlag(dfNotAlignable),
     wbFormIDCk(XCWT, 'Water', [WATR]),
     wbOwnership([XRGD]),
@@ -5569,7 +5568,13 @@ begin
       wbLString(MNAM, 'Male Title', 0, cpTranslate),
       wbLString(FNAM, 'Female Title', 0, cpTranslate),
       wbString(INAM, 'Insignia Unused')
-    ]);
+    ]).SetSummaryKey([0,1,2])
+      .SetSummaryMemberPrefixSuffix(0, 'Rank: ', '')
+      .SetSummaryMemberPrefixSuffix(1, 'M-Title: "', '"')
+      .SetSummaryMemberPrefixSuffix(2, 'F-Title: "', '"')
+      .SetSummaryDelimiter(', ')
+      .IncludeFlag(dfSummaryNoSortKey)
+      .IncludeFlag(dfCollapsed, wbCollapseFactionRanks);
 
   wbRecord(FACT, 'Faction', [
     wbEDID,
@@ -6048,7 +6053,7 @@ begin
         ]).SetSummaryKey([2, 1])
           .SetSummaryMemberPrefixSuffix(2, 'Tri: [', ']')
           .SetSummaryMemberPrefixSuffix(1, 'Nav: ', '')
-          .IncludeFlag(dfCollapsed),
+          .IncludeFlag(dfCollapsed, wbCollapseNavmesh),
       -1).IncludeFlag(dfNotAlignable),
       wbArrayS('Door Links',
         wbStructSK([0, 2], 'Door Link', [
@@ -6059,7 +6064,7 @@ begin
         ]).SetSummaryKey([0, 2])
           .SetSummaryMemberPrefixSuffix(0, 'Tri: [', ']')
           .SetSummaryMemberPrefixSuffix(2, 'Door: ', '')
-          .IncludeFlag(dfCollapsed),
+          .IncludeFlag(dfCollapsed, wbCollapseNavmesh),
       -1),
       IfThen(wbSimpleRecords,
         wbArray('Cover Triangles',
@@ -6124,20 +6129,20 @@ begin
            64, 'Not Edited'
           ])),
         wbArray('Unknown', wbFloat, 4),
-        wbArrayS('Edge Links', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed),
-        wbArrayS('Preferred Edge Links', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed),
+        wbArrayS('Edge Links', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
+        wbArrayS('Preferred Edge Links', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
         wbArrayS('Door Links',
           wbStructSK([1], 'Door Link', [
             wbInteger('CRC Hash', itU32, wbCRCValuesEnum).SetDefaultEditValue('PathingDoor'),
             wbFormIDCk('Door Ref', [REFR])
           ]).SetSummaryKey([1])
-            .IncludeFlag(dfCollapsed)
+            .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
             .IncludeFlag(dfSummaryMembersNoName),
-        -1).IncludeFlag(dfCollapsed),
+        -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
         wbStruct('Optional Island Data', [
           wbInteger('Has Island Data', itU8, wbBoolEnum).SetAfterSet(wbUpdateSameParentUnions),
           wbUnion('Island Data', wbNAVIIslandDataDecider, [
-            wbStruct('Unused', [wbEmpty('Unused')]).IncludeFlag(dfCollapsed),
+            wbStruct('Unused', [wbEmpty('Unused')]).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
             wbStruct('Island Data', [
               wbVec3('Min'),
               wbVec3('Max'),
@@ -6146,19 +6151,19 @@ begin
                   wbInteger('Vertex 0', itU16),
                   wbInteger('Vertex 1', itU16),
                   wbInteger('Vertex 2', itU16)
-                ]).IncludeFlag(dfCollapsed),
-              -1).IncludeFlag(dfCollapsed)
+                ]).IncludeFlag(dfCollapsed, wbCollapseVertices),
+              -1).IncludeFlag(dfCollapsed, wbCollapseVertices)
                  .IncludeFlag(dfNotAlignable),
               wbArray('Vertices',
                 wbVec3('Vertex'),
-              -1).IncludeFlag(dfCollapsed)
+              -1).IncludeFlag(dfCollapsed, wbCollapseVertices)
                  .IncludeFlag(dfNotAlignable)
             ]).SetSummaryKey([2])
-              .IncludeFlag(dfCollapsed)
+              .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
               .IncludeFlag(dfSummaryMembersNoName)
-          ]).IncludeFlag(dfCollapsed)
+          ]).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
         ]).SetSummaryKey([1])
-          .IncludeFlag(dfCollapsed)
+          .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
           .IncludeFlag(dfSummaryMembersNoName),
         wbStruct('Pathing Cell', [
           wbInteger('CRC Hash', itU32, wbCRCValuesEnum).SetDefaultEditValue('PathingCell'),
@@ -6171,32 +6176,32 @@ begin
               .SetSummaryMemberPrefixSuffix(0, 'Y: ', '>')
               .SetSummaryMemberPrefixSuffix(1, '<X: ', '')
               .SetSummaryDelimiter(', ')
-              .IncludeFlag(dfCollapsed)
+              .IncludeFlag(dfCollapsed, wbCollapsePlacement)
               .IncludeFlag(dfSummaryMembersNoName),
             wbFormIDCk('Parent Cell', [CELL])
-          ]).IncludeFlag(dfCollapsed)
+          ]).IncludeFlag(dfCollapsed, wbCollapsePlacement)
         ]).SetSummaryKey([1, 2])
-          .IncludeFlag(dfCollapsed)
+          .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
           .IncludeFlag(dfSummaryMembersNoName)
       ]).SetSummaryKeyOnValue([0, 7, 6])
         .SetSummaryPrefixSuffixOnValue(0, '', '')
         .SetSummaryPrefixSuffixOnValue(7, 'in ', '')
         .SetSummaryPrefixSuffixOnValue(6, 'is island with ', '')
-        .IncludeFlag(dfCollapsed)
+        .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
         .IncludeFlag(dfSummaryMembersNoName)
-    ).IncludeFlag(dfCollapsed),
+    ).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
     wbStruct(NVPP, 'Precomputed Pathing', [
       wbArray('Precomputed Paths',
-        wbArray('Path', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed),
-      -1).IncludeFlag(dfCollapsed),
+        wbArray('Path', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
+      -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
       wbArrayS('Road Marker Index',
         wbStructSK([1], 'Road Marker', [
           wbFormIDCk('Navmesh', [NAVM]),
           wbInteger('Index', itU32)
-        ]).IncludeFlag(dfCollapsed),
-      -1).IncludeFlag(dfCollapsed)
-    ]).IncludeFlag(dfCollapsed),
-    wbArrayS(NVSI, 'Deleted Navmeshes', wbFormIDCk('Navmesh', [NAVM])).IncludeFlag(dfCollapsed)
+        ]).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
+      -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
+    ]).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
+    wbArrayS(NVSI, 'Deleted Navmeshes', wbFormIDCk('Navmesh', [NAVM])).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
   ]);
 
    wbRecord(EXPL, 'Explosion', [
@@ -8819,7 +8824,11 @@ begin
         wbFormIDCk('Perk', [PERK]),
         wbInteger('Rank', itU8),
         wbUnused(3)
-      ]), cpNormal, False, nil, wbPRKRsAfterSet
+      ]).SetSummaryKeyOnValue([1])
+        .SetSummaryPrefixSuffixOnValue(1, '{Rank: ', '}')
+        .IncludeFlagOnValue(dfSummaryMembersNoName)
+        .IncludeFlag(dfCollapsed, wbCollapsePerk)
+        , cpNormal, False, nil, wbPRKRsAfterSet
     ),
     wbCOCT,
     wbCNTOs,
@@ -9334,7 +9343,7 @@ begin
           .SetSummaryMemberPrefixSuffix(1, '', '')
           .SetSummaryMemberPrefixSuffix(2, '{', '}')
           .IncludeFlag(dfSummaryMembersNoName)
-          .IncludeFlag(dfCollapsed),
+          .IncludeFlag(dfCollapsed, wbCollapseAliases),
 
         // Location Alias
         wbRStructSK([0], 'Alias', [
@@ -9402,7 +9411,7 @@ begin
           .SetSummaryMemberPrefixSuffix(1, '', '')
           .SetSummaryMemberPrefixSuffix(2, '{', '}')
           .IncludeFlag(dfSummaryMembersNoName)
-          .IncludeFlag(dfCollapsed)
+          .IncludeFlag(dfCollapsed, wbCollapseAliases)
       ])
     ),
     wbString(NNAM, 'Description', 0, cpNormal, False),
@@ -9778,7 +9787,7 @@ begin
       .SetSummaryMemberPrefixSuffix(0, '', '')
       .SetSummaryDelimiter(' ')
       .IncludeFlag(dfSummaryNoSortKey)
-      .IncludeFlag(dfSummaryMembersNoName).IncludeFlag(dfCollapsed), 7),
+      .IncludeFlag(dfSummaryMembersNoName).IncludeFlag(dfCollapsed, wbCollapseOther), 7),
       wbByteArray('Unknown', 2),
       wbFloat('Male Height'),
       wbFloat('Female Height'),
@@ -10160,7 +10169,7 @@ begin
       wbVec3('Unknown Velocity'),
       wbByteArray('Unknown', 4)
     ])
-    .IncludeFlag(dfCollapsed),
+    .IncludeFlag(dfCollapsed, wbCollapseOther),
     wbVec3(XCVL,'Water Current Linear Velocity'),
     wbVec3(XCVR,'Water Current Rotational Velocity'),
     wbFormIDCk(XCZC, 'Water Current Zone Cell', [CELL, NULL]),
@@ -10919,7 +10928,7 @@ begin
       wbUnused(ANAM, 0),
       wbUnused(BNAM, 0)
     ], [], cpIgnore, False, wbNeverShow)
-      .IncludeFlag(dfCollapsed),
+      .IncludeFlag(dfCollapsed, wbCollapseOther),
     wbInteger(LNAM, 'Max Cloud Layers', itU32)
       .SetDefaultNativeValue(29)
       .SetRequired,

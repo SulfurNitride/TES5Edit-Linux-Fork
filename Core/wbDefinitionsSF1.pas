@@ -3254,7 +3254,7 @@ begin
         wbFormIDCk('Start Form', [NULL, WWED]).IncludeFlag(dfSummaryExcludeNULL)
       ]).SetSummaryKey([0])
     ]).SetSummaryKey([0, 1])
-      .IncludeFlag(dfCollapsed);
+      .IncludeFlag(dfCollapsed, wbCollapseSounds);
 end;
 {------------------------------------------------------------------------------}
 function wbSoundReference(const aSignature: TwbSignature; const aName: string = 'Sound'): IwbRecordMemberDef; overload;
@@ -3262,7 +3262,7 @@ begin
   Result :=
     wbSubRecord(aSignature, aName, wbSoundReference(''))
 //      .IncludeFlag(dfSummaryMembersNoName)
-      .IncludeFlag(dfCollapsed);
+      .IncludeFlag(dfCollapsed, wbCollapseSounds);
 end;
 {==============================================================================}
 
@@ -5083,7 +5083,7 @@ begin
       wbFloat('Distance Below Water'),
       wbFloat('Distance Above Water')
     ])
-      .IncludeFlag(dfCollapsed);
+      .IncludeFlag(dfCollapsed, wbCollapseObjectPaletteDefaults);
   var wbDEFL := wbFormIDCk(DEFL, 'Default Layer', [LAYR]);
 
   var wbPTT2 := wbStruct(PTT2, 'Transforms', [
@@ -6501,7 +6501,7 @@ end;
     .SetSummaryMemberPrefixSuffix(2, 'to ', '')
     .SetSummaryMemberPrefixSuffix(5, 'using ', '')
     .IncludeFlag(dfSummaryMembersNoName)
-    .IncludeFlag(dfCollapsed)
+    .IncludeFlag(dfCollapsed, wbCollapseTraversal)
     .IncludeFlag(dfExcludeFromBuildRef);
 
   var wbAngleToStr: TwbToStrCallback :=
@@ -6783,18 +6783,19 @@ end;
                 .SetSummaryKeyOnValue([0, 1, 2, 3])
                 .IncludeFlag(dfSummaryMembersNoName)
                 .IncludeFlag(dfHideText)
-                .IncludeFlag(dfCollapsed)
+                .IncludeFlag(dfCollapsed, wbCollapseBaseFormComponent)
               ]), cpNormal, False, nil, wbBODSsAfterSet)
             ]), cpNormal, False, nil, wbBODCsAfterSet).SetRequired
           ]).SetRequired,
           wbInteger(BLUF, 'Unknown', itU8),
           wbInteger(BOID, 'Next Part ID', itU32)
-        ]).IncludeFlag(dfAllowAnyMember).IncludeFlag(dfStructFirstNotRequired),
+        ])
+        .IncludeFlag(dfAllowAnyMember)
+        .IncludeFlag(dfStructFirstNotRequired),
         //BGSCityMapsUsage_Component
         wbRStruct('Component Data - City Map', [
           wbString(MOD2, 'Model Path', 260).IncludeFlag(dfHasZeroTerminator)
         ]),
-
         //BGSCrowdComponent_Component
         wbRStruct('Component Data - Crowd', [
           wbFloat(CDND, 'Density'),
@@ -6807,10 +6808,11 @@ end;
             wbFloat(FLTV, 'Population Scale')
           ]).SetCountPath(CDNS)
         ]),
+        //
         wbRStruct('Component Data - Container Items', [
           wbContainerItems
         ]),
-
+        //
         wbRStruct('Component Data - DAT2', [
           wbUnion(DAT2, 'Data', wbBFCDAT2Decider, [
         {0} wbUnknown,
@@ -6821,13 +6823,13 @@ end;
                   wbStruct('Column', [
                     wbFloat('Terrain Height', cpNormal, True, 1, 0, nil, wbNormalizeToRange(-800.0, 800.0)),
                     wbFloat('Water Height', cpNormal, True, 1, 0, nil, wbNormalizeToRange(-800.0, 800.0))
-                  ]).IncludeFlag(dfCollapsed)
-                , 16).IncludeFlag(dfCollapsed)
-              , 16).IncludeFlag(dfCollapsed)
+                  ]).IncludeFlag(dfCollapsed, wbCollapseObjectBounds)
+                , 16).IncludeFlag(dfCollapsed, wbCollapseObjectBounds)
+              , 16).IncludeFlag(dfCollapsed, wbCollapseObjectBounds)
             ])
             .SetSummaryKey([0])
             .IncludeFlag(dfSummaryMembersNoName)
-            .IncludeFlag(dfCollapsed),
+            .IncludeFlag(dfCollapsed, wbCollapseObjectBounds),
             // SurfaceTreePatternSwapInfo_Component
         {2} wbStruct('Surface Tree Pattern Swap', [
               wbArray('Forms', wbStruct('Form', [
@@ -6930,7 +6932,7 @@ end;
                   wbInteger('X', itS32),
                   wbInteger('Y', itS32)
                 ]), -1)
-                  .IncludeFlag(dfCollapsed)
+                  .IncludeFlag(dfCollapsed, wbCollapsePlacement)
             ])
           ]).IncludeFlag(dfUnionStaticResolve)
         ]),
@@ -6994,9 +6996,11 @@ end;
             wbFloat('Proximity Limit')
           ])
         ]),
+        //
         wbRStruct('Component Data - FLLD', [
           wbFLLD
         ]),
+        //
         wbRStruct('Component Data - FTYP', [
           wbFTYP
         ]),
@@ -7004,6 +7008,7 @@ end;
         wbRStruct('Component Data - Fullname', [
           wbFULL
         ]),
+        //
         wbRStruct('Component Data - GNAM', [
           wbUnknown(GNAM)
         ]),
@@ -7028,6 +7033,7 @@ end;
             wbFormID(FLFM, 'Linked Form')
           ]))
         ]),
+        //
         wbRStructSK([0], 'Component Data - Keywords', [
           wbKeywords
         ]),
@@ -7105,23 +7111,23 @@ end;
           wbStruct(STRD, 'Stored Traversal Data', [
             wbArray('Unknown', wbTraversalData, -1)
             .IncludeFlag(dfFastAssign)
-            .IncludeFlag(dfCollapsed)
+            .IncludeFlag(dfCollapsed, wbCollapseTraversal)
             .IncludeFlag(dfNotAlignable),
             wbArray('Unknown',
               wbStruct('Unknown', [
                 wbFormIDCk('Unknown', [ACTI, REFR]),
                 wbVec3,
                 wbArray('Unknown', wbTraversalData, -1)
-                .IncludeFlag(dfCollapsed)
-                .IncludeFlag(dfNotAlignable)
+                  .IncludeFlag(dfCollapsed, wbCollapseTraversal)
+                  .IncludeFlag(dfNotAlignable)
               ])
               .SetSummaryKey([0])
               .SetSummaryMemberPrefixSuffix(0, '', '')
               .IncludeFlag(dfSummaryMembersNoName)
-              .IncludeFlag(dfCollapsed)
+              .IncludeFlag(dfCollapsed, wbCollapsePlacement)
             , -1)
             .IncludeFlag(dfFastAssign)
-            .IncludeFlag(dfCollapsed)
+            .IncludeFlag(dfCollapsed, wbCollapsePlacement)
             .IncludeFlag(dfNotAlignable)
           ])
           .IncludeFlag(dfExcludeFromBuildRef)
@@ -7146,7 +7152,7 @@ end;
               .SetSummaryDelimiter(', ')
               .IncludeFlag(dfSummaryMembersNoName)
               .IncludeFlag(dfSummaryNoSortKey)
-              .IncludeFlag(dfCollapsed, wbCollapseItems), 4),
+              .IncludeFlag(dfCollapsed, wbCollapseObjectBounds), 4),
               wbFloat,
               wbFloat,
               wbFloat,
@@ -7191,7 +7197,7 @@ end;
         wbRStruct('Component Data - Vehicle Config', [
           wbArray(VCSB, 'Suspension Bone Modifiers',
             wbFormIDCk('Bone Modifier', [BMOD])
-          ).IncludeFlag(dfCollapsed),
+          ).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
           wbStruct(VCCD, 'Vehicle Config Data', [
             wbStruct('Node Names', [
               wbStruct('Suspension', [
@@ -7199,14 +7205,14 @@ end;
                 wbLenString('Front Right'),
                 wbLenString('Rear Left'),
                 wbLenString('Rear Right')
-              ]).IncludeFlag(dfCollapsed),
+              ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
               wbStruct('Wheel', [
                 wbLenString('Front Left'),
                 wbLenString('Front Right'),
                 wbLenString('Rear Left'),
                 wbLenString('Rear Right')
-              ]).IncludeFlag(dfCollapsed)
-            ]).IncludeFlag(dfCollapsed),
+              ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig)
+            ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
             wbStruct('Chassis', [
               wbInteger('Forward Axis', itU32),
               wbInteger('Up Axis', itU32),
@@ -7216,19 +7222,19 @@ end;
                 wbFloat('Roll'),
                 wbFloat('Pitch'),
                 wbFloat('Yaw')
-              ]).IncludeFlag(dfCollapsed),
+              ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
               wbStruct('Inertia', [
                 wbFloat('Yaw'),
                 wbFloat('Roll'),
                 wbFloat('Pitch')
-              ]).IncludeFlag(dfCollapsed),
+              ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
               wbFloat('Extra Torque'),
               wbFloat('Max Velocity Positional Friction'),
               wbFloat('Friction'),
               wbFloat('Restitution'),
               wbFloat('COM Offset Forward'),
               wbFloat('COM Offset Up')
-            ]).IncludeFlag(dfCollapsed),
+            ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
             wbStruct('Wheel', [
               wbFloat('Slip Angle'),
               wbFloat('Friction'),
@@ -7236,7 +7242,7 @@ end;
               wbFloat('Mass'),
               wbFloat('Viscosity Friction'),
               wbInteger('Wheel Cast Type', itS32)
-            ]).IncludeFlag(dfCollapsed),
+            ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
             wbStruct('Suspension', [
               wbFloat('Strength'),
               wbFloat('Damping Compression'),
@@ -7248,12 +7254,12 @@ end;
                 wbFloat('Front'),
                 wbFloat('Back'),
                 wbFloat('Lateral')
-              ]).IncludeFlag(dfCollapsed)
-            ]).IncludeFlag(dfCollapsed),
+              ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig)
+            ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
             wbStruct('Steering', [
               wbFloat('Max Angle'),
               wbFloat('Max Angle at Max Speed')
-            ]).IncludeFlag(dfCollapsed),
+            ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
             wbStruct('Engine', [
               wbFloat('Max Speed'),
               wbFloat('Max Torque'),
@@ -7263,13 +7269,13 @@ end;
               wbStruct('Torque', [
                 wbFloat('Min RPM'),
                 wbFloat('Max RPM')
-              ]).IncludeFlag(dfCollapsed),
+              ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
               wbStruct('Resistance', [
                 wbFloat('Min RPM'),
                 wbFloat('Max RPM'),
                 wbFloat('Opt RPM')
-              ]).IncludeFlag(dfCollapsed)
-            ]).IncludeFlag(dfCollapsed),
+              ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig)
+            ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
             wbStruct('Transmission', [
               wbFloat('Downshift RPM'),
               wbFloat('Upshift RPM'),
@@ -7280,29 +7286,29 @@ end;
                 wbFloat('Second'),
                 wbFloat('Third'),
                 wbFloat('Fourth')
-              ]).IncludeFlag(dfCollapsed),
+              ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
               wbStruct('Torque Ratios', [
                 wbFloat('Front Wheels'),
                 wbFloat('Back Wheels')
-              ]).IncludeFlag(dfCollapsed)
-            ]).IncludeFlag(dfCollapsed),
+              ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig)
+            ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
             wbStruct('Brakes', [
               wbFloat('Max Torque'),
               wbFloat('Min Pedal Input To Block'),
               wbFloat('Wheels Min Time To Block')
-            ]).IncludeFlag(dfCollapsed),
+            ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
             wbStruct('Aerodynamics', [
               wbFloat('Air Density'),
               wbFloat('Front Area'),
               wbFloat('Drag Coefficient'),
               wbFloat('Lift Coefficient'),
               wbFloat('Extra Gravity Multiplier')
-            ]).IncludeFlag(dfCollapsed),
+            ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
             wbStruct('Velocity Damping', [
               wbFloat('Normal Spin'),
               wbFloat('Collision Spin'),
               wbFloat('Collision Threshold')
-            ]).IncludeFlag(dfCollapsed),
+            ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
             wbStruct('Handling', [
               wbFloat('Reorient Strength'),
               wbFloat('Reorient Damping'),
@@ -7313,7 +7319,7 @@ end;
               wbFloat('Vertical Boost Duration'),
               wbFloat('Boost Recharge Delay'),
               wbFloat('Boost Recharge Duration')
-            ]).IncludeFlag(dfCollapsed),
+            ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
             wbStruct('Water', [
               wbFloat('Strength Front'),
               wbFloat('Strength Back'),
@@ -7321,30 +7327,30 @@ end;
               wbFloat('Damp Back'),
               wbFloat('Drive'),
               wbFloat('Rotation Damp')
-            ]).IncludeFlag(dfCollapsed),
+            ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
             wbStruct('Bumper', [
               wbInteger('Enable Bumper', itU8, wbBoolEnum),
               wbFloat('Forward'),
               wbFloat('Up'),
               wbFloat('Width'),
               wbFloat('Radius')
-            ]).IncludeFlag(dfCollapsed),
+            ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
             wbStruct('Collision Damping', [
               wbFloat('Angular'),
               wbFloat('Min Slope Cos')
-            ]).IncludeFlag(dfCollapsed),
+            ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
             wbStruct('Controls', [
               wbStruct('Steering PID Third Person', [
                 wbFloat('P-Value'),
                 wbFloat('I-Value'),
                 wbFloat('D-Value')
-              ]).IncludeFlag(dfCollapsed),
+              ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
               wbStruct('Steering PID First Person', [
                 wbFloat('P-Value'),
                 wbFloat('I-Value'),
                 wbFloat('D-Value')
-              ]).IncludeFlag(dfCollapsed)
-            ]).IncludeFlag(dfCollapsed),
+              ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig)
+            ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
             wbStruct('Unknown', [
               wbFloat,
               wbFloat,
@@ -7352,45 +7358,45 @@ end;
               wbFloat,
               wbFloat,
               wbFloat
-            ]).IncludeFlag(dfCollapsed),
+            ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
             wbStruct('Camera', [
               wbStruct('Base Zoom', [
                 wbFloat('First Person'),
                 wbFloat('Third Person Near'),
                 wbFloat('Third Person Far')
-              ]).IncludeFlag(dfCollapsed),
+              ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
               wbStruct('Base Height', [
                 wbFloat('First Person'),
                 wbFloat('Third Person Near'),
                 wbFloat('Third Person Far')
-              ]).IncludeFlag(dfCollapsed),
+              ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
               wbStruct('Base FOV', [
                 wbFloat('First Person'),
                 wbFloat('Third Person Near'),
                 wbFloat('Third Person Far')
-              ]).IncludeFlag(dfCollapsed),
+              ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
                 wbStruct('Boost FOV Offset', [
                 wbFloat('Third Person Near'),
                 wbFloat('Third Person Far')
-              ]).IncludeFlag(dfCollapsed),
+              ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
               wbStruct('Speed Ratio Zoom Offset', [
                 wbFloat('Third Person Near'),
                 wbFloat('Third Person Far')
-              ]).IncludeFlag(dfCollapsed),
+              ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
               wbStruct('Speed PID', [
                 wbFloat('P-Value'),
                 wbFloat('I-Value'),
                 wbFloat('D-Value')
-              ]).IncludeFlag(dfCollapsed),
+              ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
                 wbStruct('FOV Blend Factor', [
                 wbFloat('Aiming'),
                 wbFloat('Boosting')
-              ]).IncludeFlag(dfCollapsed),
+              ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
                 wbStruct('Position', [
                 wbFloat('Blend Filtering Factor'),
                 wbFloat('R/L Offset for First Person')
-              ]).IncludeFlag(dfCollapsed)
-            ]).IncludeFlag(dfCollapsed),
+              ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig)
+            ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
             wbFloat('Handling Forward Boost Force In Water'),
             wbFloat('Water Lin Damp'),
             wbFloat('Wheel Max Friction'),
@@ -7399,17 +7405,17 @@ end;
                 wbFloat('DeadZone'),
                 wbFloat('Pitch'),
                 wbFloat('Roll')
-              ]).IncludeFlag(dfCollapsed),
+              ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
               wbStruct('Natural', [
                 wbFloat('Pitch Period'),
                 wbFloat('Roll Period'),
                 wbFloat('Amplitude')
-              ]).IncludeFlag(dfCollapsed),
+              ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
               wbStruct('Torque', [
               wbFloat('Pitch'),
               wbFloat('Roll')
-              ]).IncludeFlag(dfCollapsed)
-            ]).IncludeFlag(dfCollapsed),
+              ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig)
+            ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
             wbFloat('Chassis Linear Damping'),
             wbFloat('Suspension Max Visual Speed Compression'),
             wbFloat('Suspension Max Visual Speed Relaxation'),
@@ -7419,8 +7425,8 @@ end;
               wbFloat('Threshold'),
               wbFloat('Friction At Max Slide Factor'),
               wbFloat('Viscosity Friction At Max Slide Factor')
-            ]).IncludeFlag(dfCollapsed)
-          ]).IncludeFlag(dfCollapsed),
+            ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig)
+          ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
           wbFormIDCk(VCMT, 'Mounted Weapon', [WEAP]),
           wbStruct(VCTT, 'Weapon Data', [
             wbFloat('Offset X'),
@@ -7430,7 +7436,7 @@ end;
             wbFloat('Yaw'),
             wbFloat('Roll'),
             wbFloat('Scale')
-          ]).IncludeFlag(dfCollapsed),
+          ]).IncludeFlag(dfCollapsed, wbCollapsePosRot),
           wbStruct(VWWD, 'Vehicle WWise Data', [
             wbSoundReference('Motor Sound'),
             wbSoundReference('Tire Sound Front Left'),
@@ -7442,7 +7448,7 @@ end;
             wbSoundReference('Landing Sound - Ground'),
             wbSoundReference('Landing Sound - Water'),
             wbSoundReference('Horn Sound')
-          ]).IncludeFlag(dfCollapsed),
+          ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
           wbStruct(VMRT, 'Vehicle Material Table', [
             wbWWiseGUID('Material ID'),
             wbStruct('Audio', [
@@ -7452,9 +7458,9 @@ end;
                 wbStructSK([0], 'Rules', [
                   wbLenString('Rule', 1),
                   wbWWiseGUID('Sound')
-                ]).IncludeFlag(dfCollapsed)
+                ]).IncludeFlag(dfCollapsed, wbCollapseSounds)
               ).SetCountPath('Count', True)
-            ]).IncludeFlag(dfCollapsed),
+            ]).IncludeFlag(dfCollapsed, wbCollapseSounds),
             wbStruct('VFX', [
               wbInteger('Count', itU32),
               wbUnused(4),
@@ -7462,9 +7468,9 @@ end;
                 wbStructSK([0], 'Rules', [
                   wbLenString('Rule', 1),
                   wbFormID('Bound Object')
-                ]).IncludeFlag(dfCollapsed)
+                ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig)
               ).SetCountPath('Count', True)
-            ]).IncludeFlag(dfCollapsed),
+            ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig),
             wbStruct('Friction', [
               wbInteger('Count', itU32),
               wbUnused(4),
@@ -7472,15 +7478,15 @@ end;
                 wbStructSK([0], 'Rules', [
                   wbLenString('Rule', 1),
                   wbFloat('Friction')
-                ]).IncludeFlag(dfCollapsed)
+                ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig)
               ).SetCountPath('Count', True)
-            ]).IncludeFlag(dfCollapsed)
-          ]).IncludeFlag(dfCollapsed)
+            ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig)
+          ]).IncludeFlag(dfCollapsed, wbCollapseVehicleConfig)
         ])
       ]),
       wbEmpty(BFCE, 'End Marker', cpIgnore, True)
     ])
-//    .IncludeFlag(dfCollapsed, wbCollapseComponents)
+    .IncludeFlag(dfCollapsed, wbCollapseBaseFormComponent)
   );
 
   var wbMNAMFurnitureMarker := wbInteger(MNAM, 'Active Markers / Flags', itU32, wbFlags([
@@ -7720,7 +7726,7 @@ end;
     wbInteger('Level Max', itU16),
     wbInteger('Parent Combination Index', itS16).SetDefaultNativeValue(-1),
     wbInteger('Default', itU8, wbBoolEnum).SetDefaultNativeValue(1),
-    wbArray('Keywords', wbFormIDCk('Keyword', [KYWD, NULL]), -4),
+    wbArray('Keywords', wbFormIDCk('Keyword', [KYWD, NULL]), -4).IncludeFlag(dfCollapsed, wbCollapseKeywords),
     wbInteger('Min Level For Ranks', itU8),
     wbInteger('Alt Levels Per Tier', itU8),
     wbArray('Includes', wbStructSK([0],'Include', [
@@ -8391,7 +8397,7 @@ end;
   var wbXTV2 :=
     wbArray(XTV2, 'Traversals', wbTraversalData)
     .SetWronglyAssumedFixedSizePerElementOnValue(56)
-    .IncludeFlag(dfCollapsed)
+    .IncludeFlag(dfCollapsed, wbCollapseTraversal)
     .IncludeFlag(dfExcludeFromBuildRef)
     .IncludeFlag(dfFastAssign)
     .IncludeFlag(dfNotAlignable);
@@ -8478,8 +8484,7 @@ end;
     ]).SetDontShow(wbCellExteriorDontShow)
       .SetIsRemovable(wbCellLightingIsRemovable),
 
-    wbMHDTCELL
-    .IncludeFlag(dfCollapsed),
+    wbMHDTCELL,
 
     wbFormIDCk(LTMP, 'Lighting Template', [LGTM, NULL], False, cpNormal, True),
 
@@ -9277,7 +9282,13 @@ end;
       wbLString(MNAM, 'Male Title', 0, cpTranslate),
       wbLString(FNAM, 'Female Title', 0, cpTranslate),
       wbString(INAM, 'Insignia (unused)')
-    ]);
+    ]).SetSummaryKey([0,1,2])
+      .SetSummaryMemberPrefixSuffix(0, 'Rank: ', '')
+      .SetSummaryMemberPrefixSuffix(1, 'M-Title: "', '"')
+      .SetSummaryMemberPrefixSuffix(2, 'F-Title: "', '"')
+      .SetSummaryDelimiter(', ')
+      .IncludeFlag(dfSummaryNoSortKey)
+      .IncludeFlag(dfCollapsed, wbCollapseFactionRanks);
 
   {subrecords checked against Starfield.esm}
   wbRecord(FACT, 'Faction', [
@@ -9387,7 +9398,7 @@ end;
       wbRStructSK([0], 'Follower', [
         wbFormIDCk(NNAM, 'Actor', [NPC_]),
         wbFormIDCk(RNAM, 'Reaction Value', [GLOB]).SetRequired
-      ]).SetSummaryKey([1]).IncludeFlag(dfCollapsed)
+      ]).SetSummaryKey([1]).IncludeFlag(dfCollapsed, wbCollapseOther)
     ),
     wbFormIDCk(ANAM, 'Actor Value', [AVIF]),
     wbFormIDCk(ENAM, 'Event Size', [GLOB]),
@@ -9939,9 +9950,9 @@ end;
           wbFormID('Reference'),
           wbArrayS('Triangles',
             wbInteger('Triangle', itU16).SetLinksToCallback(wbTriangleLinksTo),
-          -2).IncludeFlag(dfCollapsed)
-        ]).IncludeFlag(dfCollapsed)
-      ).IncludeFlag(dfCollapsed)
+          -2).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
+        ]).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
+      ).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
     )
   ]).SetAddInfo(wbNAVMAddInfo);
 
@@ -9959,16 +9970,16 @@ end;
            64, 'Not Edited'
           ])),
         wbArray('Unknown', wbFloat, 4),
-        wbArrayS('Edge Links', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed),
-        wbArrayS('Preferred Edge Links', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed),
+        wbArrayS('Edge Links', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
+        wbArrayS('Preferred Edge Links', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
         wbArrayS('Door Links',
           wbStructSK([1], 'Door Link', [
             wbInteger('CRC Hash', itU32, wbCRCValuesEnum).SetDefaultEditValue('PathingDoor'),
             wbFormIDCk('Door Ref', [REFR])
           ]).SetSummaryKey([1])
-            .IncludeFlag(dfCollapsed)
+            .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
             .IncludeFlag(dfSummaryMembersNoName),
-        -1).IncludeFlag(dfCollapsed),
+        -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
         wbArray('Traversals',
           wbStruct('Traversal', [
             wbInteger('Type', itU32, wbCRCValuesEnum).SetDefaultEditValue('PathingTraversalLink'),
@@ -9992,13 +10003,13 @@ end;
             .SetSummaryMemberPrefixSuffix(9, 'in ', '')
             .SetSummaryMemberPrefixSuffix(4, 'to ', '')
             .SetSummaryMemberPrefixSuffix(10, 'in ', '')
-            .IncludeFlag(dfCollapsed)
+            .IncludeFlag(dfCollapsed, wbCollapseTraversal)
             .IncludeFlag(dfSummaryMembersNoName),
-        -1).IncludeFlag(dfCollapsed),
+        -1).IncludeFlag(dfCollapsed, wbCollapseTraversal),
         wbStruct('Optional Island Data', [
           wbInteger('Has Island Data', itU8, wbBoolEnum).SetAfterSet(wbUpdateSameParentUnions),
           wbUnion('Island Data', wbNAVIIslandDataDecider, [
-            wbStruct('Unused', [wbEmpty('Unused')]).IncludeFlag(dfCollapsed),
+            wbStruct('Unused', [wbEmpty('Unused')]).IncludeFlag(dfCollapsed, wbCollapseOther),
             wbStruct('Island Data', [
               wbVec3('Min'),
               wbVec3('Max'),
@@ -10007,19 +10018,19 @@ end;
                   wbInteger('Vertex 0', itU16),
                   wbInteger('Vertex 1', itU16),
                   wbInteger('Vertex 2', itU16)
-                ]).IncludeFlag(dfCollapsed),
-              -1).IncludeFlag(dfCollapsed)
+                ]).IncludeFlag(dfCollapsed, wbCollapseVertices),
+              -1).IncludeFlag(dfCollapsed, wbCollapseVertices)
                  .IncludeFlag(dfNotAlignable),
               wbArray('Vertices',
                 wbVec3('Vertex'),
-              -1).IncludeFlag(dfCollapsed)
+              -1).IncludeFlag(dfCollapsed, wbCollapseVertices)
                  .IncludeFlag(dfNotAlignable)
             ]).SetSummaryKey([2])
-              .IncludeFlag(dfCollapsed)
+              .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
               .IncludeFlag(dfSummaryMembersNoName)
-          ]).IncludeFlag(dfCollapsed)
+          ]).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
         ]).SetSummaryKey([1])
-          .IncludeFlag(dfCollapsed)
+          .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
           .IncludeFlag(dfSummaryMembersNoName),
         wbStruct('Pathing Cell', [
           wbInteger('CRC Hash', itU32, wbCRCValuesEnum).SetDefaultEditValue('PathingCell'),
@@ -10032,13 +10043,13 @@ end;
               .SetSummaryMemberPrefixSuffix(0, 'Y: ', '>')
               .SetSummaryMemberPrefixSuffix(1, '<X: ', '')
               .SetSummaryDelimiter(', ')
-              .IncludeFlag(dfCollapsed)
+              .IncludeFlag(dfCollapsed, wbCollapsePlacement)
               .IncludeFlag(dfSummaryMembersNoName),
             wbFormIDCk('Parent Cell', [CELL])
-          ]).IncludeFlag(dfCollapsed)
+          ]).IncludeFlag(dfCollapsed, wbCollapsePlacement)
         ]).SetSummaryKey([1, 2])
-          .IncludeFlag(dfCollapsed)
-          .IncludeFlag(dfSummaryMembersNoName),
+          .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
+          .IncludeFlag(dfSummaryMembersNoName, wbCollapseNavmesh),
         wbUnknown(1),
         wbArray('Unknown', wbInteger('Type', itU32, wbCRCValuesEnum), -1)
       ]).SetSummaryKeyOnValue([0, 8, 6, 7])
@@ -10046,24 +10057,23 @@ end;
         .SetSummaryPrefixSuffixOnValue(8, 'in ', '')
         .SetSummaryPrefixSuffixOnValue(6, 'with ', '')
         .SetSummaryPrefixSuffixOnValue(7, 'is island with ', '')
-        .IncludeFlag(dfCollapsed)
+        .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
         .IncludeFlag(dfFastAssign)
         .IncludeFlag(dfSummaryMembersNoName)
-    ).IncludeFlag(dfCollapsed),
+    ).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
     wbStruct(NVPP, 'Precomputed Pathing', [
       wbArray('Precomputed Paths',
         wbArray('Path',
           wbFormIDCk('Navmesh', [NAVM]),
-        -1).IncludeFlag(dfCollapsed),
-      -1).IncludeFlag(dfCollapsed),
+        -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
+      -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
       wbArrayS('Road Marker Index',
         wbStructSK([1], 'Road Marker', [
           wbFormIDCk('Navmesh', [NAVM]),
           wbInteger('Index', itU32)
-        ]).IncludeFlag(dfCollapsed),
-      -1).IncludeFlag(dfCollapsed)
-    ]).IncludeFlag(dfCollapsed)
-    //wbArrayS(NVSI, 'Deleted Navmeshes', wbFormIDCk('Navmesh', [NAVM])).IncludeFlag(dfCollapsed)
+        ]).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
+      -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
+    ]).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
   ]);
 
 
@@ -11937,9 +11947,9 @@ end;
       wbEmpty(SPRP, 'Repeatable Flag'),
       wbEmpty(SPDF, 'Default Flag'),
       wbEmpty(SPPQ, 'Unknown', cpNormal, True),
-      wbArray(SPKW, 'AND - Keywords', wbFormIDCk('Keyword',[KYWD])),
-      wbArray(SPKY, 'OR - Keywords', wbFormIDCk('Keyword',[KYWD])),
-      wbArray(SPPK, 'Perks', wbFormIDCk('Perk', [PERK]))
+      wbArray(SPKW, 'AND - Keywords', wbFormIDCk('Keyword',[KYWD])).IncludeFlag(dfCollapsed, wbCollapseKeywords),
+      wbArray(SPKY, 'OR - Keywords', wbFormIDCk('Keyword',[KYWD])).IncludeFlag(dfCollapsed, wbCollapseKeywords),
+      wbArray(SPPK, 'Perks', wbFormIDCk('Perk', [PERK])).IncludeFlag(dfCollapsed, wbCollapsePerk)
     ]),
     wbEmpty(DEVT, 'Show One Dialogue Track Flag')
   ]).SetAddInfo(wbSCENAddInfo);
@@ -13206,12 +13216,11 @@ end;
         wbStructSK(PRKR, [0], 'Perk', [
           wbFormIDCk('Perk', [PERK]),
           wbInteger('Rank', itU8)
-        ])
-        .SetSummaryKeyOnValue([1])
-        .SetSummaryPrefixSuffixOnValue(1, '{Rank: ', '}')
-        .IncludeFlagOnValue(dfSummaryMembersNoName)
-        .IncludeFlag(dfCollapsed)
-        , cpNormal, False, nil, wbPRKRsAfterSet
+        ]).SetSummaryKeyOnValue([1])
+          .SetSummaryPrefixSuffixOnValue(1, '{Rank: ', '}')
+          .IncludeFlagOnValue(dfSummaryMembersNoName)
+          .IncludeFlag(dfCollapsed, wbCollapsePerk)
+          , cpNormal, False, nil, wbPRKRsAfterSet
       ).SetRequired
     ]).SetSummaryKey([1]),
     wbPRPS,
@@ -13546,11 +13555,10 @@ end;
             end)
           .SetRequired,
         wbFloat(FMRS, 'Position').SetRequired
-      ])
-        .SetSummaryMemberPrefixSuffix(0, '[',']')
+      ]).SetSummaryMemberPrefixSuffix(0, '[',']')
         .SetSummaryKey([1])
         .IncludeFlag(dfSummaryNoName)
-        .IncludeFlag(dfCollapsed)
+        .IncludeFlag(dfCollapsed, wbCollapseOther)
     ),
 
     wbRArrayS('Face Morphs',
@@ -13725,10 +13733,9 @@ end;
           wbRStructSK([0], 'Morph Group',  [
             wbString(FMRG, 'Morph Group').SetRequired,
             wbFloat(FMRS, 'Blend Intensity').SetRequired
-          ])
-            .SetSummaryMemberPrefixSuffix(0, '[',']')
+          ]).SetSummaryMemberPrefixSuffix(0, '[',']')
             .SetSummaryKey([1])
-            .IncludeFlag(dfCollapsed)
+            .IncludeFlag(dfCollapsed, wbCollapseOther)
         )
       ]).SetSummaryKey([1])
     ),
@@ -13736,9 +13743,8 @@ end;
       wbRStructSK( [0], 'Morph Blend', [
         wbString(BMPN, 'Blend Name').SetRequired,
         wbFloat(BMPV, 'Intensity').SetRequired
-      ])
-        .SetSummaryKey([1])
-        .IncludeFlag(dfCollapsed)
+      ]).SetSummaryKey([1])
+        .IncludeFlag(dfCollapsed, wbCollapseOther)
     ),
     wbATTX,
     wbInteger(STON, 'Skin Tone Index', itU8, wbEnum([
@@ -14476,10 +14482,13 @@ end;
       wbRArrayS('Alias Terminals', wbFormIDCk(ALTM, 'Terminal Menu', [TMLM])),
       wbEmpty(ALED, 'Alias End Marker', cpNormal, True)
     ], [], cpNormal, False, nil, False, nil, wbContainerAfterSet)
-      .SetSummaryKey([0, 1])
+      .SetSummaryKey([1, 2])
       .SetSummaryDelimiter(' ')
-      .IncludeFlag(dfSummaryNoSortKey)
-      .IncludeFlag(dfSummaryMembersNoName);
+      .SetSummaryMemberPrefixSuffix(0, 'Ref [', ']')
+      .SetSummaryMemberPrefixSuffix(1, '', '')
+      .SetSummaryMemberPrefixSuffix(2, '{', '}')
+      .IncludeFlag(dfSummaryMembersNoName)
+      .IncludeFlag(dfCollapsed, wbCollapseAliases);
 
   var lLocationAlias :=
     wbRStructSK([0], 'Location Alias', [
@@ -14533,11 +14542,13 @@ end;
       wbFormIDCk(ALDN, 'Display Name', [MESG]),
 
       wbEmpty(ALED, 'Alias End Marker', cpNormal, True)
-    ])
-      .SetSummaryKey([0, 1])
+    ]).SetSummaryKey([1, 2])
       .SetSummaryDelimiter(' ')
-      .IncludeFlag(dfSummaryNoSortKey)
-      .IncludeFlag(dfSummaryMembersNoName);
+      .SetSummaryMemberPrefixSuffix(0, 'Loc [', ']')
+      .SetSummaryMemberPrefixSuffix(1, '', '')
+      .SetSummaryMemberPrefixSuffix(2, '{', '}')
+      .IncludeFlag(dfSummaryMembersNoName)
+      .IncludeFlag(dfCollapsed, wbCollapseAliases);
 
   var lRefCollectionAlias :=
     wbRStructSK([0], 'Collection Alias', [
@@ -14550,7 +14561,12 @@ end;
         ]),
         lReferenceAlias
       ], [], cpNormal, True)
-    ]);
+    ]).SetSummaryKey([1, 3])
+      .SetSummaryDelimiter(' ')
+      .SetSummaryMemberPrefixSuffix(0, 'RefCol [', ']')
+      .SetSummaryMemberPrefixSuffix(1, 'Max Init Fill [', ']')
+      .IncludeFlag(dfSummaryMembersNoName)
+      .IncludeFlag(dfCollapsed, wbCollapseAliases);
 
   {subrecords checked against Starfield.esm}
   wbRecord(QUST, 'Quest',
@@ -14875,7 +14891,7 @@ end;
         wbInteger(INDX, 'Unknown', itU32).SetDefaultNativeValue(0).SetRequired,
         wbUnknown(FLLD, 4).SetDefaultEditValue('01 00 00 00').SetRequired
       ], [], cpIgnore, True)
-    ], [], cpIgnore, True).IncludeFlag(dfCollapsed),
+    ], [], cpIgnore, True).IncludeFlag(dfCollapsed, wbCollapseOther),
 
     wbFormIDCk(ENAM, 'Aim Assist Pose Data', [AAPD]),
     wbMarkerReq(NAM3),
@@ -14960,10 +14976,10 @@ end;
     wbRArray('Subgraph Data',
       wbRStruct('Data', [
         wbFormIDCk(SADD, 'Race', [RACE]),
-        wbRArray('Actor Keywords', wbFormIDCk(SAKD, 'Keyword', [KYWD])),
+        wbRArray('Actor Keywords', wbFormIDCk(SAKD, 'Keyword', [KYWD])).IncludeFlag(dfCollapsed, wbCollapseKeywords),
         wbString(SGNM, 'Behaviour Graph'),
         wbRArray('Animation Paths', wbString(SAPT, 'Path'), cpNormal, True),
-        wbRArray('Target Keywords', wbFormIDCk(STKD, 'Keyword', [KYWD])),
+        wbRArray('Target Keywords', wbFormIDCk(STKD, 'Keyword', [KYWD])).IncludeFlag(dfCollapsed, wbCollapseKeywords),
         // Values greater than $10000 sets a bool. Reading this "closes" the current record.
         wbStruct(SRAF, 'Flags', [
           wbInteger('Role', itU16, wbEnum([
@@ -15877,9 +15893,8 @@ end;
 
     wbArray(ONAM, 'Overridden Forms',                                 // Valid in CK
       wbFormIDCk('Form', [ACHR, LAND, NAVM, REFR, PGRE, PHZD, PMIS, PARW, PBAR, PBEA, PCON, PFLA, DLBR, DIAL, INFO, SCEN])
-    )
-    .IncludeFlag(dfExcludeFromBuildRef)
-    .IncludeFlag(dfCollapsed),
+    ).IncludeFlag(dfExcludeFromBuildRef)
+     .IncludeFlag(dfCollapsed, wbCollapseOther),
 
     wbByteArray(SCRN, 'Screenshot'),                                  // If possible then ignored by the runtime. Neither from the CK
 
@@ -15888,7 +15903,7 @@ end;
       wbArray('Unknown', wbFormIDCk('Unknown',[DIAL,SCEN]))
     ]))
     .IncludeFlag(dfExcludeFromBuildRef)
-    .IncludeFlag(dfCollapsed),
+    .IncludeFlag(dfCollapsed, wbCollapseOther),
 
     wbString(BNAM, 'Branch'),
 
@@ -16299,7 +16314,9 @@ end;
   wbRecord(KSSM, 'Sound Keyword Mapping', [
     wbEDID,
     wbSoundReference(WED0),
-    wbRArray('Keywords', wbFormIDCk(KNAM, 'Keyword', [KYWD]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole)),
+    wbRArray('Keywords', wbFormIDCk(KNAM, 'Keyword', [KYWD])
+      .IncludeFlag(dfCollapsed, wbCollapseKeywords)
+      .IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole)),
     wbInteger(RSMC, 'Count', itU32, nil, cpNormal, True)                        // yes they use the same signature for count and other data below
       .IncludeFlag(dfSkipImplicitEdit),
     wbRStructs('Reverb Sounds', 'Entry', [
@@ -16679,7 +16696,7 @@ end;
       wbInteger('Max Rank', itU8),
       wbInteger('Level Tier Scaled Offset', itU8),
       wbFormIDCk('Attach Point', [KYWD, NULL]),
-      wbArray('Attach Parent Slots', wbFormIDCk('Keyword', [KYWD, NULL]), -1),
+      wbArray('Attach Parent Slots', wbFormIDCk('Keyword', [KYWD, NULL]), -1).IncludeFlag(dfCollapsed, wbCollapseKeywords),
       wbUnknown(4),
       wbArray('Includes', wbStruct('Include', [
         wbFormIDCk('Mod', [OMOD]),
@@ -16689,8 +16706,8 @@ end;
       ])).SetCountPath(csIncludeCount, True),
       wbObjectModProperties
     ]),
-    wbArray(MNAM, 'Target OMOD Keywords', wbFormIDCk('Keyword', [KYWD])),
-    wbArray(FNAM, 'Filter Keywords', wbFormIDCk('Keyword', [KYWD])),
+    wbArray(MNAM, 'Target OMOD Keywords', wbFormIDCk('Keyword', [KYWD])).IncludeFlag(dfCollapsed, wbCollapseKeywords),
+    wbArray(FNAM, 'Filter Keywords', wbFormIDCk('Keyword', [KYWD])).IncludeFlag(dfCollapsed, wbCollapseKeywords),
     wbFormIDCk(LNAM, 'Loose Mod', sigBaseObjects),
     wbInteger(NAM1, 'Priority', itU8),
     wbFLTR,
@@ -17154,7 +17171,7 @@ end;
       .SetSummaryPrefixSuffixOnValue(3, '', '')
       .SetSummaryDelimiterOnValue(' ')
       .IncludeFlagOnValue(dfSummaryMembersNoName)
-      .IncludeFlag(dfCollapsed)
+      .IncludeFlag(dfCollapsed, wbCollapseOther)
     ),
     wbRArray('Inherited Overrides', wbRStruct('Parent Instance', [
       wbInteger(ONAM, 'Instance ID', itU32),
@@ -17165,7 +17182,7 @@ end;
       wbVec3('Override +')
     ])
       .SetSummaryKeyOnValue([0, 1])
-      .IncludeFlag(dfCollapsed),
+      .IncludeFlag(dfCollapsed, wbCollapseObjectBounds),
     wbVec3(GNAM, 'Origin Override'),
     wbInteger(INAM, 'Next Node ID', itU32),
     wbInteger(STPT, 'Snap Piece Type', itU32, wbEnum([
@@ -17460,8 +17477,8 @@ end;
     wbFULL,
     wbKeywords,
     wbString(SNAM, 'Filter String'),
-    wbArrayS(PNAM, 'Flora', wbFormIDCk('Flora', [FLOR])).IncludeFlag(dfCollapsed),
-    wbRArrayS('Resource Generation', wbFormIDCk(RNAM, 'Resource Generation Data', [RSGD])),
+    wbArrayS(PNAM, 'Flora', wbFormIDCk('Flora', [FLOR])).IncludeFlag(dfCollapsed, wbCollapseOther),
+    wbRArrayS('Resource Generation', wbFormIDCk(RNAM, 'Resource Generation Data', [RSGD])).IncludeFlag(dfCollapsed, wbCollapseOther),
     wbRStructsSK('Procedural Object Generation', 'Mask', [0], [
       wbString(FNAM, 'Mask Name', 0, cpNormal, True)
         .SetFormaterOnValue(wbBIOMMaskNameStringEnum),
@@ -17586,8 +17603,8 @@ end;
       wbInteger(ASAS, 'Count', itU32, nil, cpBenign, True).IncludeFlag(dfSkipImplicitEdit), //count
       wbRArray('Sounds', wbStruct(ASAE, 'Sound Events', [ // DO NOT SORT - this array appears deliberately ordered in CK
         wbSoundReference('Sound Event/Form'),
-        wbArrayS('Weather Keywords', wbFormIDCk('Keyword', [KYWD]), -1).IncludeFlag(dfCollapsed),
-        wbArrayS('Marker Keywords', wbFormIDCk('Keyword', [KYWD]), -1).IncludeFlag(dfCollapsed),
+        wbArrayS('Weather Keywords', wbFormIDCk('Keyword', [KYWD]), -1).IncludeFlag(dfCollapsed, wbCollapseKeywords),
+        wbArrayS('Marker Keywords', wbFormIDCk('Keyword', [KYWD]), -1).IncludeFlag(dfCollapsed, wbCollapseKeywords),
         wbWwiseGuid('Switch Group'),
         wbStruct('Re-evaluate Interval', [
           wbInteger('Use Custom Interval', itU8, wbBoolEnum),
@@ -17597,7 +17614,7 @@ end;
           .SetSummaryMemberPrefixSuffix(0, 'Use:(', ')')
           .SetSummaryMemberPrefixSuffix(1, 'Secs:(', ')')
           .SetSummaryDelimiter(', ')
-          .IncludeFlag(dfCollapsed),
+          .IncludeFlag(dfCollapsed, wbCollapseOther),
         wbArrayS('Planet Customization', wbStructSK([0, 1], 'Planet Data', [
           wbFormIDCk('Planet', [PNDT]),
           wbLenString('Switch State', 4)
@@ -17610,7 +17627,7 @@ end;
         ])
           .SetSummaryKey([0, 1])
           .SetSummaryDelimiter(', '), -1)
-          .IncludeFlag(dfCollapsed)
+          .IncludeFlag(dfCollapsed, wbCollapseOther)
       ]))
         .SetCountPath(ASAS)
         .SetRequired
@@ -17782,7 +17799,7 @@ end;
       .SetSummaryMemberPrefixSuffix(0, '"', '"')
       .SetSummaryMemberPrefixSuffix(1, 'using ', '')
       .IncludeFlag(dfSummaryMembersNoName)
-      .IncludeFlag(dfCollapsed)
+      .IncludeFlag(dfCollapsed, wbCollapseOther)
     ).SetCountPath(ITMC),
     wbInteger(MODT, 'Texture Type', itU32, wbFlags([
           {0} '',
@@ -18075,7 +18092,7 @@ end;
         wbUnknown(4),
         wbFormIDCk('Resource Generation', [NULL, RSGD]).IncludeFlag(dfSummaryExcludeNULL),
         wbArray('Fauna', wbFormIDCk('Fauna', [NPC_]), -1),
-        wbArray('Keywords', wbFormIDCk('Keyword', [KYWD]), -1),
+        wbArray('Keywords', wbFormIDCk('Keyword', [KYWD]), -1).IncludeFlag(dfCollapsed, wbCollapseKeywords),
         wbStruct('Flora', [
           wbInteger('Count', itU32, nil, cpBenign).IncludeFlag(dfSkipImplicitEdit),
           wbInteger('Entry Size', itU32).SetDefaultNativeValue(9).IncludeFlag(dfSkipImplicitEdit),
@@ -18348,13 +18365,13 @@ end;
       wbInteger('Y', itU32)
     ], cpNormal, True)
     .SetSummaryKeyOnValue([0, 1])
-    .IncludeFlag(dfCollapsed),
+    .IncludeFlag(dfCollapsed, wbCollapseObjectBounds),
     wbStruct(ENAM, 'Height', [
       wbFloat('Min'),
       wbFloat('Max')
     ], cpNormal, True)
     .SetSummaryKeyOnValue([0, 1])
-    .IncludeFlag(dfCollapsed),
+    .IncludeFlag(dfCollapsed, wbCollapseObjectBounds),
     wbArray(FNAM, 'Connections', wbInteger('Unknown', itS16)),
     wbInteger(GNAM, 'Rarity', itU8, wbEnum([
       'Common',
@@ -18433,58 +18450,58 @@ end;
       wbArray('Data',
         wbArray('Row',
           wbFormIDCk('Column', [SFBK]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole)
-        , 16).IncludeFlag(dfCollapsed)
+        , 16).IncludeFlag(dfCollapsed, wbCollapseOther)
       , 16)
-      .IncludeFlag(dfCollapsed)
+      .IncludeFlag(dfCollapsed, wbCollapseOther)
     ])
     .SetSummaryKeyOnValue([0])
-    .IncludeFlag(dfCollapsed),
+    .IncludeFlag(dfCollapsed, wbCollapseOther),
 
     wbStruct(FNAM, 'Master - Surface Block Forms', [
       wbArray('Data',
         wbArray('Row',
           wbFormIDCk('Column', [SFBK]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole)
-        , 16).IncludeFlag(dfCollapsed)
+        , 16).IncludeFlag(dfCollapsed, wbCollapseOther)
       , 16)
-      .IncludeFlag(dfCollapsed)
+      .IncludeFlag(dfCollapsed, wbCollapseOther)
     ])
     .SetSummaryKeyOnValue([0])
-    .IncludeFlag(dfCollapsed)
+    .IncludeFlag(dfCollapsed, wbCollapseOther)
     .IncludeFlag(dfNoCopyAsOverride),   // CK does not copy this on overrides
 
     wbStruct(GNAM, 'Master - Surface Block Rotations', [
       wbArray('Data',
         wbArray('Row',
           wbInteger('Column', itS8)
-        , 16).IncludeFlag(dfCollapsed)
+        , 16).IncludeFlag(dfCollapsed, wbCollapseOther)
       , 16)
-      .IncludeFlag(dfCollapsed)
+      .IncludeFlag(dfCollapsed, wbCollapseOther)
     ])
     .SetSummaryKeyOnValue([0])
-    .IncludeFlag(dfCollapsed)
+    .IncludeFlag(dfCollapsed, wbCollapseOther)
     .IncludeFlag(dfNoCopyAsOverride),   // CK does not copy this on overrides
 
     wbStruct(EFRM, 'Override - Surface Block Forms', [
       wbArray('Data',
         wbArray('Row',
           wbFormIDCk('Column', [SFBK]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole)
-        , 16).IncludeFlag(dfCollapsed)
+        , 16).IncludeFlag(dfCollapsed, wbCollapseOther)
       , 16)
-      .IncludeFlag(dfCollapsed)
+      .IncludeFlag(dfCollapsed, wbCollapseOther)
     ])
     .SetSummaryKeyOnValue([0])
-    .IncludeFlag(dfCollapsed),
+    .IncludeFlag(dfCollapsed, wbCollapseOther),
 
     wbStruct(EORI, 'Override - Surface Block Rotations', [
       wbArray('Data',
         wbArray('Row',
           wbInteger('Column', itS8)
-        , 16).IncludeFlag(dfCollapsed)
+        , 16).IncludeFlag(dfCollapsed, wbCollapseOther)
       , 16)
-      .IncludeFlag(dfCollapsed)
+      .IncludeFlag(dfCollapsed, wbCollapseOther)
     ])
     .SetSummaryKeyOnValue([0])
-    .IncludeFlag(dfCollapsed),
+    .IncludeFlag(dfCollapsed, wbCollapseOther),
     wbArray(DNAM, 'Worldspaces', wbFormIDCk('Worldspace', [WRLD]))
   ]);
 
@@ -18496,15 +18513,15 @@ end;
     ])), [
     wbEDID,
     wbBaseFormComponents,
-    wbUnknown(CNAM),  // CK does not copy this on overrides
-    wbUnknown(DNAM),  // CK does not copy this on overrides
+    wbUnknown(CNAM).IncludeFlag(dfNoCopyAsOverride),  // CK does not copy this on overrides
+    wbUnknown(DNAM).IncludeFlag(dfNoCopyAsOverride),  // CK does not copy this on overrides
 
-    wbArray(ENAM, 'Surface Patterns', wbFormIDCk('Surface Pattern', [SFPT]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole), 65536).IncludeFlag(dfCollapsed),
-    wbArray(ENAM, 'Surface Patterns', wbFormIDCk('Surface Pattern', [SFPT]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole), 65536).IncludeFlag(dfCollapsed),
+    wbArray(ENAM, 'Surface Patterns', wbFormIDCk('Surface Pattern', [SFPT]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole), 65536).IncludeFlag(dfCollapsed, wbCollapseOther),
+    wbArray(ENAM, 'Surface Patterns', wbFormIDCk('Surface Pattern', [SFPT]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole), 65536).IncludeFlag(dfCollapsed, wbCollapseOther),
 
     wbRArray('Surface Pattern Data', wbRStruct('Surface Patterns', [
-      wbArray(FNAM, 'Surface Patterns', wbFormIDCk('Surface Pattern', [SFPT]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole), 65536).IncludeFlag(dfCollapsed),
-      wbArray(GNAM, 'Unknown', wbinteger('Unknown', itS8), 65536).IncludeFlag(dfCollapsed)
+      wbArray(FNAM, 'Surface Patterns', wbFormIDCk('Surface Pattern', [SFPT]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole), 65536).IncludeFlag(dfCollapsed, wbCollapseOther),
+      wbArray(GNAM, 'Unknown', wbinteger('Unknown', itS8), 65536).IncludeFlag(dfCollapsed, wbCollapseOther)
     ]), 2).IncludeFlag(dfNoCopyAsOverride),   // CK does not copy this on overrides
     wbString(NAM1, 'Filter').IncludeFlag(dfNoCopyAsOverride)   // CK does not copy this on overrides
   ]);
@@ -19406,7 +19423,8 @@ end;
      .SetRequired,
     wbArrayS(WMKA, 'Keywords',
       wbFormIDCk('Keyword', [KYWD])
-    ).SetRequired,
+    ).IncludeFlag(dfCollapsed, wbCollapseKeywords)
+     .SetRequired,
     wbInteger(WMSS, 'Count', itU32)
       .IncludeFlag(dfSkipImplicitEdit),
     wbRStructs('Sound Mappings', 'Sound Mapping', [

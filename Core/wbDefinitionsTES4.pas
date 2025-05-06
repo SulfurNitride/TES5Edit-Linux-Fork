@@ -1703,7 +1703,7 @@ begin
           wbUnused(3),
           wbString('Form Type', 4),
           wbInteger('Offset (Unused)', itU32)
-        ]), 0, nil, nil, cpIgnore).IncludeFlag(dfCollapsed)),
+        ]), 0, nil, nil, cpIgnore).IncludeFlag(dfCollapsed, wbCollapseOther)),
     wbByteArray(DELE, 'Version Control (Unused)', 8, cpIgnore),
     wbString(CNAM, 'Author', 0, cpTranslate).SetRequired,
     wbString(SNAM, 'Description', 0, cpTranslate),
@@ -3274,7 +3274,7 @@ begin
           .SetSummaryMemberPrefixSuffix(0, '', '')
           .SetSummaryDelimiter(' ')
           .IncludeFlag(dfSummaryNoSortKey)
-          .IncludeFlag(dfSummaryMembersNoName).IncludeFlag(dfCollapsed),
+          .IncludeFlag(dfCollapsed, wbCollapseOther),
       7),
       wbUnused(2),
       wbFloat('Male Height').SetDefaultNativeValue(1),

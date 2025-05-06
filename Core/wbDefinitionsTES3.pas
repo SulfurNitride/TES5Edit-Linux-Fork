@@ -1320,7 +1320,7 @@ begin
           .SetSummaryMemberPrefixSuffix(2, 'Primary Skills: ', ',')
           .SetSummaryMemberPrefixSuffix(3, 'Favored Skills: ', ',')
           .SetSummaryMemberPrefixSuffix(4, 'Faction Reputation: ', '')
-          .IncludeFlag(dfCollapsed)
+          .IncludeFlag(dfCollapsed, wbCollapseFactionRanks)
           .IncludeFlag(dfSummaryMembersNoName),
       10),
       wbArray('Favored Skills', wbInteger('Skill', itS32, wbSkillEnum), 7),
@@ -1606,9 +1606,9 @@ begin
             .IncludeFlag(dfCollapsed, wbCollapseVec3)
             .IncludeFlag(dfSummaryMembersNoName),
         65).SetSummaryName('Columns')
-           .IncludeFlag(dfCollapsed),
+           .IncludeFlag(dfCollapsed, wbCollapseVertices),
       65).SetSummaryName('Rows')
-         .IncludeFlag(dfCollapsed)),
+         .IncludeFlag(dfCollapsed, wbCollapseVertices)),
     IfThen(wbSimpleRecords,
       wbByteArray(VHGT, 'Vertex Height Map'),
       wbStruct(VHGT, 'Vertex Height Map', [
@@ -1618,9 +1618,9 @@ begin
           wbArray('Row',
             wbInteger('Column', itS8),
           65).SetSummaryName('Columns')
-             .IncludeFlag(dfCollapsed),
+             .IncludeFlag(dfCollapsed, wbCollapseVertices),
         65).SetSummaryName('Rows')
-           .IncludeFlag(dfCollapsed),
+           .IncludeFlag(dfCollapsed, wbCollapseVertices),
         wbUnused(2)
       ])),
     IfThen(wbSimpleRecords,
@@ -1629,9 +1629,9 @@ begin
         wbArray('Row',
           wbInteger('Column', itS8),
         9).SetSummaryName('Columns')
-          .IncludeFlag(dfCollapsed),
+          .IncludeFlag(dfCollapsed, wbCollapseOther),
       9).SetSummaryName('Rows')
-        .IncludeFlag(dfCollapsed)),
+        .IncludeFlag(dfCollapsed, wbCollapseOther)),
     IfThen(wbSimpleRecords,
       wbByteArray(VCLR, 'Vertex Colors'),
       wbArray(VCLR, 'Vertex Colors',
@@ -1643,18 +1643,18 @@ begin
           ]).SetToStr(wbRGBAToStr)
             .IncludeFlag(dfCollapsed, wbCollapseRGBA),
         65).SetSummaryName('Columns')
-           .IncludeFlag(dfCollapsed),
+           .IncludeFlag(dfCollapsed, wbCollapseVertices),
       65).SetSummaryName('Rows')
-         .IncludeFlag(dfCollapsed)),
+         .IncludeFlag(dfCollapsed, wbCollapseVertices)),
     IfThen(wbSimpleRecords,
       wbByteArray(VTEX, 'Textures'),
       wbArray(VTEX, 'Textures',
         wbArray('Row',
           wbInteger('Column', itU16), //[LTEX]
         16).SetSummaryName('Columns')
-           .IncludeFlag(dfCollapsed),
+           .IncludeFlag(dfCollapsed, wbCollapseOther),
       16).SetSummaryName('Rows')
-         .IncludeFlag(dfCollapsed))
+         .IncludeFlag(dfCollapsed, wbCollapseOther))
   ]).SetFormIDBase($D0)
     .SetFormIDNameBase($B0)
     .SetGetFormIDCallback(function(const aMainRecord: IwbMainRecord; out aFormID: TwbFormID): Boolean begin
@@ -1966,21 +1966,21 @@ begin
             wbInteger('X', itS32),
             wbInteger('Y', itS32),
             wbInteger('Z', itS32)
-          ]),
+          ]).IncludeFlag(dfCollapsed, wbCollapseVec3),
           wbInteger('User Created', itU8, wbBoolEnum),
           wbInteger('Connection Count', itU8),
           wbUnused(2)
         ]).SetSummaryKey([0,2])
           .SetSummaryMemberPrefixSuffix(0, '', '')
           .SetSummaryMemberPrefixSuffix(2, 'Connections: ', '')
-          .IncludeFlag(dfCollapsed)
+          .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
       ).SetCountPathOnValue('DATA\Point Count', False)),
     IfThen(wbSimpleRecords,
       wbByteArray(PGRC, 'Point Connections'),
       wbArray(PGRC, 'Point Connections',
         wbArrayS('Point Connection',
           wbInteger('Point', itU32),
-        wbCalcPGRCSize)).IncludeFlag(dfCollapsed))
+        wbCalcPGRCSize)).IncludeFlag(dfCollapsed, wbCollapseNavmesh))
   ]).SetFormIDBase($F0)
     .SetFormIDNameBase($B0).SetGetGridCellCallback(function(const aSubRecord: IwbSubRecord; out aGridCell: TwbGridCell): Boolean begin
       with aGridCell, aSubRecord do begin
@@ -2034,7 +2034,7 @@ begin
           .SetSummaryMemberPrefixSuffix(0, '', '')
           .IncludeFlag(dfSummaryMembersNoName)
           .IncludeFlag(dfSummaryNoSortKey)
-          .IncludeFlag(dfCollapsed),
+          .IncludeFlag(dfCollapsed, wbCollapseOther),
       7),
       wbStruct('Base Attributes', [
         wbStruct('Strength', [
@@ -2159,7 +2159,7 @@ begin
       ]).SetSummaryKeyOnValue([0,1])
         .SetSummaryPrefixSuffixOnValue(0, 'Sound: ', ',')
         .SetSummaryPrefixSuffixOnValue(1, 'Chance: ', '')
-        .IncludeFlag(dfCollapsed)
+        .IncludeFlag(dfCollapsed, wbCollapseSounds)
       )
   ]).SetFormIDBase($70);
 
