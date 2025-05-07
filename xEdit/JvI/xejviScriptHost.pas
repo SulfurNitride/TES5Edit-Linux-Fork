@@ -206,7 +206,6 @@ begin
   end
   else if SameText(Identifier, 'FileByName') then begin
     if (Args.Count = 1) and VarIsStr(Args.Values[0]) then begin
-      Value := Null;
       for i := Low(Files) to High(Files) do
         if SameText(Args.Values[0], Files[i].FileName) then begin
           Value := Files[i];
