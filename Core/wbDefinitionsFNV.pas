@@ -3121,7 +3121,10 @@ begin
         'VATS Targetable'
       ], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbUnused(2)
-    ]),
+    ]).SetSummaryKeyOnValue([0, 2])
+      .SetSummaryPrefixSuffixOnValue(0,'Health ','')
+      .SetSummaryPrefixSuffixOnValue(2,'{','}')
+      .IncludeFlag(dfCollapsed, wbCollapseDestruction),
     wbRArray('Stages',
       wbRStruct('Stage', [
         wbStruct(DSTD, 'Destruction Stage Data', [
@@ -3137,7 +3140,13 @@ begin
           wbFormIDCk('Explosion', [EXPL, NULL]),
           wbFormIDCk('Debris', [DEBR, NULL]),
           wbInteger('Debris Count', itS32)
-        ], cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseDestruction),
+        ], cpNormal, True)
+        .SetSummaryKeyOnValue([0,5,6])
+        .SetSummaryPrefixSuffixOnValue(0,'Health ','%')
+        .SetSummaryDelimiterOnValue(', ')
+        .IncludeFlagOnValue(dfSummaryExcludeNULL)
+        .IncludeFlagOnValue(dfSummaryMembersNoName)
+        .IncludeFlag(dfCollapsed, wbCollapseDestruction),
         wbRStructSK([0], 'Model', [
           wbString(DMDL, 'Model FileName'),
           wbDMDT
@@ -3145,7 +3154,8 @@ begin
         .SetSummaryKey([0])
         .IncludeFlag(dfCollapsed, wbCollapseModels),
         wbEmpty(DSTF, 'End Marker', cpNormal, True)
-      ])
+      ]).SetSummaryKey([0, 1])
+        .IncludeFlag(dfSummaryMembersNoName)
     )
   ]);
 
@@ -3157,7 +3167,9 @@ begin
         'VATS Targetable'
       ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbUnused(2)
-    ]),
+    ]).SetSummaryKeyOnValue([0])
+      .SetSummaryPrefixSuffixOnValue(0,'Health ','')
+      .IncludeFlag(dfCollapsed, wbCollapseDestruction),
     wbRArray('Stages',
       wbRStruct('Stage', [
         wbStruct(DSTD, 'Destruction Stage Data', [
@@ -3173,7 +3185,13 @@ begin
           wbFormIDCk('Explosion', [EXPL, NULL]),
           wbFormIDCk('Debris', [DEBR, NULL]),
           wbInteger('Debris Count', itS32)
-        ], cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseDestruction),
+        ], cpNormal, True)
+        .SetSummaryKeyOnValue([0,5,6])
+        .SetSummaryPrefixSuffixOnValue(0,'Health ','%')
+        .SetSummaryDelimiterOnValue(', ')
+        .IncludeFlagOnValue(dfSummaryExcludeNULL)
+        .IncludeFlagOnValue(dfSummaryMembersNoName)
+        .IncludeFlag(dfCollapsed, wbCollapseDestruction),
         wbRStructSK([0], 'Model', [
           wbString(DMDL, 'Model FileName'),
           wbDMDT
@@ -3181,7 +3199,8 @@ begin
         .SetSummaryKey([0])
         .IncludeFlag(dfCollapsed, wbCollapseModels),
         wbEmpty(DSTF, 'End Marker', cpNormal, True)
-      ])
+      ]).SetSummaryKey([0, 1])
+        .IncludeFlag(dfSummaryMembersNoName)
     )
   ], [], cpNormal, False, wbActorTemplateUseModelAnimation);
 

@@ -3175,7 +3175,9 @@ begin
         wbInteger('Count', itU8),
         wbInteger('VATS Targetable', itU8, wbBoolEnum),
         wbUnused(2)
-      ]),
+      ]).SetSummaryKeyOnValue([0])
+        .SetSummaryPrefixSuffixOnValue(0,'Health ','')
+        .IncludeFlag(dfCollapsed, wbCollapseDestruction),
       wbRArray('Stages',
         wbRStruct('Stage', [
           wbStruct(DSTD, 'Destruction Stage Data', [
@@ -3192,14 +3194,21 @@ begin
             wbFormIDCk('Explosion', [EXPL, NULL]),
             wbFormIDCk('Debris', [DEBR, NULL]),
             wbInteger('Debris Count', itS32)
-          ], cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseDestruction),
+          ], cpNormal, True)
+          .SetSummaryKeyOnValue([0,5,6])
+          .SetSummaryPrefixSuffixOnValue(0,'Health ','%')
+          .SetSummaryDelimiterOnValue(', ')
+          .IncludeFlagOnValue(dfSummaryExcludeNULL)
+          .IncludeFlagOnValue(dfSummaryMembersNoName)
+          .IncludeFlag(dfCollapsed, wbCollapseDestruction),
           wbRStructSK([0], 'Model', [
             wbString(DMDL, 'Model FileName'),
             wbDMDT
           ]).SetSummaryKey([0])
             .IncludeFlag(dfCollapsed, wbCollapseModels),
           wbEmpty(DSTF, 'End Marker').SetRequired
-        ]))
+        ]).SetSummaryKey([0, 1])
+          .IncludeFlag(dfSummaryMembersNoName))
     ]);
 
   wbDODT :=

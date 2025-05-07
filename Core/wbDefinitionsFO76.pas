@@ -7697,7 +7697,11 @@ begin
       { 0x8000 } 'Unknown 16'
       ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbFromSize(16, wbFloat('Unknown'))
-    ], cpNormal, True),
+    ], cpNormal, True)
+      .SetSummaryKeyOnValue([0, 3])
+      .SetSummaryPrefixSuffixOnValue(0,'Health ','')
+      .SetSummaryPrefixSuffixOnValue(3,'{','}')
+      .IncludeFlag(dfCollapsed, wbCollapseDestruction),
     wbConditions,
     wbUnknown(DSCF),
     wbFormIDCk(HGLB, 'Health Global', [GLOB]),
@@ -7728,7 +7732,13 @@ begin
           wbInteger('Debris Count', itS32),
           wbFormIDCk('Material Swap', [MSWP, NULL]),
           wbFloat
-        ], cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseDestruction),
+        ], cpNormal, True)
+        .SetSummaryKeyOnValue([0,5,6])
+        .SetSummaryPrefixSuffixOnValue(0,'Health ','%')
+        .SetSummaryDelimiterOnValue(', ')
+        .IncludeFlagOnValue(dfSummaryExcludeNULL)
+        .IncludeFlagOnValue(dfSummaryMembersNoName)
+        .IncludeFlag(dfCollapsed, wbCollapseDestruction),
         wbString(DSTA, 'Sequence Name'),
         wbRArray('Models',
           wbRStructSK([0], 'Model', [
@@ -7746,6 +7756,8 @@ begin
         ),
         wbEmpty(DSTF, 'End Marker', cpNormal, True)
       ], [], cpNormal, False, nil)
+        .SetSummaryKey([0, 2])
+        .IncludeFlag(dfSummaryMembersNoName)
     )
   ], [], cpNormal, False, nil, True).IncludeFlag(dfAllowAnyMember);
 
@@ -7781,7 +7793,9 @@ begin
       wbInteger('Count', itU8),
       wbInteger('VATS Targetable', itU8, wbBoolEnum),
       wbByteArray('Unknown', 2)
-    ]),
+    ]).SetSummaryKeyOnValue([0])
+      .SetSummaryPrefixSuffixOnValue(0,'Health ','')
+      .IncludeFlag(dfCollapsed, wbCollapseDestruction),
     wbRArray('Stages',  // Begin Stage Array
       wbRStruct('Stage', [ // Begin Stage RStruct
         wbStruct(DSTD, 'Destruction Stage Data', [ // Begin DSTD
@@ -7801,7 +7815,13 @@ begin
           wbFormIDCk('Explosion', [EXPL, NULL]),
           wbFormIDCk('Debris', [DEBR, NULL]),
           wbInteger('Debris Count', itS32)
-        ], cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseDestruction), // End DSTD
+        ], cpNormal, True)
+        .SetSummaryKeyOnValue([0,5,6])
+        .SetSummaryPrefixSuffixOnValue(0,'Health ','%')
+        .SetSummaryDelimiterOnValue(', ')
+        .IncludeFlagOnValue(dfSummaryExcludeNULL)
+        .IncludeFlagOnValue(dfSummaryMembersNoName)
+        .IncludeFlag(dfCollapsed, wbCollapseDestruction), // End DSTD
         wbRStructSK([0], 'Model', [ // Begin DMDL
           wbString(DMDL, 'Model FileName')
         ]), // End DMDL
@@ -7814,6 +7834,8 @@ begin
         wbAUUV,
         wbEmpty(DSTF, 'End Marker', cpNormal, True)
       ]) // End Stage RStruct
+        .SetSummaryKey([0, 1])
+        .IncludeFlag(dfSummaryMembersNoName)
     ) // End Stage Array
   ], [], cpNormal, False, nil{wbActorTemplateUseModelAnimation});
 
