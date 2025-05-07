@@ -5579,6 +5579,7 @@ begin
   wbCollapseQuestLog := Settings.ReadBool('Options', 'CollapseQuestLog', wbCollapseQuestLog);
   wbCollapseQuestObjective := Settings.ReadBool('Options', 'CollapseQuestObjective', wbCollapseQuestObjective);
   wbCollapseQuestObjectiveTarget := Settings.ReadBool('Options', 'CollapseQuestObjectiveTarget', wbCollapseQuestObjectiveTarget);
+  wbCollapseScriptEntry := Settings.ReadBool('Options', 'CollapseScriptEntry', wbCollapseScriptEntry);
   wbShrinkButtons := Settings.ReadBool('Options', 'ShrinkButtons', wbShrinkButtons);
   //wbIKnowWhatImDoing := Settings.ReadBool('Options', 'IKnowWhatImDoing', wbIKnowWhatImDoing);
   wbUDRSetXESP := Settings.ReadBool('Options', 'UDRSetXESP', wbUDRSetXESP);
@@ -14361,6 +14362,7 @@ begin
     Settings.WriteBool('Options', 'CollapseQuestObjective', wbCollapseQuestObjective);
     Settings.WriteBool('Options', 'CollapseQuestObjectiveTarget', wbCollapseQuestObjectiveTarget);
     Settings.WriteBool('Options', 'ShrinkButtons', wbShrinkButtons);
+    Settings.WriteBool('Options', 'CollapseScriptEntry', wbCollapseScriptEntry);
     Settings.WriteInteger('Options', 'ColumnWidth', ColumnWidth);
     Settings.WriteInteger('Options', 'RowHeight', RowHeight);
     //Settings.WriteBool('Options', 'IKnowWhatImDoing', wbIKnowWhatImDoing);

@@ -13,7 +13,7 @@ xEdit is crucial to our shared modding community and your contribution - no matt
     * [TES4R] CELL \ XTLI - Decoded as Thread Level.
     * [TES4R] REFR \ XAAG - Appears to be a GUID, decoded as such for now. Scripts should Get/Set edit value as proper GUID string.
     * [SF1] SurfaceTreePatternSwapInfo_Component fix for decoding error
-    * [TES5/FO4/FO76/SF1] QUST - Added auto collapse and summaries to Stages, Objectives, and Objective Targets
+    * [TES5/FO4/FO76/SF1] QUST - Added auto collapse and summaries to VMAD, Stages, Objectives, and Objective Targets
     * [ALL] Conditions - Add proper Sort Keys to enable correct Alignment.
     * [ALL] Conditions - When changing function it should not update the view for relevant field types.
     * [ALL] CREA/NPC_ \ ACBS - Update Level handling to respect the range constraint enforced by the Game/CKs.

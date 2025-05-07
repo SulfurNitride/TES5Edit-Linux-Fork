@@ -3192,7 +3192,7 @@ begin
             wbFormIDCk('Explosion', [EXPL, NULL]),
             wbFormIDCk('Debris', [DEBR, NULL]),
             wbInteger('Debris Count', itS32)
-          ]).SetRequired,
+          ], cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseDestruction),
           wbRStructSK([0], 'Model', [
             wbString(DMDL, 'Model FileName'),
             wbDMDT

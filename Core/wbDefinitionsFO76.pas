@@ -158,7 +158,7 @@ var
   wbEffectsReq: IwbSubRecordArrayDef;
   wbFirstPersonFlagsU32: IwbIntegerDef;
   wbBOD2: IwbSubRecordDef;
-  wbScriptEntry: IwbStructDef;
+  wbScriptEntry: IwbValueDef;
   wbScriptFlags: IwbIntegerDef;
   wbScriptPropertyObject: IwbUnionDef;
   wbScriptPropertyStruct: IwbArrayDef;
@@ -5954,7 +5954,11 @@ begin
     wbLenString('ScriptName', 2),
     wbScriptFlags,
     wbScriptProperties
-  ]);
+  ]).SetSummaryKey([2])
+    .SetSummaryMemberPrefixSuffix(2, '(', ')')
+    .SetSummaryDelimiter('')
+    .IncludeFlag(dfCollapsed, wbCollapseScriptEntry)
+    .IncludeFlag(dfSummaryMembersNoName);
 
   wbScriptFragmentsInfo := wbStruct('Script Fragments', [
     wbInteger('Extra bind data version', itS8).SetDefaultNativeValue(4),
@@ -5968,7 +5972,12 @@ begin
         wbInteger('Unknown', itS8),
         wbLenString('ScriptName', 2),
         wbLenString('FragmentName', 2)
-      ]), [], wbScriptFragmentsInfoCounter)
+      ]).SetSummaryKey([1, 2])
+        .SetSummaryMemberPrefixSuffix(1, '', ':')
+        .SetSummaryDelimiter('')
+        .IncludeFlag(dfSummaryMembersNoName)
+        .IncludeFlag(dfCollapsed, wbCollapseFragments)
+      , [], wbScriptFragmentsInfoCounter)
   ]);
 
   wbScriptFragmentsPack := wbStruct('Script Fragments', [
@@ -5984,7 +5993,12 @@ begin
         wbInteger('Unknown', itS8),
         wbLenString('ScriptName', 2),
         wbLenString('FragmentName', 2)
-      ]), [], wbScriptFragmentsPackCounter)
+      ]).SetSummaryKey([1, 2])
+        .SetSummaryMemberPrefixSuffix(1, '', ':')
+        .SetSummaryDelimiter('')
+        .IncludeFlag(dfSummaryMembersNoName)
+        .IncludeFlag(dfCollapsed, wbCollapseFragments)
+      , [], wbScriptFragmentsPackCounter)
   ]);
 
   wbScriptFragmentsQuest := wbStruct('Script Fragments', [
@@ -6013,7 +6027,13 @@ begin
         wbInteger('Unknown', itS8),
         wbLenString('ScriptName', 2),
         wbLenString('FragmentName', 2)
-      ])
+      ]).SetSummaryKey([4, 5])
+        .SetSummaryMemberPrefixSuffix(0, '[', '/')
+        .SetSummaryMemberPrefixSuffix(2, '', ']')
+        .SetSummaryMemberPrefixSuffix(4, ' ', ':')
+        .SetSummaryDelimiter('')
+        .IncludeFlag(dfSummaryMembersNoName)
+        .IncludeFlag(dfCollapsed, wbCollapseFragments)
     ).SetCountPath('FragmentCount', True)
   ]);
 
@@ -6029,7 +6049,12 @@ begin
         wbInteger('Unknown', itS8),
         wbLenString('ScriptName', 2),
         wbLenString('FragmentName', 2)
-      ]), [], wbScriptFragmentsSceneCounter),
+      ]).SetSummaryKey([1, 2])
+        .SetSummaryMemberPrefixSuffix(1, '', ':')
+        .SetSummaryDelimiter('')
+        .IncludeFlag(dfSummaryMembersNoName)
+        .IncludeFlag(dfCollapsed, wbCollapseFragments)
+      , [], wbScriptFragmentsSceneCounter),
     wbArray('Phase Fragments',
       wbStructSK([0, 1], 'Phase Fragment', [
         wbInteger('Phase Flag', itU8, wbFlags([
@@ -6042,7 +6067,14 @@ begin
         wbInteger('Unknown', itS8),
         wbLenString('ScriptName', 2),
         wbLenString('FragmentName', 2)
-      ]), -2)
+      ]).SetSummaryKey([5, 6])
+        .SetSummaryMemberPrefixSuffix(0, '[', ':')
+        .SetSummaryMemberPrefixSuffix(1, '', ']')
+        .SetSummaryMemberPrefixSuffix(5, ' ', ':')
+        .SetSummaryDelimiter('')
+        .IncludeFlag(dfSummaryMembersNoName)
+        .IncludeFlag(dfCollapsed, wbCollapseFragments)
+      , -2)
   ]);
 
   wbScriptFragments := wbStruct('Script Fragments', [
@@ -6055,7 +6087,13 @@ begin
         wbInteger('Unknown', itS8),
         wbLenString('ScriptName', 2),
         wbLenString('FragmentName', 2)
-      ]), -2)
+      ]).SetSummaryKey([3, 4])
+        .SetSummaryMemberPrefixSuffix(0, '[', ']')
+        .SetSummaryMemberPrefixSuffix(3, ' ', ':')
+        .SetSummaryDelimiter('')
+        .IncludeFlag(dfSummaryMembersNoName)
+        .IncludeFlag(dfCollapsed, wbCollapseFragments)
+      , -2)
   ]);
 
   {>>> http://www.uesp.net/wiki/Tes5Mod:Mod_File_Format/VMAD_Field <<<}
@@ -6087,11 +6125,15 @@ begin
     wbArrayS('Scripts', wbScriptEntry, -2, cpNormal, False, nil, nil, nil, wbCanAddScripts),
     wbScriptFragmentsQuest,
     wbArrayS('Aliases', wbStructSK([0], 'Alias', [
-      wbScriptPropertyObject,
+      wbScriptPropertyObject.IncludeFlag(dfCollapsed, wbCollapseOther),
       wbInteger('Version', itS16, nil, cpIgnore).SetDefaultNativeValue(6),
       wbInteger('Object Format', itS16, nil, cpIgnore).SetDefaultNativeValue(2),
       wbArrayS('Alias Scripts', wbScriptEntry, -2)
-    ]), -2)
+    ]).SetSummaryKey([0, 3])
+      .SetSummaryMemberPrefixSuffix(3, 'Script:(', ')')
+      .SetSummaryDelimiter(' ')
+      .IncludeFlag(dfSummaryMembersNoName)
+    , -2)
   ], cpNormal, False, nil, 3);
 
   wbVMADFragmentedSCEN := wbStruct(VMAD, 'Virtual Machine Adapter', [
@@ -7686,7 +7728,7 @@ begin
           wbInteger('Debris Count', itS32),
           wbFormIDCk('Material Swap', [MSWP, NULL]),
           wbFloat
-        ], cpNormal, True),
+        ], cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseDestruction),
         wbString(DSTA, 'Sequence Name'),
         wbRArray('Models',
           wbRStructSK([0], 'Model', [
@@ -7698,7 +7740,9 @@ begin
             wbENLT,
             wbENLS,
             wbAUUV
-          ]).IncludeFlag(dfAllowAnyMember)
+          ]).SetSummaryKey([0])
+            .IncludeFlag(dfCollapsed, wbCollapseModels)
+            .IncludeFlag(dfAllowAnyMember)
         ),
         wbEmpty(DSTF, 'End Marker', cpNormal, True)
       ], [], cpNormal, False, nil)
@@ -7757,7 +7801,7 @@ begin
           wbFormIDCk('Explosion', [EXPL, NULL]),
           wbFormIDCk('Debris', [DEBR, NULL]),
           wbInteger('Debris Count', itS32)
-        ], cpNormal, True), // End DSTD
+        ], cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseDestruction), // End DSTD
         wbRStructSK([0], 'Model', [ // Begin DMDL
           wbString(DMDL, 'Model FileName')
         ]), // End DMDL
@@ -7769,7 +7813,7 @@ begin
         wbENLS,
         wbAUUV,
         wbEmpty(DSTF, 'End Marker', cpNormal, True)
-      ]) // Begin Stage RStruct
+      ]) // End Stage RStruct
     ) // End Stage Array
   ], [], cpNormal, False, nil{wbActorTemplateUseModelAnimation});
 
@@ -9537,7 +9581,7 @@ begin
         {0x00004000} 'Vendor',
         {0x00008000} 'Can Be Owner',
         {0x00010000} 'Ignore Crimes: Werewolf (unused)'
-      ]))
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ], cpNormal, True, nil, 1),
     wbFormIDCk(JAIL, 'Exterior Jail Marker', [REFR]),
     wbFormIDCk(WAIT, 'Follower Wait Marker', [REFR]),
@@ -13663,7 +13707,11 @@ begin
       wbStructSK(PRKR, [0], 'Perk', [
         wbFormIDCk('Perk', [PERK]),
         wbBelowVersion(181, wbInteger('Rank', itU8))
-      ]), cpNormal, False, nil, wbPRKRsAfterSet
+      ]).SetSummaryKeyOnValue([1])
+        .SetSummaryPrefixSuffixOnValue(1, '{Rank: ', '}')
+        .IncludeFlagOnValue(dfSummaryMembersNoName)
+        .IncludeFlag(dfCollapsed, wbCollapsePerk)
+        , cpNormal, False, nil, wbPRKRsAfterSet
     ),
     wbPRPS,
     wbFTYP,
@@ -14409,8 +14457,8 @@ begin
           wbFromVersion(82, wbFormIDCk('Keyword', [KYWD, NULL])),
           wbFromVersion(151, wbByteArray('Area',4))
         ]).SetSummaryKeyOnValue([0, 1])
-          .SetSummaryPrefixSuffixOnValue(0, 'Alias: [', ']')
-          .SetSummaryPrefixSuffixOnValue(1, 'Flags: {', '}')
+          .SetSummaryPrefixSuffixOnValue(0, 'Alias[', ']')
+          .SetSummaryPrefixSuffixOnValue(1, 'Flags{', '}')
           .SetSummaryDelimiterOnValue(' ')
           .IncludeFlag(dfSummaryMembersNoName),
         wbConditions
@@ -14421,7 +14469,7 @@ begin
         .IncludeFlag(dfCollapsed, wbCollapseQuestObjectiveTarget))
     ]).SetSummaryKey([0, 8, 1, 9])
       .SetSummaryMemberPrefixSuffix(0, '[', ']')
-      .SetSummaryMemberPrefixSuffix(1, 'Flags: {', '}')
+      .SetSummaryMemberPrefixSuffix(1, 'Flags{', '}')
       .SetSummaryDelimiter(' ')
       .IncludeFlag(dfSummaryMembersNoName)
       .IncludeFlag(dfCollapsed, wbCollapseQuestObjective)),

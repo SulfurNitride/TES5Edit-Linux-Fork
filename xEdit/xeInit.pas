@@ -241,6 +241,7 @@ begin
       wbCollapseQuestLog := Settings.ReadBool('Options', 'CollapseQuestLog', wbCollapseQuestLog);
       wbCollapseQuestObjective := Settings.ReadBool('Options', 'CollapseQuestObjective', wbCollapseQuestObjective);
       wbCollapseQuestObjectiveTarget := Settings.ReadBool('Options', 'CollapseQuestObjectiveTarget', wbCollapseQuestObjectiveTarget);
+      wbCollapseScriptEntry := Settings.ReadBool('Options', 'CollapseScriptEntry', wbCollapseScriptEntry);
       sl := TStringList.Create;
       try
         Settings.ReadSection('cpoverride', sl);

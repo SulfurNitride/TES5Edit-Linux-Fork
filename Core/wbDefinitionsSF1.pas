@@ -4457,6 +4457,7 @@ begin
   .SetSummaryKey([2])
   .SetSummaryMemberPrefixSuffix(2, '(', ')')
   .SetSummaryDelimiter('')
+  .IncludeFlag(dfCollapsed, wbCollapseScriptEntry)
   .IncludeFlag(dfSummaryMembersNoName);
 
   var wbScriptFragmentsInfo := wbStruct('Script Fragments', [
@@ -4660,11 +4661,15 @@ begin
     wbVMADScripts,
     wbScriptFragmentsQuest,
     wbArrayS('Aliases', wbStructSK([0], 'Alias', [
-      wbScriptPropertyObject,
+      wbScriptPropertyObject.IncludeFlag(dfCollapsed, wbCollapseOther),
       wbVMADVersion,
       wbVMADObjectFormat,
       wbArrayS('Alias Scripts', wbScriptEntry, -2)
-    ]), -2)
+    ]).SetSummaryKey([0, 3])
+      .SetSummaryMemberPrefixSuffix(3, 'Script:(', ')')
+      .SetSummaryDelimiter(' ')
+      .IncludeFlag(dfSummaryMembersNoName)
+    , -2)
   ], cpNormal, False, nil, 3)
   .SetSummaryKeyOnValue([2, 3, 4]);
 
@@ -4965,8 +4970,7 @@ begin
         .SetSummaryDelimiterOnValue(', ')
         .IncludeFlagOnValue(dfSummaryExcludeNULL)
         .IncludeFlagOnValue(dfSummaryMembersNoName)
-        .IncludeFlag(dfCollapsed, wbCollapseDestruction)
-        ,
+        .IncludeFlag(dfCollapsed, wbCollapseDestruction),
         wbString(DSTA, 'Anim Event'),
         wbRStructSK([0], 'Model', [
           wbString(DMDL, 'Model FileName', 0, cpNormal, True),
@@ -4974,7 +4978,9 @@ begin
 //          wbDMDT,
 //          wbDMDC,
           wbDMDS.IncludeFlagOnValue(dfSummaryExcludeNULL)
-        ], [], cpNormal, False, nil, True).IncludeFlag(dfCollapsed, wbCollapseModels),
+        ], [], cpNormal, False, nil, True)
+          .SetSummaryKey([0])
+          .IncludeFlag(dfCollapsed, wbCollapseModels),
         wbEmpty(DSTF, 'End Marker', cpNormal, True)
       ], [], cpNormal, False, nil)
       .SetSummaryKey([0,2]).IncludeFlag(dfSummaryMembersNoName)
@@ -5004,7 +5010,7 @@ begin
           wbFormIDCk('Explosion', [EXPL, NULL]),
           wbFormIDCk('Debris', [DEBR, NULL]),
           wbInteger('Debris Count', itS32)
-        ], cpNormal, True), // End DSTD
+        ], cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseDestruction), // End DSTD
         wbRStructSK([0], 'Model', [ // Begin DMDL
           wbString(DMDL, 'Model FileName')
         ]), // End DMDL
@@ -5012,7 +5018,7 @@ begin
         wbDMDC,
         wbDMDS,
         wbEmpty(DSTF, 'End Marker', cpNormal, True)
-      ]) // Begin Stage RStruct
+      ]) // End Stage RStruct
     ) // End Stage Array
   ]);
 
@@ -14706,8 +14712,8 @@ end;
           ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
           wbFromVersion(82, wbFormIDCk('Keyword', [KYWD, NULL]))
         ]).SetSummaryKeyOnValue([0, 1])
-          .SetSummaryPrefixSuffixOnValue(0, 'Alias: [', ']')
-          .SetSummaryPrefixSuffixOnValue(1, 'Flags: {', '}')
+          .SetSummaryPrefixSuffixOnValue(0, 'Alias[', ']')
+          .SetSummaryPrefixSuffixOnValue(1, 'Flags{', '}')
           .SetSummaryDelimiterOnValue(' ')
           .IncludeFlag(dfSummaryMembersNoName),
         wbConditions
@@ -14718,7 +14724,7 @@ end;
         .IncludeFlag(dfCollapsed, wbCollapseQuestObjectiveTarget))
     ]).SetSummaryKey([0, 2, 1, 3])
       .SetSummaryMemberPrefixSuffix(0, '[', ']')
-      .SetSummaryMemberPrefixSuffix(1, 'Flags: {', '}')
+      .SetSummaryMemberPrefixSuffix(1, 'Flags{', '}')
       .SetSummaryDelimiter(' ')
       .IncludeFlag(dfSummaryMembersNoName)
       .IncludeFlag(dfCollapsed, wbCollapseQuestObjective)),
