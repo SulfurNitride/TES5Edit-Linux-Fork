@@ -3071,7 +3071,7 @@ begin
       wbInteger('Responsibility', itU8),
       wbInteger('Mood', itU8, wbMoodEnum),
       wbUnused(3),
-      wbInteger('Buys/Sells and Services', itU32, wbServiceFlags),
+      wbInteger('Buys/Sells and Services', itU32, wbServiceFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Teaches', itS8, wbSkillEnum),
       wbInteger('Maximum training level', itU8),
       wbInteger('Assistance', itS8, wbAssistanceEnum),
@@ -3192,7 +3192,7 @@ begin
             wbFormIDCk('Explosion', [EXPL, NULL]),
             wbFormIDCk('Debris', [DEBR, NULL]),
             wbInteger('Debris Count', itS32)
-          ]).SetRequired,
+          ], cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseDestruction),
           wbRStructSK([0], 'Model', [
             wbString(DMDL, 'Model FileName'),
             wbDMDT
@@ -3808,7 +3808,7 @@ begin
           {1} 'Guard'
         ], True)
       ).IncludeFlag(dfCollapsed, wbCollapseFlags),
-      wbInteger('Buys/Sells and Services', itU32, wbServiceFlags),
+      wbInteger('Buys/Sells and Services', itU32, wbServiceFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Teaches', itS8, wbSkillEnum),
       wbInteger('Maximum training level', itU8),
       wbUnused(2)
@@ -3954,7 +3954,7 @@ begin
       {14} wbInteger('Speed Multiplier', itU16).SetDontShow(wbActorTemplateUseStats),
       {16} wbFloat('Karma (Alignment)').SetDontShow(wbActorTemplateUseTraits),
       {20} wbInteger('Disposition Base', itS16).SetDontShow(wbActorTemplateUseTraits),
-      {22} wbInteger('Template Flags', itU16, wbTemplateFlags)
+      {22} wbInteger('Template Flags', itU16, wbTemplateFlags).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ]).SetRequired,
     wbRArrayS('Factions', wbFaction).SetDontShow(wbActorTemplateUseFactions),
     wbFormIDCk(INAM, 'Death item', [LVLI]).SetDontShow(wbActorTemplateUseTraits),
@@ -4194,7 +4194,7 @@ begin
           3, 'No Particle Shader',
           4, 'Edge Effect - Inverse',
           5, 'Membrane Shader - Affect Skin Only'
-        ], False, 6))),
+        ], False, 6))).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbUnused(3),
       wbInteger('Membrane Shader - Source Blend Mode', itU32, wbBlendModeEnum),
       wbInteger('Membrane Shader - Blend Operation', itU32, wbBlendOpEnum),
@@ -4733,7 +4733,7 @@ begin
           wbFlags(wbSparseFlags([
             4, 'Initially Disabled',
             5, 'Is Island'
-          ], False, 6))),
+          ], False, 6))).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbFormIDCk('Navmesh', [NAVM]).IncludeFlag(dfSummaryNoName),
         wbFormIDCk('Location', [CELL, WRLD]),
         wbStruct('Coordinates', [
@@ -5072,7 +5072,7 @@ begin
           wbFlags([
             {0} 'Reflection',
             {1} 'Refraction'
-          ]))
+          ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
       ])),
 
     {--- Decals ---}
@@ -6320,7 +6320,7 @@ begin
       {14} wbInteger('Speed Multiplier', itU16).SetDontShow(wbActorTemplateUseStats),
       {16} wbFloat('Karma (Alignment)').SetDontShow(wbActorTemplateUseTraits),
       {20} wbInteger('Disposition Base', itS16).SetDontShow(wbActorTemplateUseTraits),
-      {22} wbInteger('Template Flags', itU16, wbTemplateFlags)
+      {22} wbInteger('Template Flags', itU16, wbTemplateFlags).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ]).SetRequired,
     wbRArrayS('Factions', wbFaction).SetDontShow(wbActorTemplateUseFactions),
     wbFormIDCk(INAM, 'Death item', [LVLI]).SetDontShow(wbActorTemplateUseTraits),
@@ -6422,7 +6422,7 @@ begin
     ])), [
     wbEDIDReq,
     wbStruct(PKDT, 'General', [
-      wbInteger('General Flags', itU32, wbPackageFlags),
+      wbInteger('General Flags', itU32, wbPackageFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Type', itU8, wbPackageTypeEnum),
       wbUnused(1),
       wbInteger('Fallout Behavior Flags', itU16,
@@ -6446,7 +6446,7 @@ begin
            10, 'Allow Stealing'
           ], False, 11), True)
         ).IncludeFlag(dfCollapsed, wbCollapseFlags),
-        wbInteger('Type Specific Flags - Follow', itU16, wbFlags([], True)),
+        wbInteger('Type Specific Flags - Follow', itU16, wbFlags([], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbInteger('Type Specific Flags - Escort', itU16,
           wbFlags(wbSparseFlags([
             8, 'Allow Buying',
@@ -6461,7 +6461,7 @@ begin
            10, 'Allow Stealing'
           ], False, 11), True)
         ).IncludeFlag(dfCollapsed, wbCollapseFlags),
-        wbInteger('Type Specific Flags - Sleep', itU16, wbFlags([], True)),
+        wbInteger('Type Specific Flags - Sleep', itU16, wbFlags([], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbInteger('Type Specific Flags - Wander', itU16,
           wbFlags([
             {0} 'No Eating',
@@ -6472,8 +6472,8 @@ begin
             {5} 'No Wandering'
           ], True)
         ).IncludeFlag(dfCollapsed, wbCollapseFlags),
-        wbInteger('Type Specific Flags - Travel', itU16, wbFlags([], True)),
-        wbInteger('Type Specific Flags - Accompany', itU16, wbFlags([], True)),
+        wbInteger('Type Specific Flags - Travel', itU16, wbFlags([], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
+        wbInteger('Type Specific Flags - Accompany', itU16, wbFlags([], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbInteger('Type Specific Flags - Use Item At', itU16,
           wbFlags(wbSparseFlags([
             2, 'Sit Down',
@@ -6487,8 +6487,8 @@ begin
             0, 'Hide While Ambushing'
           ], False, 1), True)
         ).IncludeFlag(dfCollapsed, wbCollapseFlags),
-        wbInteger('Type Specific Flags - Flee Not Combat', itU16, wbFlags([], True)),
-        wbInteger('Type Specific Flags - Cast Magic', itU16, wbFlags([], True)),
+        wbInteger('Type Specific Flags - Flee Not Combat', itU16, wbFlags([], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
+        wbInteger('Type Specific Flags - Cast Magic', itU16, wbFlags([], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbInteger('Type Specific Flags - Sandbox', itU16,
           wbFlags([
             {0} 'No Eating',
@@ -6499,14 +6499,14 @@ begin
             {5} 'No Wandering'
           ], True)
         ).IncludeFlag(dfCollapsed, wbCollapseFlags),
-        wbInteger('Type Specific Flags - Patrol', itU16, wbFlags([], True)),
+        wbInteger('Type Specific Flags - Patrol', itU16, wbFlags([], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbInteger('Type Specific Flags - Guard', itU16,
           wbFlags(wbSparseFlags([
             3, 'Remain Near Reference to Guard'
           ], False, 4), True)
         ).IncludeFlag(dfCollapsed, wbCollapseFlags),
-        wbInteger('Type Specific Flags - Dialogue', itU16, wbFlags([], True)),
-        wbInteger('Type Specific Flags - Use Weapon', itU16, wbFlags([], True))
+        wbInteger('Type Specific Flags - Dialogue', itU16, wbFlags([], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
+        wbInteger('Type Specific Flags - Use Weapon', itU16, wbFlags([], True)).IncludeFlag(dfCollapsed, wbCollapseFlags)
       ]),
       wbUnused(2)
     ], cpNormal, True, nil, 2),

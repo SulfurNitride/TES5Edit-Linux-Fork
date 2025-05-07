@@ -1294,7 +1294,7 @@ begin
       wbInteger('Flags', itU8,
         wbFlags([
         {0} 'Auto Calculate'
-        ], True)),
+        ], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbUnused(3)
     ]).SetRequired,
     wbEffects

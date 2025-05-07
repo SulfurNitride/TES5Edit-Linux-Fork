@@ -1634,7 +1634,7 @@ begin
               16, 'Special Treatment for Abilities (Default Is False), Flag B On, Flag B Off',
               19, 'Base, Max, Offset, Damage, Script Effect Off, Script Effect On, Flag C On, Flag C Off',
               20, 'Base, Max, Offset, Damage, Script Effect Off, Script Effect On, Flag D On, Flag D Off'
-            ]))),
+            ]))).IncludeFlag(dfCollapsed, wbCollapseFlags),
             wbInteger('Flags', itU32,
               wbFlags(wbSparseFlags([
               //Incomplete
@@ -1644,7 +1644,7 @@ begin
               16, 'Special Treatment for Abilities Is True, Flag A On, Flag B On, Flag C On, Flag D On',
               19, 'Base, Offset, Script Effect On, FormID, Flag A On, Flag C On',
               20, 'Base, Damage, Script Effect On, MGEFCode, Flag B On, Flag D On'
-              ]))),
+              ]))).IncludeFlag(dfCollapsed, wbCollapseFlags),
             wbFloat('Base Cost'),
             wbUnion('Param #2', wbEFIXParamDecider, [
               wbByteArray('Param #2 - Unknown Type', 4),
@@ -2001,7 +2001,7 @@ begin
           {0} 'Playable',
           {1} 'Guard'
         ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
-      wbInteger('Buys/Sells and Services', itU32, wbServiceFlags),
+      wbInteger('Buys/Sells and Services', itU32, wbServiceFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Teaches', itS8, wbSkillEnum),
       wbInteger('Maximum training level', itU8),
       wbInteger('Unused', itU16)
@@ -2129,7 +2129,7 @@ begin
       wbInteger('Confidence', itU8).SetDefaultNativeValue(50),
       wbInteger('Energy Level', itU8).SetDefaultNativeValue(50),
       wbInteger('Responsibility', itU8).SetDefaultNativeValue(50),
-      wbInteger('Buys/Sells and Services', itU32, wbServiceFlags),
+      wbInteger('Buys/Sells and Services', itU32, wbServiceFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Teaches', itS8, wbSkillEnum),
       wbInteger('Maximum training level', itU8),
       wbUnused(2)
@@ -2315,7 +2315,8 @@ begin
         {1} 'Automatic Door',
         {2} 'Hidden',
         {3} 'Minimal Use'
-      ])).SetRequired,
+      ])).SetRequired
+         .IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbRArrayS('Random Teleport Destinations',
       wbFormIDCk(TNAM, 'Destination', [CELL, WRLD]))
   ]);
@@ -2839,7 +2840,7 @@ begin
           19, 'ParamFlagC',
           20, 'ParamFlagD',
           30, 'Hidden'
-        ], False, 31))),
+        ], False, 31))).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbByteArray('Param B', 4), //Needs a union based on Handler.
       wbUnused($1C)
     ]).SetDontShow(wbOBMEDontShow),
@@ -2970,7 +2971,7 @@ begin
           14, 'Summonable',
           15, 'No Persuasion',
           20, 'Can Corpse Check'
-      ], False, 21))),
+      ], False, 21))).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Base spell points', itU16).SetDefaultNativeValue(50),
       wbInteger('Fatigue', itU16).SetDefaultNativeValue(50),
       wbInteger('Barter gold', itU16),
@@ -2990,7 +2991,7 @@ begin
       wbInteger('Confidence', itU8).SetDefaultNativeValue(50),
       wbInteger('Energy Level', itU8).SetDefaultNativeValue(50),
       wbInteger('Responsibility', itU8).SetDefaultNativeValue(50),
-      wbInteger('Buys/Sells and Services', itU32, wbServiceFlags),
+      wbInteger('Buys/Sells and Services', itU32, wbServiceFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Teaches', itS8, wbSkillEnum),
       wbInteger('Maximum training level', itU8),
       wbUnused(2)
@@ -3050,13 +3051,13 @@ begin
     wbEDID,
     wbUnion(PKDT, 'General', wbPACKPKDTDecider, [
       wbStruct('', [
-        wbInteger('Flags', itU16, wbPackageFlags),
+        wbInteger('Flags', itU16, wbPackageFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbInteger('Type', itU8, wbPackageTypeEnum),
         wbUnused(1)
       ]).SetSummaryKey([1])
         .IncludeFlag(dfSummaryMembersNoName),
       wbStruct('', [
-        wbInteger('Flags', itU32, wbPackageFlags),
+        wbInteger('Flags', itU32, wbPackageFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbInteger('Type', itU8, wbPackageTypeEnum),
         wbUnused(3)
       ]).SetSummaryKey([1])
@@ -3193,8 +3194,8 @@ begin
     wbInteger(DATA, 'Point Count', itU16).SetRequired,
     wbPGRP,
     wbArray(PGAG, 'Auto-Generated Point Sets',
-      wbInteger('Set', itU8, wbPGAGFlags, cpIgnore)
-    ).IncludeFlag(dfCollapsed, wbCollapseFlags),
+      wbInteger('Set', itU8, wbPGAGFlags, cpIgnore).IncludeFlag(dfCollapsed, wbCollapseFlags)
+    ),
     wbArray(PGRR, 'Point-to-Point Connections',
       wbArrayS('Point', wbInteger('Point', itS16), wbCalcPGRRSize)),
     wbArrayS(PGRI, 'Inter-Cell Connections',
@@ -3232,7 +3233,7 @@ begin
           2, 'Allow repeated conversation topics',
           3, 'Allow repeated stages'
         ], False, 4))
-      ).SetDefaultNativeValue(1),
+      ).SetDefaultNativeValue(1).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Priority', itU8)
     ]).SetRequired,
     wbConditions,
@@ -3404,7 +3405,8 @@ begin
         wbFlags([
           {0} 'Visible',
           {1} 'Can Travel To'
-        ])).SetRequired,
+        ])).SetRequired
+           .IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbFULLReq,
       wbStruct(TNAM, '', [
         wbInteger('Type', itU8,
@@ -3649,7 +3651,7 @@ begin
           {5} 'Script Effect Always Applies',
           {6} 'Disallow Spell Absorb/Reflect',
           {7} 'Touch Spell Explodes w/ no Target'
-        ])),
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbUnused(3)
     ]).SetRequired,
     wbEffects.SetRequired
@@ -3700,7 +3702,8 @@ begin
       wbFlags([
         {0} 'Causes Damage',
         {1} 'Reflective'
-     ])).SetRequired,
+     ])).SetRequired
+        .IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbString(MNAM, 'Material ID').SetRequired,
     wbFormIDCk(SNAM, 'Sound', [SOUN]),
     wbStruct(DATA, 'Data', [
