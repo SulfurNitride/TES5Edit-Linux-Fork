@@ -14241,7 +14241,7 @@ begin
           {0x20000000} 'Unknown 29',
           {0x40000000} 'Unknown 30',
           {0x80000000} 'Unknown 31'
-        ])),
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbInteger('Priority',itU8), //0xE8
         wbUnused(3),
         wbFloat('Delay Time'), //0xE0
@@ -14278,7 +14278,7 @@ begin
           {0x0400} 'Warn on alias fill failure',
           {0x0800} 'Unknown 12',
           {0x1000} 'Unknown 13'
-        ])),
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbInteger('Priority', itU8),
         wbUnused(1),
         wbFloat('Delay Time'),
@@ -14351,14 +14351,14 @@ begin
           {0x10} 'Unknown 4',
           {0x20} 'Unknown 5',
           {0x40} 'Unknown 6'
-        ])),
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbInteger('Unknown', itU8)
-      ]),
+      ]).IncludeFlag(dfCollapsed, wbCollapseOther),
       wbRArray('Log Entries', wbRStruct('Log Entry', [
         wbInteger(QSDT, 'Stage Flags', itU8, wbFlags([
           {0x01} 'Complete Quest',
           {0x02} 'Fail Quest'
-        ])),
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbConditions,
         wbString(NAM2, 'Note'),
         wbString(SCFC, 'Comments'),
@@ -14367,8 +14367,18 @@ begin
         wbRArray('Rewards', wbReward),
         wbFormID(QRWD, 'Quest Reward'),
         wbFormID(QUIM, 'Message')
-      ]))
-    ])),
+      ]).SetSummaryKey([4,0,1])
+        .SetSummaryMemberPrefixSuffix(4, 'Log: "', '"')
+        .SetSummaryMemberPrefixSuffix(0, 'Flags: {', '}')
+        .SetSummaryMemberPrefixSuffix(1, 'Conditions: [', ']')
+        .SetSummaryDelimiter(' ')
+        .IncludeFlag(dfSummaryMembersNoName)
+        .IncludeFlag(dfCollapsed, wbCollapseQuestLog))
+    ]).SetSummaryKey([1])
+      .SetSummaryMemberPrefixSuffix(0, '[', ']')
+      .SetSummaryDelimiter(' ')
+      .IncludeFlag(dfSummaryMembersNoName)
+      .IncludeFlag(dfCollapsed, wbCollapseQuestStage)),
     wbRArray('Objectives', wbRStruct('Objective', [
       wbInteger(QOBJ, 'Objective Index', itU16),
       wbInteger(FNAM, 'Flags', itU32, wbFlags([
@@ -14376,7 +14386,7 @@ begin
         {0x02} 'No Stats Tracking',
         {0x04} 'Unknown 3',
         {0x08} 'Uses Timer'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbFormIDCk(QOTM, 'Quest Objective Timer', [GLOB]),
       wbInteger(SNAM, 'Stage to set', itU16),
       wbLString(NAM1, 'Quest Notes'),
@@ -14391,17 +14401,30 @@ begin
             {0x0001} 'Compass Marker Ignores Locks',
             {0x0002} 'Hostile',
             {0x0004} 'Use Straight Line Pathing'
-          ]))),
+          ])).IncludeFlag(dfCollapsed, wbCollapseFlags)),
           wbFromVersion(158, wbInteger('Area Flags', itU8, wbFlags([
             {0x0001} 'Use Global',
             {0x0002} 'Unknown 1'
-          ]))),
+          ])).IncludeFlag(dfCollapsed, wbCollapseFlags)),
           wbFromVersion(82, wbFormIDCk('Keyword', [KYWD, NULL])),
           wbFromVersion(151, wbByteArray('Area',4))
-        ]),
+        ]).SetSummaryKeyOnValue([0, 1])
+          .SetSummaryPrefixSuffixOnValue(0, 'Alias: [', ']')
+          .SetSummaryPrefixSuffixOnValue(1, 'Flags: {', '}')
+          .SetSummaryDelimiterOnValue(' ')
+          .IncludeFlag(dfSummaryMembersNoName),
         wbConditions
-      ]))
-    ])),
+      ]).SetSummaryKey([0,1])
+        .SetSummaryMemberPrefixSuffix(1, 'Conditions: [', ']')
+        .SetSummaryDelimiter(' ')
+        .IncludeFlag(dfSummaryMembersNoName)
+        .IncludeFlag(dfCollapsed, wbCollapseQuestObjectiveTarget))
+    ]).SetSummaryKey([0, 8, 1, 9])
+      .SetSummaryMemberPrefixSuffix(0, '[', ']')
+      .SetSummaryMemberPrefixSuffix(1, 'Flags: {', '}')
+      .SetSummaryDelimiter(' ')
+      .IncludeFlag(dfSummaryMembersNoName)
+      .IncludeFlag(dfCollapsed, wbCollapseQuestObjective)),
 
     wbInteger(ANAM, 'Next Alias ID', itU32),
 
@@ -14416,7 +14439,7 @@ begin
           wbFloat(ESDA, 'Unknown'),
           wbFloat(ESRV, 'Unknown'),
           wbFloat(ESRP, 'Unknown'),
-          wbQUSTAliasFlags,
+          wbQUSTAliasFlags.IncludeFlag(dfCollapsed, wbCollapseFlags),
           wbInteger(ALFI, 'Force Into Alias When Filled', itS32, wbQuestAliasToStr, wbStrToAlias),
           //wbFormIDCk(ALFL, 'Specific Location', [LCTN]),
           wbFormIDCk(ALFR, 'Forced Reference', [ACHR, REFR, PLYR, NULL]),

@@ -11403,7 +11403,7 @@ begin
         {0x2000} 'Keep Instance',
         {0x4000} 'Want Dormant',
         {0x8000} 'Has Dialogue Data'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Priority', itU8),
       wbUnused(1),
       wbFloat('Delay Time'),
@@ -11442,26 +11442,36 @@ begin
           {0x02} 'Run On Start',
           {0x04} 'Run On Stop',
           {0x08} 'Keep Instance Data From Here On'
-        ])),
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbInteger('Unknown', itU8)
-      ]),
+      ]).IncludeFlag(dfCollapsed, wbCollapseOther),
       wbRArray('Log Entries', wbRStruct('Log Entry', [
         wbInteger(QSDT, 'Stage Flags', itU8, wbFlags([
           {0x01} 'Complete Quest',
           {0x02} 'Fail Quest'
-        ])),
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbConditions,
         wbString(NAM2, 'Note'),
         wbLStringKC(CNAM, 'Log Entry', 0, cpTranslate),
         wbFormIDCk(NAM0, 'Next Quest', [QUST])
-      ]))
-    ])),
+      ]).SetSummaryKey([4,0,1])
+        .SetSummaryMemberPrefixSuffix(4, 'Log: "', '"')
+        .SetSummaryMemberPrefixSuffix(0, 'Flags: {', '}')
+        .SetSummaryMemberPrefixSuffix(1, 'Conditions: [', ']')
+        .SetSummaryDelimiter(' ')
+        .IncludeFlag(dfSummaryMembersNoName)
+        .IncludeFlag(dfCollapsed, wbCollapseQuestLog))
+    ]).SetSummaryKey([1])
+      .SetSummaryMemberPrefixSuffix(0, '[', ']')
+      .SetSummaryDelimiter(' ')
+      .IncludeFlag(dfSummaryMembersNoName)
+      .IncludeFlag(dfCollapsed, wbCollapseQuestStage)),
     wbRArray('Objectives', wbRStruct('Objective', [
       wbInteger(QOBJ, 'Objective Index', itU16),
       wbInteger(FNAM, 'Flags', itU32, wbFlags([
         {0x01} 'ORed With Previous',
         {0x02} 'No Stats Tracking'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbLStringKC(NNAM, 'Display Text', 0, cpTranslate, True),
       wbRArray('Targets', wbRStruct('Target', [
         wbStruct(QSTA, 'Target', [
@@ -11470,12 +11480,25 @@ begin
             {0x01} 'Compass Marker Ignores Locks',
             {0x02} 'Hostile',
             {0x04} 'Use Straight Line Pathing'
-          ])),
+          ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
           wbFromVersion(82, wbFormIDCk('Keyword', [KYWD, NULL]))
-        ]),
+        ]).SetSummaryKeyOnValue([0, 1])
+          .SetSummaryPrefixSuffixOnValue(0, 'Alias: [', ']')
+          .SetSummaryPrefixSuffixOnValue(1, 'Flags: {', '}')
+          .SetSummaryDelimiterOnValue(' ')
+          .IncludeFlag(dfSummaryMembersNoName),
         wbConditions
-      ]))
-    ])),
+      ]).SetSummaryKey([0,1])
+        .SetSummaryMemberPrefixSuffix(1, 'Conditions: [', ']')
+        .SetSummaryDelimiter(' ')
+        .IncludeFlag(dfSummaryMembersNoName)
+        .IncludeFlag(dfCollapsed, wbCollapseQuestObjectiveTarget))
+    ]).SetSummaryKey([0, 2, 1, 3])
+      .SetSummaryMemberPrefixSuffix(0, '[', ']')
+      .SetSummaryMemberPrefixSuffix(1, 'Flags: {', '}')
+      .SetSummaryDelimiter(' ')
+      .IncludeFlag(dfSummaryMembersNoName)
+      .IncludeFlag(dfCollapsed, wbCollapseQuestObjective)),
 
     wbInteger(ANAM, 'Next Alias ID', itU32),
 

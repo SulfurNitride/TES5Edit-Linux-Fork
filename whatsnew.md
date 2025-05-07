@@ -12,13 +12,17 @@ xEdit is crucial to our shared modding community and your contribution - no matt
     * [TES4/TES4R] CREA - Remove AfterLoad, wasn't actually needed and was causing an issue with Delta Patches.
     * [TES4R] CELL \ XTLI - Decoded as Thread Level.
     * [TES4R] REFR \ XAAG - Appears to be a GUID, decoded as such for now. Scripts should Get/Set edit value as proper GUID string.
+    * [SF1] SurfaceTreePatternSwapInfo_Component fix for decoding error
+    * [TES5/FO4/FO76/SF1] QUST - Added auto collapse and summaries to Stages, Objectives, and Objective Targets
     * [ALL] Conditions - Add proper Sort Keys to enable correct Alignment.
     * [ALL] Conditions - When changing function it should not update the view for relevant field types.
     * [ALL] CREA/NPC_ \ ACBS - Update Level handling to respect the range constraint enforced by the Game/CKs.
     * [ALL] Fix crash when right clicking container children.
     * UI - Renamed Overlay to Update on the Module Selection Form.
+    * UI - Added more collapse view toggle options (still not complete)
     * xEdit - Force file flags based on file extension for all game modes where applicable.
     * xEdit - Fix enless loading due to GRUP headers in modules have a size too small for their own data.
+    * xEdit - Fix Copy as Wrapper handling for Leveled Lists 
 
 # What's New in xEdit 4.1.5n?
 

@@ -237,6 +237,10 @@ begin
       wbCollapseDirectionRotation := Settings.ReadBool('Options', 'CollapseDirectionRotation', wbCollapseDirectionRotation);
       wbCollapseMaxHeightData := Settings.ReadBool('Options', 'CollapseMaxHeightData', wbCollapseMaxHeightData);
       wbCollapseAliases := Settings.ReadBool('Options', 'CollapseAliases', wbCollapseAliases);
+      wbCollapseQuestStage := Settings.ReadBool('Options', 'CollapseQuestStage', wbCollapseQuestStage);
+      wbCollapseQuestLog := Settings.ReadBool('Options', 'CollapseQuestLog', wbCollapseQuestLog);
+      wbCollapseQuestObjective := Settings.ReadBool('Options', 'CollapseQuestObjective', wbCollapseQuestObjective);
+      wbCollapseQuestObjectiveTarget := Settings.ReadBool('Options', 'CollapseQuestObjectiveTarget', wbCollapseQuestObjectiveTarget);
       sl := TStringList.Create;
       try
         Settings.ReadSection('cpoverride', sl);

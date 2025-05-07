@@ -9240,14 +9240,14 @@ begin
           {0x02} 'Start Up Stage',
           {0x04} 'Shut Down Stage',
           {0x08} 'Keep Instance Data From Here On'
-        ])),
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbInteger('Unknown', itU8)
-      ]),
+      ]).IncludeFlag(dfCollapsed, wbCollapseOther),
       wbRArray('Log Entries', wbRStruct('Log Entry', [
         wbInteger(QSDT, 'Stage Flags', itU8, wbFlags([
           {0x01} 'Complete Quest',
           {0x02} 'Fail Quest'
-        ])),
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbConditions,
         wbLStringKC(CNAM, 'Log Entry', 0, cpTranslate),
         wbFormIDCk(NAM0, 'Next Quest', [QUST]),
@@ -9256,8 +9256,18 @@ begin
         wbByteArray(SCTX, 'Unused', 0, cpIgnore, false, false, wbNeverShow),
         wbByteArray(QNAM, 'Unused', 0, cpIgnore, false, false, wbNeverShow)
         {>>> END leftover from earlier CK versions <<<}
-      ]))
-    ])),
+      ]).SetSummaryKey([2,0,1])
+        .SetSummaryMemberPrefixSuffix(4, 'Log: "', '"')
+        .SetSummaryMemberPrefixSuffix(0, 'Flags: {', '}')
+        .SetSummaryMemberPrefixSuffix(1, 'Conditions: [', ']')
+        .SetSummaryDelimiter(' ')
+        .IncludeFlag(dfSummaryMembersNoName)
+        .IncludeFlag(dfCollapsed, wbCollapseQuestLog))
+    ]).SetSummaryKey([1])
+      .SetSummaryMemberPrefixSuffix(0, '[', ']')
+      .SetSummaryDelimiter(' ')
+      .IncludeFlag(dfSummaryMembersNoName)
+      .IncludeFlag(dfCollapsed, wbCollapseQuestStage)),
     wbRArrayS('Objectives', wbRStructSK([0], 'Objective', [
       wbInteger(QOBJ, 'Objective Index', itU16),
       wbInteger(FNAM, 'Flags', itU32, wbFlags(['ORed With Previous'])),
@@ -9269,10 +9279,23 @@ begin
             {0x01} 'Compass Marker Ignores Locks'
           ])),
           wbUnused(3)
-        ]),
+        ]).SetSummaryKeyOnValue([0, 1])
+          .SetSummaryPrefixSuffixOnValue(0, 'Alias: [', ']')
+          .SetSummaryPrefixSuffixOnValue(1, 'Flags: {', '}')
+          .SetSummaryDelimiterOnValue(' ')
+          .IncludeFlag(dfSummaryMembersNoName),
         wbConditions
-      ]))
-    ])),
+      ]).SetSummaryKey([0,1])
+        .SetSummaryMemberPrefixSuffix(1, 'Conditions: [', ']')
+        .SetSummaryDelimiter(' ')
+        .IncludeFlag(dfSummaryMembersNoName)
+        .IncludeFlag(dfCollapsed, wbCollapseQuestObjectiveTarget))
+    ]).SetSummaryKey([2, 1, 3])
+      .SetSummaryMemberPrefixSuffix(0, '[', ']')
+      .SetSummaryMemberPrefixSuffix(1, 'Flags: {', '}')
+      .SetSummaryDelimiter(' ')
+      .IncludeFlag(dfSummaryMembersNoName)
+      .IncludeFlag(dfCollapsed, wbCollapseQuestObjective)),
     wbInteger(ANAM, 'Next Alias ID', itU32, nil, cpNormal, True),
     wbRArray('Aliases',
       wbRUnion('Alias', [

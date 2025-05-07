@@ -266,6 +266,10 @@ var
   wbCollapseDirectionRotation        : Boolean    = True;
   wbCollapseMaxHeightData            : Boolean    = True;
   wbCollapseAliases                  : Boolean    = True;
+  wbCollapseQuestStage               : Boolean    = True;
+  wbCollapseQuestLog                 : Boolean    = True;
+  wbCollapseQuestObjective           : Boolean    = True;
+  wbCollapseQuestObjectiveTarget     : Boolean    = True;
   wbDontDrawColorText                : Boolean    = True;
   wbReportInjected                   : Boolean    = True;
   wbNoFullInShortName                : Boolean    = True;

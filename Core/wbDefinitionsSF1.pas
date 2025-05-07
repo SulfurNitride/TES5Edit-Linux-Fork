@@ -14651,7 +14651,7 @@ end;
           {0x40} 'Ready To Display On UI'
         ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbUnused(1)
-      ]),
+      ]).IncludeFlag(dfCollapsed, wbCollapseOther),
       wbRArray('Log Entries', wbRStruct('Log Entry', [
         wbInteger(QSDT, 'Stage Flags', itU8, wbFlags([
           {0x01} 'Complete Quest',
@@ -14677,8 +14677,18 @@ end;
           ]),
           wbFormIDCk(NAM1, 'Affinity Change', [AFFE, NULL])
         ], [], cpNormal, True)
-      ]))
-    ])),
+      ]).SetSummaryKey([4,0,1])
+        .SetSummaryMemberPrefixSuffix(4, 'Log: "', '"')
+        .SetSummaryMemberPrefixSuffix(0, 'Flags: {', '}')
+        .SetSummaryMemberPrefixSuffix(1, 'Conditions: [', ']')
+        .SetSummaryDelimiter(' ')
+        .IncludeFlag(dfSummaryMembersNoName)
+        .IncludeFlag(dfCollapsed, wbCollapseQuestLog))
+    ]).SetSummaryKey([1])
+      .SetSummaryMemberPrefixSuffix(0, '[', ']')
+      .SetSummaryDelimiter(' ')
+      .IncludeFlag(dfSummaryMembersNoName)
+      .IncludeFlag(dfCollapsed, wbCollapseQuestStage)),
     wbRArray('Objectives', wbRStruct('Objective', [
       wbInteger(QOBJ, 'Objective Index', itU16),
       wbInteger(FNAM, 'Flags', itU32, wbFlags([
@@ -14695,14 +14705,23 @@ end;
             {0x04} 'Use Straight Line Pathing'
           ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
           wbFromVersion(82, wbFormIDCk('Keyword', [KYWD, NULL]))
-        ]),
+        ]).SetSummaryKeyOnValue([0, 1])
+          .SetSummaryPrefixSuffixOnValue(0, 'Alias: [', ']')
+          .SetSummaryPrefixSuffixOnValue(1, 'Flags: {', '}')
+          .SetSummaryDelimiterOnValue(' ')
+          .IncludeFlag(dfSummaryMembersNoName),
         wbConditions
-      ]))
-    ])
-      .SetSummaryKey([0, 2])
+      ]).SetSummaryKey([0,1])
+        .SetSummaryMemberPrefixSuffix(1, 'Conditions: [', ']')
+        .SetSummaryDelimiter(' ')
+        .IncludeFlag(dfSummaryMembersNoName)
+        .IncludeFlag(dfCollapsed, wbCollapseQuestObjectiveTarget))
+    ]).SetSummaryKey([0, 2, 1, 3])
       .SetSummaryMemberPrefixSuffix(0, '[', ']')
+      .SetSummaryMemberPrefixSuffix(1, 'Flags: {', '}')
       .SetSummaryDelimiter(' ')
-      .IncludeFlag(dfSummaryMembersNoName)),
+      .IncludeFlag(dfSummaryMembersNoName)
+      .IncludeFlag(dfCollapsed, wbCollapseQuestObjective)),
 
     wbInteger(ANAM, 'Next Alias ID', itU32, nil, cpNormal, True),
 
