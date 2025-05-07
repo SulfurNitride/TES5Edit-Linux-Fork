@@ -107,15 +107,15 @@ var
   wbXSCL: IwbSubRecordDef;
   wbMODC: IwbSubRecordDef;
   wbModelFlags: IwbFlagsDef;
-  wbMODF: IwbSubRecordDef;
+  wbMODF: IwbRecordMemberDef;
   wbMODS: IwbSubRecordDef;
   wbMO2S: IwbSubRecordDef;
   wbMO3S: IwbSubRecordDef;
   wbMO4S: IwbSubRecordDef;
-  wbMO2F: IwbSubRecordDef;
-  wbMO3F: IwbSubRecordDef;
-  wbMO4F: IwbSubRecordDef;
-  wbMO5F: IwbSubRecordDef;
+  wbMO2F: IwbRecordMemberDef;
+  wbMO3F: IwbRecordMemberDef;
+  wbMO4F: IwbRecordMemberDef;
+  wbMO5F: IwbRecordMemberDef;
   wbMO2C: IwbSubRecordDef;
   wbMO3C: IwbSubRecordDef;
   wbMO4C: IwbSubRecordDef;
@@ -132,7 +132,7 @@ var
   wbEFID: IwbSubRecordDef;
   wbEFIT: IwbSubRecordDef;
   wbEffectsReq: IwbSubRecordArrayDef;
-  wbFirstPersonFlagsU32: IwbIntegerDef;
+  wbFirstPersonFlagsU32: IwbValueDef;
   wbBOD2: IwbSubRecordDef;
   wbScriptEntry: IwbValueDef;
   wbScriptFlags: IwbIntegerDef;
@@ -169,7 +169,7 @@ var
   wbSPCT: IwbSubRecordDef;
   wbPhonemeTargets: IwbSubRecordDef;
   wbPHWT: IwbSubRecordStructDef;
-  wbQUSTAliasFlags: IwbSubRecordDef;
+  wbQUSTAliasFlags: IwbRecordMemberDef;
   wbPDTO: IwbSubRecordDef;
   wbPDTOs: IwbSubRecordArrayDef;
   wbUNAMs: IwbSubRecordArrayDef;
@@ -191,7 +191,7 @@ var
   wbArmorAddonBSMPSequence: IwbSubRecordArrayDef;
   wbFTYP: IwbSubRecordDef;
   wbATTX: IwbSubRecordDef;
-  wbMNAMFurnitureMarker: IwbSubRecordDef;
+  wbMNAMFurnitureMarker: IwbRecordMemberDef;
   wbSNAMMarkerParams: IwbSubRecordDef;
   wbOBTSReq: IwbSubRecordDef;
   //wbTintTemplateGroups: IwbSubrecordArrayDef;
@@ -4010,7 +4010,7 @@ function wbTintTemplateGroups(const aName: string): IwbSubRecordArrayDef;
           'On/Off only',
           'Chargen Detail',
           'Takes Skin Tone'
-        ])),
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbConditions,
         wbRArray('Textures', wbString(TTET, 'Texture')),
         wbInteger(TTEB, 'Blend Operation', itU32, wbBlendOperationEnum),
@@ -4128,7 +4128,7 @@ end;
           wbInteger('Type', itU32, wbFlags([
             'Reflection',
             'Refraction'
-          ]))
+          ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
         ], cpNormal, False, nil, 1)
       ),
       wbRArrayS('Linked References', wbStructSK(XLKR, [0], 'Linked Reference', [
@@ -4138,7 +4138,7 @@ end;
       wbRStruct('Activate Parents', [
         wbInteger(XAPD, 'Flags', itU8, wbFlags([
           'Parent Activate Only'
-        ], True)),
+        ], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbRArrayS('Activate Parent Refs',
           wbStructSK(XAPR, [0], 'Activate Parent Ref', [
             wbFormIDCk('Reference', sigReferences),
@@ -4288,7 +4288,7 @@ begin
     {0x80000000} '61 - FX'
   ], True);
 
-  wbFirstPersonFlagsU32 := wbInteger('First Person Flags', itU32, wbBipedObjectFlags);
+  wbFirstPersonFlagsU32 := wbInteger('First Person Flags', itU32, wbBipedObjectFlags).IncludeFlag(dfCollapsed, wbCollapseFlags);
 
   wbBOD2 := wbStruct(BOD2, 'Biped Body Template', [
     wbFirstPersonFlagsU32
@@ -4314,7 +4314,7 @@ begin
       {0x04} 'Alpha - Testing',
       {0x08} 'No Subtextures',
       {0x10} 'Multiplicative Blending'
-    ], True)),
+    ], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbInteger('Alpha Threshold?', itU16),
     wbByteColors('Color')
   ]);
@@ -4755,7 +4755,7 @@ begin
     wbInteger('Flags', itU8, wbFlags([
       {1} 'OnBegin',
       {2} 'OnEnd'
-    ])),
+    ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbScriptEntry,
     wbArray('Fragments',  // Do NOT sort, ordered OnBegin, OnEnd
       wbStruct('Fragment', [
@@ -4779,7 +4779,7 @@ begin
       {1} 'OnBegin',
       {2} 'OnEnd',
       {4} 'OnChange'
-    ])),
+    ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbScriptEntry,
     wbArray('Fragments',  // Do NOT sort, ordered OnBegin, OnEnd, OnChange
       wbStruct('Fragment', [
@@ -4841,7 +4841,7 @@ begin
     wbInteger('Flags', itU8, wbFlags([
       {1} 'OnBegin',
       {2} 'OnEnd'
-    ])),
+    ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbScriptEntry,
     wbArray('Fragments',  // Do NOT sort, ordered OnBegin, OnEnd
       wbStruct('Fragment', [
@@ -4860,7 +4860,7 @@ begin
         wbInteger('Phase Flag', itU8, wbFlags([
           {1} 'OnStart',
           {2} 'OnCompletion'
-        ])),
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbInteger('Phase Index', itU8),
         wbInteger('Unknown', itS16),
         wbInteger('Unknown', itS8),
@@ -5010,7 +5010,7 @@ begin
         {0x20000000} 'Unknown 29',
         {0x40000000} 'Unknown 30',
         {0x80000000} 'Override Data'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbFloat('Attack Angle'),
       wbFloat('Strike Angle'),
       wbFloat('Stagger'),
@@ -5158,11 +5158,11 @@ begin
     'Has FaceBones Model',
     'Has 1stPerson Model'
   ]);
-  wbMODF := wbInteger(MODF, 'Flags', itU8, wbModelFlags);
-  wbMO2F := wbInteger(MO2F, 'Flags', itU8, wbModelFlags);
-  wbMO3F := wbInteger(MO3F, 'Flags', itU8, wbModelFlags);
-  wbMO4F := wbInteger(MO4F, 'Flags', itU8, wbModelFlags);
-  wbMO5F := wbInteger(MO5F, 'Flags', itU8, wbModelFlags);
+  wbMODF := wbInteger(MODF, 'Flags', itU8, wbModelFlags).IncludeFlag(dfCollapsed, wbCollapseFlags);
+  wbMO2F := wbInteger(MO2F, 'Flags', itU8, wbModelFlags).IncludeFlag(dfCollapsed, wbCollapseFlags);
+  wbMO3F := wbInteger(MO3F, 'Flags', itU8, wbModelFlags).IncludeFlag(dfCollapsed, wbCollapseFlags);
+  wbMO4F := wbInteger(MO4F, 'Flags', itU8, wbModelFlags).IncludeFlag(dfCollapsed, wbCollapseFlags);
+  wbMO5F := wbInteger(MO5F, 'Flags', itU8, wbModelFlags).IncludeFlag(dfCollapsed, wbCollapseFlags);
 
   wbMODC := wbFloat(MODC, 'Color Remapping Index');
   wbMO2C := wbFloat(MO2C, 'Color Remapping Index');
@@ -5180,7 +5180,7 @@ begin
       wbInteger('Flags', itU8, wbFlags([
         'VATS Targetable',
         'Large Actor Destroys'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbByteArray('Unknown', 2)
     ]),
     wbArrayS(DAMC, 'Resistances', wbStructSK([0], 'Resistance', [
@@ -5199,7 +5199,7 @@ begin
             'Destroy',
             'Ignore External Dmg',
             'Becomes Dynamic'
-          ])),
+          ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
           wbInteger('Self Damage per Second', itS32),
           wbFormIDCk('Explosion', [EXPL, NULL]),
           wbFormIDCk('Debris', [DEBR, NULL]),
@@ -5236,7 +5236,7 @@ begin
             'Cap Damage',
             'Disable',
             'Destroy'
-          ])),
+          ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
           wbInteger('Self Damage per Second', itS32),
           wbFormIDCk('Explosion', [EXPL, NULL]),
           wbFormIDCk('Debris', [DEBR, NULL]),
@@ -5258,7 +5258,7 @@ begin
     wbInteger('Flags', itU8, wbFlags([
       'Set Enable State to Opposite of Parent',
       'Pop In'
-    ])),
+    ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbUnused(3)
   ]);
 
@@ -5447,7 +5447,7 @@ begin
     wbRStruct('Activate Parents', [
       wbInteger(XAPD, 'Flags', itU8, wbFlags([
         'Parent Activate Only'
-      ], True)),
+      ], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbRArrayS('Activate Parent Refs',
         wbStructSK(XAPR, [0], 'Activate Parent Ref', [
           wbFormIDCk('Reference', sigReferences),
@@ -6126,7 +6126,7 @@ begin
     {0x20000000} 'Unknown 29',
     {0x40000000} 'Has Model?',
     {0x80000000} 'Is Sleep Furniture'
-  ]));
+  ])).IncludeFlag(dfCollapsed, wbCollapseFlags);
 
   wbSNAMMarkerParams :=
     wbArray(SNAM, 'Marker Parameters', wbStruct('Marker', [
@@ -6472,7 +6472,7 @@ begin
       'Unknown 2',
       'Unknown 3',
       'Is a Radio'
-    ])),
+    ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbFormIDCk(KNAM, 'Interaction Keyword', [KYWD]),
     wbStruct(RADR, 'Radio Receiver', [
       wbFormIDCk('Sound Model', [SOPM, NULL]),
@@ -6545,7 +6545,7 @@ begin
         {0x00008000} 'Unknown 16',
         {0x00010000} 'Medicine',
         {0x00020000} 'Poison'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbFormID('Addiction'),
       wbFloat('Addiction Chance'),
       wbFormIDCk('Sound - Consume', [SNDR, NULL])
@@ -6578,7 +6578,7 @@ begin
         {0x01} 'Ignores Normal Weapon Resistance',
         {0x02} 'Non-Playable',
         {0x04} 'Has Count Based 3D'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbUnused(3),
       wbFloat('Damage'),
       wbInteger('Health', itU32)
@@ -6675,11 +6675,11 @@ begin
       wbInteger('Weight slider - Male', itU8, wbFlags([
         {0x01} 'Unknown 0',
         {0x02} 'Enabled'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Weight slider - Female', itU8, wbFlags([
         {0x01} 'Unknown 0',
         {0x02} 'Enabled'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbByteArray('Unknown', 2),
       wbInteger('Detection Sound Value', itU8),
       wbByteArray('Unknown', 1),
@@ -6731,7 +6731,7 @@ begin
         {0x04} 'Add Spell',
         {0x08} 'Unknown 3',
         {0x10} 'Add Perk'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbUnion('Teaches', wbBOOKTeachesDecider, [
         wbUnused(4),
         wbFormIDCk('Actor Value', [AVIF, NULL]),
@@ -6797,7 +6797,7 @@ begin
       {0x2000} 'Player Followers Can''t Travel Here',
       {0x4000} 'Unknown 15',
       {0x8000} 'Unknown 16'
-    ]), cpNormal, True, False, nil, wbCELLDATAAfterSet),
+    ]), cpNormal, True, False, nil, wbCELLDATAAfterSet).IncludeFlag(dfCollapsed, wbCollapseFlags),
 
     wbByteArray(VISI, 'PreVis Files Timestamp', 2).SetToStr(wbTimeStampToString),
     wbFormIDCk(RVIS, 'In PreVis File Of', [CELL]),
@@ -6833,7 +6833,7 @@ begin
         {0x00000100} 'Fog Power',
         {0x00000200} 'Fog Max',
         {0x00000400} 'Light Fade Distances'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbFloat('Near Height Mid'),
       wbFloat('Near Height Range'),
       wbByteColors('Fog Color High Near'),
@@ -6973,7 +6973,7 @@ begin
         {0x00000001} 'Rotate to Face Target',
         {0x00000002} 'Attach to Camera',
         {0x00000004} 'Inherit Rotation'
-      ]))
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ], cpNormal, True)
   ]);
 
@@ -7002,7 +7002,7 @@ begin
         {0x01} 'Allow Sounds When Animation',
         {0x02} 'Respawns',
         {0x04} 'Show Owner'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbFloat('Weight')
     ], cpNormal, True),
     wbKeywords,
@@ -7105,7 +7105,7 @@ begin
       {0x08} 'Charging',
       {0x10} 'Retarget Any Nearby Melee Target',
       {0x20} 'Unknown 5'
-    ]), cpNormal, True)
+    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags)
   ]);
 
   wbRecord(DIAL, 'Dialog Topic',
@@ -7125,7 +7125,7 @@ begin
         'Do All Before Repeating',
         'Unknown 1',
         'Unknown 2'
-      ]), cpNormal, True),
+      ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Category', itU8, wbEnum([
         {0} 'Player',
         {1} 'Command',
@@ -7297,7 +7297,7 @@ begin
       'Sliding',
       'Do Not Open in Combat Search',
       'No "To" Text'
-    ]), cpNormal, True),
+    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbLStringKC(ONAM, 'Alternate Text - Open', 0, cpTranslate),
     wbLStringKC(CNAM, 'Alternate Text - Close', 0, cpTranslate),
     wbRArrayS('Random teleport destinations', wbFormIDCk(TNAM, 'Destination', [CELL, WRLD]))
@@ -7440,7 +7440,7 @@ begin
           'Unknown 22',
           'Unknown 23',
           'Use Blood Geometry'
-        ])),
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbFloat('Fill/Texture Effect - Texture Scale (U)'),
         wbFloat('Fill/Texture Effect - Texture Scale (V)'),
         wbInteger('Scene Graph Emit Depth Limit (unused)', itU16)
@@ -7511,7 +7511,7 @@ begin
           'Unknown 22',
           'Unknown 23',
           'Use Blood Geometry (Weapons Only)'
-        ])),
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbFloat('Fill/Texture Effect - Texture Scale (U)'),
         wbFloat('Fill/Texture Effect - Texture Scale (V)')
       ])
@@ -7529,7 +7529,7 @@ begin
         'No Auto-Calc',
         '',
         'Extend Duration On Recast'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Cast Type', itU32, wbCastEnum),
       wbInteger('Enchantment Amount', itS32),
       wbInteger('Target Type', itU32, wbTargetEnum),
@@ -7560,7 +7560,7 @@ begin
       {0x20}'Unknown 6',
       {0x40}'Unknown 7',
       {0x80}'Unknown 8'
-    ]), cpNormal, True)
+    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags)
   ]);
 
   var wbFactionRank :=
@@ -7668,7 +7668,7 @@ begin
     wbInteger(FNAM, 'Flags', itU16, wbFlags([
       {0x0001} 'Unknown 0',
       {0x0002} 'Ignored By Sandbox'
-    ])),
+    ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbCITC,
     wbConditions,
     wbCOCT,
@@ -7694,13 +7694,13 @@ begin
       wbInteger(ENAM, 'Marker Index', itS32),
       wbStruct(NAM0, 'Disabled Entry Points', [
         wbByteArray('Unknown', 2),
-        wbInteger('Disabled Points', itU16, wbFurnitureEntryTypeFlags)
+        wbInteger('Disabled Points', itU16, wbFurnitureEntryTypeFlags).IncludeFlag(dfCollapsed, wbCollapseFlags)
       ])
       //wbFormIDCk(FNMK, 'Marker Keyword', [KYWD, NULL])
     ])),
     wbRArray('Marker Entry Points', wbStruct(FNPR, 'Marker', [
       wbInteger('Type', itU16, wbFurnitureAnimTypeEnum),
-      wbInteger('Entry Points', itU16, wbFurnitureEntryTypeFlags)
+      wbInteger('Entry Points', itU16, wbFurnitureEntryTypeFlags).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ])),
     wbString(XMRK, 'Marker Model'),
     wbSNAMMarkerParams,
@@ -7784,7 +7784,7 @@ begin
       {0x0001} 'No Specular Map',
       {0x0002} 'Facegen Textures',
       {0x0004} 'Has Model Space Normal Map'
-    ]), cpNormal, True),
+    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbString(MNAM, 'Material')
   ]).SetSummaryKey([2, 3]);
 
@@ -7802,7 +7802,7 @@ begin
       {0x10} 'Is Extra Part',
       {0x20} 'Use Solid Tint',
       {0x40} 'Uses Body Texture'
-    ]), cpNormal, True),
+    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbInteger(PNAM, 'Type', itU32, wbEnum([
       'Misc',
       'Face',
@@ -7884,7 +7884,7 @@ begin
       'Do Once',
       'Unknown 3',
       'Ignored by Sandbox'
-    ]), cpNormal, False),
+    ]), cpNormal, False).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbInteger(IDLC, 'Animation Count', itU8, nil, cpBenign),
     wbFloat(IDLT, 'Idle Timer Setting', cpNormal, False),
     wbArray(IDLA, 'Animations', wbFormIDCk('Animation', [IDLE]), 0, nil, wbIDLAsAfterSet, cpNormal, False),
@@ -7920,7 +7920,7 @@ begin
         {0x00800} 'Penetrates Geometry',
         {0x01000} 'Continuous Update',
         {0x02000} 'Seeks Target'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Type', itU16, wbEnum([], [
         $01, 'Missile',
         $02, 'Lobber',
@@ -7980,7 +7980,7 @@ begin
         {0x08} 'Inherit Radius from Spawn Spell',
         {0x10} 'Drop to Ground',
         {0x20} 'Taper Effectiveness by Proximity'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbFormIDCk('Effect', [SPEL, ENCH, NULL]),
       wbFormIDCk('Light', [LIGH, NULL]),
       wbFormIDCk('Impact Data Set', [IPDS, NULL]),
@@ -8144,7 +8144,7 @@ begin
         {0x00000100} 'No Controller Vibration',
         {0x00000200} 'Placed Object Persists',
         {0x00000400} 'Skip Underwater Tests'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Sound Level', itU32, wbSoundLevelEnum),
       wbFromVersion(70, wbFloat('Placed Object AutoFade Delay')),
       wbFromVersion(91, wbInteger('Stagger', itU32, wbEnum([
@@ -8312,7 +8312,7 @@ begin
         {0x00000008} 'Blur Radius Bit 2',
         {0x00000010} 'Blur Radius Bit 1',
         {0x00000020} 'Blur Radius Bit 0'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Unused', itU16),
       wbInteger('Radial Blur Ramp Down Count', itU32),
       wbInteger('Radial Blur Down Start Count', itU32),
@@ -8441,7 +8441,7 @@ begin
         wbInteger('Script Flags', itU16, wbFlags([
           'Run Immediately',
           'Replace Default'
-        ]))
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
       ]),
       wbUnion(EPFD, 'Data', wbEPFDDecider, [
         {0} wbByteArray('Unknown'),
@@ -8647,7 +8647,7 @@ begin
       {0x20000000} 'Unknown 39',
       {0x40000000} 'Unknown 30',
       {0x80000000} 'Hardcoded'
-    ])),
+    ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbInteger(NAM1, 'Type', itU32, wbEnum([
       'Derived Attribute',
       'Special (Attribute)',
@@ -8694,7 +8694,7 @@ begin
         {0x00000020} 'Start At Time Zero',
         {0x00000040} 'Don''t Reset Location Spring',
         {0x00000080} 'Don''t Reset Target Spring'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbStruct('Time Multipliers', [
         wbFloat('Player'),
         wbFloat('Target'),
@@ -8727,7 +8727,7 @@ begin
       {0x20} 'Unknown 5',
       {0x40} 'Randomize Paths',
       {0x80} 'Not Must Have Camera Shots'
-    ]), cpNormal, True),
+    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbRArray('Camera Shots', wbFormIDCk(SNAM, 'Camera Shot', [CAMS]))
   ]);
 
@@ -8736,7 +8736,7 @@ begin
     wbInteger(DNAM, 'Flags', itU8, wbFlags([
       'Allow Default Dialog',
       'Female'
-    ]), cpNormal, True)
+    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags)
   ]);
 
   wbRecord(MATT, 'Material Type', [
@@ -8749,7 +8749,7 @@ begin
       'Stair Material',
       'Arrows Stick',
       'Can Tunnel'
-    ], False)),
+    ], False)).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbFormIDCk(HNAM, 'Havok Impact Data Set', [IPDS]),
     wbString(ANAM, 'Breakable FX'),
     wbMODT
@@ -8770,7 +8770,7 @@ begin
       wbInteger('Sound Level', itU32, wbSoundLevelEnum),
       wbInteger('Flags', itU8, wbFlags([
         {0x01} 'No Decal Data'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Impact Result', itU8, wbEnum([
          {0} 'Default',
          {1} 'Destroy',
@@ -8810,7 +8810,7 @@ begin
         'Match PC Below Minimum Level',
         'Disable Combat Boundary',
         'Workshop'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Max Level', itS8)
     ], cpNormal, True)
   ]);
@@ -8935,7 +8935,7 @@ begin
     wbInteger(DNAM, 'Flags', itU32, wbFlags([
       'Message Box',
       'Delay Initial Display'
-    ]), cpNormal, True, False, nil, wbMESGDNAMAfterSet),
+    ]), cpNormal, True, False, nil, wbMESGDNAMAfterSet).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbInteger(TNAM, 'Display Time', itU32, nil, cpNormal, False, False, wbMESGTNAMDontShow),
     wbString(SNAM, 'SWF'),
     wbLStringKC(NNAM, 'Short Title', 0, cpTranslate),
@@ -9409,7 +9409,7 @@ begin
       {0x10} 'Unknown 5',
       {0x20} 'Ducks Current Track',
       {0x40} 'Doesn''t Queue'
-    ]), cpNormal, True),
+    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbStruct(PNAM, 'Data', [
       wbInteger('Priority', itU16),
       wbInteger('Ducking (dB)', itU16, wbDiv(100))
@@ -9506,7 +9506,7 @@ begin
       {0x01} 'Top-Level',
       {0x02} 'Blocking',
       {0x04} 'Exclusive'
-    ])),
+    ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbFormIDCk(SNAM, 'Starting Topic', [DIAL], False, cpNormal, True)
   ]).SetAddInfo(wbDLBRAddInfo);
 
@@ -9555,7 +9555,7 @@ begin
       'Use All Parents',
       'Parents Optional',
       'Item Slot'
-    ])),
+    ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbFormIDCk(ANAM, 'Condition Actor Value', [AVIF, NULL, FFFF])
   ]);
 
@@ -9585,7 +9585,7 @@ begin
         {0x20} 'Unknown 6',
         {0x40} 'Unknown 7',
         {0x80} 'Secret'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbFormIDCk('Association Type', [ASTP, NULL])
     ])
   ]);
@@ -9607,7 +9607,7 @@ begin
       {0x00000400} 'Unknown 10',
       {0x00000800} 'Disable Dialogue Camera',
       {0x00001000} 'No Follower Idle Chatter'
-    ])),
+    ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbRArray('Phases',
       wbRStruct('Phase', [
         wbEmpty(HNAM, 'Marker Phase Start', cpNormal, True),
@@ -9621,7 +9621,7 @@ begin
           {0x0001} 'Start - WalkAway Phase',
           {0x0002} 'Don''t Run End Scripts on Scene Jump',
           {0x0004} 'Start - Inherit In Templated Scenes'
-        ])),
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbStruct(SCQS, 'Set Parent Quest Stage', [
           wbInteger('On Start', itS16),
           wbInteger('On Completion', itS16)
@@ -9636,7 +9636,7 @@ begin
         'Optional',
         'Run Only Scene Packages',
         'No Command State'
-      ]), cpNormal, True),
+      ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger(DNAM, 'Behaviour Flags', itU32, wbFlags([
         'Death Pause',
         'Death End',
@@ -9646,7 +9646,7 @@ begin
         'Dialogue End',
         'OBS_COM Pause',
         'OBS_COM End'
-      ]), cpNormal, True, false, nil, nil, 26)
+      ]), cpNormal, True, false, nil, nil, 26).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ])),
     wbRArray('Actions', wbRStructSK([0, 1, 3, 4], 'Action', [
       wbInteger(ANAM, 'Type', itU16, wbEnum([
@@ -9709,7 +9709,7 @@ begin
         {0x10000000} 'NPC Negative Use Dialogue Subtype',
         {0x20000000} 'NPC Neutral Use Dialogue Subtype',
         {0x40000000} 'NPC Question Use Dialogue Subtype'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger(SNAM, 'Start Phase', itU32),
       wbInteger(ENAM, 'End Phase', itU32),
       wbRUnion('Type Specific Action', function(const aContainer: IwbContainerElementRef): Integer
@@ -9859,7 +9859,7 @@ begin
     wbString(FCHT, 'Female Child Title'),
     wbInteger(DATA, 'Flags', itU32, wbFlags([
       'Family Association'
-    ]))
+    ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
   ]);
 
   wbSPED := wbUnion(SPED, 'Movement Data', wbFormVersionDecider([28, 60, 104]), [
@@ -10181,7 +10181,7 @@ begin
         'Hit Effect Art',
         'Projectile',
         'Explosion'
-      ]))
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ], cpNormal, True)
   ]);
 
@@ -10196,7 +10196,7 @@ begin
       {0x0000010} 'Pause During Menus (Fade)',
       {0x0000020} 'Exclude from Player OPM Override',
       {0x0000040} 'Pause During Start Menu'
-    ]), cpNormal, True),
+    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbFormIDCk(PNAM, 'Parent Category', [SNCT]),
     wbFormIDCk(ONAM, 'Menu Slider Category', [SNCT]),
     wbInteger(VNAM, 'Static Volume Multiplier', itU16, wbDiv(65535)),
@@ -10217,7 +10217,7 @@ begin
         {0x20} 'Try Play on Controller',
         {0x40} 'Causes Ducking',
         {0x80} 'Avoids Ducking'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbByteArray('Unknown', 2),
       wbInteger('Reverb Send %', itU8)
     ]),
@@ -10272,7 +10272,7 @@ begin
       {0x00000001} 'Trigger Volume',
       {0x00000002} 'Sensor',
       {0x00000004} 'Navmesh Obstacle'
-    ]), cpNormal, True),
+    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbString(MNAM, 'Name', 0, cpNormal, True),
     wbInteger(INTV, 'Interactables Count', itU32, nil, cpNormal, True),
     wbArrayS(CNAM, 'Collides With', wbFormIDCk('Forms', [COLL]), 0, cpNormal, False)
@@ -10295,7 +10295,7 @@ begin
       'Playable',
       'Remapping Index',
       'Extended LUT'
-    ]), cpNormal, True),
+    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbConditions
   ]);
 
@@ -10347,7 +10347,7 @@ begin
         'Vertex Lighting',
         'Uniform Scaling',
         'Fit to Slope'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbUnused(3)
     ], cpNormal, True)
   ]);
@@ -10371,7 +10371,7 @@ begin
         {0x02} 'Sequence',
         {0x04} 'No Attacking',
         {0x04} 'Blocking'
-      ], True)),
+      ], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Animation Group Section', itU8{, wbIdleAnam}),
       wbInteger('Replay Delay', itU16)
     ], cpNormal, True),
@@ -10405,7 +10405,7 @@ begin
           {0x2000} 'Audio Output Override',
           {0x4000} 'Has Capture',
           {0x8000} 'Unknown 15'
-        ])),
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbInteger('Flags', itU16, wbFlags([   //Info groups
           {0x0001} 'Unknown 0', // Any changes to the idle group removes this flag
           {0x0002} 'Random',
@@ -10423,7 +10423,7 @@ begin
           {0x2000} 'Unknown 13', // Any changes to the idle group removes this flag
           {0x4000} 'Unknown 14', // Any changes to the idle group removes this flag
           {0x8000} 'Unknown 15'
-        ]))
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
       ]),
       wbInteger('Reset Hours', itU16, wbDiv(2730))
     ]),
@@ -10517,7 +10517,7 @@ begin
         {0x00000040} 'Unknown 7',
         {0x00000080} 'Unknown 8',
         {0x00000100} 'References Persist'
-      ]))
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ], cpNormal, True),
     wbEffectsReq
   ]);
@@ -10561,7 +10561,7 @@ begin
       {0x100} '',
       {0x200} '',
       {0x400} 'Ignored'
-    ])),
+    ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbLandNormals,
     wbLandHeights,
     wbLandColors,
@@ -10616,7 +10616,7 @@ begin
         {0x00080000} 'No Rim Lighting',
         {0x00100000} 'Ambient Only',
         {0x00200000} 'Unknown 21' // only in [001C7F0C] <RandomSpot01GR>
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbFloat('Falloff Exponent')
         .SetDefaultNativeValue(1),
       wbFloat('FOV')
@@ -10692,7 +10692,7 @@ begin
       {0x01} 'Calculate from all levels <= player''s level',
       {0x02} 'Calculate for each item in count',
       {0x04} 'Calculate All' {Still picks just one}
-    ]), cpNormal, True),
+    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbFormIDCk(LVLG, 'Use Global', [GLOB]),
     wbLLCT,
     wbRArrayS('Leveled List Entries',
@@ -10716,7 +10716,7 @@ begin
       {0x01} 'Calculate from all levels <= player''s level',
       {0x02} 'Calculate for each item in count',
       {0x04} 'Use All'
-    ]), cpNormal, True),
+    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbFormIDCk(LVLG, 'Use Global', [GLOB]),
     wbLLCT,
     wbRArrayS('Leveled List Entries',
@@ -10741,7 +10741,7 @@ begin
       {0x01} 'Calculate from all levels <= player''s level',
       {0x02} 'Calculate for each item in count',
       {0x04} 'Use All'
-    ]), cpNormal, True),
+    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbLLCT,
     wbRArrayS('Leveled List Entries',
       wbRStructSK([0], 'Leveled List Entry', [
@@ -10840,7 +10840,7 @@ begin
         {0x20000000}  'Unknown 30',
         {0x40000000}  'Unknown 31',
         {0x80000000}  'Unknown 32'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbFloat('Base Cost'),
       wbUnion('Assoc. Item', wbMGEFAssocItemDecider, [
         { 0} wbFormID('Unused', cpIgnore),
@@ -11016,7 +11016,7 @@ begin
         {0x20000000} 'Is Ghost',
         {0x40000000} 'Unknown 30',
         {0x80000000} 'Invulnerable'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('XP Value Offset', itS16, nil, cpNormal, True, nil{wbActorTemplateUseStats}),
       wbUnion('Level', wbACBSLevelDecider, [
         wbInteger('Level', itU16),
@@ -11203,7 +11203,7 @@ begin
     wbString(BNAM, 'Name'),
     wbInteger(PNAM, 'Flags', itU32, wbFlags([
       'Public'
-    ]))
+    ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
   ]));
 
   wbRecord(PACK, 'Package', [
@@ -11211,7 +11211,7 @@ begin
     wbVMADFragmentedPACK,
 
     wbStruct(PKDT, 'Pack Data', [
-      wbInteger('General Flags', itU32, wbPackageFlags),
+      wbInteger('General Flags', itU32, wbPackageFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Type', itU8, wbEnum ([], [
         18, 'Package',
         19, 'Package Template'
@@ -11233,7 +11233,7 @@ begin
         'Fast Walk'
       ])),
       wbByteArray('Unknown', 1),
-      wbInteger('Interrupt Flags', itU16, wbPKDTInterruptFlags),
+      wbInteger('Interrupt Flags', itU16, wbPKDTInterruptFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbByteArray('Unknown', 2)
     ], cpNormal, True),
 
@@ -11314,18 +11314,18 @@ begin
           wbInteger('Flags', itU32, wbFlags([
             'Repeat when Complete',
             'Unknown 1'
-          ]))
+          ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
         ]),
         wbString(PNAM, 'Procedure Type'),
-        wbInteger(FNAM, 'Flags', itU32, wbFlags(['Success Completes Package'])),
+        wbInteger(FNAM, 'Flags', itU32, wbFlags(['Success Completes Package'])).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbRArray('Data Input Indexes', wbInteger(PKC2, 'Index', itU8)),
         {>>> PFO2 should be single, there is only 1 PACK [00095F46] <PatrolAndHunt> in Skyrim.esm with 2xPFO2 <<<}
         wbRArray('Flags Override',
           wbStruct(PFO2, 'Data', [
-            wbInteger('Set General Flags', itU32, wbPackageFlags),
-            wbInteger('Clear General Flags', itU32, wbPackageFlags),
-            wbInteger('Set Interrupt Flags', itU16, wbPKDTInterruptFlags),
-            wbInteger('Clear Interrupt Flags', itU16, wbPKDTInterruptFlags),
+            wbInteger('Set General Flags', itU32, wbPackageFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
+            wbInteger('Clear General Flags', itU32, wbPackageFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
+            wbInteger('Set Interrupt Flags', itU16, wbPKDTInterruptFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
+            wbInteger('Clear Interrupt Flags', itU16, wbPKDTInterruptFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
             wbInteger('Preferred Speed Override', itU8, wbEnum([
               'Walk',
               'Jog',
@@ -11383,7 +11383,7 @@ begin
       {0x00400000} 'Can Apply Data To Non-Aliased Refs',
       {0x00800000} 'Is Companion',
       {0x01000000} 'Optional All Scenes'
-    ]), cpNormal, True);
+    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags);
 
   wbRecord(QUST, 'Quest',
     wbFlags(wbFlagsList([
@@ -11804,7 +11804,7 @@ begin
         {0x20000000} 'Allow Multiple Membrane Shaders',
         {0x40000000} 'Can Dual Wield',
         {0x80000000} 'Avoids Roads'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbFloat('Acceleration Rate'),
       wbFloat('Deceleration Rate'),
       wbInteger('Size', itU32, wbEnum([
@@ -11847,7 +11847,7 @@ begin
         {0x00100000} 'Use Quadruped Controller',
         {0x00200000} 'Low Priority Pushable',
         {0x00400000} 'Cannot Use Playable Items'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbFloat('Unknown Float1'),
       wbFloat('Unknown Float2'),
       wbByteArray('Unknown Bytes3',4),
@@ -11943,7 +11943,7 @@ begin
       wbFormIDCk(MTYP, 'Movement Type', [MOVT]),
       wbSPED
     ])),
-    wbInteger(VNAM, 'Equipment Flags', itU32, wbEquipType),
+    wbInteger(VNAM, 'Equipment Flags', itU32, wbEquipType).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbRArray('Equip Slots', wbEquipSlot),
     wbFormIDCk(UNWP, 'Unarmed Weapon', [WEAP]),
 
@@ -12194,7 +12194,7 @@ begin
           'Unknown 6',
           'Has Image Space',
           'Has Lighting Template'
-        ])),
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbByteArray('Unknown', 2)
       ]),
       wbFormIDCk(LNAM, 'Lighting Template', [LGTM]),
@@ -12230,7 +12230,7 @@ begin
           wbInteger('Type', itU32, wbFlags([
             'Reflection',
             'Refraction'
-          ]))
+          ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
         ], cpNormal, False, nil, 1)
       ),
     wbStruct(XALP, 'Alpha', [
@@ -12246,7 +12246,7 @@ begin
         'No Alarm',
         'No Load Screen',
         'Relative Position'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbFormIDCk('Transition Interior', [CELL, NULL])
     ]),
     wbFormIDCk(XTNM, 'Teleport Loc Name', [MESG]),
@@ -12278,7 +12278,7 @@ begin
       wbFloat('Frequency'),
       wbFloat('Min Weak Distance'),
       wbFloat('Max Weak Distance'),
-      wbInteger('Flags', itU32, wbFlags(['Ignores Distance Checks']))
+      wbInteger('Flags', itU32, wbFlags(['Ignores Distance Checks'])).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ]),
     wbStruct(XBSD, 'Spline', [
       wbFloat('Slack'),
@@ -12307,7 +12307,7 @@ begin
     wbRStruct('Activate Parents', [
       wbInteger(XAPD, 'Flags', itU8, wbFlags([
         'Parent Activate Only'
-      ], True)),
+      ], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbRArrayS('Activate Parent Refs',
         wbStructSK(XAPR, [0], 'Activate Parent Ref', [
           wbFormIDCk('Reference', sigReferences),
@@ -12340,7 +12340,7 @@ begin
       ])),
       wbUnused(3),
       wbFormIDCkNoReach('Key', [KEYM, NULL]),
-      wbInteger('Flags', itU8, wbFlags(['', '', 'Leveled Lock'])),
+      wbInteger('Flags', itU8, wbFlags(['', '', 'Leveled Lock'])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbUnused(3),
       wbUnknown
     ], cpNormal, False, nil, 4),
@@ -12393,7 +12393,7 @@ begin
         {0x02} 'Can Travel To',
         {0x04} '"Show All" Hidden',
         {0x08} 'Use Location Name'
-      ]), cpNormal, True),
+      ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbFULLReq,
       wbStruct(TNAM, '', [
         wbInteger('Type', itU8, wbEnum([], [
@@ -12589,7 +12589,7 @@ begin
           {5}'Z +/-',
           {6}'Tree',
           {7}'Huge Rock'
-        ])),
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbInteger('Radius wrt Parent', itU16),
         wbInteger('Radius', itU16),
         wbFloat('Min Height'),
@@ -12671,7 +12671,7 @@ begin
       {0x20000000} 'Unknown 30',
       {0x40000000} 'Unknown 31',
       {0x80000000} 'Unknown 32'
-    ])),
+    ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbInteger('Type', itU32, wbEnum([
       {0} 'Spell',
       {1} 'Disease',
@@ -13077,7 +13077,7 @@ begin
           wbInteger('Flags', itU32, wbFlags([
             {0x01} 'Rotates',
             {0x02} 'Shrinks When Occluded'
-          ]))
+          ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
         ])
       ]),
       cpNormal, False, nil, wbLENSAfterSet
@@ -13447,7 +13447,7 @@ begin
       {0x01} 'Dangerous',
       {0x02} 'Unknown 1',
       {0x04} 'Directional Sound'
-    ]), cpNormal, True),
+    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbFormIDCk(TNAM, 'Material (unused)', [MATT]),
     wbFormIDCk(SNAM, 'Open Sound', [SNDR, NULL]),
     wbFormIDCk(XNAM, 'Consume Spell', [SPEL]),
@@ -13607,7 +13607,7 @@ begin
         {0x20000000} 'Unknown 30',
         {0x40000000} 'Unknown 31',
         {0x80000000} 'Unknown 32'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Capacity', itU16),
       wbInteger('Animation Type', itU8, wbEnum([
         'HandToHandMelee',

@@ -3629,7 +3629,7 @@ begin
       {0x10} '',
       {0x20} '',
       {0x40} 'Unknown 6'
-    ]));
+    ])).IncludeFlag(dfCollapsed, wbCollapseFlags);
 
   var wbSoundLevelEnum := wbEnum([
      'None',
@@ -6385,7 +6385,7 @@ end;
       '',
       'User',
       'Struct'
-    ])),
+    ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbArray('Fields', wbStruct('Field', [
       wbInteger('Name', itS32, wbStringTableLookup),
       wbInteger('Type', itS32, wbStringTableLookup),
@@ -9279,7 +9279,7 @@ end;
       {0x20}'Unknown 6',
       {0x40}'Unknown 7',
       {0x80}'Unknown 8'
-    ]), cpNormal, True)
+    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags)
   ]);
 
 
@@ -11514,7 +11514,7 @@ end;
         {0x20} 'Unknown 6',
         {0x40} 'Unknown 7',
         {0x80} 'Secret'
-      ])),
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbFormIDCk('Association Type', [ASTP, NULL])
     ])
   ]);
@@ -11970,7 +11970,7 @@ end;
     wbString(FCHT, 'Female Child Title'),
     wbInteger(DATA, 'Flags', itU32, wbFlags([
       'Family Association'
-    ]))
+    ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
   ]);
 
   var wbSPEDRotationSpeedAngles := function(aName: string = 'Unknown'): IwbStructDef
@@ -12090,7 +12090,7 @@ end;
         'Hit Effect Art',
         'Projectile',
         'Explosion'
-      ]))
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ], cpNormal, True)
   ]);
 
@@ -12349,7 +12349,7 @@ end;
           1, 'Food item',
           8, 'References Persist'
         ], False, 9))
-      )
+      ).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ]).SetRequired,
     wbEffects
   ]);*)
@@ -12708,7 +12708,7 @@ end;
       {0x0040} '',
       {0x0080} '',
       {0x0100} 'Do All Before Repeating'
-    ]), cpNormal, True),
+    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbLLCT,
     wbRArrayS('Leveled List Entries',
       wbRStructSK([0], 'Leveled List Entry', [
@@ -13273,7 +13273,7 @@ end;
                 {0x00002000} {13} 'Use GLOB Cool Down Timer',
                 {0x00004000} {14} 'Fight Back',
                 {0x00008000} {15} 'Disallow Threat Backdown'
-        ])),
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
         { 16} wbFormIDCk('Reaction Radius GLOB', [NULL, GLOB]),
         { 20} wbFormIDCk('Exit Radius GLOB', [NULL, GLOB]),
         { 24} wbFormIDCk('Max Number Of Times To React GLOB', [NULL, GLOB]),
@@ -16992,7 +16992,7 @@ end;
         4, 'Is A Radio',
         5, 'Allow Water Displacements'
       ], False, 6))
-    ).SetRequired,
+    ).SetRequired.IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbInteger(JNAM, 'Activation Angle - For Player', itU16)
       .SetDefaultNativeValue(360)
       .SetRequired,
@@ -17055,7 +17055,7 @@ end;
       'Normal',
       'Monochromatic',
       'Alpha Fill'
-    ]))
+    ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
   ]).SetSummaryKey([1]);
 
   {subrecords checked against Starfield.esm}
@@ -18242,7 +18242,7 @@ end;
           2, 'Entered System',
          31, 'Unknown 31'
         ]))
-      ),
+      ).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbMarkerReq(BDED)
     ]),
 

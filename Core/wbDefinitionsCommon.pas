@@ -6022,7 +6022,7 @@ begin
         {1} 'Activate',
         {2} 'Open',
         {3} 'Open by Default'
-      ]));
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags);
 
   wbAlternateTexture :=
     wbStructSK([0, 2], 'Alternate Texture', [
@@ -6053,7 +6053,7 @@ begin
     wbStruct(XCLC, 'Grid', [
       wbInteger('X', itS32),
       wbInteger('Y', itS32),
-      wbInteger('Land Flags', itU8, wbLandFlags),
+      wbInteger('Land Flags', itU8, wbLandFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbUnused(3)
     ], cpNormal, False, nil, 2)
     .SetSummaryKeyOnValue([0, 1, 2])
