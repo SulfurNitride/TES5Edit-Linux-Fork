@@ -4935,9 +4935,10 @@ begin
         'Resist All Except'
       ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbUnused(2)
-    ])
-    .SetSummaryKeyOnValue([0,2])
-    .SetSummaryPrefixSuffixOnValue(0,'Health ',' '),
+    ]).SetSummaryKeyOnValue([0, 2])
+      .SetSummaryPrefixSuffixOnValue(0,'Health ',' ')
+      .SetSummaryPrefixSuffixOnValue(2,'{','}')
+      .IncludeFlag(dfCollapsed, wbCollapseDestruction),
     wbArrayS(DAMC, 'Resistances', wbStructSK([0], 'Resistance', [
       wbFormIDCk('Damage Type', [DMGT]),
       wbInteger('Value', itU32),
@@ -4983,7 +4984,8 @@ begin
           .IncludeFlag(dfCollapsed, wbCollapseModels),
         wbEmpty(DSTF, 'End Marker', cpNormal, True)
       ], [], cpNormal, False, nil)
-      .SetSummaryKey([0,2]).IncludeFlag(dfSummaryMembersNoName)
+        .SetSummaryKey([0, 2])
+        .IncludeFlag(dfSummaryMembersNoName)
     ).SetCountPath('...\DEST - Header\Stage Count')
   ], [], cpNormal, False, nil)
   .SetSummaryKey([3]);
@@ -4994,7 +4996,9 @@ begin
       wbInteger('Count', itU8),
       wbInteger('VATS Targetable', itU8, wbBoolEnum),
       wbUnused(2)
-    ]),
+    ]).SetSummaryKeyOnValue([0])
+      .SetSummaryPrefixSuffixOnValue(0,'Health ','')
+      .IncludeFlag(dfCollapsed, wbCollapseDestruction),
     wbRArray('Stages',  // Begin Stage Array
       wbRStruct('Stage', [ // Begin Stage RStruct
         wbStruct(DSTD, 'Destruction Stage Data', [ // Begin DSTD
@@ -5010,7 +5014,13 @@ begin
           wbFormIDCk('Explosion', [EXPL, NULL]),
           wbFormIDCk('Debris', [DEBR, NULL]),
           wbInteger('Debris Count', itS32)
-        ], cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseDestruction), // End DSTD
+        ], cpNormal, True)
+        .SetSummaryKeyOnValue([0,5,6])
+        .SetSummaryPrefixSuffixOnValue(0,'Health ','%')
+        .SetSummaryDelimiterOnValue(', ')
+        .IncludeFlagOnValue(dfSummaryExcludeNULL)
+        .IncludeFlagOnValue(dfSummaryMembersNoName)
+        .IncludeFlag(dfCollapsed, wbCollapseDestruction), // End DSTD
         wbRStructSK([0], 'Model', [ // Begin DMDL
           wbString(DMDL, 'Model FileName')
         ]), // End DMDL
@@ -5019,6 +5029,8 @@ begin
         wbDMDS,
         wbEmpty(DSTF, 'End Marker', cpNormal, True)
       ]) // End Stage RStruct
+        .SetSummaryKey([0, 1])
+        .IncludeFlag(dfSummaryMembersNoName)
     ) // End Stage Array
   ]);
 
