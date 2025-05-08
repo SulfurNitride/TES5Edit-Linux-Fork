@@ -875,58 +875,6 @@ begin
   Result := Succ(Integer(ParamType));
 end;
 
-function wbConditionStringToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-begin
-  Result := '';
-  case aType of
-    ctToEditValue, ctToNativeValue, ctToSortKey, ctToStr, ctToSummary: begin
-      if not Assigned(aElement) then
-        Exit;
-
-      var Container := GetContainerFromUnion(aElement) as IwbContainerElementRef;
-      if not Assigned(Container) then
-        Exit;
-
-      if aElement = Container.Elements[5] then begin
-        case aType of
-          ctToEditValue, ctToNativeValue, ctToSummary: Result := Container.ElementEditValues['..\CIS1'];
-        else
-          Result := Container.ElementValues['..\CIS1'];
-        end;
-      end;
-
-      if aElement = Container.Elements[6] then begin
-        case aType of
-          ctToEditValue, ctToNativeValue, ctToSummary: Result := Container.ElementEditValues['..\CIS2'];
-        else
-          Result := Container.ElementValues['..\CIS2'];
-        end;
-      end;
-    end;
-    ctCheck, ctEditInfo, ctEditType, ctLinksTo: Result := '';
-  else
-    Result := aInt.ToString;
-  end;
-end;
-
-function wbConditionStringToInt(const aString: string; const aElement: IwbElement): Int64;
-begin
-  Result := 0;
-
-  if not Assigned(aElement) then
-    Exit;
-
-  var Container := GetContainerFromUnion(aElement) as IwbContainerElementRef;
-  if not Assigned(Container) then
-    Exit;
-
-  if aElement = Container.Elements[5] then
-    Container.ElementEditValues['..\CIS1'] := aString;
-
-  if aElement = Container.Elements[6] then
-    Container.ElementEditValues['..\CIS2'] := aString;
-end;
-
 function wbConditionAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 var
   Container  : IwbContainer;
@@ -6048,7 +5996,7 @@ end;
   var wbConditionParameters := [
     {0}  wbByteArray('Unknown', 4).IncludeFlag(dfZeroSortKey),
     {1}  wbByteArray('None', 4, cpIgnore).IncludeFlag(dfZeroSortKey),
-    {2}  wbInteger('String', itU32, wbConditionStringToStr, wbConditionStringToInt),
+    {2}  wbInteger('String Hash', itU32),
     {3}  wbInteger('Integer', itS32),
     {4}  wbFloat('Float'),
     {5}  wbFormIDCkNoReach('Actor', [ACHR,PLYR,REFR,TRGT], True),

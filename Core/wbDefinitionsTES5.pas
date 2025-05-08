@@ -170,12 +170,12 @@ type
 	  {1} ptNone,
     {2} ptFloat,
 	  {3} ptInteger,
-    {4} ptAlias,
-	  {5} ptEvent,
-	  {6} ptPackdata,
-	  {7} ptQuestStage,
-	  {8} ptVariableName,
-	  {9} ptVATSValueParam,
+    {4} ptString,
+    {5} ptAlias,
+	  {6} ptEvent,
+	  {7} ptPackdata,
+	  {8} ptQuestStage,
+    {9} ptVATSValueParam,
 
 	  //Enums
 	  {10} ptActorValue,         //wbActorValueEnum
@@ -270,7 +270,7 @@ const
     (Index:  48; Name: 'GetGold'),
     (Index:  49; Name: 'GetSleeping'),
     (Index:  50; Name: 'GetTalkedToPC'),
-    (Index:  53; Name: 'GetScriptVariable'; ParamType1: ptReference; ParamType2: ptVariableName),
+    (Index:  53; Name: 'GetScriptVariable'; ParamType1: ptReference; ParamType2: ptString),
     (Index:  56; Name: 'GetQuestRunning'; ParamType1: ptQuest),
     (Index:  58; Name: 'GetStage'; ParamType1: ptQuest),
     (Index:  59; Name: 'GetStageDone'; ParamType1: ptQuest; ParamType2: ptQuestStage),
@@ -291,7 +291,7 @@ const
     (Index:  74; Name: 'GetGlobalValue'; ParamType1: ptGlobal),
     (Index:  75; Name: 'IsSnowing'),
     (Index:  77; Name: 'GetRandomPercent'),
-    (Index:  79; Name: 'GetQuestVariable'; ParamType1: ptQuest; ParamType2: ptVariableName),
+    (Index:  79; Name: 'GetQuestVariable'; ParamType1: ptQuest; ParamType2: ptString),
     (Index:  80; Name: 'GetLevel'),
     (Index:  81; Name: 'IsRotating'),
     (Index:  84; Name: 'GetDeadCount'; ParamType1: ptActorBase),
@@ -460,7 +460,7 @@ const
     (Index: 444; Name: 'GetInCurrentLocFormList'; ParamType1: ptFormList),
     (Index: 445; Name: 'GetInZone'; ParamType1: ptEncounterZone),
     (Index: 446; Name: 'GetVelocity'; ParamType1: ptAxis),
-    (Index: 447; Name: 'GetGraphVariableFloat'; ParamType1: ptVariableName),
+    (Index: 447; Name: 'GetGraphVariableFloat'; ParamType1: ptString),
     (Index: 448; Name: 'HasPerk'; ParamType1: ptPerk; ParamType2: ptInteger),
     (Index: 449; Name: 'GetFactionRelation'; ParamType1: ptActor),
     (Index: 450; Name: 'IsLastIdlePlayed'; ParamType1: ptIdleForm),
@@ -563,8 +563,8 @@ const
     (Index: 625; Name: 'IsLocationLoaded'; ParamType1: ptLocation),
     (Index: 626; Name: 'IsLocAliasLoaded'; ParamType1: ptAlias),
     (Index: 627; Name: 'IsDualCasting'),
-    (Index: 629; Name: 'GetVMQuestVariable'; ParamType1: ptQuest; ParamType2: ptVariableName),
-    (Index: 630; Name: 'GetVMScriptVariable'; ParamType1: ptReference; ParamType2: ptVariableName),
+    (Index: 629; Name: 'GetVMQuestVariable'; ParamType1: ptQuest; ParamType2: ptString),
+    (Index: 630; Name: 'GetVMScriptVariable'; ParamType1: ptReference; ParamType2: ptString),
     (Index: 631; Name: 'IsEnteringInteractionQuick'),
     (Index: 632; Name: 'IsCasting'),
     (Index: 633; Name: 'GetFlyingState'),
@@ -593,7 +593,7 @@ const
     (Index: 672; Name: 'IsAttacking'),
     (Index: 673; Name: 'IsPowerAttacking'),
     (Index: 674; Name: 'IsLastHostileActor'),
-    (Index: 675; Name: 'GetGraphVariableInt'; ParamType1: ptVariableName),
+    (Index: 675; Name: 'GetGraphVariableInt'; ParamType1: ptString),
     (Index: 676; Name: 'GetCurrentShoutVariation'),
     (Index: 678; Name: 'ShouldAttackKill'; ParamType1: ptActor),
     (Index: 680; Name: 'GetActivatorHeight'),
@@ -925,59 +925,6 @@ begin
   finally
     FreeAndNil(EditInfos);
   end;
-end;
-
-function wbConditionStringToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-begin
-  case aType of
-    ctToStr, ctToSummary, ctToSortKey, ctToEditValue, ctToNativeValue: begin
-      Result := '';
-      if not Assigned(aElement) then
-        Exit;
-
-      var Container := GetContainerFromUnion(aElement) as IwbContainerElementRef;
-      if not Assigned(Container) then
-        Exit;
-
-      if aElement = Container.Elements[5] then begin
-        case aType of
-          ctToEditValue, ctToNativeValue, ctToSummary: Result := Container.ElementEditValues['..\CIS1'];
-        else
-          Result := Container.ElementValues['..\CIS1'];
-        end;
-      end;
-
-      if aElement = Container.Elements[6] then begin
-        case aType of
-          ctToEditValue, ctToNativeValue, ctToSummary: Result := Container.ElementEditValues['..\CIS2'];
-        else
-          Result := Container.ElementValues['..\CIS2'];
-        end;
-      end;
-    end;
-    ctCheck, ctEditType, ctEditInfo, ctLinksTo:
-      Result := '';
-  else
-    Result := aInt.ToString;
-  end;
-end;
-
-function wbConditionStringToInt(const aString: string; const aElement: IwbElement): Int64;
-begin
-  Result := 0;
-
-  if not Assigned(aElement) then
-    Exit;
-
-  var Container := GetContainerFromUnion(aElement) as IwbContainerElementRef;
-  if not Assigned(Container) then
-    Exit;
-
-  if aElement = Container.Elements[5] then
-    Container.ElementEditValues['..\CIS1'] := aString;
-
-  if aElement = Container.Elements[6] then
-    Container.ElementEditValues['..\CIS2'] := aString;
 end;
 
 function wbConditionVATSValueParamDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
@@ -4411,11 +4358,11 @@ begin
     {1} wbByteArray('None', 4, cpIgnore).IncludeFlag(dfZeroSortKey),
     {2} wbFloat('Float'),
     {3} wbInteger('Integer', itS32),
-    {4} wbInteger('Alias', itS32, wbConditionAliasToStr, wbStrToAlias),
-    {5} wbInteger('Event', itU32, wbConditionEventToStr, wbConditionEventToInt),
-    {6} wbInteger('Packdata ID', itU32),
-    {7} wbInteger('Quest Stage', itS32, wbConditionQuestStageToStr, wbQuestStageToInt),
-    {8} wbInteger('Variable Name', itU32, wbConditionStringToStr, wbConditionStringToInt),
+    {4} wbInteger('String Hash', itU32),
+    {5} wbInteger('Alias', itS32, wbConditionAliasToStr, wbStrToAlias),
+    {6} wbInteger('Event', itU32, wbConditionEventToStr, wbConditionEventToInt),
+    {7} wbInteger('Packdata ID', itU32),
+    {8} wbInteger('Quest Stage', itS32, wbConditionQuestStageToStr, wbQuestStageToInt),
     {9} wbUnion('VATS Value Param', wbConditionVATSValueParamDecider, wbConditionVATSValueParameters),
 
     //Enums
