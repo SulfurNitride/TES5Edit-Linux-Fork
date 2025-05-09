@@ -3052,6 +3052,8 @@ begin
                     wbProgress('');
                     Assert(Assigned(MainRecord));
                     MainRecord.Assign(Low(Integer), nil, False);
+                    if not Assigned(MainRecord.ElementByName['Leveled List Entries']) then
+                      MainRecord.Add('Leveled List Entries', True);
                     LeveledListEntries := MainRecord.ElementByName['Leveled List Entries'] as IwbContainerElementRef;
                     Assert(Assigned(LeveledListEntries));
                     Assert(LeveledListEntries.ElementCount = 1);

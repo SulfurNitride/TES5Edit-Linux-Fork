@@ -2783,7 +2783,7 @@ begin
          .IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbRArrayS('Leveled List Entries',
       wbLeveledListEntry('Creature', [CREA, LVLC, NPC_])
-    ).SetRequired,
+    ),
     wbSCRI,
     wbFormIDCk(TNAM, 'Creature template', [CREA, NPC_])
   ], True).SetSummaryKey([3])
@@ -2800,7 +2800,7 @@ begin
          .IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbRArrayS('Leveled List Entries',
       wbLeveledListEntry('Item', [ALCH, AMMO, APPA, ARMO, BOOK, CLOT, INGR, KEYM, LIGH, LVLI, MISC, SGST, SLGM, WEAP])
-    ).SetRequired,
+    ),
     wbUnused(DATA, 1)
   ]).SetSummaryKey([3])
     .SetAfterLoad(wbLVLAfterLoad);
@@ -2817,7 +2817,7 @@ begin
          .IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbRArrayS('Leveled List Entries',
       wbLeveledListEntry('Spell', [LVSP, SPEL])
-    ).SetRequired
+    )
   ]).SetSummaryKey([3])
     .SetAfterLoad(wbLVLAfterLoad);
 
