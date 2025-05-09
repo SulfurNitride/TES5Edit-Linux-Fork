@@ -649,11 +649,10 @@ begin
     Exit;
 
   if wbBeginInternalEdit then try
-    var lValue := aElement.NativeValue;
-    if lValue > 10000 then
-      lValue := 10000;
-    if lValue < 100 then
-      lValue := 100;
+    if aElement.NativeValue > 10000 then
+      aElement.NativeValue := 10000;
+    if aElement.NativeValue < 100 then
+      aElement.NativeValue := 100;
   finally
     wbEndInternalEdit;
   end;
@@ -665,9 +664,8 @@ begin
     Exit;
 
   if wbBeginInternalEdit then try
-    var lValue := aElement.NativeValue;
-    if lValue > 3 then
-      lValue := 0;
+    if aElement.NativeValue > 3 then
+      aElement.NativeValue := 0;
   finally
     wbEndInternalEdit;
   end;
