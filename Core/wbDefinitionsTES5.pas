@@ -4358,7 +4358,7 @@ begin
     {1} wbByteArray('None', 4, cpIgnore).IncludeFlag(dfZeroSortKey),
     {2} wbFloat('Float'),
     {3} wbInteger('Integer', itS32),
-    {4} wbInteger('String Hash', itU32),
+    {4} wbInteger('String Hash', itU32, nil, nil, cpIgnore),
     {5} wbInteger('Alias', itS32, wbConditionAliasToStr, wbStrToAlias),
     {6} wbInteger('Event', itU32, wbConditionEventToStr, wbConditionEventToInt),
     {7} wbInteger('Packdata ID', itU32),
@@ -4421,7 +4421,7 @@ begin
   wbConditions :=
     wbRArray('Conditions',
       wbRStructSK([0], 'Condition', [
-      {0} wbStructSK(CTDA, [3, 5, 6], '', [
+      {0} wbStructSK(CTDA, [3], '', [
           {0} wbInteger('Type', itU8, wbConditionTypeToStr, wbConditionTypeToInt).SetAfterSet(wbConditionTypeAfterSet),
           {1} wbUnused(3),
           {2} wbUnion('Comparison Value', wbConditionCompValueDecider, [
