@@ -12546,8 +12546,7 @@ end;
         wbConditions
       ]).SetSummaryMemberMaxDepth(0, 1)
         .IncludeFlag(dfCollapsed, wbCollapseLeveledItems)
-    ).SetCountPath(LLCT)
-     .SetRequired,
+    ).SetCountPath(LLCT),
     wbFilterKeywordChances,
     wbLStringKC(ONAM, 'Override Name', 0, cpTranslate),
     wbGenericModel(True)
@@ -12590,8 +12589,7 @@ end;
         wbConditions
       ]).SetSummaryMemberMaxDepth(0, 1)
         .IncludeFlag(dfCollapsed, wbCollapseLeveledItems)
-    ).SetCountPath(LLCT)
-     .SetRequired,
+    ).SetCountPath(LLCT),
     wbFilterKeywordChances,
     wbFormIDCk(LVSG, 'Epic Loot Chance', [GLOB]),
     wbByteColors(LIMC, 'Marker Color'),
@@ -12636,8 +12634,7 @@ end;
         wbConditions.IncludeFlag(dfSummaryMembersNoName)
       ]).SetSummaryMemberMaxDepth(0, 1)
         .IncludeFlag(dfCollapsed, wbCollapseLeveledItems)
-    ).SetCountPath(LLCT)
-     .SetRequired,
+    ).SetCountPath(LLCT),
     //wbFilterKeywordChances,
     //wbLStringKC(ONAM, 'Override Name', 0, cpTranslate)
     wbGenericModel(True),
@@ -12676,7 +12673,6 @@ end;
       ]).SetSummaryMemberMaxDepth(0, 1)
         .IncludeFlag(dfCollapsed, wbCollapseLeveledItems)
     ).SetCountPath(LLCT)
-     .SetRequired
   ]);
   (**)
 
@@ -17374,8 +17370,7 @@ end;
         wbConditions
       ]).SetSummaryMemberMaxDepth(0, 1)
         .IncludeFlag(dfCollapsed, wbCollapseLeveledItems)
-    ).SetCountPath(LLCT)
-     .SetRequired,
+    ).SetCountPath(LLCT),
     wbFilterKeywordChances,
     wbGenericModel(True)
   ]);
@@ -17957,7 +17952,6 @@ end;
       ]).SetSummaryMemberMaxDepth(0, 1)
         .IncludeFlag(dfCollapsed, wbCollapseLeveledItems)
     ).SetCountPath(LLCT)
-     .SetRequired
   ]);
 
   {subrecords checked against Starfield.esm}
