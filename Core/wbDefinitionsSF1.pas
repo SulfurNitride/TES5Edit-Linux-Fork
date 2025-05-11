@@ -5996,7 +5996,7 @@ end;
   var wbConditionParameters := [
     {0}  wbByteArray('Unknown', 4).IncludeFlag(dfZeroSortKey),
     {1}  wbByteArray('None', 4, cpIgnore).IncludeFlag(dfZeroSortKey),
-    {2}  wbInteger('String Hash', itU32, nil, nil, cpIgnore),
+    {2}  wbInteger('String', itU32, wbConditionStringToStr, wbConditionStringToInt, cpIgnore),
     {3}  wbInteger('Integer', itS32),
     {4}  wbFloat('Float'),
     {5}  wbFormIDCkNoReach('Actor', [ACHR,PLYR,REFR,TRGT], True),
@@ -6086,7 +6086,7 @@ end;
   var wbConditions :=
     wbRArray('Conditions',
       wbRStructSK([0], 'Condition', [
-      {0} wbStructSK(CTDA, [3], '', [
+      {0} wbStructSK(CTDA, [3,5,6], '', [
           {0} wbInteger('Type', itU8, wbConditionTypeToStr, wbConditionTypeToInt).SetAfterSet(wbConditionTypeAfterSet),
           {1} wbUnused(3),
           {2} wbUnion('Comparison Value', wbConditionCompValueDecider, [

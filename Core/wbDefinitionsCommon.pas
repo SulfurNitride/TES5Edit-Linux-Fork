@@ -266,8 +266,9 @@ function wbTryGetContainingMainRecord(const aElement: IwbElement; out aMainRecor
 function wbTryGetMainRecord(const aElement: IwbElement; out aMainRecord: IwbMainRecord; aSignature: string = ''): Boolean;
 function wbTrySetContainer(const aElement: IwbElement; aType: TwbCallbackType; out aContainer: IwbContainerElementRef): Boolean;
 
-{>>> To Integer Callbacks <<<} //15
+{>>> To Integer Callbacks <<<} //17
 function Sig2Int(aSignature: TwbSignature): Cardinal; inline;
+function wbConditionStringToInt(const aString: string; const aElement: IwbElement): Int64;
 function wbConditionTypeToInt(const aString: string; const aElement: IwbElement): Int64;
 function wbQuestStageToInt(const aString: string; const aElement: IwbElement): Int64;
 function wbEdgeToInt(aEdge: Integer; const aString: string; const aElement: IwbElement): Int64;
@@ -283,13 +284,14 @@ function wbVertexToInt1(const aString: string; const aElement: IwbElement): Int6
 function wbVertexToInt2(const aString: string; const aElement: IwbElement): Int64;
 function wbWeatherCloudSpeedToInt(const aString: string; const aElement: IwbElement): Int64;
 
-{>>> To String Callbacks <<<} //35
+{>>> To String Callbacks <<<} //36
 procedure wbABGRToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 function wbAliasToStr(aInt: Int64; const aQuestRef: IwbElement; aType: TwbCallbackType): string;
 procedure wbBGRAToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 function wbClmtMoonsPhaseLength(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbClmtTime(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 procedure wbConditionToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+function wbConditionStringToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbConditionTypeToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 procedure wbCrowdPropertyToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 function wbEdgeToStr(aEdge: Integer; aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
@@ -2015,11 +2017,29 @@ begin
   Result := (aType = ctToSummary) and Supports(aElement, IwbContainerElementRef, aContainer);
 end;
 
-{>>> To Integer Callbacks <<<} //16
+{>>> To Integer Callbacks <<<} //17
 
 function Sig2Int(aSignature: TwbSignature): Cardinal; inline;
 begin
   Result := PCardinal(@aSignature)^;
+end;
+
+function wbConditionStringToInt(const aString: string; const aElement: IwbElement): Int64;
+begin
+  Result := 0;
+
+  if not Assigned(aElement) then
+    Exit;
+
+  var lContainer := GetContainerFromUnion(aElement) as IwbContainerElementRef;
+  if not Assigned(lContainer) then
+    Exit;
+
+  if aElement = lContainer.Elements[5] then
+    lContainer.ElementEditValues['..\CIS1'] := aString;
+
+  if aElement = lContainer.Elements[6] then
+    lContainer.ElementEditValues['..\CIS2'] := aString;
 end;
 
 function wbConditionTypeToInt(const aString: string; const aElement: IwbElement): Int64;
@@ -2175,7 +2195,7 @@ begin
   Result := Min(Round(f), 254);
 end;
 
-{>>> To String Callbacks <<<} //34
+{>>> To String Callbacks <<<} //36
 
 procedure wbABGRToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 var
@@ -2493,6 +2513,27 @@ begin
     aValue := aValue + ' AND'
   else
     aValue := aValue + ' OR';
+end;
+
+function wbConditionStringToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+begin
+  Result := '';
+  if not Assigned(aElement) then
+    Exit;
+
+  var lContainer := GetContainerFromUnion(aElement) as IwbContainerElementRef;
+  if not Assigned(lContainer) then
+    Exit;
+
+  case aType of
+    ctToEditValue, ctToNativeValue, ctToSummary: begin
+      if aElement = lContainer.Elements[5] then
+        Result := lContainer.ElementEditValues['..\CIS1'];
+      if aElement = lContainer.Elements[6] then
+        Result := lContainer.ElementEditValues['..\CIS2'];
+    end;
+    ctToSortKey: Result := '0';
+  end;
 end;
 
 function wbConditionTypeToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
