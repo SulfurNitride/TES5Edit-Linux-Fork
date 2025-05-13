@@ -14567,25 +14567,7 @@ end;
         {0x400000} 'Don''t Dump Old Location Event Parameter'
       ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Priority', itU8),
-      wbUnused(3),
-      wbInteger('Type', itU8, wbEnum([
-        {0} 'None',
-        {1} 'Main Quest',
-        {2} 'Brotherhood of Steel',
-        {3} 'Institute',
-        {4} 'Minutemen',
-        {5} 'Railroad',
-        {6} 'Miscellaneous',
-        {7} 'Side Quests',
-        {8} 'DLC01',
-        {9} 'DLC02',
-       {10} 'DLC03',
-       {11} 'DLC04',
-       {12} 'DLC05',
-       {13} 'DLC06',
-       {14} 'DLC07'
-      ])),
-      wbUnused(3)
+      wbUnused(7)
     ]),
     wbFormIDCk(QTYP, 'Quest Type', [KYWD]),
     wbFormIDCk(FTYP, 'Quest Faction', [KYWD]), // was FACT but now separate from FACT
