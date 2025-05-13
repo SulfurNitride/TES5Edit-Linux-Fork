@@ -9197,7 +9197,7 @@ begin
       wbByteArray('Unknown', 4),
       wbInteger('Type', itU32, wbQuestTypeEnum)
     ], cpNormal, True),
-    wbString(ENAM, 'Event', 4),
+    wbInteger(ENAM, 'Event', itU32, wbQuestEventEnum),
     wbRArray('Text Display Globals', wbFormIDCk(QTGL, 'Global', [GLOB])),
     wbString(FLTR, 'Object Window Filter', 0, cpTranslate),
     wbRStruct('Quest Dialogue Conditions', [wbConditions]),
