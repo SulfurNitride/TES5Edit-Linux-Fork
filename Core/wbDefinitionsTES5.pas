@@ -6418,13 +6418,13 @@ begin
   ]);
 
   var wbPerkConditions :=
-    wbRStructSK([0], 'Perk Condition', [
+    wbRStructSK([0,1], 'Perk Condition', [
       wbInteger(PRKC, 'Run On (Tab Index)', itS8{, wbPRKCToStr, wbPRKCToInt}),
       wbConditions.SetRequired
     ], [], cpNormal, False{, nil, nil, wbPERKPRKCDontShow});
 
   var wbPerkEffect :=
-    wbRStructSK([0, 1], 'Effect', [
+    wbRStructSK([0,1,3,2], 'Effect', [
       wbStructSK(PRKE, [1, 2, 0], 'Header', [
         wbPerkEffectType(wbPERKPRKETypeAfterSet),
         wbInteger('Rank', itU8),
@@ -6463,7 +6463,7 @@ begin
 
       wbRArrayS('Perk Conditions', wbPerkConditions),
 
-      wbRStruct('Function Parameters', [
+      wbRStructSK([0,2,3], 'Function Parameters', [
         wbInteger(EPFT, 'Type', itU8, wbEnum([
           {0} 'None',
           {1} 'Float',
@@ -6483,7 +6483,7 @@ begin
         // 6: EPFD=string
         // 7: EPFD=lstring
         wbLString(EPF2, 'Button Label', 0, cpTranslate),
-        wbStruct(EPF3, 'Script Flags', [
+        wbStructSK(EPF3, [1], 'Script Flags', [
           wbInteger('Script Flags', itU16, wbFlags([
             'Run Immediately',
             'Replace Default'
