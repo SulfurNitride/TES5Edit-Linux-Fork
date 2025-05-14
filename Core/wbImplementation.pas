@@ -358,6 +358,7 @@ type
     function ResetLeafFirst: Boolean; virtual;
     function GetContainer: IwbContainer;
     function GetContainingMainRecord: IwbMainRecord; virtual;
+    function GetContainingSubRecord: IwbSubRecord; virtual;
     function GetFile: IwbFile; virtual;
     function GetReferenceFile: IwbFile; virtual;
     function GetSortOrder: Integer;
@@ -1569,6 +1570,7 @@ type
 
     {--- IwbSubRecord ---}
     function GetSubRecordHeaderSize: Integer;
+    function GetContainingSubRecord: IwbSubRecord; Override;
 
     {--- IwbSortableContainer ---}
     function GetSorted: Boolean;
@@ -5100,29 +5102,25 @@ begin
     if not Assigned(HEDR) then
       raise Exception.Create('File ' + GetFileName + ' has a file header with missing HEDR subrecord');
 
+
+    if flModule.miExtension = meESM then
+      SetIsESM(True);
+
+    if wbIsLightSupported and (flModule.miExtension = meESL) then begin
+      SetIsESM(True);
+      SetIsLight(True);
+    end;
+
     if wbIsStarfield then begin
-      if GetIsUpdateDirect then begin
-        if GetIsLightDirect then begin
+      if GetIsUpdateDirect and (GetIsLightDirect or GetIsMediumDirect) then
           SetIsUpdate(False);
-          SetIsLight(True);
-        end else if GetIsMediumDirect then begin
-          SetIsUpdate(False);
-          SetIsMedium(True);
-        end;
+
+      if flModule.miExtension = meESP then begin
+        if not wbRedPill then
+          raise Exception.Create('".esp" modules can not be saved in ' + wbAppName + wbToolName)
+        else
+          FileHeader.ElementEditValues['CNAM'] := 'RedPill';
       end;
-
-      if flModule.miExtension in [meESM, meESL] then
-        SetIsESM(True);
-      if not GetIsUpdateDirect then begin
-        if flModule.miExtension = meESL then
-          SetIsLight(True);
-      end;
-
-      if (flModule.miExtension = meESP) and not wbRedPill then
-        raise Exception.Create('".esp" modules can not be saved in ' + wbAppName + wbToolName);
-
-      if wbRedPill then
-        FileHeader.ElementEditValues['CNAM'] := 'RedPill';
     end;
 
     inherited;
@@ -9844,7 +9842,7 @@ var
     if wbGameMode >= gmFO3 then begin
       case wbGameMode of
         gmSF1                        : BasePtr.mrsVersion^ := 576;
-        gmFO76                       : BasePtr.mrsVersion^ := 201;
+        gmFO76                       : BasePtr.mrsVersion^ := 203;
         gmFO4, gmFO4VR               : BasePtr.mrsVersion^ := 131;
         gmSSE, gmTES5VR, gmEnderalSE : BasePtr.mrsVersion^ := 44;
         gmTES5, gmEnderal            : BasePtr.mrsVersion^ := 43;
@@ -15517,6 +15515,11 @@ begin
   srDef.ToString(Result, Self, ctCheck);
 end;
 
+function TwbSubRecord.GetContainingSubRecord: IwbSubRecord;
+begin
+  Result := Self;
+end;
+
 function TwbSubRecord.GetDataPrefixSize: Integer;
 begin
   Result := srArraySizePrefix;
@@ -15859,9 +15862,9 @@ end;
 function TwbSubRecord.IsElementRemovable(const aElement: IwbElement): Boolean;
 begin
   Result := IsElementEditable(aElement)
-    and not (dfArrayStaticSize in srValueDef.DefFlags)
     and (srsIsArray in srStates)
     and Assigned(srValueDef)
+    and not (dfArrayStaticSize in srValueDef.DefFlags)
     and ( (srValueDef as IwbArrayDef).ElementCount <= 0 )
     and ( (dfArrayCanBeEmpty in srValueDef.DefFlags) or (Length(cntElements) > 1) );
 
@@ -17686,6 +17689,9 @@ var
 begin
   if Assigned(dcEndPtr) then begin
     dcDataBasePtr := PByte(dcBasePtr) + wbSizeOfMainRecordStruct;
+    if grStruct.grsGroupSize < wbSizeOfMainRecordStruct then
+      raise Exception.CreateFmt('[%s] %s size is invalid.', [GetFile.FileName, GetName]);
+
     dcDataEndPtr := PByte(dcBasePtr) + grStruct.grsGroupSize;
     dcEndPtr := dcDataEndPtr;
     if not recSkipped then
@@ -19170,6 +19176,14 @@ function TwbElement.GetContainingMainRecord: IwbMainRecord;
 begin
   if Assigned(eContainer) then
     Result := IwbContainer(eContainer).ContainingMainRecord
+  else
+    Result := nil;
+end;
+
+function TwbElement.GetContainingSubRecord: IwbSubRecord;
+begin
+  if Assigned(eContainer) then
+    Result := IwbContainer(eContainer).ContainingSubRecord
   else
     Result := nil;
 end;

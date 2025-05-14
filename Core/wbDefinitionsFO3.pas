@@ -1120,20 +1120,6 @@ begin
     Exit(1);
 end;
 
-function wbCreaLevelDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
-var
-  Container: IwbContainer;
-  i: Int64;
-begin
-  Result := 0;
-  if not wbTryGetContainerFromUnion(aElement, Container) then
-    Exit;
-
-  i := Container.ElementByName['Flags'].NativeValue;
-  if i and $00000080 <> 0 then
-    Result := 1;
-end;
-
 function wbFLSTLNAMIsSorted(const aContainer: IwbContainer): Boolean;
 var
   rEDID      : IwbRecord;
@@ -3085,7 +3071,7 @@ begin
       wbInteger('Responsibility', itU8),
       wbInteger('Mood', itU8, wbMoodEnum),
       wbUnused(3),
-      wbInteger('Buys/Sells and Services', itU32, wbServiceFlags),
+      wbInteger('Buys/Sells and Services', itU32, wbServiceFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Teaches', itS8, wbSkillEnum),
       wbInteger('Maximum training level', itU8),
       wbInteger('Assistance', itS8, wbAssistanceEnum),
@@ -3153,14 +3139,15 @@ begin
 
   wbConditions :=
     wbRArray('Conditions',
-      wbStruct(CTDA, 'Condition', [
+      wbStructSK(CTDA, [3,5,6], 'Condition', [
       {0} wbInteger('Type', itU8, wbConditionTypeToStr, wbConditionTypeToInt).SetAfterSet(wbConditionTypeAfterSet),
       {1} wbUnused(3),
       {2} wbUnion('Comparison Value', wbConditionCompValueDecider, [
           {0} wbFloat('Comparison Value - Float'),
           {1} wbFormIDCk('Comparison Value - Global', [GLOB])
           ]),
-      {3} wbInteger('Function', itU16, wbConditionFunctionToStr, wbConditionFunctionToInt),
+      {3} wbInteger('Function', itU16, wbConditionFunctionToStr, wbConditionFunctionToInt)
+            .SetAfterSet(wbUpdateSameParentUnions),
       {4} wbUnused(2),
       {5} wbUnion('Parameter #1', wbConditionParam1Decider, wbConditionParameters),
       {6} wbUnion('Parameter #2', wbConditionParam2Decider, wbConditionParameters),
@@ -3188,7 +3175,9 @@ begin
         wbInteger('Count', itU8),
         wbInteger('VATS Targetable', itU8, wbBoolEnum),
         wbUnused(2)
-      ]),
+      ]).SetSummaryKeyOnValue([0])
+        .SetSummaryPrefixSuffixOnValue(0,'Health ','')
+        .IncludeFlag(dfCollapsed, wbCollapseDestruction),
       wbRArray('Stages',
         wbRStruct('Stage', [
           wbStruct(DSTD, 'Destruction Stage Data', [
@@ -3205,14 +3194,21 @@ begin
             wbFormIDCk('Explosion', [EXPL, NULL]),
             wbFormIDCk('Debris', [DEBR, NULL]),
             wbInteger('Debris Count', itS32)
-          ]).SetRequired,
+          ], cpNormal, True)
+          .SetSummaryKeyOnValue([0,5,6])
+          .SetSummaryPrefixSuffixOnValue(0,'Health ','%')
+          .SetSummaryDelimiterOnValue(', ')
+          .IncludeFlagOnValue(dfSummaryExcludeNULL)
+          .IncludeFlagOnValue(dfSummaryMembersNoName)
+          .IncludeFlag(dfCollapsed, wbCollapseDestruction),
           wbRStructSK([0], 'Model', [
             wbString(DMDL, 'Model FileName'),
             wbDMDT
           ]).SetSummaryKey([0])
             .IncludeFlag(dfCollapsed, wbCollapseModels),
           wbEmpty(DSTF, 'End Marker').SetRequired
-        ]))
+        ]).SetSummaryKey([0, 1])
+          .IncludeFlag(dfSummaryMembersNoName))
     ]);
 
   wbDODT :=
@@ -3821,7 +3817,7 @@ begin
           {1} 'Guard'
         ], True)
       ).IncludeFlag(dfCollapsed, wbCollapseFlags),
-      wbInteger('Buys/Sells and Services', itU32, wbServiceFlags),
+      wbInteger('Buys/Sells and Services', itU32, wbServiceFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Teaches', itS8, wbSkillEnum),
       wbInteger('Maximum training level', itU8),
       wbUnused(2)
@@ -3954,16 +3950,20 @@ begin
       ).IncludeFlag(dfCollapsed, wbCollapseFlags),
       {04} wbInteger('Fatigue', itU16).SetDontShow(wbActorTemplateUseStats),
       {06} wbInteger('Barter gold', itU16).SetDontShow(wbActorTemplateUseAIData),
-      {08} wbUnion('Level', wbCreaLevelDecider, [
-             wbInteger('Level', itS16).SetDontShow(wbActorTemplateUseStats),
-             wbInteger('Level Mult', itS16, wbDiv(1000)).SetDontShow(wbActorTemplateUseStats)
-           ]).SetDontShow(wbActorTemplateUseStats),
+      {08} wbUnion('Level', wbACBSLevelDecider, [
+             wbInteger('Level', itU16),//.SetDontShow(wbActorTemplateUseStats),
+             wbInteger('Level Mult', itU16, wbDiv(1000, 2))
+               .SetAfterLoad(wbACBSLevelMultAfterLoad)
+               .SetDefaultNativeValue(1000)
+               //.SetDontShow(wbActorTemplateUseStats)
+           ]).SetAfterSet(wbACBSLevelMultAfterSet)
+             .SetDontShow(wbActorTemplateUseStats),
       {10} wbInteger('Calc min', itU16).SetDontShow(wbActorTemplateUseStats),
       {12} wbInteger('Calc max', itU16).SetDontShow(wbActorTemplateUseStats),
       {14} wbInteger('Speed Multiplier', itU16).SetDontShow(wbActorTemplateUseStats),
       {16} wbFloat('Karma (Alignment)').SetDontShow(wbActorTemplateUseTraits),
       {20} wbInteger('Disposition Base', itS16).SetDontShow(wbActorTemplateUseTraits),
-      {22} wbInteger('Template Flags', itU16, wbTemplateFlags)
+      {22} wbInteger('Template Flags', itU16, wbTemplateFlags).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ]).SetRequired,
     wbRArrayS('Factions', wbFaction).SetDontShow(wbActorTemplateUseFactions),
     wbFormIDCk(INAM, 'Death item', [LVLI]).SetDontShow(wbActorTemplateUseTraits),
@@ -4203,7 +4203,7 @@ begin
           3, 'No Particle Shader',
           4, 'Edge Effect - Inverse',
           5, 'Membrane Shader - Affect Skin Only'
-        ], False, 6))),
+        ], False, 6))).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbUnused(3),
       wbInteger('Membrane Shader - Source Blend Mode', itU32, wbBlendModeEnum),
       wbInteger('Membrane Shader - Blend Operation', itU32, wbBlendOpEnum),
@@ -4742,7 +4742,7 @@ begin
           wbFlags(wbSparseFlags([
             4, 'Initially Disabled',
             5, 'Is Island'
-          ], False, 6))),
+          ], False, 6))).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbFormIDCk('Navmesh', [NAVM]).IncludeFlag(dfSummaryNoName),
         wbFormIDCk('Location', [CELL, WRLD]),
         wbStruct('Coordinates', [
@@ -4752,11 +4752,11 @@ begin
           .SetSummaryMemberPrefixSuffix(0, 'Y: ', '>')
           .SetSummaryMemberPrefixSuffix(1, '<X: ', '')
           .SetSummaryDelimiter(', ')
-          .IncludeFlag(dfCollapsed)
+          .IncludeFlag(dfCollapsed, wbCollapsePlacement)
           .IncludeFlag(dfSummaryMembersNoName),
         wbVec3,
         wbUnion('Island Data', wbNAVINVMIDecider, [
-          wbStruct('Unused', [wbEmpty('Unused')]).IncludeFlag(dfCollapsed),
+          wbStruct('Unused', [wbEmpty('Unused')]).IncludeFlag(dfCollapsed, wbCollapseOther),
           wbStruct('Island Data', [
             wbVec3('Min'),
             wbVec3('Max'),
@@ -4765,35 +4765,35 @@ begin
             wbArray('Vertices',
               wbVec3('Vertex')
             ).SetCountPath('Vertex Count', True)
-             .IncludeFlag(dfCollapsed)
+             .IncludeFlag(dfCollapsed, wbCollapseVertices)
              .IncludeFlag(dfNotAlignable),
             wbArray('Triangles',
               wbStruct('Triangle', [
                 wbInteger('Vertex 0', itU16),
                 wbInteger('Vertex 1', itU16),
                 wbInteger('Vertex 2', itU16)
-              ]).IncludeFlag(dfCollapsed)
+              ]).IncludeFlag(dfCollapsed, wbCollapseVertices)
             ).SetCountPath('Triangle Count', True)
-             .IncludeFlag(dfCollapsed)
+             .IncludeFlag(dfCollapsed, wbCollapseVertices)
              .IncludeFlag(dfNotAlignable)
           ]).SetSummaryKey([5])
-            .IncludeFlag(dfCollapsed)
-        ]).IncludeFlag(dfCollapsed),
+            .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
+        ]).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
         wbUnknown
       ]).SetSummaryKeyOnValue([1,2,5])
         .SetSummaryPrefixSuffixOnValue(1, '', '')
         .SetSummaryPrefixSuffixOnValue(2, 'in ', '')
         .SetSummaryPrefixSuffixOnValue(5, 'is island with ', '')
-        .IncludeFlag(dfCollapsed)
-    ).IncludeFlag(dfCollapsed),
+        .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
+    ).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
     wbRArrayS('Navmesh Connections',
       wbStructSK(NVCI, [0], 'Connection', [
         wbFormIDCk('Navmesh', [NAVM]),
-        wbArrayS('Standard', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed),
-        wbArrayS('Preferred', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed),
-        wbArrayS('Door Links', wbFormIDCk('Door', [REFR]), -1).IncludeFlag(dfCollapsed)
-      ]).IncludeFlag(dfCollapsed)
-    ).IncludeFlag(dfCollapsed)
+        wbArrayS('Standard', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
+        wbArrayS('Preferred', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
+        wbArrayS('Door Links', wbFormIDCk('Door', [REFR]), -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
+      ]).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
+    ).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
   ]);
 
   wbRecord(NAVM, 'Navmesh',
@@ -5081,7 +5081,7 @@ begin
           wbFlags([
             {0} 'Reflection',
             {1} 'Refraction'
-          ]))
+          ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
       ])),
 
     {--- Decals ---}
@@ -6317,16 +6317,19 @@ begin
       ).IncludeFlag(dfCollapsed, wbCollapseFlags),
       {04} wbInteger('Fatigue', itU16).SetDontShow(wbActorTemplateUseStats),
       {06} wbInteger('Barter gold', itU16).SetDontShow(wbActorTemplateUseAIData),
-      {08} wbUnion('Level', wbCreaLevelDecider, [
-             wbInteger('Level', itS16).SetDontShow(wbActorTemplateUseStats),
-             wbInteger('Level Mult', itS16, wbDiv(1000)).SetDontShow(wbActorTemplateUseStats)
-           ]).SetDontShow(wbActorTemplateUseStats),
+      {08} wbUnion('Level', wbACBSLevelDecider, [
+             wbInteger('Level', itU16),
+             wbInteger('Level Mult', itU16, wbDiv(1000, 2))
+               .SetAfterLoad(wbACBSLevelMultAfterLoad)
+               .SetDefaultNativeValue(1000)
+           ]).SetAfterSet(wbACBSLevelMultAfterSet)
+             .SetDontShow(wbActorTemplateUseStats),
       {10} wbInteger('Calc min', itU16).SetDontShow(wbActorTemplateUseStats),
       {12} wbInteger('Calc max', itU16).SetDontShow(wbActorTemplateUseStats),
       {14} wbInteger('Speed Multiplier', itU16).SetDontShow(wbActorTemplateUseStats),
       {16} wbFloat('Karma (Alignment)').SetDontShow(wbActorTemplateUseTraits),
       {20} wbInteger('Disposition Base', itS16).SetDontShow(wbActorTemplateUseTraits),
-      {22} wbInteger('Template Flags', itU16, wbTemplateFlags)
+      {22} wbInteger('Template Flags', itU16, wbTemplateFlags).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ]).SetRequired,
     wbRArrayS('Factions', wbFaction).SetDontShow(wbActorTemplateUseFactions),
     wbFormIDCk(INAM, 'Death item', [LVLI]).SetDontShow(wbActorTemplateUseTraits),
@@ -6428,7 +6431,7 @@ begin
     ])), [
     wbEDIDReq,
     wbStruct(PKDT, 'General', [
-      wbInteger('General Flags', itU32, wbPackageFlags),
+      wbInteger('General Flags', itU32, wbPackageFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Type', itU8, wbPackageTypeEnum),
       wbUnused(1),
       wbInteger('Fallout Behavior Flags', itU16,
@@ -6452,7 +6455,7 @@ begin
            10, 'Allow Stealing'
           ], False, 11), True)
         ).IncludeFlag(dfCollapsed, wbCollapseFlags),
-        wbInteger('Type Specific Flags - Follow', itU16, wbFlags([], True)),
+        wbInteger('Type Specific Flags - Follow', itU16, wbFlags([], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbInteger('Type Specific Flags - Escort', itU16,
           wbFlags(wbSparseFlags([
             8, 'Allow Buying',
@@ -6467,7 +6470,7 @@ begin
            10, 'Allow Stealing'
           ], False, 11), True)
         ).IncludeFlag(dfCollapsed, wbCollapseFlags),
-        wbInteger('Type Specific Flags - Sleep', itU16, wbFlags([], True)),
+        wbInteger('Type Specific Flags - Sleep', itU16, wbFlags([], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbInteger('Type Specific Flags - Wander', itU16,
           wbFlags([
             {0} 'No Eating',
@@ -6478,8 +6481,8 @@ begin
             {5} 'No Wandering'
           ], True)
         ).IncludeFlag(dfCollapsed, wbCollapseFlags),
-        wbInteger('Type Specific Flags - Travel', itU16, wbFlags([], True)),
-        wbInteger('Type Specific Flags - Accompany', itU16, wbFlags([], True)),
+        wbInteger('Type Specific Flags - Travel', itU16, wbFlags([], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
+        wbInteger('Type Specific Flags - Accompany', itU16, wbFlags([], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbInteger('Type Specific Flags - Use Item At', itU16,
           wbFlags(wbSparseFlags([
             2, 'Sit Down',
@@ -6493,8 +6496,8 @@ begin
             0, 'Hide While Ambushing'
           ], False, 1), True)
         ).IncludeFlag(dfCollapsed, wbCollapseFlags),
-        wbInteger('Type Specific Flags - Flee Not Combat', itU16, wbFlags([], True)),
-        wbInteger('Type Specific Flags - Cast Magic', itU16, wbFlags([], True)),
+        wbInteger('Type Specific Flags - Flee Not Combat', itU16, wbFlags([], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
+        wbInteger('Type Specific Flags - Cast Magic', itU16, wbFlags([], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbInteger('Type Specific Flags - Sandbox', itU16,
           wbFlags([
             {0} 'No Eating',
@@ -6505,14 +6508,14 @@ begin
             {5} 'No Wandering'
           ], True)
         ).IncludeFlag(dfCollapsed, wbCollapseFlags),
-        wbInteger('Type Specific Flags - Patrol', itU16, wbFlags([], True)),
+        wbInteger('Type Specific Flags - Patrol', itU16, wbFlags([], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbInteger('Type Specific Flags - Guard', itU16,
           wbFlags(wbSparseFlags([
             3, 'Remain Near Reference to Guard'
           ], False, 4), True)
         ).IncludeFlag(dfCollapsed, wbCollapseFlags),
-        wbInteger('Type Specific Flags - Dialogue', itU16, wbFlags([], True)),
-        wbInteger('Type Specific Flags - Use Weapon', itU16, wbFlags([], True))
+        wbInteger('Type Specific Flags - Dialogue', itU16, wbFlags([], True)).IncludeFlag(dfCollapsed, wbCollapseFlags),
+        wbInteger('Type Specific Flags - Use Weapon', itU16, wbFlags([], True)).IncludeFlag(dfCollapsed, wbCollapseFlags)
       ]),
       wbUnused(2)
     ], cpNormal, True, nil, 2),
@@ -6804,7 +6807,8 @@ begin
         .SetSummaryMemberPrefixSuffix(0, '', '')
         .SetSummaryDelimiter(' ')
         .IncludeFlag(dfSummaryNoSortKey)
-        .IncludeFlag(dfSummaryMembersNoName).IncludeFlag(dfCollapsed), 7),
+        .IncludeFlag(dfSummaryMembersNoName)
+        .IncludeFlag(dfCollapsed, wbCollapseObjectProperties), 7),
       wbUnused(2),
       wbFloat('Male Height'),
       wbFloat('Female Height'),

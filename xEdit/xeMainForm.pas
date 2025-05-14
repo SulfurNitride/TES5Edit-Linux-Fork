@@ -3052,12 +3052,16 @@ begin
                     wbProgress('');
                     Assert(Assigned(MainRecord));
                     MainRecord.Assign(Low(Integer), nil, False);
+                    if not Assigned(MainRecord.ElementByName['Leveled List Entries']) then
+                      MainRecord.Add('Leveled List Entries', True);
                     LeveledListEntries := MainRecord.ElementByName['Leveled List Entries'] as IwbContainerElementRef;
                     Assert(Assigned(LeveledListEntries));
                     Assert(LeveledListEntries.ElementCount = 1);
                     LeveledListEntry := LeveledListEntries.Elements[0] as IwbContainerElementRef;
+                    if not wbIsOblivion then
+                      LeveledListEntry := LeveledListEntry.Elements[0] as IwbContainerElementRef;
                     Assert(Assigned(LeveledListEntry));
-                    LeveledListEntry.ElementByName['Reference'].EditValue := MainRecord2.EditValue;
+                    LeveledListEntry.Elements[2].EditValue := MainRecord2.EditValue;
                     LeveledListEntry.ElementByName['Count'].EditValue := '1';
                     LeveledListEntry.ElementByName['Level'].EditValue := '1';
                     MainRecord.EditorID := EditorID;
@@ -5272,7 +5276,7 @@ begin
           end;
         end;
 
-        if ((wbToolMode in wbPluginModes) or xeQuickClean or xeQuickEdit) and (wbGameMode in [gmTES4, gmTES4R, gmFO3, gmFO4, gmFO4VR, gmFO76, gmFNV, gmTES5, gmTES5VR, gmSSE, gmEnderal, gmEnderalSE, gmSF1]) then begin
+        if ((wbToolMode in wbPluginModes) or xeQuickClean or xeQuickEdit) and not wbIsMorrowind then begin
           Modules.DeactivateAll;
 
           if (xePluginToUse <> '') or not xeQuickClean then
@@ -5531,6 +5535,53 @@ begin
   wbCollapseVec3 := Settings.ReadBool('Options', 'CollapseVec3', wbCollapseVec3);
   wbCollapseHeadParts := Settings.ReadBool('Options', 'CollapseHeadParts', wbCollapseHeadParts);
   wbCollapseBodyParts := Settings.ReadBool('Options', 'CollapseBodyParts', wbCollapseBodyParts);
+  wbCollapsePosRot := Settings.ReadBool('Options', 'CollapsePosRot', wbCollapsePosRot);
+  wbCollapseRange := Settings.ReadBool('Options', 'CollapseRange', wbCollapseRange);
+  wbCollapseARMABoneData := Settings.ReadBool('Options', 'CollapseARMABoneData', wbCollapseARMABoneData);
+  wbCollapseRACEBoneData := Settings.ReadBool('Options', 'CollapseRACEBoneData', wbCollapseRACEBoneData);
+  wbCollapseScriptData := Settings.ReadBool('Options', 'CollapseScriptData', wbCollapseScriptData);
+  wbCollapseModelInfoTexture := Settings.ReadBool('Options', 'CollapseModelInfoTexture', wbCollapseModelInfoTexture);
+  wbCollapseModelInfoTextures := Settings.ReadBool('Options', 'CollapseModelInfoTextures', wbCollapseModelInfoTextures);
+  wbCollapseModelInfoAddons := Settings.ReadBool('Options', 'CollapseModelInfoAddons', wbCollapseModelInfoAddons);
+  wbCollapseModelInfoMaterial := Settings.ReadBool('Options', 'CollapseModelInfoMaterial', wbCollapseModelInfoMaterial);
+  wbCollapseModelInfoMaterials := Settings.ReadBool('Options', 'CollapseModelInfoMaterials', wbCollapseModelInfoMaterials);
+  wbCollapseModelInfo := Settings.ReadBool('Options', 'CollapseModelInfo', wbCollapseModelInfo);
+  wbCollapseModelInfoHeader := Settings.ReadBool('Options', 'CollapseModelInfoHeader', wbCollapseModelInfoHeader);
+  wbCollapseTimeInterpolator := Settings.ReadBool('Options', 'CollapseTimeInterpolator', wbCollapseTimeInterpolator);
+  wbCollapseTimeInterpolators := Settings.ReadBool('Options', 'CollapseTimeInterpolators', wbCollapseTimeInterpolators);
+  wbCollapseTimeInterpolatorsMultAdd := Settings.ReadBool('Options', 'CollapseTimeInterpolatorsMultAdd', wbCollapseTimeInterpolatorsMultAdd);
+  wbCollapseBluePrintItem := Settings.ReadBool('Options', 'CollapseBluePrintItem', wbCollapseBluePrintItem);
+  wbCollapsePlacement := Settings.ReadBool('Options', 'CollapsePlacement', wbCollapsePlacement);
+  wbCollapseVertices := Settings.ReadBool('Options', 'CollapseVertices', wbCollapseVertices);
+  wbCollapseRDSA := Settings.ReadBool('Options', 'CollapseRDSA', wbCollapseRDSA);
+  wbCollapseFlags := Settings.ReadBool('Options', 'CollapseFlags', wbCollapseFlags);
+  wbCollapseTransforms := Settings.ReadBool('Options', 'CollapseTransforms', wbCollapseTransforms);
+  wbCollapseSounds := Settings.ReadBool('Options', 'CollapseSounds', wbCollapseSounds);
+  wbCollapseDestruction := Settings.ReadBool('Options', 'CollapseDestruction', wbCollapseDestruction);
+  wbCollapseLocations := Settings.ReadBool('Options', 'CollapseLocations', wbCollapseLocations);
+  wbCollapseNavmesh := Settings.ReadBool('Options', 'CollapseNavmesh', wbCollapseNavmesh);
+  wbCollapseOther := Settings.ReadBool('Options', 'CollapseOther', wbCollapseOther);
+  wbCollapsePerk := Settings.ReadBool('Options', 'CollapsePerk', wbCollapsePerk);
+  wbCollapseKeywords := Settings.ReadBool('Options', 'CollapseKeywords', wbCollapseKeywords);
+  wbCollapseFactionRanks := Settings.ReadBool('Options', 'CollapseFactionRanks', wbCollapseFactionRanks);
+  wbCollapseOwnership := Settings.ReadBool('Options', 'CollapseOwnership', wbCollapseOwnership);
+  wbCollapseObjectPaletteDefaults := Settings.ReadBool('Options', 'CollapseObjectPaletteDefaults', wbCollapseObjectPaletteDefaults);
+  wbCollapseTraversal := Settings.ReadBool('Options', 'CollapseTraversal', wbCollapseTraversal);
+  wbCollapseBaseFormComponent := Settings.ReadBool('Options', 'CollapseBaseFormComponent', wbCollapseBaseFormComponent);
+  wbCollapseVehicleConfig := Settings.ReadBool('Options', 'CollapseVehicleConfig', wbCollapseVehicleConfig);
+  wbCollapseWeatherTimeOfDay := Settings.ReadBool('Options', 'CollapseWeatherTimeOfDay', wbCollapseWeatherTimeOfDay);
+  wbCollapseWeatherCloudTextures := Settings.ReadBool('Options', 'CollapseWeatherCloudTextures', wbCollapseWeatherCloudTextures);
+  wbCollapseWeatherCloudSpeed := Settings.ReadBool('Options', 'CollapseWeatherCloudSpeed', wbCollapseWeatherCloudSpeed);
+  wbCollapseWeatherCloudAlphas := Settings.ReadBool('Options', 'CollapseWeatherCloudAlphas', wbCollapseWeatherCloudAlphas);
+  wbCollapseRagdoll := Settings.ReadBool('Options', 'CollapseRagdoll', wbCollapseRagdoll);
+  wbCollapseDirectionRotation := Settings.ReadBool('Options', 'CollapseDirectionRotation', wbCollapseDirectionRotation);
+  wbCollapseMaxHeightData := Settings.ReadBool('Options', 'CollapseMaxHeightData', wbCollapseMaxHeightData);
+  wbCollapseAliases := Settings.ReadBool('Options', 'CollapseAliases', wbCollapseAliases);
+  wbCollapseQuestStage := Settings.ReadBool('Options', 'CollapseQuestStage', wbCollapseQuestStage);
+  wbCollapseQuestLog := Settings.ReadBool('Options', 'CollapseQuestLog', wbCollapseQuestLog);
+  wbCollapseQuestObjective := Settings.ReadBool('Options', 'CollapseQuestObjective', wbCollapseQuestObjective);
+  wbCollapseQuestObjectiveTarget := Settings.ReadBool('Options', 'CollapseQuestObjectiveTarget', wbCollapseQuestObjectiveTarget);
+  wbCollapseScriptEntry := Settings.ReadBool('Options', 'CollapseScriptEntry', wbCollapseScriptEntry);
   wbShrinkButtons := Settings.ReadBool('Options', 'ShrinkButtons', wbShrinkButtons);
   //wbIKnowWhatImDoing := Settings.ReadBool('Options', 'IKnowWhatImDoing', wbIKnowWhatImDoing);
   wbUDRSetXESP := Settings.ReadBool('Options', 'UDRSetXESP', wbUDRSetXESP);
@@ -11356,7 +11407,7 @@ begin
               IsDeleted := False;
               if (wbIsSkyrim or wbIsFallout3 or wbIsFallout4 or wbIsFallout76 or wbIsStarfield) and ((Signature = 'ACHR') or (Signature = 'ACRE')) then
                 IsPersistent := True
-              else if wbGameMode in [gmTES4, gmTES4R] then
+              else if wbIsOblivion then
                 IsPersistent := False;
               if not IsPersistent then
                 if wbUDRSetZ and GetPosition(Position) then begin
@@ -14072,6 +14123,32 @@ begin
     cbCollapseBenignArray.Checked := wbCollapseBenignArray;
     cbCollapseRGBA.Checked := wbCollapseRGBA;
     cbCollapseVec3.Checked := wbCollapseVec3;
+    cbCollapsePosRot.Checked := wbCollapsePosRot;
+    cbCollapseFragments.Checked := wbCollapseFragments;
+    cbCollapseScriptData.Checked := wbCollapseScriptData;
+    cbCollapseFlags.Checked := wbCollapseFlags;
+    cbCollapseSounds.Checked := wbCollapseSounds;
+    cbCollapseNavmesh.Checked := wbCollapseNavmesh;
+    cbCollapseKeywords.Checked := wbCollapseKeywords;
+    cbCollapseAliases.Checked := wbCollapseAliases;
+    cbCollapseRange.Checked := wbCollapseRange;
+    cbCollapseARMABoneData.Checked := wbCollapseARMABoneData;
+    cbCollapseRACEBoneData.Checked := wbCollapseRACEBoneData;
+    cbCollapseHeadParts.Checked := wbCollapseHeadParts;
+    cbCollapseBodyParts.Checked := wbCollapseBodyParts;
+    cbCollapseModelInfo.Checked := wbCollapseModelInfo;
+    cbCollapsePlacement.Checked := wbCollapsePlacement;
+    cbCollapseVertices.Checked := wbCollapseVertices;
+    cbCollapseTransforms.Checked := wbCollapseTransforms;
+    cbCollapseDestruction.Checked := wbCollapseDestruction;
+    cbCollapseLocations.Checked := wbCollapseLocations;
+    cbCollapseOther.Checked := wbCollapseOther;
+    cbCollapsePerk.Checked := wbCollapsePerk;
+    cbCollapseFactionRanks.Checked := wbCollapseFactionRanks;
+    cbCollapseOwnership.Checked := wbCollapseOwnership;
+    cbCollapseBaseFormComponent.Checked := wbCollapseBaseFormComponent;
+    cbCollapseRagdoll.Checked := wbCollapseRagdoll;
+    cbCollapseDirectionRotation.Checked := wbCollapseDirectionRotation;
     cbShrinkButtons.Checked := wbShrinkButtons;
     edColumnWidth.Text := IntToStr(ColumnWidth);
     edRowHeight.Text := IntToStr(RowHeight);
@@ -14142,6 +14219,32 @@ begin
     wbCollapseBenignArray := cbCollapseBenignArray.Checked;
     wbCollapseRGBA := cbCollapseRGBA.Checked;
     wbCollapseVec3 := cbCollapseVec3.Checked;
+    wbCollapsePosRot := cbCollapsePosRot.Checked;
+    wbCollapseFragments := cbCollapseFragments.Checked;
+    wbCollapseScriptData := cbCollapseScriptData.Checked;
+    wbCollapseFlags := cbCollapseFlags.Checked;
+    wbCollapseSounds := cbCollapseSounds.Checked;
+    wbCollapseNavmesh := cbCollapseNavmesh.Checked;
+    wbCollapseKeywords := cbCollapseKeywords.Checked;
+    wbCollapseAliases := cbCollapseAliases.Checked;
+    wbCollapseRange := cbCollapseRange.Checked;
+    wbCollapseARMABoneData := cbCollapseARMABoneData.Checked;
+    wbCollapseRACEBoneData := cbCollapseRACEBoneData.Checked;
+    wbCollapseHeadParts := cbCollapseHeadParts.Checked;
+    wbCollapseBodyParts := cbCollapseBodyParts.Checked;
+    wbCollapseModelInfo := cbCollapseModelInfo.Checked;
+    wbCollapsePlacement := cbCollapsePlacement.Checked;
+    wbCollapseVertices := cbCollapseVertices.Checked;
+    wbCollapseTransforms := cbCollapseTransforms.Checked;
+    wbCollapseDestruction := cbCollapseDestruction.Checked;
+    wbCollapseLocations := cbCollapseLocations.Checked;
+    wbCollapseOther := cbCollapseOther.Checked;
+    wbCollapsePerk := cbCollapsePerk.Checked;
+    wbCollapseFactionRanks := cbCollapseFactionRanks.Checked;
+    wbCollapseOwnership := cbCollapseOwnership.Checked;
+    wbCollapseBaseFormComponent := cbCollapseBaseFormComponent.Checked;
+    wbCollapseRagdoll := cbCollapseRagdoll.Checked;
+    wbCollapseDirectionRotation := cbCollapseDirectionRotation.Checked;
     if (wbShrinkButtons <> cbShrinkButtons.Checked) then
       if cbShrinkButtons.Checked then ShrinkButtons else ExpandButtons;
     wbShrinkButtons := cbShrinkButtons.Checked;
@@ -14214,7 +14317,54 @@ begin
     Settings.WriteBool('Options', 'CollapseVec3', wbCollapseVec3);
     Settings.WriteBool('Options', 'CollapseHeadParts', wbCollapseHeadParts);
     Settings.WriteBool('Options', 'CollapseBodyParts', wbCollapseBodyParts);
+    Settings.WriteBool('Options', 'CollapsePosRot', wbCollapsePosRot);
+    Settings.WriteBool('Options', 'CollapseRange', wbCollapseRange);
+    Settings.WriteBool('Options', 'CollapseARMABoneData', wbCollapseARMABoneData);
+    Settings.WriteBool('Options', 'CollapseRACEBoneData', wbCollapseRACEBoneData);
+    Settings.WriteBool('Options', 'CollapseScriptData', wbCollapseScriptData);
+    Settings.WriteBool('Options', 'CollapseModelInfoTexture', wbCollapseModelInfoTexture);
+    Settings.WriteBool('Options', 'CollapseModelInfoTextures', wbCollapseModelInfoTextures);
+    Settings.WriteBool('Options', 'CollapseModelInfoAddons', wbCollapseModelInfoAddons);
+    Settings.WriteBool('Options', 'CollapseModelInfoMaterial', wbCollapseModelInfoMaterial);
+    Settings.WriteBool('Options', 'CollapseModelInfoMaterials', wbCollapseModelInfoMaterials);
+    Settings.WriteBool('Options', 'CollapseModelInfo', wbCollapseModelInfo);
+    Settings.WriteBool('Options', 'CollapseModelInfoHeader', wbCollapseModelInfoHeader);
+    Settings.WriteBool('Options', 'CollapseTimeInterpolator', wbCollapseTimeInterpolator);
+    Settings.WriteBool('Options', 'CollapseTimeInterpolators', wbCollapseTimeInterpolators);
+    Settings.WriteBool('Options', 'CollapseTimeInterpolatorsMultAdd', wbCollapseTimeInterpolatorsMultAdd);
+    Settings.WriteBool('Options', 'CollapseBluePrintItem', wbCollapseBluePrintItem);
+    Settings.WriteBool('Options', 'CollapsePlacement', wbCollapsePlacement);
+    Settings.WriteBool('Options', 'CollapseVertices', wbCollapseVertices);
+    Settings.WriteBool('Options', 'CollapseRDSA', wbCollapseRDSA);
+    Settings.WriteBool('Options', 'CollapseFlags', wbCollapseFlags);
+    Settings.WriteBool('Options', 'CollapseTransforms', wbCollapseTransforms);
+    Settings.WriteBool('Options', 'CollapseSounds', wbCollapseSounds);
+    Settings.WriteBool('Options', 'CollapseDestruction', wbCollapseDestruction);
+    Settings.WriteBool('Options', 'CollapseLocations', wbCollapseLocations);
+    Settings.WriteBool('Options', 'CollapseNavmesh', wbCollapseNavmesh);
+    Settings.WriteBool('Options', 'CollapseOther', wbCollapseOther);
+    Settings.WriteBool('Options', 'CollapsePerk', wbCollapsePerk);
+    Settings.WriteBool('Options', 'CollapseKeywords', wbCollapseKeywords);
+    Settings.WriteBool('Options', 'CollapseFactionRanks', wbCollapseFactionRanks);
+    Settings.WriteBool('Options', 'CollapseOwnership', wbCollapseOwnership);
+    Settings.WriteBool('Options', 'CollapseObjectPaletteDefaults', wbCollapseObjectPaletteDefaults);
+    Settings.WriteBool('Options', 'CollapseTraversal', wbCollapseTraversal);
+    Settings.WriteBool('Options', 'CollapseBaseFormComponent', wbCollapseBaseFormComponent);
+    Settings.WriteBool('Options', 'CollapseVehicleConfig', wbCollapseVehicleConfig);
+    Settings.WriteBool('Options', 'CollapseWeatherTimeOfDay', wbCollapseWeatherTimeOfDay);
+    Settings.WriteBool('Options', 'CollapseWeatherCloudTextures', wbCollapseWeatherCloudTextures);
+    Settings.WriteBool('Options', 'CollapseWeatherCloudSpeed', wbCollapseWeatherCloudSpeed);
+    Settings.WriteBool('Options', 'CollapseWeatherCloudAlphas', wbCollapseWeatherCloudAlphas);
+    Settings.WriteBool('Options', 'CollapseRagdoll', wbCollapseRagdoll);
+    Settings.WriteBool('Options', 'CollapseDirectionRotation', wbCollapseDirectionRotation);
+    Settings.WriteBool('Options', 'CollapseMaxHeightData', wbCollapseMaxHeightData);
+    Settings.WriteBool('Options', 'CollapseAliases', wbCollapseAliases);
+    Settings.WriteBool('Options', 'CollapseQuestStage', wbCollapseQuestStage);
+    Settings.WriteBool('Options', 'CollapseQuestLog', wbCollapseQuestLog);
+    Settings.WriteBool('Options', 'CollapseQuestObjective', wbCollapseQuestObjective);
+    Settings.WriteBool('Options', 'CollapseQuestObjectiveTarget', wbCollapseQuestObjectiveTarget);
     Settings.WriteBool('Options', 'ShrinkButtons', wbShrinkButtons);
+    Settings.WriteBool('Options', 'CollapseScriptEntry', wbCollapseScriptEntry);
     Settings.WriteInteger('Options', 'ColumnWidth', ColumnWidth);
     Settings.WriteInteger('Options', 'RowHeight', RowHeight);
     //Settings.WriteBool('Options', 'IKnowWhatImDoing', wbIKnowWhatImDoing);
@@ -14805,8 +14955,8 @@ begin
   mniNavCheckForCircularLeveledLists.Visible :=
     mniNavCheckForErrors.Visible;
 
-  mniNavSetVWDAuto.Visible := mniNavCheckForErrors.Visible and (wbGameMode in [gmTES4, gmTES4R]);
-  mniNavSetVWDAutoInto.Visible := mniNavCheckForErrors.Visible and (wbGameMode in [gmTES4, gmTES4R]);
+  mniNavSetVWDAuto.Visible := mniNavCheckForErrors.Visible and wbIsOblivion;
+  mniNavSetVWDAutoInto.Visible := mniNavCheckForErrors.Visible and wbIsOblivion;
   mniNavLOManagersDirtyInfo.Visible := mniNavCheckForErrors.Visible and (Length(LOOTPluginInfos) <> 0);
 
   if wbManualCleaningAllow then begin
@@ -14894,11 +15044,14 @@ begin
   end;
 
   mniNavCopyAsWrapper.Visible := False;
-  if (wbGameMode <= gmFNV) and mniNavCopyAsOverride.Visible and IsMainRecord then
+  if not (wbIsFallout76 or wbIsMorrowind) and mniNavCopyAsOverride.Visible and IsMainRecord then
     mniNavCopyAsWrapper.Visible :=
-      (MainRecord.Signature = 'LVLN') or
+      (MainRecord.Signature = 'LVLB') or
       (MainRecord.Signature = 'LVLC') or
       (MainRecord.Signature = 'LVLI') or
+      (MainRecord.Signature = 'LVLN') or
+      (MainRecord.Signature = 'LVLP') or
+      (MainRecord.Signature = 'LVSC') or
       (MainRecord.Signature = 'LVSP');
   mniNavCopyAsSpawnRateOverride.Visible :=
     mniNavCopyAsWrapper.Visible;
@@ -17522,7 +17675,7 @@ begin
   NodeDatas[2].Element := MainRecord.RecordBySignature['EDID'];
   NodeDatas[3].Element := MainRecord.RecordBySignature['FULL'];
 
-  if wbGameMode in [gmTES4, gmTES4R] then begin
+  if wbIsOblivion then begin
     NodeDatas[4].Element := MainRecord.RecordBySignature['ENAM'];
 
     Rec := MainRecord.RecordBySignature['DATA'];
@@ -17559,7 +17712,7 @@ begin
   NodeDatas[2].Element := MainRecord.RecordBySignature['EDID'];
   NodeDatas[3].Element := MainRecord.RecordBySignature['FULL'];
 
-  if wbGameMode in [gmTES4, gmTES4R] then begin
+  if wbIsOblivion then begin
     NodeDatas[4].Element := MainRecord.RecordBySignature['ENAM'];
 
     Rec := MainRecord.RecordBySignature['BMDT'];
@@ -20255,7 +20408,7 @@ begin
   {Weapon Name}
   NodeDatas[3].Element := MainRecord.RecordBySignature['FULL'];
 
-  if wbGameMode in [gmTES4, gmTES4R] then begin
+  if wbIsOblivion then begin
     {Enchantment}
     NodeDatas[4].Element := MainRecord.RecordBySignature['ENAM'];
 
@@ -20493,9 +20646,9 @@ begin
         SetupTreeView(vstSpreadsheetArmor);
         SetupTreeView(vstSpreadSheetAmmo);
 
-        tbsWEAPSpreadsheet.TabVisible := (wbGameMode in [gmTES4, gmTES4R]) or wbIsSkyrim;
-        tbsARMOSpreadsheet.TabVisible := (wbGameMode in [gmTES4, gmTES4R]) or wbIsSkyrim;
-        tbsAMMOSpreadsheet.TabVisible := (wbGameMode in [gmTES4, gmTES4R]) or wbIsSkyrim;
+        tbsWEAPSpreadsheet.TabVisible := wbIsOblivion or wbIsSkyrim;
+        tbsARMOSpreadsheet.TabVisible := wbIsOblivion or wbIsSkyrim;
+        tbsAMMOSpreadsheet.TabVisible := wbIsOblivion or wbIsSkyrim;
 
         if wbForceTerminate then begin
           GeneralProgressNoAbortCheck('Loading of modules got terminated early. Editing is disabled.');

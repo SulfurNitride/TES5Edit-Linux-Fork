@@ -206,7 +206,6 @@ begin
   end
   else if SameText(Identifier, 'FileByName') then begin
     if (Args.Count = 1) and VarIsStr(Args.Values[0]) then begin
-      Value := Null;
       for i := Low(Files) to High(Files) do
         if SameText(Args.Values[0], Files[i].FileName) then begin
           Value := Files[i];
@@ -232,9 +231,11 @@ begin
               lFile := Files[i];
               Break;
             end;
+            if not Assigned(lFile) then
+              JvInterpreterErrorN(ieUnitNotFound, -1, Args.Values[0]);
         end
         else if not Supports(IInterface(Args.Values[0]), IwbFile, lFile) then
-          JvInterpreterError(ieIncompatibleTypes, -1);
+          JvInterpreterError(ieTypeMistmatch, -1);
 
         // determine if second arg is form id as integer or string
         if VarIsStr(Args.Values[1]) then

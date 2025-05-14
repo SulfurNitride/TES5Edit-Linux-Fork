@@ -10,7 +10,9 @@ Please do not use the tracker for general help and support on how to use xEdit.
 
 ## Releases
 
-Check for new versions on the following pages:
+The most recent builds are available through the [xEdit Discord](https://discord.com/invite/5t8RnNQ) in the `#xedit-builds` channel. The archive provided here is generic and works with all current game modes. See the [xEdit Versions](#xedit-versions) table in this document on how to properly use it.
+
+Less frequently updated already renamed packages can be found on the following pages:
 
 ### xEdit Releases
 
@@ -23,6 +25,7 @@ Check for new versions on the following pages:
 - [TES5VREdit](http://www.nexusmods.com/skyrim/mods/25859)
 - [SSEEdit](http://www.nexusmods.com/skyrimspecialedition/mods/164)
 - [FO76Edit](https://www.nexusmods.com/fallout76/mods/30)
+- [SF1Edit](https://www.nexusmods.com/starfield/mods/239)
 - [Mirror](https://github.com/TES5Edit/TES5Edit/releases)
 
 ### xLODGen Releases
@@ -39,11 +42,6 @@ Check for new versions on the following pages:
 ### xEdit Cleaning Guide
 
 With the 4.0 update, all previous guides are obsolete. Refer to [xEdit Quick Auto Clean](https://tes5edit.github.io/docs/7-mod-cleaning-and-error-checking.html#ThreeEasyStepstocleanMods).
-
-### Current Official Threads
-
-- [Bethesda.net](https://bethesda.net/community/topic/57570/relz-sseedit)
-- [AFK Mods](https://afkmods.iguanadons.net/index.php?/topic/3750-wipz-tes5edit/)
 
 ### Manuals
 
@@ -64,7 +62,7 @@ Getting started with xEdit development requires a properly configured Delphi env
 
 ### Install Delphi
 
-If you don't already have a Delphi environment, we recommend using [Delphi 11 Community Edition](https://www.embarcadero.com/products/delphi/starter).
+If you don't already have a Delphi environment, we recommend using [Delphi 12 Community Edition](https://www.embarcadero.com/products/delphi/starter).
 
 ### Install Dependencies
 
@@ -77,47 +75,52 @@ If you don't already have a Delphi environment, we recommend using [Delphi 11 Co
   - **enable** the _Do not store the Explicit properties into the DFM_ option.
 - Exit Delphi.
 - Clone the xEdit repo (if you haven't already) and initialize submodules (run `git submodule update --init --recursive` from the git root).
-- Navigate to the _External\jcl\jcl\source\include\\_ directory and copy **jcl.template.inc** to **jcld28win32.inc**. To build xEdit 64 bit, copy **jcl.template.inc** again, to **jcld28win64.inc**
-- Open _External\jcl\jcl\packages\JclPackagesD280.groupproj_.
+- Navigate to the _External\jcl\jcl\source\include\\_ directory and copy **jcl.template.inc** to **jcld29win32.inc**. To build xEdit 64 bit, copy **jcl.template.inc** again, to **jcld29win64.inc**
+- Open _External\jcl\jcl\packages\JclPackagesD290.groupproj_.
 - Build All, then install all packages (non-runtime packages with green icons).
 - Restart Delphi.
-- Open _External\jvcl\jvcl\packages\D28 Packages.groupproj_.
+- Open _External\jvcl\jvcl\packages\D29 Packages.groupproj_.
 - Navigate to Tools &rarr; Options.
 - Under Language &rarr; Delphi, add the below paths to the _Library_ option:
-  - _{TES5Edit repo}\External\jcl\jcl\lib\d28\win32_
+  - _{TES5Edit repo}\External\jcl\jcl\lib\d29\win32_
   - _{TES5Edit repo}\External\jcl\jcl\source\include_
 - Build All, then install all packages (non-runtime packages with green icons).
 - Restart Delphi.
 - Navigate to Tools &rarr; Options.
 - Under Language &rarr; Delphi, add the below path to the _Library_ option:
-  - _{TES5Edit repo}\External\jvcl\jvcl\lib\d28\win32_
+  - _{TES5Edit repo}\External\jvcl\jvcl\lib\d29\win32_
 - Restart Delphi.
-- Open _External\VirtualTrees\Packages\RAD Studio 11\VirtualTreeView.groupproj_.
-- Build All, then install **VirtualTreesD28.bpl**.
-- Open _External\FileContainer\FileContainer28.groupproj_.
-- Build All, then install **FileContainerD28.bpl**.
+- Open _External\VirtualTrees\Packages\RAD Studio 12\VirtualTreeView.groupproj_.
+- Build All, then install **VirtualTreesD29.bpl**.
+- Open _External\FileContainer\FileContainer29.groupproj_.
+- Build All, then install **FileContainerD29.bpl**.
 
 ### Important Note
 
 If you don't have commercial [DevExpress](https://www.devexpress.com/) components, you'll need to open _BethWorkBench.groupproj_ and ensure the Build Configuration is set to `LiteDebug`.
 
-### xEdit versions
+## xEdit versions
 
-Rename the xEdit executable based on the following table:
+All xEdit executable files can support all game modes. To choose which mode to use either:
+* Launch the application using the command line argument
+* Rename the xEdit executable to include the game mode
 
-| Game               | Executable Name     |
-|--------------------|---------------------|
-| Enderal            | `EnderalEdit.exe`   |
-| Enderal SE         | `EnderalSEEdit.exe` |
-| Oblivion           | `TES4Edit.exe`      |
-| Skyrim             | `TES5Edit.exe`      |
-| Skyrim SE          | `SSEEdit.exe`       |
-| Skyrim VR          | `TES5VREdit.exe`    |
-| Fallout 3          | `FO3Edit.exe`       |
-| Fallout: New Vegas | `FNVEdit.exe`       |
-| Fallout 4          | `FO4Edit.exe`       |
-| Fallout 4 VR       | `FO4VREdit.exe`     |
-| Fallout 76         | `FO76Edit.exe`      |
+
+| Game                | Executable Name     | Argument     |
+|---------------------|---------------------|--------------|
+| Enderal             | `EnderalEdit.exe`   | -Enderal     |
+| Enderal SE          | `EnderalSEEdit.exe` | -EnderalSE   |
+| Oblivion            | `TES4Edit.exe`      | -TES4        |
+| Oblivion Remastered | `TES4REdit.exe`     | -TES4R       |
+| Skyrim              | `TES5Edit.exe`      | -TES5        |
+| Skyrim SE           | `SSEEdit.exe`       | -SSE         |
+| Skyrim VR           | `TES5VREdit.exe`    | -TES5VR      |
+| Fallout 3           | `FO3Edit.exe`       | -FO3         |
+| Fallout: New Vegas  | `FNVEdit.exe`       | -FNV         |
+| Fallout 4           | `FO4Edit.exe`       | -FO4         |
+| Fallout 4 VR        | `FO4VREdit.exe`     | -FO4VR       |
+| Fallout 76          | `FO76Edit.exe`      | -FO76        |
+| Starfield           | `SF16Edit.exe`      | -SF1         |
 
 ## xEdit Updates
 
@@ -125,6 +128,6 @@ With each new version of xEdit, it is recommended to restore plugins from backup
 
 ### Changelog
 
-[What's New](http://tes5edit.github.io/whatsnew.html)
+See the [What's New](whatsnew.md) or view the `What's New` tab inside the application.
 
 The Changelog has been moved to the What's New document.

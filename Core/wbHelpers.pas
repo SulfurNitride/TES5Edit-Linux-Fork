@@ -266,12 +266,13 @@ end;
 
 procedure wbLeveledListCheckCircular(const aMainRecord: IwbMainRecord; aStack: PnxLeveledListCheckCircularStack);
 var
-  Stack    : TnxLeveledListCheckCircularStack;
-  s          : string;
+  Stack      : TnxLeveledListCheckCircularStack;
+  s, s1      : string;
   CER        : IwbContainerElementRef;
   Entries    : IwbContainerElementRef;
   Entry      : IwbContainerElementRef;
   i          : Integer;
+  Sig        : TwbSignature;
   Reference  : IwbElement;
   MainRecord : IwbMainRecord;
   RefPath    : string;
@@ -300,10 +301,20 @@ begin
     Exit;
   aMainRecord.Tag;
 
-  if wbGameMode in [gmTES4, gmTES4R] then
-    RefPath := 'Reference'
+  Sig := aMainRecord.Signature;
+  if Sig = 'LVLB' then s1 := 'Base Form';
+  if Sig = 'LVLC' then s1 := 'Creature';
+  if Sig = 'LVLI' then s1 := 'Item';
+  if Sig = 'LVLN' then s1 := 'NPC';
+  if Sig = 'LVLP' then s1 := 'Pack In';
+  if Sig = 'LVPC' then s1 := 'Perk Card';
+  if Sig = 'LVSC' then s1 := 'Space Cell';
+  if Sig = 'LVSP' then s1 := 'Spell';
+
+  if wbIsOblivion then
+    RefPath := s1
   else
-    RefPath := 'LVLO\Reference';
+    RefPath := 'LVLO\' + s1;
 
   if Supports(aMainRecord, IwbContainerElementRef, CER) then begin
     if Supports(CER.ElementByName['Leveled List Entries'], IwbContainerElementRef, Entries) then begin
@@ -1170,7 +1181,7 @@ begin
     // TMemIniFile reads from string list directly, not supported by MO
     with TIniFile.Create(iniName) do try
       with TStringList.Create do try
-        if wbGameMode in [gmTES4, gmTES4R, gmFO3, gmFNV] then begin
+        if wbIsOblivion or wbIsFallout3 then begin
           s := StringReplace(ReadString('Archive', 'sArchiveList', ''), ',' ,#10, [rfReplaceAll]);
           // Update.bsa is hardcoded to load in FNV
           if wbGameMode = gmFNV then begin
@@ -1238,7 +1249,7 @@ begin
         mIni := TIniFile.Create(IniName);
         try
           with TStringList.Create do try
-            if wbGameMode in [gmTES4, gmTES4R, gmFO3, gmFNV] then begin
+            if wbIsOblivion or wbIsFallout3 then begin
               s := CheckAddFilesToString(mIni, cIni, 'Archive', 'sArchiveList');
               // Update.bsa is hardcoded to load in FNV
               if wbGameMode = gmFNV then begin

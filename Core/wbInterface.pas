@@ -58,7 +58,7 @@ var
     Major   : 4;
     Minor   : 1;
     Release : 5;
-    Build   : 'n';
+    Build   : 'o';
     Title   : '';
   );
 
@@ -178,6 +178,7 @@ var
   wbPseudoMedium                     : Boolean    = False;
   wbHasAddedLightSupport             : Boolean    = False;
   wbHasAddedMediumSupport            : Boolean    = False;
+  wbAllowEditHEDRVersion             : Boolean    = False;
   wbAllowEditGameMaster              : Boolean    = False;
   wbIgnoreUpdate                     : Boolean    = False;
   wbPseudoUpdate                     : Boolean    = False;
@@ -248,6 +249,28 @@ var
   wbCollapseDestruction              : Boolean    = True;
   wbCollapseLocations                : Boolean    = True;
   wbCollapseNavmesh                  : Boolean    = True;
+  wbCollapseOther                    : Boolean    = True; // catch all for things not explicitly defined with their own value
+  wbCollapsePerk                     : Boolean    = True;
+  wbCollapseKeywords                 : Boolean    = True;
+  wbCollapseFactionRanks             : Boolean    = True;
+  wbCollapseOwnership                : Boolean    = True;
+  wbCollapseObjectPaletteDefaults    : Boolean    = True;
+  wbCollapseTraversal                : Boolean    = True;
+  wbCollapseBaseFormComponent        : Boolean    = True;
+  wbCollapseVehicleConfig            : Boolean    = True;
+  wbCollapseWeatherTimeOfDay         : Boolean    = True;
+  wbCollapseWeatherCloudTextures     : Boolean    = True;
+  wbCollapseWeatherCloudSpeed        : Boolean    = True;
+  wbCollapseWeatherCloudAlphas       : Boolean    = True;
+  wbCollapseRagdoll                  : Boolean    = True;
+  wbCollapseDirectionRotation        : Boolean    = True;
+  wbCollapseMaxHeightData            : Boolean    = True;
+  wbCollapseAliases                  : Boolean    = True;
+  wbCollapseQuestStage               : Boolean    = True;
+  wbCollapseQuestLog                 : Boolean    = True;
+  wbCollapseQuestObjective           : Boolean    = True;
+  wbCollapseQuestObjectiveTarget     : Boolean    = True;
+  wbCollapseScriptEntry              : Boolean    = True;
   wbDontDrawColorText                : Boolean    = True;
   wbReportInjected                   : Boolean    = True;
   wbNoFullInShortName                : Boolean    = True;
@@ -823,6 +846,7 @@ type
   IwbNamedDef = interface;
   IwbValueDef = interface;
   IwbMainRecord = interface;
+  IwbSubRecord = interface;
 
   TwbElementState = (
     esModified,
@@ -1051,6 +1075,7 @@ type
     function GetElementType: TwbElementType;
     function GetContainer: IwbContainer;
     function GetContainingMainRecord: IwbMainRecord;
+    function GetContainingSubRecord: IwbSubRecord;
     function GetFile: IwbFile;
     function GetReferenceFile: IwbFile;
     function GetSortOrder: Integer;
@@ -1170,6 +1195,8 @@ type
       read GetContainer;
     property ContainingMainRecord: IwbMainRecord
       read GetContainingMainRecord;
+    property ContainingSubRecord: IwbSubRecord
+      read GetContainingSubRecord;
     property _File: IwbFile
       read GetFile;
     property ReferenceFile: IwbFile

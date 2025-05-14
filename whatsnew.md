@@ -4,6 +4,113 @@ If you share your mods on Nexus Mods and use xEdit as a major component in devel
 
 xEdit is crucial to our shared modding community and your contribution - no matter the size - is invaluable and deeply appreciated.
 
+# What's New in xEdit 4.1.5o?
+
+## Bugfixes / Minor Changes
+
+* #1425 - Multiple Definition updates. Scripts may need updates.
+    * [TES4/TES4R] CREA - Remove AfterLoad, wasn't actually needed and was causing an issue with Delta Patches.
+    * [TES4R] CELL \ XTLI - Decoded as Thread Level.
+    * [TES4R] REFR \ XAAG - Appears to be a GUID, decoded as such for now. Scripts should Get/Set edit value as proper GUID string.
+    * [SF1] SurfaceTreePatternSwapInfo_Component fix for decoding error
+    * [TES5/FO4/FO76/SF1] QUST - Added auto collapse and summaries to VMAD, Stages, Objectives, and Objective Targets
+    * [ALL] Conditions - Add proper Sort Keys to enable correct Alignment.
+    * [ALL] Conditions - When changing function it should not update the view for relevant field types.
+    * [ALL] CREA/NPC_ \ ACBS - Update Level handling to respect the range constraint enforced by the Game/CKs.
+    * [ALL] Fix crash when right clicking container children.
+    * UI - Renamed Overlay to Update on the Module Selection Form.
+    * UI - Added more collapse view toggle options (still not complete)
+    * xEdit - Force file flags based on file extension for all game modes where applicable.
+    * xEdit - Fix enless loading due to GRUP headers in modules have a size too small for their own data.
+    * xEdit - Fix Copy as Wrapper handling for Leveled Lists 
+
+# What's New in xEdit 4.1.5n?
+
+## Oblivion Remaster support
+
+Added support to load Oblivion Remaster content. There is a new game mode argument TES4R to facilitate this.
+
+## Bugfixes / Minor Changes
+
+* #1415 - Multiple Definition updates. Scripts may need updates.
+    * Feature: Add option in filter dialog for element contains text.
+    * Scripting/API: Add new function RecordFromFileByFormID to get a record interface.
+    * [SF1] Added EFRM and EORI which are present on Surface
+    * [SF1] Component DAT2\Block Height Adjustments added names for entities.
+    * [SF1] Component DAT2\Surface Tree Pattern Swap partiall decoded.
+    * [SF1] Component DATA\Overlay Designated Placement Info decoded.
+    * [SF1] Renamed Rows/Columns headers for component Block Height Adjustments and SFPT sub-records. Which were backwards and mislabeled in cases. This will impact scripts.
+* #1412 - Multiple Definition updates. Scripts may need updates.
+    * [TES3] Major decoding work
+    * [TES4] ARMO - Group Model Sub-Records
+    * [TES4] CLOT - Group Model Sub-Records
+    * [TES4] CREA \ NIFZ - Change name to Model List to make CK
+    * [TES4R] CELL - New XLRL and XTLI subrecords
+    * [TES4R] REFR - New XAAG and XACN subrecords
+    * [FO3/FNV/TES5/FO4/FO76] ARMO - Group Model Sub-Records
+    * [FO3/FNV/TES5/FO4/FO76] ARMA - Group Model Sub-Records
+    * [TES5] RACE - Update Tint Masks array
+    * [FO4] IDLM - Add PNAM/QNAM mutually exclusive sub-records with AfterSets and DontShows
+    * [FO4] INGR - Add PTRN Sub-Record
+    * [FO4] REFR - Add XPWR Sub-Record
+    * [FO4] ReferenceRecord - Add wbRagdoll and XHLT
+    * [FO76] PLYT - Add ANAM/BNAM names
+    * [SF1] ARMA - Group Model Sub-Records
+    * [SF1] COBJ \ CIFK - Decoded as Instanced Filter Keyword
+    * [SF1] INFO - Add TPIC, same as previous games.
+    * [SF1] WRLD \ CNAM - Exclude from being set when no Parent Worldspace is set.
+    * Scripting/API: Add gmTES3 as a recognized wbGameMode
+
+## Scripting improvements
+
+`function RecordFromFileByFormID(aeFile: IwbFile|string; aiFormID: integer|string): IwbMainRecord` can be used to get a main record interface.
+The file can be specified using a file interface or a string consisting of the module filename.
+The FormID can be specified using an integer value or a string.
+You can mix and match.
+
+Examples
+```pascal
+var
+  eFile : IwbFile;
+  rec   : IwbMainRecord;
+Begin
+  eFile := FileByName('Skyrim.esm');
+  rec := RecordFromFileByFormID(eFile, $0000000F);
+  rec := RecordFromFileByFormID(eFile, '0000000F');
+  rec := RecordFromFileByFormID('Skyrim.esm', '0000000F');
+end;
+```
+
+# What's New in xEdit 4.1.5m?
+
+## Bugfixes / Minor Changes
+
+* #1410 - [FO76] Updates for LIVE and PTS as of Feb 2 2025 version 0.2.1707.0
+* #1400 - Scripting API
+    * Scripting/API: Add functions GetValue and GetElementValues to return resolved values such as decoded hashes.
+    * Scripting/API: Allow adding masters with silent argument to prevent message log notification.
+    * Scripting/API: Add procedure AddMastersIfMissing to add multiple masters to a file with option to sort or silent add.
+* #1398 - [SF1] QUST\QDUP added from patch 1.14.74
+* #1396 - [TES3] Major decoding work.
+* #1393 - Multiple Definition updates.  Scripts may need updates.
+    * [ALL] Leveled Lists had "Reference" renamed to a list specific name. Scripts will need updates.
+    * [TES4] wbConditionFunctions - Add 3 missing OBSE Functions
+    * [TES4] - Collapse wbEffects to a single Variable
+    * [FO3/FNV] IDLE - Update ANAM
+    * [FO3/FNV] NAVI - Decoded the rest of NVMI, Added Summaries/Sorting
+    * [FO3/FNV] PACK - Cleanup Type Specific Flags
+    * [TES4/FO4] FLOR \ PFIG - Updated accepted form ids
+    * [TES5/FO4/FO76/SF1] NAVI - Made more consistent across the games
+* #1392 - [SF1] PERK\ATAN definition update
+
+## Scripting improvements
+
+`function GetValue(aElement: IwbElement): string` and `function GetElementValues(aElement: IwbElement; asPath: string): string` can be used to get the display value of an element. Useful for things like decoded texture hashes and such.
+
+`procedure AddMastersIfMissing(aeFile: IwbFile; akList: TStringList; abSortMasters: boolean = True; abSilent: boolean = False)` can be used to add multiple masters from the passed TStringList, optionally silent without message log notification.
+
+`procedure AddMasters(aeFile: IwbFile; akList: TStringList; abSortMasters: boolean = True; abSilent: boolean = False)` and `procedure AddMasterIfMissing(aeFile: IwbFile; asMasterFilename: string; abSortMasters: boolean = True; abSilent: boolean = False)` have been expanded to accept boolean arguments for abSortMasters and abSilent.
+
 # What's New in xEdit 4.1.5k?
 
 ## Bugfixes / Minor Changes
