@@ -9842,7 +9842,7 @@ var
     if wbGameMode >= gmFO3 then begin
       case wbGameMode of
         gmSF1                        : BasePtr.mrsVersion^ := 576;
-        gmFO76                       : BasePtr.mrsVersion^ := 201;
+        gmFO76                       : BasePtr.mrsVersion^ := 203;
         gmFO4, gmFO4VR               : BasePtr.mrsVersion^ := 131;
         gmSSE, gmTES5VR, gmEnderalSE : BasePtr.mrsVersion^ := 44;
         gmTES5, gmEnderal            : BasePtr.mrsVersion^ := 43;
