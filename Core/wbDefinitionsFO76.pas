@@ -373,7 +373,7 @@ type
   end;
 
 const
-  wbConditionFunctions : array[0..631] of TConditionFunction = (
+  wbConditionFunctions : array[0..637] of TConditionFunction = (
     (Index:   0; Name: 'GetWantBlocking'),
     (Index:   1; Name: 'GetDistance'; ParamType1: ptReference),
     (Index:   2; Name: 'AddItem'), { ObjID (Form ID), Count, Flag (Opt), Level (Opt), Equip (Opt) }
@@ -962,8 +962,10 @@ const
     (Index: 934; Name: 'GetLastHitLimbDamageMultiplier'; Desc: 'Gets the limb damage multipler'),
     (Index: 935; Name: 'IsLastDamageFromVATS'; Desc: 'True if last source of damage was from VATS'),
     (Index: 936; Name: 'IsLastDamageCripplingLimb'; Desc: 'True if last source of damage crippled a limb'),
+    (Index: 937; Name: 'GetCurrentCAMPWeatherHasKeyword'; ParamType1: ptKeyword),
+    (Index: 938; Name: 'GetCurrentWeatherOverrideHasKeyword'; ParamType1: ptKeyword),
     (Index: 5000; Name: 'IsInAirOrFloating'; Desc: 'Is the Havok state InAir or IsFloating?'),
-    (Index: 5001; Name: 'GetIsForm'),
+    (Index: 5001; Name: 'GetIsForm'; ParamType1: ptBaseObject),
     (Index: 5002; Name: 'GetIsInDailyOps'),
     (Index: 5003; Name: 'GetRadsHealthPercentage'),
     (Index: 5004; Name: 'PlayerHasQuest'; ParamType1: ptQuest),
@@ -974,6 +976,10 @@ const
     (Index: 8001; Name: 'StartDailyContent'),   //Param1: ptDailyContentGroup //Does nothing on the client
     (Index: 8002; Name: 'GetRemainingQuestTimeSeconds'),
     (Index: 8003; Name: 'IsCaravanAvailable'; ParamType1: ptFormList),
+    (Index: 8004; Name: 'CanFishHere'),
+    (Index: 8005; Name: 'IsFishingBaitSelected'; ParamType1: ptBaseObject),
+    (Index: 8006; Name: 'GetDepthInwater'),
+    (Index: 8007; Name: 'LocationHierarchyHasKeyword'; ParamType1: ptKeyword),
     (Index: 9000; Name: 'RemoveAchievement'; ParamType1: ptInteger),
     (Index: 9001; Name: 'IsPlayerInShelterOwned'),
     (Index: 9002; Name: 'IsPlayerInShelter'),
@@ -8491,7 +8497,9 @@ begin
       wbFloat('Addiction Chance'),
       wbFormIDCk('Sound - Consume', [SNDR, NULL]),
       wbFromVersion(171, wbFormIDCk('Health', [CURV, NULL])),
-      wbFromVersion(176, wbFormIDCk('Spoiled', [ALCH, NULL]))
+      wbFromVersion(176, wbFormIDCk('Spoiled', [ALCH, NULL])),
+      wbFromVersion(204, wbInteger('Is Canned', itU8, wbBoolEnum)),
+      wbFromVersion(204, wbFormIDCk('Canned Item Base', [ALCH, NULL]))
     ], cpNormal, True),
     wbLStringKC(DNAM, 'Addiction Name', 0, cpTranslate),
     wbEffectsReq,
@@ -9598,6 +9606,7 @@ begin
       wbUnknown
     ]),
     wbPLVD,
+    wbCITC,
     wbRArray('Entry Checks',
       wbRStruct('Entry Check', [
         wbEmpty(FCNR, 'Start Marker'),
@@ -9617,6 +9626,26 @@ begin
     wbCITC,
     wbConditions
   ], False, nil, cpNormal, False, nil {wbFACTAfterLoad}, wbConditionsAfterSet);
+
+  wbRecord(FISH, 'Fish',
+    //wbFlags(wb
+  [
+    wbEDID,
+    wbKeywords,
+    wbFloat(FISP),
+    wbFloat(FIDS),
+    wbFloat(FIES),
+    wbUnknown(FIHS),
+    wbUnknown(FILS),
+    wbFloat(FIHD),
+    wbFloat(FILD),
+    wbFloat(FIJS),
+    wbFloat(FIHJ),
+    wbFloat(FILJ),
+    wbFloat(FILA),
+    wbFloat(FIHA),
+    wbFormID(FIRI, 'Reel-In Item')
+  ]);
 
   wbRecord(FURN, 'Furniture',
     wbFlags(wbFlagsList([
@@ -12834,7 +12863,8 @@ begin
         {0x00000040} 'Unknown 7',
         {0x00000080} 'Unknown 8',
         {0x00000100} 'References Persist'
-      ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
+      wbUnknown
     ], cpNormal, True),
     wbEffectsReq,
     wbMIID
@@ -16236,7 +16266,7 @@ begin
   ])
   .IncludeFlag(dfIndexEditorID);
 
-  wbRecord(DMGT, 'Damage Type', [
+  wbRecord(DMGT, 'Damage Type Resist', [
     wbEDID,
     wbFULL,
     wbStruct(DNAM,'Damage Type', [
@@ -16245,7 +16275,8 @@ begin
         wbFormIDck('Actor Value', [AVIF, NULL])
       ]),
       wbFormIDck('Spell', [SPEL, NULL])
-    ])
+    ]),
+    wbFormIDCk(DAMA, 'Actor Value', [ACTI,NULL])
   ]);
 
   wbRecord(GDRY, 'God Rays', [
@@ -17159,6 +17190,7 @@ begin
   wbRecord(STMP, 'Snap Template', [
     wbEDID,
     wbPTRN,
+    wbXALG,
     wbFormIDCk(PNAM, 'Parent', [STMP]),
     wbRArray('Nodes', wbStruct(ENAM, 'Node', [
       wbInteger('Node ID', itU32),
@@ -17875,11 +17907,7 @@ begin
       wbFormID(WTDA, 'Visual'),
       wbFormID(WTDS, 'Sound')
     ], []),
-    wbInteger(WSAM, 'Sneak Attack Multiplier', itU32, wbFlags(wbFlagsList([
-      4, '2.25',
-      5, '2.5',
-      6, '2.75'
-    ])))
+    wbFloat(WSAM, 'Sneak Attack Multiplier')
   ], False, nil, cpNormal, False, nil{wbWEAPAfterLoad});
 
   wbRecord(WTHR, 'Weather',
@@ -18290,6 +18318,7 @@ begin
   wbAddGroupOrder(LOUT); //new in Fallout 76
   wbAddGroupOrder(DIST); //new in Fallout 76
   wbAddGroupOrder(PLYT);
+  wbAddGroupOrder(FISH);
   wbNexusModsUrl := 'https://www.nexusmods.com/fallout76/mods/30';
   {if wbToolMode = tmLODgen then
     wbNexusModsUrl := '';}
