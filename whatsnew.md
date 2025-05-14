@@ -21,7 +21,7 @@ xEdit is crucial to our shared modding community and your contribution - no matt
     * UI - Renamed Overlay to Update on the Module Selection Form.
     * UI - Added more collapse view toggle options (still not complete)
     * xEdit - Force file flags based on file extension for all game modes where applicable.
-    * xEdit - Fix enless loading due to GRUP headers in modules have a size too small for their own data.
+    * xEdit - Fix endless loading due to GRUP headers in modules have a size too small for their own data.
     * xEdit - Fix Copy as Wrapper handling for Leveled Lists 
 
 # What's New in xEdit 4.1.5n?
