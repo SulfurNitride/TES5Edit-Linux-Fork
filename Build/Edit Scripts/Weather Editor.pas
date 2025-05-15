@@ -9,8 +9,8 @@ unit WeatherEditor;
 
 const
   sCloudTexturesLocation = 'textures\sky\';
-  iColorEditorWidth = 170;
-  iColorEditorHeight = 50;
+  iColorEditorWidth = 70;
+  iColorEditorHeight = 22;
 
 var
   Weather: IInterface;
@@ -277,7 +277,7 @@ begin
     edCloudAlpha2.Text := GetElementEditValues(Weather, Format('JNAM\Layer #%d\Day', [Layer]));
     edCloudAlpha3.Text := GetElementEditValues(Weather, Format('JNAM\Layer #%d\Sunset', [Layer]));
     edCloudAlpha4.Text := GetElementEditValues(Weather, Format('JNAM\Layer #%d\Night', [Layer]));
-    if (wbGameMode = gmFO4) or (wbGameMode = gmFO4VR) then begin
+    if ((wbGameMode = gmFO4) or (wbGameMode = gmFO4VR)) and (GetElementNativeValues(Weather, 'Record Header\Form Version') >= 111) then begin
       edCloudAlpha5.Text := GetEditValue(ElementByIndex(ElementByPath(Weather, Format('JNAM\Layer #%d', [Layer])), 4));
       edCloudAlpha6.Text := GetEditValue(ElementByIndex(ElementByPath(Weather, Format('JNAM\Layer #%d', [Layer])), 5));
       edCloudAlpha7.Text := GetEditValue(ElementByIndex(ElementByPath(Weather, Format('JNAM\Layer #%d', [Layer])), 6));
@@ -436,8 +436,8 @@ function CreateLabel(Parent: TControl; Left, Top: Integer; LabelText: string): T
 begin
   Result := TLabel.Create(frm);
   Result.Parent := Parent;
-  Result.Left := Left;
-  Result.Top := Top;
+  Result.Left := Result.ScaleValue(Left);
+  Result.Top := Result.ScaleValue(Top);
   Result.Caption := LabelText;
 end;
 
@@ -448,10 +448,10 @@ begin
   Result := TPanel.Create(frm);
   Result.StyleElements := [seFont, seBorder];
   Result.Parent := Parent;
-  Result.Left := Left;
-  Result.Top := Top;
-  Result.Width := iColorEditorWidth;
-  Result.Height := iColorEditorHeight;
+  Result.Left := Result.ScaleValue(Left);
+  Result.Top := Result.ScaleValue(Top);
+  Result.Width := Result.ScaleValue(iColorEditorWidth);
+  Result.Height := Result.ScaleValue(iColorEditorHeight);
   Result.BevelOuter := bvNone;
   Result.Cursor := -21; //crHandPoint;
   // list of color elements in plugin
@@ -477,8 +477,8 @@ begin
   frm := TForm.Create(nil);
   try
     frm.Caption := Format('%s \ %s - %s Weather Editor', [GetFileName(Weather), Name(Weather), wbGameName]);
-    frm.Width := 860 + (CountTimes-4) * iColorEditorWidth;
-    frm.Height := 800;
+    frm.Width := frm.ScaleValue(525) + (CountTimes-4) * iColorEditorWidth;
+    frm.Height := frm.ScaleValue(550);
     frm.Position := poScreenCenter;
     frm.Color := clWindow;
     frm.KeyPreview := True;
@@ -496,8 +496,8 @@ begin
     lbCloudLayers := TCheckListBox.Create(frm);
     lbCloudLayers.Parent := tsClouds;
     lbCloudLayers.Align := alLeft;
-    lbCloudLayers.Width := 100;
-    lbCloudLayers.OnClick := lbCloudLayersClick;
+	lbCloudLayers.Width := lbCloudLayers.ScaleValue(75);
+	lbCloudLayers.OnClick := lbCloudLayersClick;
     lbCloudLayers.OnClickCheck := lbCloudLayersClickCheck;
     DisabledClouds := GetElementNativeValues(Weather, 'NAM1');
     for i := 0 to Pred(CountCloudLayers) do begin
@@ -521,37 +521,39 @@ begin
     pnlCloudEdit.Parent := pnlCloud;
     pnlCloudEdit.Align := alTop;
     pnlCloudEdit.BevelOuter := bvNone;
-    pnlCloudEdit.Height := 230;
+    pnlCloudEdit.Height := pnlCloudEdit.ScaleValue(220);
     
     imgCloud := TImage.Create(frm);
     imgCloud.Parent := pnlCloud;
-    imgCloud.Align := alClient;
     imgCloud.Proportional := True;
+	imgCloud.Align := alClient;
     imgCloud.Center := True;
     
-    CreateLabel(pnlCloudEdit, 12, 12, 'Texture');
+    CreateLabel(pnlCloudEdit, 5, 5, 'Texture:');
     cmbCloudTexture := TComboBox.Create(frm);
     cmbCloudTexture.Parent := pnlCloudEdit;
-    cmbCloudTexture.Top := 8;
-    cmbCloudTexture.Left := 70;
-    cmbCloudTexture.Width := 500;
-    cmbCloudTexture.DropDownCount := 30;
+    cmbCloudTexture.Top := cmbCloudTexture.ScaleValue(5);
+    cmbCloudTexture.Left := cmbCloudTexture.ScaleValue(50);
+    cmbCloudTexture.Width := cmbCloudTexture.ScaleValue(450);
+    cmbCloudTexture.DropDownCount := 20;
     cmbCloudTexture.Items.Assign(slCloudTextures);
     cmbCloudTexture.OnSelect := btnShowCloudTextureClick; // show texture when selecting from drop down list
 
     btnShowCloudTexture := TButton.Create(frm);
     btnShowCloudTexture.Parent := pnlCloudEdit;
-    btnShowCloudTexture.Left := cmbCloudTexture.Left + cmbCloudTexture.Width + 12;
-    btnShowCloudTexture.Top := cmbCloudTexture.Top - 2;
-    btnShowCloudTexture.Width := 100;
+    btnShowCloudTexture.Left := btnShowCloudTexture.ScaleValue(15);
+    btnShowCloudTexture.Top := btnShowCloudTexture.ScaleValue(30);
+    btnShowCloudTexture.Width := btnShowCloudTexture.ScaleValue(80);
     btnShowCloudTexture.Caption := 'Show Texture';
     btnShowCloudTexture.OnClick := btnShowCloudTextureClick;
     
     edCloudXSpeed := TLabeledEdit.Create(frm);
     edCloudXSpeed.Parent := pnlCloudEdit;
-    edCloudXSpeed.LabelPosition := lpLeft;
+    edCloudXSpeed.LabelPosition := lpAbove;
     edCloudXSpeed.EditLabel.Caption := 'X Speed';
-    edCloudXSpeed.Left := 70; edCloudXSpeed.Top := 40; edCloudXSpeed.Width := 70;
+    edCloudXSpeed.Left := frm.Width - edCloudXSpeed.ScaleValue(200); 
+	edCloudXSpeed.Top := edCloudXSpeed.ScaleValue(20); 
+	edCloudXSpeed.Width := edCloudXSpeed.ScaleValue(50);
 
     // only one speed value per cloud layer and no alpha in games before Skyrim
     if (wbGameMode = gmTES4) or (wbGameMode = gmFO3) or (wbGameMode = gmFNV) then
@@ -559,51 +561,85 @@ begin
     else begin
       edCloudYSpeed := TLabeledEdit.Create(frm);
       edCloudYSpeed.Parent := pnlCloudEdit;
-      edCloudYSpeed.LabelPosition := lpLeft;
+      edCloudYSpeed.LabelPosition := lpAbove;
       edCloudYSpeed.EditLabel.Caption := 'Y Speed';
-      edCloudYSpeed.Left := 200; edCloudYSpeed.Top := 40; edCloudYSpeed.Width := 70;
+      edCloudYSpeed.Left := frm.Width - edCloudYSpeed.ScaleValue(150); 
+	  edCloudYSpeed.Top := edCloudYSpeed.ScaleValue(20); 
+	  edCloudYSpeed.Width := edCloudYSpeed.ScaleValue(50);
 
-      edCloudAlpha1 := TLabeledEdit.Create(frm); edCloudAlpha1.Parent := pnlCloudEdit;
-      edCloudAlpha1.LabelPosition := lpLeft; edCloudAlpha1.EditLabel.Caption := 'Alpha';
-      edCloudAlpha1.Left := 62 + 0*iColorEditorWidth; edCloudAlpha1.Top := 155; edCloudAlpha1.Width := iColorEditorWidth - 50;
-      edCloudAlpha2 := TLabeledEdit.Create(frm); edCloudAlpha2.Parent := pnlCloudEdit;
-      edCloudAlpha2.LabelPosition := lpLeft; edCloudAlpha2.EditLabel.Caption := 'Alpha';
-      edCloudAlpha2.Left := 62 + 1*iColorEditorWidth; edCloudAlpha2.Top := 155; edCloudAlpha2.Width := iColorEditorWidth - 50;
-      edCloudAlpha3 := TLabeledEdit.Create(frm); edCloudAlpha3.Parent := pnlCloudEdit;
-      edCloudAlpha3.LabelPosition := lpLeft; edCloudAlpha3.EditLabel.Caption := 'Alpha';
-      edCloudAlpha3.Left := 62 + 2*iColorEditorWidth; edCloudAlpha3.Top := 155; edCloudAlpha3.Width := iColorEditorWidth - 50;
-      edCloudAlpha4 := TLabeledEdit.Create(frm); edCloudAlpha4.Parent := pnlCloudEdit;
-      edCloudAlpha4.LabelPosition := lpLeft; edCloudAlpha4.EditLabel.Caption := 'Alpha';
-      edCloudAlpha4.Left := 62 + 3*iColorEditorWidth; edCloudAlpha4.Top := 155; edCloudAlpha4.Width := iColorEditorWidth - 50;
-      if (wbGameMode = gmFO4) or (wbGameMode = gmFO4VR) then begin
-        edCloudAlpha5 := TLabeledEdit.Create(frm); edCloudAlpha5.Parent := pnlCloudEdit;
-        edCloudAlpha5.LabelPosition := lpLeft; edCloudAlpha5.EditLabel.Caption := 'Alpha';
-        edCloudAlpha5.Left := 62 + 4*iColorEditorWidth; edCloudAlpha5.Top := 155; edCloudAlpha5.Width := iColorEditorWidth - 50;
-        edCloudAlpha6 := TLabeledEdit.Create(frm); edCloudAlpha6.Parent := pnlCloudEdit;
-        edCloudAlpha6.LabelPosition := lpLeft; edCloudAlpha6.EditLabel.Caption := 'Alpha';
-        edCloudAlpha6.Left := 62 + 5*iColorEditorWidth; edCloudAlpha6.Top := 155; edCloudAlpha6.Width := iColorEditorWidth - 50;
-        edCloudAlpha7 := TLabeledEdit.Create(frm); edCloudAlpha7.Parent := pnlCloudEdit;
-        edCloudAlpha7.LabelPosition := lpLeft; edCloudAlpha7.EditLabel.Caption := 'Alpha';
-        edCloudAlpha7.Left := 62 + 6*iColorEditorWidth; edCloudAlpha7.Top := 155; edCloudAlpha7.Width := iColorEditorWidth - 50;
-        edCloudAlpha8 := TLabeledEdit.Create(frm); edCloudAlpha8.Parent := pnlCloudEdit;
-        edCloudAlpha8.LabelPosition := lpLeft; edCloudAlpha8.EditLabel.Caption := 'Alpha';
-        edCloudAlpha8.Left := 62 + 7*iColorEditorWidth; edCloudAlpha8.Top := 155; edCloudAlpha8.Width := iColorEditorWidth - 50;
+      edCloudAlpha1 := TLabeledEdit.Create(frm); 
+	  edCloudAlpha1.Parent := pnlCloudEdit;
+      edCloudAlpha1.LabelPosition := lpAbove; 
+	  edCloudAlpha1.EditLabel.Caption := '    Alpha';
+      edCloudAlpha1.Left := edCloudAlpha1.ScaleValue(15 + 0*iColorEditorWidth); 
+	  edCloudAlpha1.Top := edCloudAlpha1.ScaleValue(125); 
+	  edCloudAlpha1.Width := edCloudAlpha1.ScaleValue(iColorEditorWidth);
+      edCloudAlpha2 := TLabeledEdit.Create(frm); 
+	  edCloudAlpha2.Parent := pnlCloudEdit;
+      edCloudAlpha2.LabelPosition := lpAbove; 
+	  edCloudAlpha2.EditLabel.Caption := '     Alpha';
+      edCloudAlpha2.Left := edCloudAlpha2.ScaleValue(15 + 1*iColorEditorWidth); 
+	  edCloudAlpha2.Top := edCloudAlpha2.ScaleValue(125); 
+	  edCloudAlpha2.Width := edCloudAlpha2.ScaleValue(iColorEditorWidth);
+      edCloudAlpha3 := TLabeledEdit.Create(frm); 
+	  edCloudAlpha3.Parent := pnlCloudEdit;
+      edCloudAlpha3.LabelPosition := lpAbove; 
+	  edCloudAlpha3.EditLabel.Caption := '     Alpha';
+      edCloudAlpha3.Left := edCloudAlpha3.ScaleValue(15 + 2*iColorEditorWidth); 
+	  edCloudAlpha3.Top := edCloudAlpha3.ScaleValue(125); 
+	  edCloudAlpha3.Width := edCloudAlpha3.ScaleValue(iColorEditorWidth);
+      edCloudAlpha4 := TLabeledEdit.Create(frm); 
+	  edCloudAlpha4.Parent := pnlCloudEdit;
+      edCloudAlpha4.LabelPosition := lpAbove; 
+	  edCloudAlpha4.EditLabel.Caption := '     Alpha';
+      edCloudAlpha4.Left := edCloudAlpha4.ScaleValue(15 + 3*iColorEditorWidth); 
+	  edCloudAlpha4.Top := edCloudAlpha4.ScaleValue(125); 
+	  edCloudAlpha4.Width := edCloudAlpha4.ScaleValue(iColorEditorWidth);
+      if ((wbGameMode = gmFO4) or (wbGameMode = gmFO4VR)) and (GetElementNativeValues(Weather, 'Record Header\Form Version') >= 111) then begin
+        edCloudAlpha5 := TLabeledEdit.Create(frm); 
+		edCloudAlpha5.Parent := pnlCloudEdit;
+        edCloudAlpha5.LabelPosition := lpAbove; 
+		edCloudAlpha5.EditLabel.Caption := '     Alpha';
+        edCloudAlpha5.Left := edCloudAlpha5.ScaleValue(15 + 4*iColorEditorWidth); 
+		edCloudAlpha5.Top := edCloudAlpha5.ScaleValue(125); 
+		edCloudAlpha5.Width := edCloudAlpha5.ScaleValue(iColorEditorWidth);
+        edCloudAlpha6 := TLabeledEdit.Create(frm); 
+		edCloudAlpha6.Parent := pnlCloudEdit;
+        edCloudAlpha6.LabelPosition := lpAbove; 
+		edCloudAlpha6.EditLabel.Caption := '     Alpha';
+        edCloudAlpha6.Left := edCloudAlpha6.ScaleValue(15 + 5*iColorEditorWidth); 
+		edCloudAlpha6.Top := edCloudAlpha6.ScaleValue(125); 
+		edCloudAlpha6.Width := edCloudAlpha6.ScaleValue(iColorEditorWidth);
+        edCloudAlpha7 := TLabeledEdit.Create(frm); 
+		edCloudAlpha7.Parent := pnlCloudEdit;
+        edCloudAlpha7.LabelPosition := lpAbove; 
+		edCloudAlpha7.EditLabel.Caption := '     Alpha';
+        edCloudAlpha7.Left := edCloudAlpha7.ScaleValue(15 + 6*iColorEditorWidth);
+		edCloudAlpha7.Top := edCloudAlpha7.ScaleValue(125); 
+		edCloudAlpha7.Width := edCloudAlpha7.ScaleValue(iColorEditorWidth);
+        edCloudAlpha8 := TLabeledEdit.Create(frm); 
+		edCloudAlpha8.Parent := pnlCloudEdit;
+        edCloudAlpha8.LabelPosition := lpAbove; 
+		edCloudAlpha8.EditLabel.Caption := '     Alpha';
+        edCloudAlpha8.Left := edCloudAlpha8.ScaleValue(15 + 7*iColorEditorWidth); 
+		edCloudAlpha8.Top := edCloudAlpha8.ScaleValue(125); 
+		edCloudAlpha8.Width := edCloudAlpha8.ScaleValue(iColorEditorWidth);
       end;
     end;
 
     for i := 0 to Pred(CountTimes) do begin
-      lbl := CreateLabel(pnlCloudEdit, 12 + i*iColorEditorWidth, 80, slColorTimes[i]);
+      lbl := CreateLabel(pnlCloudEdit, 12 + i*iColorEditorWidth, 50, slColorTimes[i]);
       lbl.AutoSize := False;
-      lbl.Width := iColorEditorWidth;
+      lbl.Width := lbl.ScaleValue(iColorEditorWidth);
       lbl.Alignment := taCenter;
-      CreateColorEditor(pnlCloudEdit, 12 + i*iColorEditorWidth, 100, nil);
+      CreateColorEditor(pnlCloudEdit, 12 + i*iColorEditorWidth, 75, nil);
     end;
 
     btnApplyCloud := TButton.Create(frm);
     btnApplyCloud.Parent := pnlCloudEdit;
-    btnApplyCloud.Left := btnShowCloudTexture.Left;
-    btnApplyCloud.Top := 190;
-    btnApplyCloud.Width := 100;
+    btnApplyCloud.Left := btnShowCloudTexture.Left + btnApplyCloud.ScaleValue(100);
+    btnApplyCloud.Top := btnApplyCloud.ScaleValue(30);
+    btnApplyCloud.Width := btnApplyCloud.ScaleValue(100);
     btnApplyCloud.Caption := 'Apply Changes';
     btnApplyCloud.OnClick := btnApplyCloudClick;
 
@@ -633,13 +669,13 @@ begin
         if i = 0 then begin
           lbl := CreateLabel(sbx, 120 + j*iColorEditorWidth, 8, slColorTimes[j]);
           lbl.AutoSize := False;
-          lbl.Width := iColorEditorWidth;
+          lbl.Width := lbl.ScaleValue(Integer(iColorEditorWidth));
           lbl.Alignment := taCenter;
         end;
         if j = 0 then begin
-          lbl := CreateLabel(sbx, 12, 28 + Succ(i)*iColorEditorHeight - iColorEditorHeight div 2 - 5, Name(e2));
+          lbl := CreateLabel(sbx, 5, 25 + Succ(i)*iColorEditorHeight - iColorEditorHeight div 2 - 5, Name(e2));
           lbl.AutoSize := False;
-          lbl.Width := 100;
+          lbl.Width := lbl.ScaleValue(110);
           lbl.Alignment := taRightJustify;
         end;
         CreateColorEditor(sbx, 120 + j*iColorEditorWidth, 28 + i*iColorEditorHeight, ElementByIndex(e2, j));
@@ -649,9 +685,9 @@ begin
 
     btnApplyWeatherColors := TButton.Create(frm);
     btnApplyWeatherColors.Parent := sbx;
-    btnApplyWeatherColors.Width := 100;
-    btnApplyWeatherColors.Left := 120 + CountTimes*iColorEditorWidth - btnApplyWeatherColors.Width;
-    btnApplyWeatherColors.Top := 40 + Succ(i)*iColorEditorHeight;
+    btnApplyWeatherColors.Width := btnApplyWeatherColors.ScaleValue(100);
+    btnApplyWeatherColors.Left := btnApplyWeatherColors.ScaleValue(Integer(120 + CountTimes*iColorEditorWidth - btnApplyWeatherColors.Width));
+    btnApplyWeatherColors.Top := btnApplyWeatherColors.ScaleValue(Integer(40 + Succ(i)*iColorEditorHeight));
     btnApplyWeatherColors.Caption := 'Apply Changes';
     btnApplyWeatherColors.OnClick := btnApplyWeatherColorsClick;
 
@@ -673,27 +709,27 @@ begin
         e2 := ElementByPath(ElementByIndex(e1, i), 'Directional');
         for j := 0 to Pred(ElementCount(e2)) do begin
           if j = 0 then begin
-            lbl := CreateLabel(sbx, 120 + i*iColorEditorWidth, 8, slColorTimes[i]);
+            lbl := CreateLabel(sbx, 75 + i*iColorEditorWidth, 8, slColorTimes[i]);
             lbl.AutoSize := False;
-            lbl.Width := iColorEditorWidth;
+            lbl.Width := lbl.ScaleValue(Integer(iColorEditorWidth));
             lbl.Alignment := taCenter;
           end;
           if i = 0 then begin
-            lbl := CreateLabel(sbx, 12, 28 + Succ(j)*iColorEditorHeight - iColorEditorHeight div 2 - 5, Name(ElementByIndex(e2, j)));
+            lbl := CreateLabel(sbx, -50, 28 + Succ(j)*iColorEditorHeight - iColorEditorHeight div 2 - 5, Name(ElementByIndex(e2, j)));
             lbl.AutoSize := False;
-            lbl.Width := 100;
+            lbl.Width := lbl.ScaleValue(100);
             lbl.Alignment := taRightJustify;
           end;
-          CreateColorEditor(sbx, 120 + i*iColorEditorWidth, 28 + j*iColorEditorHeight, ElementByIndex(e2, j));
+          CreateColorEditor(sbx, 75 + i*iColorEditorWidth, 28 + j*iColorEditorHeight, ElementByIndex(e2, j));
           Inc(CountLightingColors);
         end;
       end;
 
       btnApplyLightingColors := TButton.Create(frm);
       btnApplyLightingColors.Parent := sbx;
-      btnApplyLightingColors.Width := 100;
-      btnApplyLightingColors.Left := 120 + CountTimes*iColorEditorWidth - btnApplyLightingColors.Width;
-      btnApplyLightingColors.Top := 40 + Succ(j)*iColorEditorHeight;
+      btnApplyLightingColors.Width := btnApplyLightingColors.ScaleValue(100);
+      btnApplyLightingColors.Left := btnApplyLightingColors.ScaleValue(Integer(120 + CountTimes*iColorEditorWidth - btnApplyLightingColors.Width));
+      btnApplyLightingColors.Top := btnApplyLightingColors.ScaleValue(Integer(40 + Succ(j)*iColorEditorHeight));
       btnApplyLightingColors.Caption := 'Apply Changes';
       btnApplyLightingColors.OnClick := btnApplyLightingColorsClick;
     end;
@@ -705,24 +741,29 @@ begin
 
     btnCopyClouds := TButton.Create(frm);
     btnCopyClouds.Parent := tsTools;
-    btnCopyClouds.Left := 16; btnCopyClouds.Top := 16; btnCopyClouds.Width := 200;
+    btnCopyClouds.Left := btnCopyClouds.ScaleValue(16); 
+	btnCopyClouds.Top := btnCopyClouds.ScaleValue(16); 
+	btnCopyClouds.Width := btnCopyClouds.ScaleValue(200);
     btnCopyClouds.Caption := 'Copy clouds from';
     btnCopyClouds.OnClick := btnCopyCloudsClick;
 
     btnCopyWeatherColors := TButton.Create(frm);
     btnCopyWeatherColors.Parent := tsTools;
-    btnCopyWeatherColors.Left := 16; btnCopyWeatherColors.Top := 46; btnCopyWeatherColors.Width := 200;
+    btnCopyWeatherColors.Left := btnCopyWeatherColors.ScaleValue(16); 
+	btnCopyWeatherColors.Top := btnCopyWeatherColors.ScaleValue(46); 
+	btnCopyWeatherColors.Width := btnCopyWeatherColors.ScaleValue(200);
     btnCopyWeatherColors.Caption := 'Copy weather colors from';
     btnCopyWeatherColors.OnClick := btnCopyWeatherColorsClick;
 
     if IsFormat3 then begin
       btnCopyLightingColors := TButton.Create(frm);
       btnCopyLightingColors.Parent := tsTools;
-      btnCopyLightingColors.Left := 16; btnCopyLightingColors.Top := 76; btnCopyLightingColors.Width := 200;
+      btnCopyLightingColors.Left := btnCopyLightingColors.ScaleValue(16); 
+	  btnCopyLightingColors.Top := btnCopyLightingColors.ScaleValue(76); 
+	  btnCopyLightingColors.Width := btnCopyLightingColors.ScaleValue(200);
       btnCopyLightingColors.Caption := 'Copy lighting colors from';
       btnCopyLightingColors.OnClick := btnCopyLightingColorsClick;
     end;
-    
 
     frm.ShowModal;
   finally
@@ -800,10 +841,6 @@ begin
     Exit;
   end;
   // time spans for colors
-  if (wbGameMode = gmFO4) or (wbGameMode = gmFO4VR) then
-    sColorTimes := 'Sunrise,Day,Sunset,Night,Early Sunrise,Late Sunrise,Early Sunset,Late Sunset'
-  else
-    sColorTimes := 'Sunrise,Day,Sunset,Night';
 end;
 
 //============================================================================
@@ -811,8 +848,13 @@ function Process(e: IInterface): integer;
 begin
   if Signature(e) <> 'WTHR' then
     MessageDlg(Format('The selected record %s is not a weather', [Name(e)]), mtInformation, [mbOk], 0)
-  else
-    DoWeatherEditor(e);
+  else begin
+    if ((wbGameMode = gmFO4) or (wbGameMode = gmFO4VR)) and (GetElementNativeValues(e, 'Record Header\Form Version') >= 111) then
+      sColorTimes := 'Sunrise,Day,Sunset,Night,Early-Sunrise,Late-Sunrise,Early-Sunset,Late-Sunset'
+    else
+      sColorTimes := 'Sunrise,Day,Sunset,Night';  
+	DoWeatherEditor(e);
+  end;
 
   Result := 1;
 end;
