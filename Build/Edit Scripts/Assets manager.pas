@@ -298,8 +298,8 @@ begin
   frm := TForm.Create(nil);
   try
     frm.Caption := wbGameName + ' Assets Manager';
-    frm.Width := 800;
-    frm.Height := 750;
+    frm.Width := frm.ScaleValue(525);
+    frm.Height := frm.ScaleValue(460);
     frm.Position := poScreenCenter;
     frm.BorderStyle := bsDialog;
     frm.PopupMode := pmAuto;
@@ -309,35 +309,33 @@ begin
 
     clbAssets := TCheckListBox.Create(frm);
     clbAssets.Parent := frm;
-    clbAssets.Top := 25;
-    clbAssets.Left := 10;
-    clbAssets.Width := 250;
-    clbAssets.Height := 250;
+    clbAssets.Top := clbAssets.ScaleValue(15);
+    clbAssets.Left := clbAssets.ScaleValue(5);
+    clbAssets.Width := clbAssets.ScaleValue(185);
+    clbAssets.Height := clbAssets.ScaleValue(155);
     clbAssets.Items.AddStrings(slAssetsType);
     clbAssets.CheckAll(cbChecked, False, False);
 
     lbl := TLabel.Create(frm);
     lbl.Parent := frm;
-    lbl.Top := clbAssets.Top - 25;
+    lbl.Top := clbAssets.Top - lbl.ScaleValue(18);
     lbl.Left := clbAssets.Left;
-	lbl.Height := 10;
     lbl.Caption := 'Processed assets';
     
     clbContainers := TCheckListBox.Create(frm);
     clbContainers.Parent := frm;
-    clbContainers.Top := clbAssets.Top + clbAssets.Height + 25;
+    clbContainers.Top := clbAssets.Top + clbAssets.Height + clbContainers.ScaleValue(15);
     clbContainers.Left := clbAssets.Left;
-    clbContainers.Width := 250;
-    clbContainers.Height := 350;
+    clbContainers.Width := clbAssets.Width;
+    clbContainers.Height := clbContainers.ScaleValue(215);
     for i := 0 to Pred(slContainers.Count) do
       clbContainers.Items.Add(SimpleName(slContainers[i]));
     clbContainers.CheckAll(cbChecked, False, False);
 	
     lbl := TLabel.Create(frm);
     lbl.Parent := frm;
-    lbl.Top := clbContainers.Top - 25;
+    lbl.Top := clbContainers.Top - lbl.ScaleValue(18);
     lbl.Left := clbContainers.Left;
-	lbl.Height := 10;
     lbl.Caption := 'Processed containers';
     
     mnPopup := TPopupMenu.Create(frm);
@@ -355,8 +353,8 @@ begin
     rbModeCheck := TRadioButton.Create(frm);
     rbModeCheck.Parent := frm;
     rbModeCheck.Top := clbAssets.Top;
-    rbModeCheck.Left := clbAssets.Left + clbAssets.Width + 10;
-    rbModeCheck.Width := 235;
+    rbModeCheck.Left := clbAssets.Left + clbAssets.Width + rbModeCheck.ScaleValue(5);
+    rbModeCheck.Width := rbModeCheck.ScaleValue(155);
     rbModeCheck.Font.Style := [fsBold];
     rbModeCheck.Caption := 'Check for missing assets';
     rbModeCheck.Checked := True;
@@ -366,17 +364,17 @@ begin
     lbl.Parent := frm;
     lbl.AutoSize := False;
     lbl.Wordwrap := True;
-    lbl.Top := rbModeCheck.Top + 20;
-    lbl.Left := rbModeCheck.Left + 20;
-    lbl.Width := 475;
-    lbl.Height := 100;
+    lbl.Top := rbModeCheck.Top + lbl.ScaleValue(15);
+    lbl.Left := rbModeCheck.Left + lbl.ScaleValue(5);
+    lbl.Width := lbl.ScaleValue(290);
+    lbl.Height := lbl.ScaleValue(50);
     lbl.Caption := 'Process all selected records and check referenced asset files for existence in selected containers. Useful to find out if all required files are present for particular mod.';
 
     rbModeList := TRadioButton.Create(frm);
     rbModeList.Parent := frm;
-    rbModeList.Top := rbModeCheck.Top + 110;
+    rbModeList.Top := rbModeCheck.Top + rbModeList.ScaleValue(70);
     rbModeList.Left := rbModeCheck.Left;
-    rbModeList.Width := 210;
+    rbModeList.Width := rbModeList.ScaleValue(140);
     rbModeList.Font.Style := [fsBold];
     rbModeList.Caption := 'List referenced assets';
     rbModeList.OnClick := rbModeClick;
@@ -385,26 +383,26 @@ begin
     lbl.Parent := frm;
     lbl.AutoSize := False;
     lbl.Wordwrap := True;
-    lbl.Top := rbModeList.Top + 20;
-    lbl.Left := rbModeList.Left + 20;
-    lbl.Width := 475;
-    lbl.Height := 100;
+    lbl.Top := rbModeList.Top + lbl.ScaleValue(15);
+    lbl.Left := rbModeList.Left + lbl.ScaleValue(5);
+    lbl.Width := lbl.ScaleValue(310);
+    lbl.Height := lbl.ScaleValue(35);
     lbl.Caption := 'List asset files referenced by selected records. All assets are shown no matter if they exist in selected containers or not.';
 
     rgList := TRadioGroup.Create(frm);
     rgList.Parent := frm;
-    rgList.Top := rbModeList.Top + 80;
-    rgList.Left := rbModeList.Left + 20;
-    rgList.Height := 100;
-    rgList.Width := 175; 
+    rgList.Top := rbModeList.Top + rgList.ScaleValue(50);
+    rgList.Left := rbModeList.Left + rgList.ScaleValue(5);
+    rgList.Height := rgList.ScaleValue(65);
+    rgList.Width := rgList.ScaleValue(115); 
 	rgList.Items.Text := 'to Messages Tab'#13'to CSV file'#13'to CK import file';
     rgList.ItemIndex := 0;
     
     rbModeCopy := TRadioButton.Create(frm);
     rbModeCopy.Parent := frm;
-    rbModeCopy.Top := rgList.Top + rgList.Height + 20;
+    rbModeCopy.Top := rgList.Top + rgList.Height + rbModeCopy.ScaleValue(5);
     rbModeCopy.Left := rbModeCheck.Left;
-    rbModeCopy.Width := 225;
+    rbModeCopy.Width := rbModeCopy.ScaleValue(150);
     rbModeCopy.Font.Style := [fsBold];
     rbModeCopy.Caption := 'Copy referenced assets';
     rbModeCopy.OnClick := rbModeClick;
@@ -413,71 +411,71 @@ begin
     lbl.Parent := frm;
     lbl.AutoSize := False;
     lbl.Wordwrap := True;
-    lbl.Top := rbModeCopy.Top + 20;
-    lbl.Left := rbModeCopy.Left + 20;
-    lbl.Width := 475;
-    lbl.Height := 170;
+    lbl.Top := rbModeCopy.Top + lbl.ScaleValue(15);
+    lbl.Left := rbModeCopy.Left + lbl.ScaleValue(5);
+    lbl.Width := lbl.ScaleValue(300);
+    lbl.Height := lbl.ScaleValue(100);
     lbl.Caption := 'Copy assets used in a mod to the separate destination folder retaining directory structure. Useful to package mod for distribution. You might want to deselect the game''s BSA archives to avoid copying vanilla files. Existing files in destination folder are not overwritten.';
 
     edPath := TLabeledEdit.Create(frm);
     edPath.Parent := frm;
     edPath.Left := lbl.Left;
     edPath.Top := lbl.Top + lbl.Height;
-    edPath.Width := 450;
+    edPath.Width := edPath.ScaleValue(275);
     edPath.LabelPosition := lpAbove;
     edPath.EditLabel.Caption := 'Destination folder';
 
     btnPath := TButton.Create(frm);
     btnPath.Parent := frm;
-    btnPath.Top := edPath.Top + 3;
-    btnPath.Left := edPath.Left + edPath.Width + 5;
-    btnPath.Width := 40;
-    btnPath.Height := 30;
+    btnPath.Top := edPath.Top;
+    btnPath.Left := edPath.Left + edPath.Width + btnPath.ScaleValue(3);
+    btnPath.Width := btnPath.ScaleValue(35);
+    btnPath.Height := btnPath.ScaleValue(22);
     btnPath.Caption := '...';
     btnPath.OnClick := btnPathClick;
     
     chkSkipChecksums := TCheckBox.Create(frm);
     chkSkipChecksums.Parent := frm;
-    chkSkipChecksums.Top := edPath.Top + edPath.Height + 5;
+    chkSkipChecksums.Top := edPath.Top + edPath.Height;
     chkSkipChecksums.Left := edPath.Left;
-    chkSkipChecksums.Width := 375;
-	chkSkipChecksums.Height := 30;
+    chkSkipChecksums.Width := chkSkipChecksums.ScaleValue(250);
+	chkSkipChecksums.Height := chkSkipChecksums.ScaleValue(20);
     chkSkipChecksums.Caption := 'Skip copying files with matching checksums';
 
     lbl := TLabel.Create(frm);
     lbl.Parent := frm;
     lbl.AutoSize := False;
     lbl.Wordwrap := True;
-    lbl.Top := chkSkipChecksums.Top + chkSkipCheckSums.Height + 10;
+    lbl.Top := chkSkipChecksums.Top + chkSkipCheckSums.Height + lbl.ScaleValue(5);
     lbl.Left := chkSkipChecksums.Left;
-    lbl.Width := 475;
-    lbl.Height := 60;
+    lbl.Width := lbl.ScaleValue(275);
+    lbl.Height := lbl.ScaleValue(45);
     lbl.Caption := 'Keep in mind that disabling processing of meshes also disables processing of textures used in meshes.';
 
     btnChecksums := TButton.Create(frm);
     btnChecksums.Parent := frm;
-    btnChecksums.Top := frm.Height - 80;
-    btnChecksums.Left := 10;
-    btnChecksums.Width := 140;
-    btnChecksums.Height := 30;
+    btnChecksums.Top := frm.Height - btnChecksums.ScaleValue(55);
+    btnChecksums.Left := clbAssets.Left;
+    btnChecksums.Width := btnChecksums.ScaleValue(90);
+    btnChecksums.Height := btnChecksums.ScaleValue(20);
     btnChecksums.Caption := 'Build cheksums';
     btnChecksums.OnClick := btnChecksumsClick;    
 	
 	btnOk := TButton.Create(frm);
     btnOk.Parent := frm;
-    btnOk.Top := frm.Height - 80;
-    btnOk.Left := frm.Width - 210;
-    btnOk.Width := 90;
-	btnOk.Height := 30;
+    btnOk.Top := frm.Height - btnOk.ScaleValue(55);
+    btnOk.Left := frm.Width - btnOk.ScaleValue(115);
+    btnOk.Width := btnOk.ScaleValue(50);
+	btnOk.Height := btnOk.ScaleValue(20);
     btnOk.Caption := 'OK';
     btnOk.ModalResult := mrOk;
 
     btnCancel := TButton.Create(frm);
     btnCancel.Parent := frm;
-    btnCancel.Top := frm.Height - 80;
-    btnCancel.Left := frm.Width - 105;
-    btnCancel.Width := 90;
-	btnCancel.Height := 30;
+    btnCancel.Top := frm.Height - btnCancel.ScaleValue(55);
+    btnCancel.Left := frm.Width - btnCancel.ScaleValue(60);
+    btnCancel.Width := btnCancel.ScaleValue(50);
+	btnCancel.Height := btnCancel.ScaleValue(20);
     btnCancel.Caption := 'Cancel';
     btnCancel.ModalResult := mrCancel;
 
@@ -589,6 +587,7 @@ begin
     if SameText(ExtractFileExt(aResName), '.wav') then begin
       aResName := ChangeFileExt(aResName, '.xwm');
       ResourceCount(aResName, slRes);
+	  aResName := ChangeFileExt(aResName, '.wav');
     end;
 
   // dump everything regardless of asset existance in selected containers
