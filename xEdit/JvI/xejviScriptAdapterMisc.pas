@@ -1140,6 +1140,15 @@ end;
 
 { TControl }
 
+procedure TControl_ScaleValue(var Value: Variant; Args: TJvInterpreterArgs);
+begin
+  case VarType(Args.Values[0]) of
+    varInteger: Value := Args.Values[0] * (Screen.PixelsPerInch / Screen.DefaultPixelsPerInch);
+  else
+    JvInterpreterError(ieTypeMistmatch, -1);
+  end;
+end;
+
 procedure TControl_Read_StyleElements(var Value: Variant; Args: TJvInterpreterArgs);
 begin
   Value := S2V(Byte(TControl(Args.Obj).StyleElements));
@@ -2192,6 +2201,7 @@ begin
     AddConst('Controls', 'seFont', Ord(seFont));
     AddConst('Controls', 'seClient', Ord(seClient));
     AddConst('Controls', 'seBorder', Ord(seBorder));
+    AddGet(TControl, 'ScaleValue', TControl_ScaleValue, 1, [varEmpty], varEmpty);
     AddGet(TControl, 'StyleElements', TControl_Read_StyleElements, 0, [varEmpty], varEmpty);
     AddSet(TControl, 'StyleElements', TControl_Write_StyleElements, 0, [varEmpty]);
 
