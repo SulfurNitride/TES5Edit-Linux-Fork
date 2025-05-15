@@ -6177,7 +6177,7 @@ begin
 
   wbMagicEffectSounds :=
     wbArray(SNDD, 'Sounds',
-      wbStruct('Sound', [
+      wbStructSK([0], 'Sound', [
         wbInteger('Type', itU32,
           wbEnum([
             {0} 'Sheathe/Draw',
