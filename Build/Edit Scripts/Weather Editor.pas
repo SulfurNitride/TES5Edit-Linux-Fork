@@ -446,7 +446,7 @@ end;
 function CreateColorEditor(Parent: TControl; Left, Top: Integer; elColor: IInterface): TPanel;
 begin
   Result := TPanel.Create(frm);
-  Result.StyleElements := [seFont, seBorders];
+  Result.StyleElements := [seFont, seBorder];
   Result.Parent := Parent;
   Result.Left := Left;
   Result.Top := Top;

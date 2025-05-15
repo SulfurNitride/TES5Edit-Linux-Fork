@@ -2191,7 +2191,7 @@ begin
     { TControl }
     AddConst('Controls', 'seFont', Ord(seFont));
     AddConst('Controls', 'seClient', Ord(seClient));
-    AddConst('Controls', 'seBorders', Ord(seBorder));
+    AddConst('Controls', 'seBorder', Ord(seBorder));
     AddGet(TControl, 'StyleElements', TControl_Read_StyleElements, 0, [varEmpty], varEmpty);
     AddSet(TControl, 'StyleElements', TControl_Write_StyleElements, 0, [varEmpty]);
 
