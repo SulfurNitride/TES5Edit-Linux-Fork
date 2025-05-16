@@ -18031,8 +18031,8 @@ end;
           .IncludeFlag(dfCollapsed, wbCollapsePosRot),
         wbFormIDCk('Worldspace', [WRLD])
       ])
-    ).SetRequired,
-    wbArray(EOVR, 'Added Worldspaces',
+    ).IncludeFlag(dfArrayCanBeEmpty),
+    wbArray(EOVR, 'Edited Worldspaces',
       wbStruct('Worldspace', [
         wbStruct('Position', [
           wbLatitudeDouble,
@@ -18044,9 +18044,12 @@ end;
           .IncludeFlag(dfSummaryMembersNoName)
           .IncludeFlag(dfCollapsed, wbCollapsePosRot),
         wbFormIDCk('Worldspace', [WRLD]),
-        wbByteArray('Unknown', 1)
-      ]),
-    0, nil, nil, cpBenign),
+        wbInteger('Type', itU8,
+          wbEnum([
+          {0} 'Removed',
+          {1} 'Added'
+          ]))
+      ])),
     wbRArray('Biomes',
       wbStructSK(PPBD, [0], 'Biome', [
         wbFormIDCK('Biome', [BIOM]),
@@ -18158,7 +18161,7 @@ end;
         wbInteger('Rings', itu32, wbBoolEnum)
       ]),
       wbStruct(INAM, 'Atmosphere Data', [
-        wbFormIDCk('Atmosphere', [ATMO]),
+        wbFormIDCk('Atmosphere', [ATMO,NULL]),
         wbFloat('Avg Density Frac.'),
         wbFloat('Rayleight Scattering Coefficient'),
         wbFloat('Mie Scattering Coefficient')
