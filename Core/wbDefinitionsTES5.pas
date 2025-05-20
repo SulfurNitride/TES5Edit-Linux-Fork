@@ -7962,19 +7962,28 @@ begin
     wbFormIDCk(SNAM, 'Alternate Sound For', [SNDR, NULL]),
     wbSoundDescriptorSounds,
     wbFormIDCk(ONAM, 'Output Model', [SOPM, NULL]),
-    wbLString(FNAM, 'String', 0, cpIgnore),
+    wbBelowVersion(35, FNAM,
+      wbInteger('Flags', itU32,
+        wbFlags(wbSparseFlags([
+        0, 'Unknown 0',
+        1, 'Unknown 1',
+        2, 'Unknown 2',
+        4, 'Loop'
+        ], False, 5))
+      ).IncludeFlag(dfCollapsed, wbCollapseFlags)),
     wbConditions,
-    wbStruct(LNAM, 'Values', [
-      wbByteArray('Unknown', 1),
-      wbInteger('Looping', itU8, wbEnum([], [
-        $00 , 'None',
-        $08 , 'Loop',
-        $10 , 'Envelope Fast',
-        $20 , 'Envelope Slow'
+    wbFromVersion(34, LNAM,
+      wbStruct('Values', [
+        wbByteArray('Unknown', 1),
+        wbInteger('Looping', itU8, wbEnum([], [
+        0,  'None',
+        8,  'Loop',
+        16, 'Envelope Fast',
+        32, 'Envelope Slow'
+        ])),
+        wbByteArray('Unknown', 1),
+        wbInteger('Rumble Send Value = (Small / 7) + ((Big / 7) * 16)', itU8)
       ])),
-      wbByteArray('Unknown', 1),
-      wbInteger('Rumble Send Value = (Small / 7) + ((Big / 7) * 16)', itU8)
-    ]).SetRequired,
     wbStruct(BNAM, 'Values', [
       wbInteger('% Frequency Shift', itS8),
       wbInteger('% Frequency Variance', itS8),
