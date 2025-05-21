@@ -1952,14 +1952,18 @@ begin
         3, 'Hard'
         ])).SetDefaultNativeValue(2),
       nil),
-    IsTES4R(wbArray(XLRL, 'Unknown',
-      wbStruct('Unknown', [
-        wbInteger('Unknown', itu32),
-        wbInteger('Unknown', itu32),
-        wbUnknown(4),
-        wbUnknown(4),
-        wbInteger('Unknown', itu32)
-      ])), nil),
+    IsTES4R(
+      IfThen(wbSimpleRecords,
+        wbUnknown(XLRL),
+        wbArray(XLRL, 'Unknown',
+          wbStruct('Unknown', [
+            wbInteger('Unknown', itu32),
+            wbInteger('Unknown', itu32),
+            wbUnknown(4),
+            wbUnknown(4),
+            wbInteger('Unknown', itu32)
+          ]))),
+      nil),
     wbStruct(XCLC, 'Grid', [
       wbInteger('X', itS32),
       wbInteger('Y', itS32)
