@@ -6283,6 +6283,30 @@ begin
     wbRArrayS('Removed Quests',
       wbFormIDCkNoReach(QSTR, 'Removed Quest', [QUST], False, cpBenign));
 
+{>>>Multiple Record Defs<<<}
+  //TES4,FO3,FNV
+  wbFaceGen :=
+    IfThen(wbSimpleRecords,
+      wbRStruct('Facegen Data', [
+        wbByteArray(FGGS, 'Facegen Symmetric Geometry', 200).SetRequired,
+        wbByteArray(FGGA, 'Facegen Asymmetric Geometry', 120).SetRequired,
+        wbByteArray(FGTS, 'Facegen Symmetric Texture', 200).SetRequired
+      ]).SetRequired,
+      wbRStruct('Facegen Data', [
+        wbArray(FGGS, 'Facegen Symmetric Geometry',
+          wbFloat('Bone Morph Key'),
+        50).SetRequired
+           .IncludeFlag(dfCollapsed, wbCollapseOther),
+        wbArray(FGGA, 'Facegen Asymmetric Geometry',
+          wbFloat('Bone Morph Key'),
+        30).SetRequired
+           .IncludeFlag(dfCollapsed, wbCollapseOther),
+        wbArray(FGTS, 'Facegen Symmetric Texture',
+          wbFloat('Color Morph Key'),
+        50).SetRequired
+           .IncludeFlag(dfCollapsed, wbCollapseOther)
+      ]).SetRequired);
+
 {>>>Landscape Common Defs<<<}
   //TES4,FO3,FNV,TES5,FO4,FO76,SF1
   wbLandNormals :=
@@ -7165,20 +7189,6 @@ Can't properly represent that with current record definition methods.
         .IncludeFlag(dfCollapsed, wbCollapseOther)
         .IncludeFlag(dfFastAssign)
         .IncludeFlag(dfNoCopyAsOverride));
-
-  //TES4,FO3,FNV
-  wbFaceGen :=
-    IfThen(wbSimpleRecords,
-      wbRStruct('FaceGen Data', [
-        wbByteArray(FGGS, 'FaceGen Symmetric Geometry', 200).SetRequired,
-        wbByteArray(FGGA, 'FaceGen Asymmetric Geometry', 120).SetRequired,
-        wbByteArray(FGTS, 'FaceGen Symmetric Texture', 200).SetRequired
-      ]).SetRequired,
-      wbRStruct('FaceGen Data', [
-        wbArray(FGGS, 'FaceGen Symmetric Geometry', wbFloat('Bone Morph Key'), 50).SetRequired,
-        wbArray(FGGA, 'FaceGen Asymmetric Geometry', wbFloat('Bone Morph Key'), 30).SetRequired,
-        wbArray(FGTS, 'FaceGen Symmetric Texture', wbFloat('Color Morph Key'), 50).SetRequired
-      ]).SetRequired).IncludeFlag(dfCollapsed, wbCollapseOther);
 end;
 
 end.
