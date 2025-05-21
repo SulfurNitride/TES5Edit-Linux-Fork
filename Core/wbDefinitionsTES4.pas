@@ -50,7 +50,6 @@ var
   wbDESC: IwbRecordMemberDef;
   wbEDID: IwbRecordMemberDef;
   wbEffects: IwbRecordMemberDef;
-  wbFaceGen: IwbRecordMemberDef;
   wbFULL: IwbRecordMemberDef;
   wbFULLReq: IwbRecordMemberDef;
   wbICON: IwbRecordMemberDef;
@@ -1482,13 +1481,6 @@ begin
             .SetToStr(wbConditionToStr)
             .IncludeFlag(dfCollapsed, wbCollapseConditions)
       ]));
-
-  wbFaceGen :=
-    wbRStruct('FaceGen Data', [
-      wbByteArray(FGGS, 'FaceGen Geometry-Symmetric', 200).SetRequired,
-      wbByteArray(FGGA, 'FaceGen Geometry-Asymmetric', 120).SetRequired,
-      wbByteArray(FGTS, 'FaceGen Texture-Symmetric', 200).SetRequired
-    ]).SetRequired;
 
   {wbOBMEVersion :=
     wbStruct('OBME Version', [
