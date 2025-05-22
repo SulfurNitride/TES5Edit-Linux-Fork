@@ -10,13 +10,19 @@ unit wbNifMath;
 
 interface
 
+uses
+  SysUtils;
+
 type
-  TMatrix33 = array [0..2, 0..2] of Extended;
+  TMatrix33 = array [0..2, 0..2] of Double;
 
   TQuaternion = packed record
+    class operator Multiply(const A, B: TQuaternion): TQuaternion;
+    procedure SetIdentity;
+    function IsIdentity: Boolean;
     case Integer of
-      0: (q: array [0..3] of Extended);
-      1: (w, x, y, z: Extended)
+      0: (q: array [0..3] of Double);
+      1: (w, x, y, z: Double)
   end;
 
   TVector2 = packed record
@@ -25,8 +31,8 @@ type
     class operator Multiply(const A, B: TVector2): TVector2; inline;
     procedure ValidateNan;
     case Integer of
-      0: (v: array [0..1] of Extended);
-      1: (x, y: Extended)
+      0: (v: array [0..1] of Double);
+      1: (x, y: Double)
   end;
   TVector2Array = array of TVector2;
   PVector2 = ^TVector2;
@@ -34,18 +40,19 @@ type
   TVector3 = packed record
     class operator Add(const A, B: TVector3): TVector3; inline;
     class operator Subtract(const A, B: TVector3): TVector3; inline;
-    class operator Subtract(const A: TVector3; const B: Extended): TVector3; inline;
+    class operator Subtract(const A: TVector3; const B: Double): TVector3; inline;
     class operator Multiply(const A, B: TVector3): TVector3; inline;
-    class operator Multiply(const A: TVector3; const B: Extended): TVector3; inline;
-    class operator Divide(const A: TVector3; const B: Extended): TVector3; inline;
+    class operator Multiply(const A: TVector3; const B: Double): TVector3; inline;
+    class operator Multiply(const A: TVector3; const B: TQuaternion): TVector3;
+    class operator Divide(const A: TVector3; const B: Double): TVector3; inline;
     function IsZero: Boolean;
-    function Length: Extended;
+    function Length: Double;
     procedure Normalize; overload;
-    procedure Normalize(aLength: Extended); overload;
+    procedure Normalize(aLength: Double); overload;
     procedure ValidateNan;
     case Integer of
-      0: (v: array [0..2] of Extended);
-      1: (x, y, z: Extended)
+      0: (v: array [0..2] of Double);
+      1: (x, y, z: Double)
   end;
   TVector3Array = array of TVector3;
   PVector3 = ^TVector3;
@@ -57,30 +64,60 @@ type
   end;
   PSingleVector3 = ^TSingleVector3;
 
-  TTriangle = array [0..2] of Integer;
+  TNiTriangle = array [0..2] of Word;
+  PNiTriangle = ^TNiTriangle;
+
+  TTriangle = array [0..2] of Cardinal;
   TTriangleArray = array of TTriangle;
   PTriangle = ^TTriangle;
 
-  TStrip = array of Word;
+  TTriIndices = array of Cardinal;
+
+  TStrip = array of Cardinal;
   TStripArray = array of TStrip;
 
-procedure M33ToEuler(const m: TMatrix33; var x, y, z: Extended);
-procedure EulerToM33(const x, y, z: Extended; var m: TMatrix33);
-procedure M33ToQuaternion(const m: TMatrix33; var Quat: TQuaternion);
-procedure QuaternionToAxisAngle(const Quat: TQuaternion; var a, x, y, z: Extended);
-procedure AxisAngleToQuaternion(a, x, y, z: Extended; var Quat: TQuaternion);
-procedure EulerToQuaternion(const x, y, z: Extended; var Quat: TQuaternion);
-procedure QuaternionToEuler(const Quat: TQuaternion; var x, y, z: Extended);
-procedure M33ToAxisAngle(const m: TMatrix33; var a, x, y, z: Extended);
-procedure AxisAngleToM33(const a, x, y, z: Extended; var m: TMatrix33);
+  TBoundSphere = record
+    Center: TVector3;
+    Radius: Single;
+  end;
 
+  TTransform = record
+    Translation: TVector3;
+    Rotation: TQuaternion;
+    Scale: Single;
+    class operator Multiply(const A: TVector3; const B: TTransform): TVector3;
+    class operator Multiply(const A: TBoundSphere; const B: TTransform): TBoundSphere;
+    class operator Multiply(const A, B: TTransform): TTransform;
+    procedure SetNone;
+    function IsNone: Boolean;
+  end;
+
+
+procedure IdentityM33(var m: TMatrix33);
+procedure M33ToEuler(const m: TMatrix33; var x, y, z: Double);
+procedure AxisAngleToQuaternion(a, x, y, z: Double; var Quat: TQuaternion);
+procedure AxisAngleToM33(const a, x, y, z: Double; var m: TMatrix33);
+procedure M33ToQuaternion(const m: TMatrix33; var Quat: TQuaternion);
+procedure M33ToAxisAngle(const m: TMatrix33; var a, x, y, z: Double);
+procedure QuaternionToM33(const Quat: TQuaternion; var m: TMatrix33);
+procedure QuaternionToAxisAngle(const Quat: TQuaternion; var a, x, y, z: Double);
+procedure QuaternionToEuler(const Quat: TQuaternion; var x, y, z: Double);
+procedure EulerToQuaternion(const x, y, z: Double; var Quat: TQuaternion);
+procedure EulerToM33(const x, y, z: Double; var m: TMatrix33);
+function Vector3Cross(const A, B: TVector3): TVector3;
+
+function Tris2Indices(const aTris: TTriangleArray): TTriIndices;
+function Indices2Tris(const aIndices: TTriIndices): TTriangleArray;
+function Indices2Strip(const aIndices: TTriIndices): TStrip;
+function Indices2Strips(const aIndices: TTriIndices): TStripArray;
 function TriangulateStrip(const strip: TStrip): TTriangleArray;
 function TriangulateStrips(const strips: TStripArray): TTriangleArray;
+function StripifyTriangles(const tris: TTriangleArray): TStrip;
 
 procedure CalculateCenterRadius(
   const verts: TVector3Array;
   var center: TVector3;
-  var r: Extended;
+  var r: Double;
   aFromMinMax: Boolean = False
 );
 
@@ -96,6 +133,7 @@ procedure CalculateTangentsBitangents(
   const triangles: TTriangleArray;
   var tan, bin: TVector3Array
 );
+
 procedure CalculateTangentsBitangents2(
   const verts, norms: TVector3Array;
   const texco: TVector2Array;
@@ -107,7 +145,27 @@ procedure CalculateTangentsBitangents2(
 implementation
 
 uses
-  Math;
+  Math,
+  wbMeshOptimize;
+
+
+class operator TQuaternion.Multiply(const A, B: TQuaternion): TQuaternion;
+begin
+  Result.w := A.w * B.w - A.x * B.x - A.y * B.y - A.z * B.z;
+  Result.x := A.w * B.x + A.x * B.w + A.y * B.z - A.z * B.y;
+  Result.y := A.w * B.y - A.x * B.z + A.y * B.w + A.z * B.x;
+  Result.z := A.w * B.z + A.x * B.y - A.y * B.x + A.z * B.w;
+end;
+
+procedure TQuaternion.SetIdentity;
+begin
+  W := 1.0; X := 0.0; Y := 0.0; Z := 0.0;
+end;
+
+function TQuaternion.IsIdentity: Boolean;
+begin
+  Result := SameValue(W, 1.0) and SameValue(X, 0.0) and SameValue(Y, 0.0) and SameValue(Z, 0.0);
+end;
 
 class operator TVector2.Add(const A, B: TVector2): TVector2;
 begin
@@ -133,14 +191,37 @@ begin
   if Math.IsNan(y) then y := 0;
 end;
 
-class operator TVector3.Multiply(const A: TVector3; const B: Extended): TVector3;
+class operator TVector3.Multiply(const A: TVector3; const B: Double): TVector3;
 begin
   Result.X := A.X * B;
   Result.Y := A.Y * B;
   Result.Z := A.Z * B;
 end;
 
-class operator TVector3.Divide(const A: TVector3; const B: Extended): TVector3;
+class operator TVector3.Multiply(const A: TVector3; const B: TQuaternion): TVector3;
+begin
+  // https://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion
+  var num12 := B.X + B.X;
+  var num2 := B.Y + B.Y;
+  var num := B.Z + B.Z;
+  var num11 := B.W * num12;
+  var num10 := B.W * num2;
+  var num9 := B.W * num;
+  var num8 := B.X * num12;
+  var num7 := B.X * num2;
+  var num6 := B.X * num;
+  var num5 := B.Y * num2;
+  var num4 := B.Y * num;
+  var num3 := B.Z * num;
+  var num15 := ((A.X * ((1.0 - num5) - num3)) + (A.Y * (num7 - num9))) + (A.Z * (num6 + num10));
+  var num14 := ((A.X * (num7 + num9)) + (A.Y * ((1.0 - num8) - num3))) + (A.Z * (num4 - num11));
+  var num13 := ((A.X * (num6 - num10)) + (A.Y * (num4 + num11))) + (A.Z * ((1.0 - num8) - num5));
+  Result.X := num15;
+  Result.Y := num14;
+  Result.Z := num13;
+end;
+
+class operator TVector3.Divide(const A: TVector3; const B: Double): TVector3;
 begin
   Result.X := A.X / B;
   Result.Y := A.Y / B;
@@ -161,7 +242,7 @@ begin
   Result.Z := A.Z - B.Z;
 end;
 
-class operator TVector3.Subtract(const A: TVector3; const B: Extended): TVector3;
+class operator TVector3.Subtract(const A: TVector3; const B: Double): TVector3;
 begin
   Result.X := A.X - B;
   Result.Y := A.Y - B;
@@ -180,14 +261,14 @@ begin
   Result := SameValue(X, 0.0) and SameValue(Y, 0.0) and SameValue(Z, 0.0);
 end;
 
-function TVector3.Length: Extended;
+function TVector3.Length: Double;
 begin
   Result := Sqrt(X*X + Y*Y + Z*Z);
 end;
 
 procedure TVector3.Normalize;
 var
-  s: Extended;
+  s: Double;
 begin
   s := sqrt(x*x + y*y + z*z);
   if s > 0.0 then begin
@@ -197,7 +278,7 @@ begin
   end;
 end;
 
-procedure TVector3.Normalize(aLength: Extended);
+procedure TVector3.Normalize(aLength: Double);
 begin
   if aLength > 0.0 then begin
     x := x / aLength;
@@ -213,9 +294,42 @@ begin
   if Math.IsNan(z) then z := 0;
 end;
 
-procedure Normalize(var x, y, z: Extended);
+class operator TTransform.Multiply(const A: TVector3; const B: TTransform): TVector3;
+begin
+  Result := A * B.Rotation * B.Scale + B.Translation;
+end;
+
+class operator TTransform.Multiply(const A: TBoundSphere; const B: TTransform): TBoundSphere;
+begin
+  Result.Center := A.Center * B;
+  Result.Radius := A.Radius * B.Scale;
+end;
+
+class operator TTransform.Multiply(const A, B: TTransform): TTransform;
+begin
+  Result.Translation := A.Translation + B.Translation * A.Rotation * A.Scale;
+  Result.Rotation := A.Rotation * B.Rotation;
+  Result.Scale := A.Scale * B.Scale;
+end;
+
+procedure TTransform.SetNone;
+begin
+  Translation.x := 0.0;
+  Translation.y := 0.0;
+  Translation.z := 0.0;
+  Rotation.SetIdentity;
+  Scale := 1.0;
+end;
+
+function TTransform.IsNone: Boolean;
+begin
+  Result := Translation.IsZero and Rotation.IsIdentity and SameValue(Scale, 1.0)
+end;
+
+
+procedure Normalize(var x, y, z: Double);
 var
-  s: Extended;
+  s: Double;
 begin
   s := sqrt(x*x + y*y + z*z);
   if s > 0.0 then begin
@@ -234,7 +348,7 @@ begin
       if i = j then m[i][j] := 1.0 else m[i][j] := 0.0;
 end;
 
-procedure M33ToEuler(const m: TMatrix33; var x, y, z: Extended);
+procedure M33ToEuler(const m: TMatrix33; var x, y, z: Double);
 begin
   if m[0][2] < 1.0 then begin
     if m[0][2] > -1.0 then begin
@@ -255,22 +369,20 @@ begin
   end
 end;
 
-procedure EulerToM33(const x, y, z: Extended; var m: TMatrix33);
+procedure EulerToM33(const x, y, z: Double; var m: TMatrix33);
 var
-  sinX, cosX, sinY, cosY, sinZ, cosZ: Extended;
+  sinX, cosX, sinY, cosY, sinZ, cosZ: Double;
 begin
   if SameValue(x, 0.0) and SameValue(y, 0.0) and SameValue(z, 0.0) then begin
     IdentityM33(m);
     Exit;
   end;
-
   sinX := Sin( x );
   cosX := Cos( x );
   sinY := sin( y );
   cosY := cos( y );
   sinZ := sin( z );
   cosZ := cos( z );
-
   m[0][0] := cosY * cosZ;
   m[0][1] := -cosY * sinZ;
   m[0][2] := sinY;
@@ -286,7 +398,7 @@ procedure M33ToQuaternion(const m: TMatrix33; var Quat: TQuaternion);
 const
   next: array [0..2] of Integer = (1, 2, 0);
 var
-  trace, root: Extended;
+  trace, root: Double;
   i, j, k: Integer;
 begin
   trace := m[0][0] + m[1][1] + m[2][2];
@@ -304,10 +416,8 @@ begin
     if m[1][1] > m[0][0] then i := 1 else i := 0;
     if m[2][2] > m[i][i] then
       i := 2;
-
     j := next[i];
     k := next[j];
-
     root := sqrt( m[i][i] - m[j][j] - m[k][k] + 1.0 );
     q[i + 1] := root / 2;
     root := 0.5 / root;
@@ -319,7 +429,7 @@ end;
 
 procedure QuaternionToM33(const Quat: TQuaternion; var m: TMatrix33);
 var
-  fTx, fTy, fTz, fTwx, fTwy, fTwz, fTxx, fTxy, fTxz, fTyy, fTyz, fTzz: Extended;
+  fTx, fTy, fTz, fTwx, fTwy, fTwz, fTxx, fTxy, fTxz, fTyy, fTyz, fTzz: Double;
 begin
   with Quat do begin
     fTx := 2.0 * q[1];
@@ -335,7 +445,6 @@ begin
     fTyz := fTz * q[2];
     fTzz := fTz * q[3];
   end;
-
   m[0][0] := 1.0 - (fTyy + fTzz);
   m[0][1] := fTxy - fTwz;
   m[0][2] := fTxz + fTwy;
@@ -347,9 +456,9 @@ begin
   m[2][2] := 1.0 - (fTxx + fTyy);
 end;
 
-procedure QuaternionToAxisAngle(const Quat: TQuaternion; var a, x, y, z: Extended);
+procedure QuaternionToAxisAngle(const Quat: TQuaternion; var a, x, y, z: Double);
 var
-  squaredLength: Extended;
+  squaredLength: Double;
 begin
   with Quat do squaredLength := q[1] * q[1] + q[2] * q[2] + q[3] * q[3];
   if squaredLength > 0.0 then begin
@@ -367,9 +476,9 @@ begin
   end;
 end;
 
-procedure AxisAngleToQuaternion(a, x, y, z: Extended; var Quat: TQuaternion);
+procedure AxisAngleToQuaternion(a, x, y, z: Double; var Quat: TQuaternion);
 var
-  s: Extended;
+  s: Double;
 begin
   Normalize(x, y, z);
   s := Sin( a / 2 );
@@ -379,7 +488,7 @@ begin
   Quat.q[3] := s * z;
 end;
 
-procedure EulerToQuaternion(const x, y, z: Extended; var Quat: TQuaternion);
+procedure EulerToQuaternion(const x, y, z: Double; var Quat: TQuaternion);
 var
   m: TMatrix33;
 begin
@@ -387,7 +496,7 @@ begin
   M33ToQuaternion(m, Quat);
 end;
 
-procedure QuaternionToEuler(const Quat: TQuaternion; var x, y, z: Extended);
+procedure QuaternionToEuler(const Quat: TQuaternion; var x, y, z: Double);
 var
   m: TMatrix33;
 begin
@@ -395,7 +504,7 @@ begin
   M33ToEuler(m, x, y, z);
 end;
 
-procedure M33ToAxisAngle(const m: TMatrix33; var a, x, y, z: Extended);
+procedure M33ToAxisAngle(const m: TMatrix33; var a, x, y, z: Double);
 var
   q: TQuaternion;
 begin
@@ -403,7 +512,7 @@ begin
   QuaternionToAxisAngle(q, a, x, y, z);
 end;
 
-procedure AxisAngleToM33(const a, x, y, z: Extended; var m: TMatrix33);
+procedure AxisAngleToM33(const a, x, y, z: Double; var m: TMatrix33);
 var
   q: TQuaternion;
 begin
@@ -418,18 +527,44 @@ begin
   Result.Z := (A.X * B.Y) - (B.X * A.Y);
 end;
 
-function Vector3Dot(const A, B: TVector3): Single;
+function Vector3Dot(const A, B: TVector3): Double;
 begin
   Result := (A.X * B.X) + (A.Y * B.Y) + (A.Z * B.Z);
 end;
 
+function Tris2Indices(const aTris: TTriangleArray): TTriIndices;
+begin
+  SetLength(Result, Length(aTris) * 3);
+  System.Move(aTris[0][0], Result[0], Length(aTris) * SizeOf(TTriangle));
+end;
+
+function Indices2Tris(const aIndices: TTriIndices): TTriangleArray;
+begin
+  Assert(Length(aIndices) mod 3 = 0);
+  SetLength(Result, Length(aIndices) div 3);
+  System.Move(aIndices[0], Result[0][0], Length(aIndices) * SizeOf(Cardinal));
+end;
+
+function Indices2Strip(const aIndices: TTriIndices): TStrip;
+begin
+  SetLength(Result, Length(aIndices));
+  System.Move(aIndices[0], Result[0], Length(aIndices) * SizeOf(Cardinal));
+end;
+
+function Indices2Strips(const aIndices: TTriIndices): TStripArray;
+begin
+  SetLength(Result, 1);
+  Result[0] := Indices2Strip(aIndices);
+end;
+
 function TriangulateStrip(const strip: TStrip): TTriangleArray;
 var
-  a, b, c: Word;
+  a, b, c: Cardinal;
   s: Integer;
   flip: Boolean;
 begin
   Result := nil;
+
   if Length(strip) < 3 then
     Exit;
 
@@ -441,7 +576,6 @@ begin
     a := b;
     b := c;
     c := strip[s];
-
     if ( a <> b ) and ( b <> c ) and ( c <> a ) then begin
       SetLength(Result, Succ(Length(Result)));
       if not flip then begin
@@ -455,7 +589,6 @@ begin
         Result[Pred(Length(Result))][2] := b;
       end;
     end;
-
     flip := not flip;
   end;
 end;
@@ -475,17 +608,27 @@ begin
   end;
 end;
 
+function StripifyTriangles(const tris: TTriangleArray): TStrip;
+begin
+  var indices := Tris2Indices(tris);
+  Result := Indices2Strip(meshopt_stripify(indices));
+end;
+
+
 procedure CalculateCenterRadius(
   const verts: TVector3Array;
   var center: TVector3;
-  var r: Extended;
+  var r: Double;
   aFromMinMax: Boolean = False
 );
 var
   i: integer;
-  d: Extended;
-  xMin, xMax, yMin, yMax, zMin, zMax: Extended;
+  d: Double;
+  xMin, xMax, yMin, yMax, zMin, zMax: Double;
 begin
+  center.x := 0; center.y := 0; center.z := 0;
+  r := 0;
+
   if Length(verts) = 0 then
     Exit;
 
@@ -499,12 +642,10 @@ begin
         xMin := v[0]
       else if v[0] > xMax then
         xMax := v[0];
-
       if v[1] < yMin then
         yMin := v[1]
       else if v[1] > yMax then
         yMax := v[1];
-
       if v[2] < zMin then
         zMin := v[2]
       else if v[2] > zMax then
@@ -560,7 +701,7 @@ const
   yAxis: TVector3 = (x: 0; y: 1; z: 0);
   zAxis: TVector3 = (x: 0; y: 0; z: 1);
 var
-  NdotT, NdotB, TdotB, magT, magB, dpXN, dpYN, dpZN: Extended;
+  NdotT, NdotB, TdotB, magT, magB, dpXN, dpYN, dpZN: Double;
   newTangent, newBinormal, axis1, axis2: TVector3;
 begin
   // Try Gram-Schmidt orthonormalize.
@@ -586,7 +727,6 @@ begin
 
   if (magT <= kNormalizeEpsilon) or (magB <= kNormalizeEpsilon) then begin
     // Create tangent basis from scratch
-
     dpXN := Vector3Dot(xAxis, normal);
     if dpXN < 0 then dpXN := -dpXN;
     dpYN := Vector3Dot(yAxis, normal);
@@ -635,13 +775,16 @@ var
   v2v1, v3v1: TVector3;
   w2w1, w3w1: TVector2;
   sdir, tdir: TVector3;
-  r, d, areaMult: Extended;
+  r: Double;
 begin
   SetLength(tan, Length(verts));
   SetLength(bin, Length(verts));
 
   for tr := Low(triangles) to High(triangles) do begin
     tri := @triangles[tr];
+    if (tri[0] >= Length(verts)) or (tri[1] >= Length(verts)) or (tri[2] >= Length(verts)) then
+      raise Exception.CreateFmt('Triangle (%d, %d, %d) exceeds the number of vertices %d', [tri[0], tri[1], tri[2], Length(verts)]);
+
     i1 := tri[0];
     i2 := tri[1];
     i3 := tri[2];
@@ -692,7 +835,6 @@ begin
       t.Normalize;
       t^ := ( t^ - n^ * Vector3Dot( n^, t^ ) );
       t.Normalize;
-
       b.Normalize;
       b^ := ( b^ - n^ * Vector3Dot( n^, b^ ) );
       b^ := ( b^ - t^ * Vector3Dot( t^, b^ ) );
@@ -716,12 +858,11 @@ const
 var
   tri: PTriangle;
   triVertex: array [0..2] of PVector3;
-  v1, v2, v3, n, t, b: PVector3;
   w1, w2, w3: PVector2;
   v2v1, v3v1: TVector3;
   w2w1, w3w1: TVector2;
   tangent, binormal, edge1, edge2: TVector3;
-  r, areamult, angle, w: Extended;
+  r, areamult, angle, w: Double;
   i, v: integer;
 begin
   SetLength(tan, Length(verts));
@@ -729,6 +870,9 @@ begin
 
   for i := Low(triangles) to High(triangles) do begin
     tri := @triangles[i];
+    if (tri[0] >= Length(verts)) or (tri[1] >= Length(verts)) or (tri[2] >= Length(verts)) then
+      raise Exception.CreateFmt('Triangle (%d, %d, %d) exceeds the number of vertices %d', [tri[0], tri[1], tri[2], Length(verts)]);
+
     triVertex[0] := @verts[tri[0]];
     triVertex[1] := @verts[tri[1]];
     triVertex[2] := @verts[tri[2]];
@@ -817,7 +961,7 @@ var
   w1, w2, w3: PVector2;
   p, q, edge1, edge2, tangent, binormal: TVector3;
   sdir, tdir: TVector2;
-  d, r, areamult, angle, w: Extended;
+  d, r, areamult, angle, w: Double;
   i, v: integer;
   n, t, b: PVector3;
 begin
@@ -897,5 +1041,6 @@ begin
 
 end;
 }
+
 
 end.

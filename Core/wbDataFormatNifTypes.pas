@@ -15,7 +15,7 @@ uses
 
 var
   // True: Euler YPR, False: Angle and Axis
-  wbRotationEuler: Boolean = True;
+  wbRotationEuler: Boolean = False;
 
 
 function wbShortString(const aName: string; const aEvents: array of const): TdfCharsDef; overload;
@@ -176,17 +176,20 @@ procedure GetTextHexColor(const aElement: TdfElement; var aText: string);
 var
   i: integer;
 begin
-  // if there are no float values, then remove spaces between hex values and insert #
-  if Pos('.', aText) = 0 then begin
-    for i := Length(aText) downto 1 do
-      if aText[i] = ' ' then Delete(aText, i, 1);
-    aText := '#' + aText;
-  end;
+  // if all values are space separated valid hex codes then remove spaces and prepend with #
+  for i := 1 to Length(aText) do
+    if not CharInSet(aText[i], ['0'..'9', 'A'..'F', ' ']) then
+      Exit;
+
+  for i := Length(aText) downto 1 do
+    if aText[i] = ' ' then Delete(aText, i, 1);
+
+  aText := '#' + aText;
 end;
 
 procedure SetTextHexColor(const aElement: TdfElement; var aText: string);
 begin
-  // if value doesn't start with # then it is not a html hex color value
+  // if value doesn't start with # then it is not html hex color value
   if Copy(aText, 1, 1) <> '#' then
     Exit;
 
@@ -246,10 +249,10 @@ begin
   ]);
 end;
 
-// a float32 represented as a byte hex value 00..FF or when in 0..1 range
+// a float32 represented as a byte hex value 00..FF within 0..1 range
 procedure GetTextHexFloat(const aElement: TdfElement; var aText: string);
 var
-  v: Extended;
+  v: Double;
 begin
   v := dfStrToFloat(aText);
   if (v >= 0.0) and (v <= 1.0) then
@@ -463,8 +466,15 @@ end;
 procedure QuaternionGetText(const e: TdfElement; var aText: string);
 var
   q: TQuaternion;
-  a, x, y, z: Extended;
+  a, x, y, z: Double;
 begin
+  if (e.EditValues['W'] = 'Min') and (e.EditValues['X'] = 'Min') and
+     (e.EditValues['Y'] = 'Min') and (e.EditValues['Z'] = 'Min')
+  then begin
+    aText := 'Min';
+    Exit;
+  end;
+
   q.w := e.NativeValues['W'];
   q.x := e.NativeValues['X'];
   q.y := e.NativeValues['Y'];
@@ -487,9 +497,18 @@ end;
 procedure QuaternionSetText(const e: TdfElement; var aText: string);
 var
   q: TQuaternion;
-  a, x, y, z: Extended;
+  a, x, y, z: Double;
   s: TStringDynArray;
 begin
+  if aText = 'Min' then begin
+    e.EditValues['W'] := 'Min';
+    e.EditValues['X'] := 'Min';
+    e.EditValues['Y'] := 'Min';
+    e.EditValues['Z'] := 'Min';
+    aText := '';
+    Exit;
+  end;
+
   s := SplitString(aText, ' ');
   if wbRotationEuler then begin
     if Length(s) < 3 then Exit;
@@ -586,7 +605,7 @@ procedure RotMatrix33_GetText(const e: TdfElement; var aText: string);
 var
   m: TMatrix33;
   i, j: integer;
-  a, x, y, z: Extended;
+  a, x, y, z: Double;
 begin
   for i := 0 to 2 do
     for j := 0 to 2 do
@@ -611,7 +630,7 @@ procedure RotMatrix33_SetText(const e: TdfElement; var aText: string);
 var
   m: TMatrix33;
   i, j: integer;
-  a, x, y, z: Extended;
+  a, x, y, z: Double;
   s: TStringDynArray;
 begin
   s := SplitString(aText, ' ');
@@ -751,7 +770,7 @@ end;
 function wbNiTransform(const aName: string): TdfDef;
 begin
   Result := dfStruct(aName, [
-    wbMatrix33('Rotation'),
+    wbRotMatrix33('Rotation'),
     wbVector3('Translation'),
     dfFloat('Scale', '1.0')
   ]);
@@ -976,17 +995,17 @@ begin
     1, 'Skinned',
     2, 'LowDetail',
     3, 'Vertex_Alpha',
-    4, 'Unknown_1',
+    4, 'Motion_Blur',
     5, 'Single_Pass',
     6, 'Empty',
     7, 'Environment_Mapping',
     8, 'Alpha_Texture',
-    9, 'Unknown_2',
+    9, 'Z_Prepass',
     10, 'FaceGen',
     11, 'Parallax_Shader_Index_15',
-    12, 'Unknown_3',
+    12, 'Model_Space_Normals',
     13, 'Non_Projective_Shadows',
-    14, 'Unknown_4',
+    14, 'Landscape',
     15, 'Refraction',
     16, 'Fire_Refraction',
     17, 'Eye_Environment_Mapping',
@@ -1016,7 +1035,7 @@ begin
     3, 'No_Fade',
     4, 'Refraction_Tint',
     5, 'Vertex_Colors',
-    6, 'Unknown1',
+    6, '1st_person',
     7, '1st_Light_is_Point_Light',
     8, '2nd_Light',
     9, '3rd_Light',
@@ -1033,7 +1052,7 @@ begin
     20, 'Skip_Normal_Maps',
     21, 'Alpha_Decal',
     22, 'No_Transparency_Multisampling',
-    23, 'Unknown2',
+    23, 'Stinger_Prop',
     24, 'Unknown3',
     25, 'Unknown4',
     26, 'Unknown5',
@@ -1848,6 +1867,13 @@ end;
 
 function wbhkMotionType(const aName, aDefaultValue: string; const aEvents: array of const): TdfDef;
 begin
+  {
+  Fixed (hkpMotion::MOTION_FIXED) entities are unmovable and effectively have infinite mass.
+	Keyframed (hkpMotion::MOTION_KEYFRAMED) entities can have their kinematics explicitly altered,
+	but ignore external impulses and forces e.g. from collisions or actions.
+	Dynamic (e.g. hkpMotion::MOTION_DYNAMIC, hkpMotion::MOTION_BOX_INERTIA) entities are
+	affected by external forces and impulses.
+  }
   Result := dfEnum(aName, dtU8, [
     0, 'MO_SYS_INVALID',
     1, 'MO_SYS_DYNAMIC',
@@ -1864,6 +1890,12 @@ end;
 
 function wbhkDeactivatorType(const aName, aDefaultValue: string; const aEvents: array of const): TdfDef;
 begin
+  {
+  A list of possible solver deactivation settings. This value defines how the
+	solver deactivates objects. The solver works on a per object basis.
+	Note: Solver deactivation does not save CPU, but reduces creeping of
+	movable objects in a pile quite dramatically.
+  }
   Result := dfEnum(aName, dtU8, [
     0, 'DEACTIVATOR_INVALID',
     1, 'DEACTIVATOR_NEVER',
@@ -2097,8 +2129,8 @@ begin
     1, 'Skinned',
     2, 'Temp_Refraction',
     3, 'Vertex_Alpha',
-    4, 'Greyscale_To_PaletteColor',
-    5, 'Greyscale_To_PaletteAlpha',
+    4, 'Grayscale_To_PaletteColor',
+    5, 'Grayscale_To_PaletteAlpha',
     6, 'Use_Falloff',
     7, 'Environment_Mapping',
     8, 'Recieve_Shadows',
@@ -2114,7 +2146,7 @@ begin
     18, 'Hair_Soft_Lighting',
     19, 'Screendoor_Alpha_Fade',
     20, 'Localmap_Hide_Secret',
-    21, 'FaceGen_RGB_Tint',
+    21, 'Skin_Tint',
     22, 'Own_Emit',
     23, 'Projected_UV',
     24, 'Multiple_Textures',
@@ -2173,8 +2205,8 @@ begin
     1, 'Skinned',
     2, 'Temp_Refraction',
     3, 'Vertex_Alpha',
-    4, 'GreyscaleToPalette_Color',
-    5, 'GreyscaleToPalette_Alpha',
+    4, 'GrayscaleToPalette_Color',
+    5, 'GrayscaleToPalette_Alpha',
     6, 'Use_Falloff',
     7, 'Environment_Mapping',
     8, 'RGB_Falloff',
