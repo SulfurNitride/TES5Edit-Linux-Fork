@@ -8037,7 +8037,7 @@ begin
       'Uses HRTF',
       'Defined Speaker Output'
     ])),
-    wbUnknown(CNAM), // leftover, unused
+    wbUnused(CNAM, 0), // leftover, unused
     wbUnknown(SNAM), // leftover, unused
     wbStruct(ONAM, 'Output Values', [
       wbArray('Channels', wbStruct('', [
@@ -8050,13 +8050,13 @@ begin
         wbInteger('BL', itU8),
         wbInteger('BR', itU8)
       ]), [
-        'Channel 0',
-        'Channel 1',
-        'Channel 2? (unused)'
+        'Mono',
+        'Stereo Left',
+        'Stereo Right'
       ])
     ]),
     wbStruct(ANAM, 'Attenuation Values', [
-      wbByteArray('Unknown', 4),
+      wbUnused(4),
       wbFloat('Min Distance'),
       wbFloat('Max Distance'),
       wbArray('Curve', wbInteger('Value', itU8), 5),
