@@ -6462,8 +6462,9 @@ Can't properly represent that with current record definition methods.
       9, 'Edge 1-2 Cover Value 4/4',
      10, 'Edge 1-2 Left',
      11, 'Edge 1-2 Right',
-     14, 'Autogen Cover'
-    ], False, 15));
+     14, 'Autogen Cover',
+     15, IsSF1('Unknown 15', '')
+    ], False, IsSF1(16, 15)));
 
   //FO3,FNV,TES5,FO4,FO76,SF1
   wbNavmeshEdgeLinkEnum :=
