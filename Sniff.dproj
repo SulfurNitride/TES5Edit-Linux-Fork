@@ -62,7 +62,7 @@
         <SanitizedProjectName>Sniff</SanitizedProjectName>
         <Custom_Styles>Carbon|VCLSTYLE|$(BDSCOMMONDIR)\Styles\Carbon.vsf;&quot;Onyx Blue|VCLSTYLE|$(BDSCOMMONDIR)\Styles\OnyxBlue.vsf&quot;</Custom_Styles>
         <DCC_BplOutput>.\Build</DCC_BplOutput>
-        <DCC_DcuOutput>..\..\Temp\Sniff\$(Platform)\$(Config)</DCC_DcuOutput>
+        <DCC_DcuOutput>.\Temp\Sniff\$(Platform)\$(Config)</DCC_DcuOutput>
         <DCC_ExeOutput>.\Build</DCC_ExeOutput>
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
         <DCC_UnitSearchPath>.\Core;.\Sniff;.\External\ZLibEx;.\External\lz4\lib\delphi;.\External\TForge\Source\Include;.\External\TForge\Source\Shared;.\External\TForge\Source\Engine\Forge;.\External\TForge\Source\Engine\Hashes;.\External\JsonDataObjects\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
