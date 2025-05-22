@@ -8307,6 +8307,7 @@ end;
         ], True, True)), [
         wbEDID, //not in Starfield.esm
         wbVMAD,
+        wbXALG,
         wbFormIDCk(NAME, 'Projectile', [PROJ, HAZD]),
 
         wbFormIDCk(XEMI, 'Emittance', [LIGH, REGN]),
