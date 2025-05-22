@@ -14369,7 +14369,7 @@ end;
             wbInteger(ALFD, 'Event Data', itU32, wbEventMemberEnum).SetRequired
           ]),
       {4} wbRStruct('Create Reference to Object', [
-            wbFormIDCk(ALCO, 'Object', [ACTI,ARMO,BOOK,CELL,CONT,DOOR,FLOR,FURN,GBFM,IDLM,KEYM,LVLI,LVSC,MISC,NPC_,PKIN,SOUN,STAT,WEAP]), // yee haw
+            wbFormIDCk(ALCO, 'Object', [ACTI,ARMO,BOOK,CELL,CONT,DOOR,FLOR,FURN,GBFM,IDLM,KEYM,LVLI,LVSC,MISC,NPC_,PKIN,PROJ,SOUN,STAT,WEAP]), // yee haw
             wbStruct(ALCA, 'Alias', [
               wbInteger('Alias', itS16, wbQuestAliasToStr, wbStrToAlias)
                 .SetLinksToCallback(wbSameQuestAliasLinksTo),
