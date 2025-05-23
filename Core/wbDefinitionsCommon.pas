@@ -368,6 +368,10 @@ function wbIsFlag(aFlag: Integer; const aValue: IwbValueDef; aIsUnused: Boolean 
 function wbIsNotFlag(aFlag: Integer; const aSignature: TwbSignature; const aValue: IwbValueDef; aIsUnused: Boolean = True): IwbRecordMemberDef; overload;
 function wbIsNotFlag(aFlag: Integer; const aValue: IwbValueDef; aIsUnused: Boolean = True): IwbValueDef; overload;
 
+{>>> DLL Mode IfThen Defs <<<} //1
+function IsCS(const aDef1, aDef2: string): string;
+function IsOBME(const aDef1, aDef2: string): string;
+
 {>>> Game Mode IfThen Defs <<<} //34
 function IsTES3(const aDef1, aDef2: String): string; overload;
 function IsTES3(const aDef1, aDef2: TwbSignature): TwbSignature; overload;
@@ -3976,6 +3980,22 @@ begin
         aValue,
         wbEmpty(aValue.Name)
       ]).IncludeFlag(dfMustBeUnion);
+end;
+
+{>>> DLL Mod IfThen Defs <<<} //1
+
+function IsCS(const aDef1, aDef2: string): string;
+begin
+  Result := aDef2;
+  if wbCS then
+    Result := aDef1
+end;
+
+function IsOBME(const aDef1, aDef2: string): string;
+begin
+  Result := aDef2;
+  if wbOBME then
+    Result := aDef1
 end;
 
 {>>> wbGameMode IfThen Defs <<<} //34

@@ -282,6 +282,8 @@ var
   wbDisableFormIDCheck               : Boolean    = False;
   wbComplexFileFileID                : Boolean    = False;
 
+  wbCS                               : Boolean    = False;
+
   wbAllowMakePartial                 : Boolean    = False;
 
   wbHEDRVersion                      : Double     = 1.0;

@@ -2608,6 +2608,23 @@ begin
     Move(a[0], Result[0], SizeOf(TVarRec) * Length(a));
 end;
 
+function wbLIGHFalloffDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
+begin
+  if not Assigned(aElement) then
+    Exit(0);
+
+  if not wbCS then
+    Exit(0);
+
+  var lContainer : IwbContainer;
+  if not wbTryGetContainerFromUnion(aElement, lContainer) then
+    Exit(0);
+
+  var lFlags := lContainer.Elements[3].NativeValue;
+  if (lFlags and $4000) <> 0 then
+    Exit(1);
+end;
+
   procedure ReferenceRecord(aSignature: TwbSignature; const aName: string);
   begin
     wbRefRecord(aSignature, aName,
@@ -4724,17 +4741,21 @@ begin
     and replacing it with wbUnion generates error when setting for example persistent flag in REFR.
     So let it always be an integer
     <<<}
-    wbInteger(DATA, 'Flags', itU16, wbFlags([
-      {0x0001} 'Is Interior Cell',
-      {0x0002} 'Has Water',
-      {0x0004} 'Can Travel From Here',
-      {0x0008} 'No LOD Water',
-      {0x0010} 'Unknown 5',
-      {0x0020} 'Public Area',
-      {0x0040} 'Hand Changed',
-      {0x0080} 'Show Sky',
-      {0x0100} 'Use Sky Lighting'
-    ]), cpNormal, True, False, nil, wbCELLDATAAfterSet).IncludeFlag(dfCollapsed, wbCollapseFlags),
+    wbInteger(DATA, 'Flags', itU16,
+      wbFlags(wbSparseFlags([
+      0, 'Is Interior Cell',
+      1, 'Has Water',
+      2, 'Can Travel From Here',
+      3, 'No LOD Water',
+      5, 'Public Area',
+      6, 'Hand Changed',
+      7, 'Show Sky',
+      8, 'Use Sky Lighting',
+      15, IsCS('Sunlight Shadows', '')
+      ], False, 16))
+    ).SetAfterSet(wbCELLDATAAfterSet)
+     .SetRequired
+     .IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbCellGrid,
     wbStruct(XCLL, 'Lighting', [
       wbByteColors('Ambient Color'),
@@ -8369,24 +8390,28 @@ begin
       wbInteger('Time', itS32),
       wbInteger('Radius', itU32),
       wbByteColors,
-      wbInteger('Flags', itU32, wbFlags([
-        {0x00000001} 'Dynamic',
-        {0x00000002} 'Can be Carried',
-        {0x00000004} 'Negative',
-        {0x00000008} 'Flicker',
-        {0x00000010} 'Unknown',
-        {0x00000020} 'Off By Default',
-        {0x00000040} 'Flicker Slow',
-        {0x00000080} 'Pulse',
-        {0x00000100} 'Pulse Slow',
-        {0x00000200} 'Spot Light',
-        {0x00000400} 'Shadow Spotlight',
-        {0x00000800} 'Shadow Hemisphere',
-        {0x00001000} 'Shadow Omnidirectional',
-        {0x00002000} 'Portal-strict'
+      wbInteger('Flags', itU32,
+        wbFlags([
+        {0}  'Dynamic',
+        {1}  'Can be Carried',
+        {2}  'Negative',
+        {3}  'Flicker',
+        {4}  'Unknown',
+        {5}  'Off By Default',
+        {6}  'Flicker Slow',
+        {7}  'Pulse',
+        {8}  'Pulse Slow',
+        {9}  'Spot Light',
+        {10} 'Shadow Spotlight',
+        {11} 'Shadow Hemisphere',
+        {12} 'Shadow Omnidirectional',
+        {13} 'Portal-strict',
+        {14} IsCS('Inverse Square', '')
       ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
-      wbFloat('Falloff Exponent')
-        .SetDefaultNativeValue(1),
+      wbUnion('', wbLIGHFalloffDecider, [
+        wbFloat('Falloff Exponent').SetDefaultNativeValue(1),
+        wbFloat('Inverse Square Falloff').SetDefaultNativeValue(1)
+      ]).IncludeFlag(dfCollapsed),
       wbFloat('FOV')
         .SetDefaultNativeValue(90),
       wbFloat('Near Clip'),

@@ -1054,6 +1054,7 @@ begin
       wbHideIgnored         := False; // to show Form Version
       wbCanSortINFO         := True;
       wbHasAddedLightSupport := (wbGameMode = gmTES5VR) and FileExists(wbDataPath + 'SKSE\Plugins\skyrimvresl.dll');
+      wbCS                  := wbIsSkyrimSE and FileExists(wbDataPath + 'SKSE\Plugins\CommunityShaders.dll');
     end;
     gmFO4, gmFO4VR: begin
       wbVWDInTemporary      := True;
