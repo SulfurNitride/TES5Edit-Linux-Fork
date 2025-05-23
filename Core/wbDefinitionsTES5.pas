@@ -9101,8 +9101,7 @@ begin
       ], [], cpNormal, False)),
       wbUNAMs
     ]),
-    wbByteArray(XNAM, 'Marker', 0, cpNormal, True),
-
+    wbByteArray(XNAM, 'Marker', 1).SetRequired,
     wbRStruct('Procedure Tree', [
       wbRArray('Branches', wbRStruct('Branch', [
         wbString(ANAM, 'Branch Type'),
