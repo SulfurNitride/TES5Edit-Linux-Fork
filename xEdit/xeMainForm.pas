@@ -11405,10 +11405,17 @@ begin
             if not AutoModeCheckForDR then begin
               IsDeleted := True;
               IsDeleted := False;
-              if (wbIsSkyrim or wbIsFallout3 or wbIsFallout4 or wbIsFallout76 or wbIsStarfield) and ((Signature = 'ACHR') or (Signature = 'ACRE')) then
+
+
+              //This was reported as a bug and appears to be undesired.
+              //Was added 10+ years ago, but nobody can remember why.
+              //If looking at this please ask Robert what's going on here.
+              {if (wbIsSkyrim or wbIsFallout3 or wbIsFallout4 or wbIsFallout76 or wbIsStarfield) and ((Signature = 'ACHR') or (Signature = 'ACRE')) then
                 IsPersistent := True
               else if wbIsOblivion then
-                IsPersistent := False;
+                IsPersistent := False;}
+
+
               if not IsPersistent then
                 if wbUDRSetZ and GetPosition(Position) then begin
                   Position.z := wbUDRSetZValue;
