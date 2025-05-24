@@ -11426,7 +11426,7 @@ begin
               IsInitiallyDisabled := True;
               if wbUDRSetXESP and Supports(Add('XESP', True), IwbContainerElementRef, Cntr) then begin
                 Cntr.ElementNativeValues['Reference'] := $14;
-                Cntr.ElementNativeValues['Flags'] := 1;
+                Cntr.Elements[1].NativeValue := 1;
               end;
 
               if wbUDRSetScale then begin
