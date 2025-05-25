@@ -1,11 +1,12 @@
 program Sniff;
 
 uses
+  MSHeap in 'Core\MSHeap.pas',
+
   Vcl.Forms,
   Vcl.Themes,
   Vcl.Styles,
 
-  MSHeap in 'Core\MSHeap.pas',
   wbCommandLine in 'Core\wbCommandLine.pas',
   wbDataFormat in 'Core\wbDataFormat.pas',
   wbDataFormatMaterial in 'Core\wbDataFormatMaterial.pas',

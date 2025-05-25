@@ -145,16 +145,13 @@
         <DCCReference Include="Sniff\SniffProcessor.pas"/>
         <DCCReference Include="Sniff\frmMain.pas">
             <Form>FormMain</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Sniff\frMessages.pas">
             <Form>FrameMessages</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\frmVertexPaintHelper.pas">
             <Form>FormVertexPaintHelper</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcAddBoundingBox.pas">
             <Form>FrameAddBoundingBox</Form>
