@@ -7963,9 +7963,9 @@ begin
       wbFloat('Forward Run', cpNormal, True, 1, 2),
       wbFloat('Back Walk', cpNormal, True, 1, 2),
       wbFloat('Back Run', cpNormal, True, 1, 2),
-      wbFloat('Rotate In Place Walk', cpNormal, True, 1, 2),
-      wbFloat('Rotate In Place Run', cpNormal, True, 1, 2),
-      wbFromVersion(28, wbFloat('Rotate while Moving Run', cpNormal, True, 1, 2))
+      wbFloat('Rotate In Place Walk', cpNormal, True, 180/pi, 2),
+      wbFloat('Rotate In Place Run', cpNormal, True, 180/pi, 2),
+      wbFromVersion(28, wbFloat('Rotate while Moving Run', cpNormal, True, 180/pi, 2))
     ]).SetRequired,
     wbStruct(INAM, 'Anim Change Thresholds', [
       wbFloat('Directional', cpNormal, True, 180/Pi, 4),
