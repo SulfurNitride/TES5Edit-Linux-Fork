@@ -29,6 +29,10 @@ object FrameUniversalFixer: TFrameUniversalFixer
     Top = 11
     Width = 142
     Height = 17
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Caption = 'Save changes log to'
     TabOrder = 1
   end
@@ -37,6 +41,10 @@ object FrameUniversalFixer: TFrameUniversalFixer
     Top = 34
     Width = 457
     Height = 23
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Anchors = [akLeft, akTop, akRight]
     ReadOnly = True
     TabOrder = 2
@@ -46,6 +54,10 @@ object FrameUniversalFixer: TFrameUniversalFixer
     Top = 33
     Width = 45
     Height = 25
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Anchors = [akTop, akRight]
     Caption = '...'
     TabOrder = 3
@@ -56,6 +68,10 @@ object FrameUniversalFixer: TFrameUniversalFixer
     Top = 63
     Width = 142
     Height = 17
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Caption = 'Open log when done'
     TabOrder = 4
   end

@@ -1050,6 +1050,8 @@ begin
       var NewShaderType := '';
 
       // perfect matches first: type + texture + flags
+      if (ShaderType = 'MultiLayer Parallax') and bTexEnvMapped and bTexSubSurface and Shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] then
+        NewShaderType := 'MultiLayer Parallax' else
       if (ShaderType = 'Environment Map') and bTexEnvMapped and shader.NativeValues['Shader Flags 1\Environment_Mapping'] then
         NewShaderType := 'Environment Map' else
       if (ShaderType = 'Eye Envmap') and bTexEnvMapped and shader.NativeValues['Shader Flags 1\Eye_Environment_Mapping'] then
@@ -1062,6 +1064,8 @@ begin
         NewShaderType := 'Parallax' else
 
       // less perfect matches: type + texture
+      if (ShaderType = 'MultiLayer Parallax') and bTexEnvMapped and bTexSubSurface then
+        NewShaderType := 'MultiLayer Parallax' else
       if (ShaderType = 'Environment Map') and bTexEnvMapped then
         NewShaderType := 'Environment Map' else
       if (ShaderType = 'Eye Envmap') and bTexEnvMapped then
@@ -1074,6 +1078,8 @@ begin
         NewShaderType := 'Parallax' else
 
       // even less perfect matches: texture + flags
+      if bTexEnvMapped and bTexSubSurface and Shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] then
+        NewShaderType := 'MultiLayer Parallax' else
       if bTexEnvMapped and shader.NativeValues['Shader Flags 1\Environment_Mapping'] then
         NewShaderType := 'Environment Map' else
       if bTexEnvMapped and shader.NativeValues['Shader Flags 1\Eye_Environment_Mapping'] then
@@ -1093,6 +1099,21 @@ begin
       end;
 
       ShaderType := shader.EditValues['Shader Type'];
+
+      if ShaderType = 'MultiLayer Parallax' then begin
+        // add Multi_Layer_Parallax flag when shader is MultiLayer Parallax
+        if not shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] then begin
+          shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] := True;
+          Log.add(#9 + shader.Name + ': Added Multi_Layer_Parallax flag');
+          Result := True;
+        end;
+      end else
+        // remove Multi_Layer_Parallax flag when shader is not MultiLayer Parallax
+        if shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] then begin
+          shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] := False;
+          Log.Add(#9 + shader.Name + ': Removed Multi_Layer_Parallax flag because Shader Type is not MultiLayer Parallax');
+          Result := True;
+        end;
 
       if ShaderType = 'Environment Map' then begin
         // add Environment_Mapping flag when shader is Environment Map
