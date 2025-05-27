@@ -7955,22 +7955,22 @@ begin
     wbEDID,
     wbString(MNAM, 'Name'),
     wbStruct(SPED, 'Default Data', [
-      wbFloat('Left Walk'),
-      wbFloat('Left Run'),
-      wbFloat('Right Walk'),
-      wbFloat('Right Run'),
-      wbFloat('Forward Walk'),
-      wbFloat('Forward Run'),
-      wbFloat('Back Walk'),
-      wbFloat('Back Run'),
-      wbFloatAngle('Rotate in Place Walk'),
-      wbFloatAngle('Rotate in Place Run'),
-      wbFromVersion(28, wbFloatAngle('Rotate while Moving Run'))
+      wbFloat('Left Walk', cpNormal, True, 1, 2),
+      wbFloat('Left Run', cpNormal, True, 1, 2),
+      wbFloat('Right Walk', cpNormal, True, 1, 2),
+      wbFloat('Right Run', cpNormal, True, 1, 2),
+      wbFloat('Forward Walk', cpNormal, True, 1, 2),
+      wbFloat('Forward Run', cpNormal, True, 1, 2),
+      wbFloat('Back Walk', cpNormal, True, 1, 2),
+      wbFloat('Back Run', cpNormal, True, 1, 2),
+      wbFloat('Rotate In Place Walk', cpNormal, True, 1, 2),
+      wbFloat('Rotate In Place Run', cpNormal, True, 1, 2),
+      wbFromVersion(28, wbFloat('Rotate while Moving Run', cpNormal, True, 1, 2))
     ]).SetRequired,
     wbStruct(INAM, 'Anim Change Thresholds', [
-      wbFloat('Directional', cpNormal, True, 180/Pi),
-      wbFloat('Movement Speed'),
-      wbFloat('Rotation Speed', cpNormal, True, 180/Pi)
+      wbFloat('Directional', cpNormal, True, 180/Pi, 4),
+      wbFloat('Movement Speed', cpNormal, True, 1, 4),
+      wbFloat('Rotation Speed', cpNormal, True, 180/Pi, 4)
     ]).SetRequired
   ]);
 
