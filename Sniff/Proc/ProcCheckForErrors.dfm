@@ -9,10 +9,6 @@ object FrameCheckForErrors: TFrameCheckForErrors
     Top = 0
     Width = 534
     Height = 25
-    Margins.Left = 5
-    Margins.Top = 5
-    Margins.Right = 5
-    Margins.Bottom = 5
     Align = alTop
     AutoSize = False
     Caption = 'Perform selected checks and report found issues'
