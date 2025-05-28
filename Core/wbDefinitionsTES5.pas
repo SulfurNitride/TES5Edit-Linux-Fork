@@ -5863,11 +5863,13 @@ begin
     wbFULL,
     wbGenericModel,
     wbDEST,
-    wbInteger(DATA, 'Flags', itU8, wbFlags([
-      'On Local Map',
-      'Unknown 1',
-      'Unknown 2'
-    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
+    wbInteger(DATA, 'Flags', itU8,
+      wbFlags([
+      {0} 'On Local Map',
+      {1} 'Unknown 1',
+      {2} 'Static'
+      ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
+         .SetRequired,
     wbFormIDCk(SNAM, 'Looping Sound', [SNDR])
   ]);
 

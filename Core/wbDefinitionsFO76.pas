@@ -9965,7 +9965,9 @@ begin
     wbKeywords,
     wbPRPS,
     wbAPPR,
-    wbInteger(DATA, 'On Local Map', itU8, wbBoolEnum, cpNormal, True),
+    wbInteger(DATA, 'On Local Map', itU8, wbBoolEnum)
+      .SetDefaultNativeValue(1)
+      .SetRequired,
     wbFormIDCk(SNAM, 'Looping Sound', [SNDR])
   ]);
 

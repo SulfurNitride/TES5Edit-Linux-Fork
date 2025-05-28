@@ -4584,7 +4584,7 @@ begin
     wbFULL,
     wbGenericModel(True),
     wbDEST,
-    wbByteArray(DATA, 'Unknown', 1).SetRequired,
+    wbInteger(DATA, 'On Local Map', itU8, wbBoolEnum).SetRequired,
     wbFormIDCk(SNAM, 'Sound', [SOUN])
   ]);
 

@@ -9724,11 +9724,13 @@ end;
     wbDEST,
     wbKeywords,
     wbPRPS,
-    wbInteger(DATA, 'Mass Override Flags', itU8, wbFlags([
-      '',
-      'Use Mass Override',
-      'Scale'
-    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
+    wbInteger(DATA, 'Mass Override Flags', itU8,
+      wbFlags(wbSparseFlags([
+      1, 'Use Mass Override',
+      2, 'Scale'
+      ], False, 3))).SetDefaultNativeValue(4)
+         .SetRequired
+         .IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbSoundReference(MSLS, 'Looping Sound'),
     wbFloat(MSMO, 'Mass Override Value')
   ]);
