@@ -8000,7 +8000,8 @@ begin
            32, 'Is Island',
            64, 'Not Edited'
           ])),
-        wbArray('Unknown', wbFloat, 4),
+        wbVec3('Approx Location'),
+        wbFloat('Preferred %'),
         wbArrayS('Edge Links', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
         wbArrayS('Preferred Edge Links', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
         wbArrayS('Door Links',
@@ -8016,8 +8017,10 @@ begin
           wbUnion('Island Data', wbNAVIIslandDataDecider, [
             wbStruct('Unused', [wbEmpty('Unused')]).IncludeFlag(dfCollapsed, wbCollapseOther),
             wbStruct('Island Data', [
-              wbVec3('Min'),
-              wbVec3('Max'),
+              wbStruct('Navmesh Bounds', [
+                wbVec3('Min'),
+                wbVec3('Max')
+              ]),
               wbArray('Triangles',
                 wbStruct('Triangle', [
                   wbInteger('Vertex 0', itU16),

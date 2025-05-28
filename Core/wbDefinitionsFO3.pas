@@ -4747,12 +4747,16 @@ begin
           .SetSummaryDelimiter(', ')
           .IncludeFlag(dfCollapsed, wbCollapsePlacement)
           .IncludeFlag(dfSummaryMembersNoName),
-        wbVec3,
+        wbVec3('Approx Location'),
         wbUnion('Island Data', wbNAVINVMIDecider, [
-          wbStruct('Unused', [wbEmpty('Unused')]).IncludeFlag(dfCollapsed, wbCollapseOther),
+          wbStruct('Unused', [wbEmpty('Unused')])
+            .SetDontShow(wbNeverShow)
+            .IncludeFlag(dfCollapsed, wbCollapseOther),
           wbStruct('Island Data', [
-            wbVec3('Min'),
-            wbVec3('Max'),
+            wbStruct('Navmesh Bounds', [
+              wbVec3('Min'),
+              wbVec3('Max')
+            ]),
             wbInteger('Vertex Count', itU16),
             wbInteger('Triangle Count', itU16),
             wbArray('Vertices',
@@ -4772,7 +4776,7 @@ begin
           ]).SetSummaryKey([5])
             .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
         ]).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
-        wbUnknown
+        wbFloat('Preferred %')
       ]).SetSummaryKeyOnValue([1,2,5])
         .SetSummaryPrefixSuffixOnValue(1, '', '')
         .SetSummaryPrefixSuffixOnValue(2, 'in ', '')
