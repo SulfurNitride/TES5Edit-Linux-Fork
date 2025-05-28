@@ -7987,6 +7987,7 @@ begin
       Int64($1EEF540A), 'Standard'
     ])),
     wbFormID(GNAM, 'Category'),
+    wbFormIDCk(GNAM, 'Category', [SNCT]),
     wbFormIDCk(SNAM, 'Alternate Sound For', [SNDR, NULL]),
     wbSoundDescriptorSounds,
     wbFormIDCk(ONAM, 'Output Model', [SOPM, NULL]),
