@@ -10381,8 +10381,6 @@ begin
     end;
   end;
 
-  mrDef.AfterLoad(Self);
-
   if not (mrStruct.mrsFlags.IsDeleted or GetIsPartialForm) then begin
     for i := 0 to Pred(mrDef.MemberCount) do
       if mrDef.Members[i].Required then
@@ -10402,6 +10400,8 @@ begin
       end;
     end;
   end;
+
+  mrDef.AfterLoad(Self);
 
   if wbReportMode {and mrDef.AllowUnordered} then
     if not wbSubRecordErrorsOnly or FoundError then begin
