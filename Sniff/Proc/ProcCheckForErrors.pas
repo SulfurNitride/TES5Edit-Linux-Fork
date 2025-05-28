@@ -159,6 +159,7 @@ begin
     Exit;
 
   var slNames := TStringList.Create;
+  slNames.CaseSensitive := True;
   try
     for var b in nif.BlocksByType('NiObjectNET', True) do begin
       if (b.BlockType = 'BSValueNode') or b.IsEditorMarker then
