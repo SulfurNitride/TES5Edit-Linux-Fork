@@ -4301,7 +4301,7 @@ begin
     wbString(XNAM, 'Water Noise Texture'),
     wbArrayS(XCLR, 'Regions', wbFormIDCk('Region', [REGN])),
     wbFormIDCk(XCIM, 'Image Space', [IMGS]),
-    wbByteArray(XCET, 'Unknown', 1, cpIgnore),
+    wbUnused(XCET, 1),
     wbFormIDCk(XEZN, 'Encounter Zone', [ECZN]),
     wbFormIDCk(XCCM, 'Climate', [CLMT]),
     wbFormIDCk(XCWT, 'Water', [WATR]),
