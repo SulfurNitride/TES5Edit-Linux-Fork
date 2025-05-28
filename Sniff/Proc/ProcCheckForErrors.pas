@@ -164,8 +164,9 @@ begin
       if (b.BlockType = 'BSValueNode') or b.IsEditorMarker then
         Continue;
 
-      var n := b.EditValues['Name'];
-      if (n = '') or (n = 'InvMarker') or (n = 'FurnitureMarker') then
+      var e := b.EditValues['Name'];
+      var n := b.NativeValues['Name'];
+      if (e = '') or (e = 'InvMarker') or (e = 'FurnitureMarker') then
         Continue;
 
       // material file in shader's name of FO4 meshes
@@ -174,7 +175,7 @@ begin
 
       var idx := slNames.IndexOf(n);
       if idx <> - 1 then
-        Log.Add(Format(#9 + b.Name + ': The same name "%s" is also used by %s', [n, TwbNifBlock(slNames.Objects[idx]).Name]))
+        Log.Add(Format(#9 + b.Name + ': The same name "%s" is also used by %s', [e, TwbNifBlock(slNames.Objects[idx]).Name]))
       else
         slNames.AddObject(n, b);
     end;
