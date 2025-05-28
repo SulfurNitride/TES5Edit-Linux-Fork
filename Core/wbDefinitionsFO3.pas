@@ -4861,8 +4861,10 @@ begin
       wbInteger('Divisor', itU32),
       wbFloat('Max X Distance'),
       wbFloat('Max Y Distance'),
-      wbVec3('Min'),
-      wbVec3('Max'),
+      wbStruct('Navmesh Bounds', [
+        wbVec3('Min'),
+        wbVec3('Max')
+      ]),
       IfThen(wbSimpleRecords,
         wbArray('Cells',
           wbArray('Cell',

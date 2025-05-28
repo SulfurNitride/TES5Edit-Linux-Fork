@@ -5352,8 +5352,10 @@ begin
           wbFloat('X'),
           wbFloat('Y')
         ]),
-        wbVec3('Min'),
-        wbVec3('Max'),
+        wbStruct('Navmesh Bounds', [
+          wbVec3('Min'),
+          wbVec3('Max')
+        ]),
         IfThen(wbSimpleRecords,
           wbArray('Cells',
             wbArray('Cell',

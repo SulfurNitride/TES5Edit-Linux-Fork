@@ -6283,11 +6283,6 @@ begin
     'Very Hard'
   ]));
 
-	wbNVNM :=  wbUnion(NVNM, '', wbRecordSizeDecider([0]), [
-    wbEmpty('Navmesh Marker'),
-    wbNVNMRecordVal
-  ]);
-
 	wbNVNMRecordVal :=
     wbStruct('Navmesh Geometry', [
 	    wbInteger('Version', itU32).SetDefaultNativeValue(15),
@@ -6390,8 +6385,10 @@ begin
           wbFloat('X'),
           wbFloat('Y')
         ]),
-        wbVec3('Min'),
-        wbVec3('Max'),
+        wbStruct('Navmesh Bounds', [
+          wbVec3('Min'),
+          wbVec3('Max')
+        ]),
         IfThen(wbSimpleRecords,
           wbArray('Cells',
             wbArray('Cell',
@@ -6408,6 +6405,11 @@ begin
         )
       ])
 	  ]);
+
+  wbNVNM :=  wbUnion(NVNM, '', wbRecordSizeDecider([0]), [
+    wbEmpty('Navmesh Marker'),
+    wbNVNMRecordVal
+  ]);
 
   wbRefRecord(ACHR, 'Placed NPC',
     wbFlags(wbFlagsList([
