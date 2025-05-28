@@ -8936,9 +8936,9 @@ begin
       {15} wbInteger('Reload Animation', itU8, wbReloadAnimEnum),
       {16} wbFloat('Min Spread'),
       {20} wbFloat('Spread'),
-      {24} wbFloat('Unknown'),
+      {24} wbUnused(4),
       {28} wbFloat('Sight FOV'),
-      {32} wbFloat,
+      {32} wbUnused(4),
       {36} wbFormIDCk('Projectile', [PROJ, NULL]),
       {40} wbInteger('Base VATS To-Hit Chance', itU8),
       {41} wbInteger('Attack Animation', itU8, wbEnum([

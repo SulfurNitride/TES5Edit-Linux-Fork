@@ -7690,7 +7690,7 @@ begin
              ])),
       {16} wbFloat('Min Spread'),
       {20} wbFloat('Spread'),
-      {24} wbFloat('Unknown'),
+      {24} wbUnused(4),
       {28} wbFloat('Sight FOV'),
       {32} wbUnused(4),
       {36} wbFormIDCk('Projectile', [PROJ, NULL]),
