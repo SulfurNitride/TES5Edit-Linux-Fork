@@ -437,8 +437,17 @@ function wbSizePosRot(aSignature: TwbSignature; aName: string; aPriority: TwbCon
 {>>> Color Defs <<<} //16
 function wbAmbientColors(const aSignature: TwbSignature; const aName: string = 'Directional Ambient Lighting Colors'): IwbSubRecordDef; overload;
 function wbAmbientColors(const aName: string = 'Directional Ambient Lighting Colors'): IwbStructDef; overload;
-function wbByteColors(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef; overload;
-function wbByteColors(const aName: string = 'Color'): IwbValueDef; overload;
+function wbByteColors(const aSignature : TwbSignature;
+                      const aName      : string = 'Color';
+                            aDefault1  : string = '0';
+                            aDefault2  : string = '0';
+                            aDefault3  : string = '0')
+                                       : IwbRecordMemberDef; overload
+function wbByteColors(const aName     : string = 'Color';
+                            aDefault1 : string = '0';
+                            aDefault2 : string = '0';
+                            aDefault3 : string = '0')
+                                      : IwbValueDef; overload;
 function wbByteABGR(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef; overload;
 function wbByteABGR(const aName: string = 'Color'): IwbValueDef; overload;
 function wbByteRGBA(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef; overload;
@@ -4515,23 +4524,32 @@ begin
   ]);
 end;
 
-function wbByteColors(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef;
+function wbByteColors(const aSignature : TwbSignature;
+                      const aName      : string = 'Color';
+                            aDefault1  : string = '0';
+                            aDefault2  : string = '0';
+                            aDefault3  : string = '0')
+                                       : IwbRecordMemberDef;
 begin
   Result := wbStruct(aSignature, aName, [
-    wbInteger('Red', itU8),
-    wbInteger('Green', itU8),
-    wbInteger('Blue', itU8),
+    wbInteger('Red', itU8).SetDefaultEditValue(aDefault1),
+    wbInteger('Green', itU8).SetDefaultEditValue(aDefault2),
+    wbInteger('Blue', itU8).SetDefaultEditValue(aDefault3),
     wbUnused(1)
   ]).SetToStr(wbRGBAToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbByteColors(const aName: string = 'Color'): IwbValueDef;
+function wbByteColors(const aName     : string = 'Color';
+                            aDefault1 : string = '0';
+                            aDefault2 : string = '0';
+                            aDefault3 : string = '0')
+                                      : IwbValueDef;
 begin
   Result := wbStruct(aName, [
-    wbInteger('Red', itU8),
-    wbInteger('Green', itU8),
-    wbInteger('Blue', itU8),
+    wbInteger('Red', itU8).SetDefaultEditValue(aDefault1),
+    wbInteger('Green', itU8).SetDefaultEditValue(aDefault2),
+    wbInteger('Blue', itU8).SetDefaultEditValue(aDefault3),
     wbUnused(1)
   ]).SetToStr(wbRGBAToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
