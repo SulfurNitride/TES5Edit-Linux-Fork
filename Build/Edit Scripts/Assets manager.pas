@@ -1229,7 +1229,7 @@ begin
       ProcessAsset(ElementByPath(e, 'TNAM'))
 
     else if (sig = 'WEAP') then begin
-      ScanForAssets(ElementByPath(e, 'Model'));
+      ScanForAssets(ElementByPath(e, 'SPT File'));
       ProcessAsset(ElementByPath(e, 'ICON'));
     end
 

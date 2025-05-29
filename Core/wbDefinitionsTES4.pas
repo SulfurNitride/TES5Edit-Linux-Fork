@@ -3667,10 +3667,13 @@ begin
       ]))
   ]).SetSummaryKey([1]);
 
-  wbRecord(TREE, 'Tree', [
+  wbRecord(TREE, 'Tree',
+    wbFlags(wbFlagsList([
+      10, 'Quest Item'
+    ])), [
     wbEDID,
-    wbTexturedModel('Model', [MODL, MODB, MODT], []),
-    wbICON,
+    wbTexturedModel('SPT File', [MODL, MODB, MODT], []),
+    wbString(ICON, 'Leaf Texture'),
     wbArrayS(SNAM, 'SpeedTree Seeds', wbInteger('SpeedTree Seed', itU32)),
     wbStruct(CNAM, 'Tree Data', [
       wbFloat('Leaf Curvature').SetDefaultNativeValue(2.5),
