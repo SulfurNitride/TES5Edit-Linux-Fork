@@ -3688,7 +3688,10 @@ begin
     ]).SetRequired
   ]).SetSummaryKey([1]);
 
-  wbRecord(WATR, 'Water', [
+  wbRecord(WATR, 'Water',
+    wbFlags(wbFlagsList([
+      10, 'Quest Item'
+    ])), [
     wbEDID,
     wbString(TNAM, 'Texture').SetRequired,
     wbInteger(ANAM, 'Opacity', itU8)
@@ -3716,9 +3719,9 @@ begin
         wbFloat('Near').SetDefaultNativeValue(27852.800782),
         wbFloat('Far').SetDefaultNativeValue(163840)
       ]),
-      wbByteColors('Shallow Color'),
-      wbByteColors('Deep Color'),
-      wbByteColors('Reflection Color'),
+      wbByteColors('Shallow Color', '0', '128', '128'),
+      wbByteColors('Deep Color', '0', '0', '25'),
+      wbByteColors('Reflection Color', '255', '255', '255'),
       wbInteger('Texture Blend', itU8).SetDefaultNativeValue(50),
       wbUnused(3),
       wbStruct('Rain Simulator', [
