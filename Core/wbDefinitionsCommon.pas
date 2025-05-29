@@ -372,7 +372,7 @@ function wbIsNotFlag(aFlag: Integer; const aValue: IwbValueDef; aIsUnused: Boole
 function IsCS(const aDef1, aDef2: string): string;
 function IsOBME(const aDef1, aDef2: string): string;
 
-{>>> Game Mode IfThen Defs <<<} //34
+{>>> Game Mode IfThen Defs <<<} //35
 function IsTES3(const aDef1, aDef2: String): string; overload;
 function IsTES3(const aDef1, aDef2: TwbSignature): TwbSignature; overload;
 function IsTES4(const aDef1, aDef2: Integer): Integer; overload;
@@ -385,6 +385,7 @@ function IsTES4R(const aDef1, aDef2: IwbRecordMemberDef): IwbRecordMemberDef; ov
 function IsTES4FO3(const aDef1, aDef2: IwbValueDef): IwbValueDef; overload;
 function IsTES4FO3(const aDef1, aDef2: String): string; overload;
 function IsFO3(const aDef1, aDef2: Integer): Integer; overload;
+function IsFO3(const aDef1, aDef2: IwbRecordMemberDef): IwbRecordMemberDef; overload;
 function IsFO3(const aDef1, aDef2: IwbValueDef): IwbValueDef; overload;
 function IsFO3(const aDef1, aDef2: string): string; overload;
 function IsFNV(const aDef1, aDef2: string): string; overload;
@@ -3998,7 +3999,7 @@ begin
     Result := aDef1
 end;
 
-{>>> wbGameMode IfThen Defs <<<} //34
+{>>> wbGameMode IfThen Defs <<<} //35
 
 function IsTES3(const aDef1, aDef2: string): string;
 begin
@@ -4078,6 +4079,13 @@ begin
 end;
 
 function IsFO3(const aDef1, aDef2: Integer): Integer;
+begin
+  Result := aDef2;
+  if wbIsFallout3 then
+    Result := aDef1
+end;
+
+function IsFO3(const aDef1, aDef2: IwbRecordMemberDef): IwbRecordMemberDef;
 begin
   Result := aDef2;
   if wbIsFallout3 then
@@ -6519,7 +6527,7 @@ Can't properly represent that with current record definition methods.
         wbString(DNAM, 'Layer #0'),
         wbString(CNAM, 'Layer #1'),
         wbString(ANAM, 'Layer #2'),
-        IsFNV(
+        IsFO3(
           wbString(BNAM, 'Layer #3').SetDefaultEditValue('Sky\WastelandCloudCloudyLower01.dds'),
           wbString(BNAM, 'Layer #3').SetDefaultEditValue('Sky\Alpha.dds')
         ).SetRequired
