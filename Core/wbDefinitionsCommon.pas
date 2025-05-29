@@ -207,7 +207,7 @@ function wbFlagNavmeshIgnoreErosionDontSHow(const aElement: IwbElement): Boolean
 function wbFlagNavmeshGroundDontSHow(const aElement: IwbElement): Boolean;
 function wbFlagPartialFormDontShow(const aElement: IwbElement): Boolean;
 
-{>>> Don't Show Callbacks <<<} //12
+{>>> Don't Show Callbacks <<<} //13
 function wbCellInteriorDontShow(const aElement: IwbElement): Boolean;
 function wbCellExteriorDontShow(const aElement: IwbElement): Boolean;
 function wbIdleMarkerPNAMDontShow(const aElement: IwbElement): Boolean;
@@ -220,6 +220,7 @@ function wbREGNMapDontShow(const aElement: IwbElement): Boolean;
 function wbREGNObjectsDontShow(const aElement: IwbElement): Boolean;
 function wbREGNSoundDontShow(const aElement: IwbElement): Boolean;
 function wbREGNWeatherDontShow(const aElement: IwbElement): Boolean;
+function wbWATRDATADontShow(const aElement: IwbElement): Boolean;
 
 {>>> Float Normalizers <<<} //1
 function wbNormalizeToRange(aMin, aMax: Extended): TwbFloatNormalizer;
@@ -1438,7 +1439,7 @@ begin
   Result := not lMainRecord.CanBePartial;
 end;
 
-{>>> Don't Show Callbacks <<<} //12
+{>>> Don't Show Callbacks <<<} //13
 
 function wbCellInteriorDontShow(const aElement: IwbElement): Boolean;
 begin
@@ -1511,6 +1512,11 @@ end;
 function wbREGNWeatherDontShow(const aElement: IwbElement): Boolean;
 begin
   Result := wbGetREGNType(aElement) <> 3;
+end;
+
+function wbWATRDATADontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := True;
 end;
 
 {>>> Float Normalizers <<<} //1
