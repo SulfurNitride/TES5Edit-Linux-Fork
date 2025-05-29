@@ -7986,7 +7986,6 @@ begin
     wbInteger(CNAM, 'Descriptor Type', itU32, wbEnum([], [
       Int64($1EEF540A), 'Standard'
     ])),
-    wbFormID(GNAM, 'Category'),
     wbFormIDCk(GNAM, 'Category', [SNCT]),
     wbFormIDCk(SNAM, 'Alternate Sound For', [SNDR, NULL]),
     wbSoundDescriptorSounds,
