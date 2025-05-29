@@ -3617,7 +3617,7 @@ begin
     ]).SetDontShow(wbOBMEDontShow),}
     wbFULL,
     wbStruct(SPIT, 'Data', [
-      wbInteger('Type', itU32,
+      wbInteger('Type', itU8,
         wbEnum([
           {0} 'Spell',
           {1} 'Disease',
@@ -3626,6 +3626,7 @@ begin
           {4} 'Ability',
           {5} 'Poison'
         ])),
+      wbUnused(3),
       wbInteger('Cost', itU32),
       wbInteger('Level', itU8,
         wbEnum([
@@ -3760,7 +3761,7 @@ begin
     wbSCRI,
     wbEnchantment(True),
     wbStruct(DATA, 'Data', [
-      wbInteger('Type', itU32,
+      wbInteger('Type', itU8,
         wbEnum([
           {0} 'Blade One Hand',
           {1} 'Blade Two Hand',
@@ -3769,6 +3770,7 @@ begin
           {4} 'Staff',
           {5} 'Bow'
         ])),
+      wbUnused(3),
       wbFloat('Speed'),
       wbFloat('Reach'),
       wbInteger('Ignores Normal Weapon Resistance', itU32, wbBoolEnum),
