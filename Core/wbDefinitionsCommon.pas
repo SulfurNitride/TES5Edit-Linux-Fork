@@ -150,10 +150,11 @@ function wbPlacedAddInfo(const aMainRecord: IwbMainRecord): string;
 function wbROADAddInfo(const aMainRecord: IwbMainRecord): string;
 function wbSCENAddInfo(const aMainRecord: IwbMainRecord): string;
 
-{>>> After Load Callbacks <<<} //4
+{>>> After Load Callbacks <<<} //5
 procedure wbACBSLevelMultAfterLoad(const aElement: IwbElement);
 procedure wbAVIFSkillAfterLoad(const aElement: IwbElement);
 procedure wbRPLDAfterLoad(const aElement: IwbElement);
+procedure wbSOUNAfterLoad(const aElement: IwbElement);
 procedure wbWorldAfterLoad(const aElement: IwbElement);
 
 {>>> After Set Callbacks <<<} //31
@@ -208,6 +209,7 @@ function wbFlagNavmeshGroundDontSHow(const aElement: IwbElement): Boolean;
 function wbFlagPartialFormDontShow(const aElement: IwbElement): Boolean;
 
 {>>> Don't Show Callbacks <<<} //13
+function wbAlwaysDontShow(const aElement: IwbElement): Boolean;
 function wbCellInteriorDontShow(const aElement: IwbElement): Boolean;
 function wbCellExteriorDontShow(const aElement: IwbElement): Boolean;
 function wbIdleMarkerPNAMDontShow(const aElement: IwbElement): Boolean;
@@ -220,7 +222,6 @@ function wbREGNMapDontShow(const aElement: IwbElement): Boolean;
 function wbREGNObjectsDontShow(const aElement: IwbElement): Boolean;
 function wbREGNSoundDontShow(const aElement: IwbElement): Boolean;
 function wbREGNWeatherDontShow(const aElement: IwbElement): Boolean;
-function wbWATRDATADontShow(const aElement: IwbElement): Boolean;
 
 {>>> Float Normalizers <<<} //1
 function wbNormalizeToRange(aMin, aMax: Extended): TwbFloatNormalizer;
@@ -659,7 +660,7 @@ begin
   end;
 end;
 
-{>>> After Load Callbacks <<<} //4
+{>>> After Load Callbacks <<<} //5
 
 procedure wbACBSLevelMultAfterLoad(const aElement: IwbElement);
 begin
@@ -718,6 +719,35 @@ begin
       lContainerElementRef.ReverseElements;
   finally
     wbEndInternalEdit;
+  end;
+end;
+
+procedure wbSOUNAfterLoad(const aElement: IwbElement);
+begin
+  if wbBeginInternalEdit then try
+    if not Assigned(aElement) then
+      Exit;
+
+    var lMainRecord : IwbMainRecord;
+    if not Supports(aElement, IwbMainRecord, lMainRecord) then
+      Exit;
+
+    if lMainRecord.ElementExists['SNDD'] then begin
+
+      If not Assigned(lMainRecord.ElementBySignature['SNDX']) then
+        lMainRecord.Add('SNDX', True);
+
+      var lSNDX := lMainRecord.ElementBySignature['SNDX'] as IwbContainerElementRef;
+      var lSNDD := lMainRecord.ElementBySignature['SNDD'] as IwbContainerElementRef;
+
+      for var i := 0 to Pred(lSNDD.ElementCount) do begin
+        lSNDX.Elements[i].Assign(Low(Integer), lSNDD.Elements[i], False);
+      end;
+
+      lMainRecord.RemoveElement('SNDD');
+    end;
+  finally
+    wbEndInternalEdit
   end;
 end;
 
@@ -1441,6 +1471,11 @@ end;
 
 {>>> Don't Show Callbacks <<<} //13
 
+function wbAlwaysDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := True;
+end;
+
 function wbCellInteriorDontShow(const aElement: IwbElement): Boolean;
 begin
   Result := (aElement.ContainingMainRecord.ElementNativeValues[IsTES3('DATA\Flags', 'DATA')] and 1 = 1);
@@ -1512,11 +1547,6 @@ end;
 function wbREGNWeatherDontShow(const aElement: IwbElement): Boolean;
 begin
   Result := wbGetREGNType(aElement) <> 3;
-end;
-
-function wbWATRDATADontShow(const aElement: IwbElement): Boolean;
-begin
-  Result := True;
 end;
 
 {>>> Float Normalizers <<<} //1

@@ -3603,11 +3603,10 @@ begin
   wbRecord(SOUN, 'Sound', [
     wbEDID,
     wbString(FNAM, 'Sound Filename'),
-    wbRUnion('Sound Data', [
-      wbStruct(SNDX, 'Sound Data', wbSoundDataMembers, cpNormal, True, nil, 6),
-      wbStruct(SNDD, 'Sound Data', wbSoundDataMembers, cpNormal, True, nil, 6)
-    ]).SetRequired
-  ]).SetSummaryKey([1]);
+    wbStruct(SNDX, 'Sound Data', wbSoundDataMembers).SetRequired,
+    wbStruct(SNDD, 'Sound Data', wbSoundDataMembers, cpNormal, False, nil, 6).SetDontShow(wbAlwaysDontShow)
+  ]).SetSummaryKey([1])
+    .SetAfterLoad(wbSOUNAfterLoad);
 
   wbRecord(SPEL, 'Spell', [
     wbEDID,

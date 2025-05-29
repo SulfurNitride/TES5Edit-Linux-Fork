@@ -7566,7 +7566,7 @@ begin
       wbFloat('Noise Properties - Noise Layer Two - UV Scale'),
       wbFloat('Noise Properties - Noise Layer Three - UV Scale'),
       wbInteger('Damage (Old Format)', itU16)
-    ]).SetDontShow(wbWATRDATADontShow),
+    ]).SetDontShow(wbAlwaysDontShow),
     wbUnused(GNAM, 12).SetRequired
   ]).SetAfterLoad(wbWATRAfterLoad);
 
