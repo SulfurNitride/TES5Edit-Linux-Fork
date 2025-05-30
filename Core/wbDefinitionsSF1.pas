@@ -10000,7 +10000,7 @@ end;
                 wbVec3('Vertex'),
               -1).IncludeFlag(dfCollapsed, wbCollapseVertices)
                  .IncludeFlag(dfNotAlignable)
-            ]).SetSummaryKey([2])
+            ]).SetSummaryKey([1])
               .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
               .IncludeFlag(dfSummaryMembersNoName)
           ]).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
@@ -10027,11 +10027,11 @@ end;
           .IncludeFlag(dfSummaryMembersNoName, wbCollapseNavmesh),
         wbUnknown(1),
         wbArray('Unknown', wbInteger('Type', itU32, wbCRCValuesEnum), -1)
-      ]).SetSummaryKeyOnValue([0, 8, 6, 7])
+      ]).SetSummaryKeyOnValue([0, 9, 7, 8])
         .SetSummaryPrefixSuffixOnValue(0, '', '')
-        .SetSummaryPrefixSuffixOnValue(8, 'in ', '')
-        .SetSummaryPrefixSuffixOnValue(6, 'with ', '')
-        .SetSummaryPrefixSuffixOnValue(7, 'is island with ', '')
+        .SetSummaryPrefixSuffixOnValue(9, 'in ', '')
+        .SetSummaryPrefixSuffixOnValue(7, 'with ', '')
+        .SetSummaryPrefixSuffixOnValue(8, 'is island with ', '')
         .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
         .IncludeFlag(dfFastAssign)
         .IncludeFlag(dfSummaryMembersNoName)
