@@ -5380,7 +5380,7 @@ begin
             ).SetCountPath('Triangle Count', True)
              .IncludeFlag(dfCollapsed, wbCollapseVertices)
              .IncludeFlag(dfNotAlignable)
-          ]).SetSummaryKey([5])
+          ]).SetSummaryKey([4])
             .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
         ]).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
         wbFloat('Preferred %')
