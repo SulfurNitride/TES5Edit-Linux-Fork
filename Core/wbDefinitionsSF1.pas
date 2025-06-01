@@ -2498,26 +2498,6 @@ begin
     Result := True;
 end;
 
-procedure wbDOBJObjectsAfterLoad(const aElement: IwbElement);
-var
-  ObjectsContainer : IwbContainerElementRef;
-  i                : Integer;
-  ObjectContainer  : IwbContainerElementRef;
-begin
-  if wbBeginInternalEdit then try
-
-    if not Supports(aElement, IwbContainerElementRef, ObjectsContainer) then
-      Exit;
-
-    for i := Pred(ObjectsContainer.ElementCount) downto 0 do
-      if Supports(ObjectsContainer.Elements[i], IwbContainerElementRef, ObjectContainer) then
-        if ObjectContainer.ElementNativeValues['Use'] = 0 then
-          ObjectsContainer.RemoveElement(i, True);
-  finally
-    wbEndInternalEdit;
-  end;
-end;
-
 function wbActorTemplatesUseTemplate0(const aElement: IwbElement): Boolean;
 var
   MainRecord : IwbMainRecord;

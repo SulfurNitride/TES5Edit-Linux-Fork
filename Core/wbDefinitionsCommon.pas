@@ -153,6 +153,7 @@ function wbSCENAddInfo(const aMainRecord: IwbMainRecord): string;
 {>>> After Load Callbacks <<<} //5
 procedure wbACBSLevelMultAfterLoad(const aElement: IwbElement);
 procedure wbAVIFSkillAfterLoad(const aElement: IwbElement);
+procedure wbDOBJObjectsAfterLoad(const aElement: IwbElement);
 procedure wbRPLDAfterLoad(const aElement: IwbElement);
 procedure wbSOUNAfterLoad(const aElement: IwbElement);
 procedure wbWorldAfterLoad(const aElement: IwbElement);
@@ -685,6 +686,26 @@ begin
   if wbBeginInternalEdit then try
     if aElement.NativeValue > 3 then
       aElement.NativeValue := 0;
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
+procedure wbDOBJObjectsAfterLoad(const aElement: IwbElement);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    var lArray : IwbContainerElementRef;
+    if not Supports(aElement, IwbContainerElementRef, lArray) then
+      Exit;
+
+    var lEntry : IwbContainerElementRef;
+    for var i := Pred(lArray.ElementCount) downto 0 do
+      if Supports(lArray.Elements[i], IwbContainerElementRef, lEntry) then
+        if lEntry.ElementNativeValues['Use'] = 0 then
+          lArray.RemoveElement(i, True);
   finally
     wbEndInternalEdit;
   end;
