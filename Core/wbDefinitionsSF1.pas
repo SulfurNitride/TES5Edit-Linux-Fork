@@ -18037,7 +18037,7 @@ end;
           {0} 'Removed',
           {1} 'Added'
           ]))
-      ])),
+      ])).IncludeFlag(dfArrayCanBeEmpty),
     wbRArray('Biomes',
       wbStructSK(PPBD, [0], 'Biome', [
         wbFormIDCK('Biome', [BIOM]),
@@ -18177,7 +18177,7 @@ end;
     wbFloat(DENS, 'Density'),
     wbFloat(PHLA, 'Perihelion Angle (Deg)'),
     wbInteger(RSCS, 'Resource Creation Seed', itS32)
-  ]);
+  ]).SetAfterLoad(wbPNDTAfterLoad);
 
   {subrecords checked against Starfield.esm}
   wbRecord(PSDC, 'Particle System Define Collision', [ //PSDC -> EDID REFL  (9)

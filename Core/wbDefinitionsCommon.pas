@@ -150,10 +150,11 @@ function wbPlacedAddInfo(const aMainRecord: IwbMainRecord): string;
 function wbROADAddInfo(const aMainRecord: IwbMainRecord): string;
 function wbSCENAddInfo(const aMainRecord: IwbMainRecord): string;
 
-{>>> After Load Callbacks <<<} //5
+{>>> After Load Callbacks <<<} //7
 procedure wbACBSLevelMultAfterLoad(const aElement: IwbElement);
 procedure wbAVIFSkillAfterLoad(const aElement: IwbElement);
 procedure wbDOBJObjectsAfterLoad(const aElement: IwbElement);
+procedure wbPNDTAfterLoad(const aElement: IwbElement);
 procedure wbRPLDAfterLoad(const aElement: IwbElement);
 procedure wbSOUNAfterLoad(const aElement: IwbElement);
 procedure wbWorldAfterLoad(const aElement: IwbElement);
@@ -661,7 +662,7 @@ begin
   end;
 end;
 
-{>>> After Load Callbacks <<<} //5
+{>>> After Load Callbacks <<<} //7
 
 procedure wbACBSLevelMultAfterLoad(const aElement: IwbElement);
 begin
@@ -706,6 +707,49 @@ begin
       if Supports(lArray.Elements[i], IwbContainerElementRef, lEntry) then
         if lEntry.ElementNativeValues['Use'] = 0 then
           lArray.RemoveElement(i, True);
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
+procedure wbPNDTAfterLoad(const aElement: IwbElement);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    var lMainRecord : IwbMainRecord;
+    if not Supports(aElement, IwbMainRecord, lMainRecord) then
+      Exit;
+
+    var lCNAM := lMainRecord.ElementBySignature['CNAM'] as IwbContainerElementRef;
+    var lEOVR := lMainRecord.ElementBySignature['EOVR'] as IwbContainerElementRef;
+
+    if lMainRecord.IsMaster then begin
+      if not Assigned(lCNAM) then
+        lMainRecord.Add('CNAM', True);
+
+      for var i := Pred(lCNAM.ElementCount) downto 0 do begin
+        var lWorldspace := lCNAM.Elements[i] as IwbContainerElementRef;
+        if lWorldspace.Elements[1].NativeValue = 0 then
+          lCNAM.Elements[i].Remove
+      end;
+
+      if Assigned(lEOVR) then
+        lEOVR.Remove;
+    end else begin
+      if not Assigned(lEOVR) then
+        lMainRecord.Add('EOVR', True);
+
+      for var i := Pred(lEOVR.ElementCount) downto 0 do begin
+        var lWorldspace := lEOVR.Elements[i] as IwbContainerElementRef;
+        if lWorldspace.Elements[1].NativeValue = 0 then
+          lEOVR.Elements[i].Remove;
+      end;
+
+      if Assigned(lCNAM) then
+        lCNAM.Remove;
+    end;
   finally
     wbEndInternalEdit;
   end;
