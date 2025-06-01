@@ -6399,43 +6399,46 @@ begin
   ]);
 
   wbRecord(DOBJ, 'Default Object Manager', [
-    wbEDIDReq,
-    wbArray(DATA, 'Default Objects', wbFormID('Default Object'), [
-      'Stimpak',
-      'SuperStimpak',
-      'RadX',
-      'RadAway',
-      'Morphine',
-      'Perk Paralysis',
-      'Player Faction',
-      'Mysterious Stranger NPC',
-      'Mysterious Stranger Faction',
-      'Default Music',
-      'Battle Music',
-      'Death Music',
-      'Success Music',
-      'Level Up Music',
-      'Player Voice (Male)',
-      'Player Voice (Male Child)',
-      'Player Voice (Female)',
-      'Player Voice (Female Child)',
-      'Eat Package Default Food',
-      'Every Actor Ability',
-      'Drug Wears Off Image Space',
-      'Doctor''s Bag',
-      'Miss Fortune NPC',
-      'Miss Fortune Faction',
-      'Meltdown Explosion',
-      'Unarmed Forward PA',
-      'Unarmed Backward PA',
-      'Unarmed Left PA',
-      'Unarmed Right PA',
-      'Unarmed Crouch PA',
-      'Unarmed Counter PA',
-      'Spotter Effect',
-      'Item Detected Effect',
-      'Cateye Mobile Effect (NYI)'
-    ], cpNormal, True)
+    wbString(EDID, 'Editor ID')
+      .SetDefaultNativeValue('DefaultObjectManager')
+      .SetRequired
+      .IncludeFlag(dfInternalEditOnly),
+    wbStruct(DATA, 'Default Objects', [
+      wbFormIDCk('Stimpak', [ALCH,NULL]),
+      wbFormIDCk('Super Stimpak', [ALCH,NULL]),
+      wbFormIDCk('Rad X', [ALCH,NULL]),
+      wbFormIDCk('Rad Away', [ALCH,NULL]),
+      wbFormIDCk('Morphine', [ALCH,NULL]),
+      wbFormIDCk('Perk Paralysis', [SPEL,NULL]),
+      wbFormIDCk('Player Faction', [FACT,NULL]),
+      wbFormIDCk('Mysterious Stranger NPC', [NPC_,NULL]),
+      wbFormIDCk('Mysterious Stranger Faction', [FACT,NULL]),
+      wbFormIDCk('Default Music', [MUSC,NULL]),
+      wbFormIDCk('Battle Music', [MUSC,NULL]),
+      wbFormIDCk('Death Music', [MUSC,NULL]),
+      wbFormIDCk('Success Music', [MUSC,NULL]),
+      wbFormIDCk('Level Up Music', [MUSC,NULL]),
+      wbFormIDCk('Player Voice (Male)', [VTYP,NULL]),
+      wbFormIDCk('Player Voice (Male Child)', [VTYP,NULL]),
+      wbFormIDCk('Player Voice (Female)', [VTYP,NULL]),
+      wbFormIDCk('Player Voice (Female Child)', [VTYP,NULL]),
+      wbFormIDCk('Eat Package Default Food', [FLST,NULL]),
+      wbFormIDCk('Every Actor Ability', [SPEL,NULL]),
+      wbFormIDCk('Drug Wears Off Image Space', [IMAD,NULL]),
+      wbFormIDCk('Doctor''s Bag', [ALCH,NULL]),
+      wbFormIDCk('Miss Fortune NPC', [NPC_,NULL]),
+      wbFormIDCk('Miss Fortune Faction', [FACT,NULL]),
+      wbFormIDCk('Meltdown Explosion', [EXPL,NULL]),
+      wbFormIDCk('Unarmed Forward PA', [SPEL,NULL]),
+      wbFormIDCk('Unarmed Backward PA', [SPEL,NULL]),
+      wbFormIDCk('Unarmed Left PA', [SPEL,NULL]),
+      wbFormIDCk('Unarmed Right PA', [SPEL,NULL]),
+      wbFormIDCk('Unarmed Crouch PA', [SPEL,NULL]),
+      wbFormIDCk('Unarmed Counter PA', [SPEL,NULL]),
+      wbFormIDCk('Spotter Effect', [EFSH,NULL]),
+      wbFormIDCk('Item  Detected Effect', [EFSH,NULL]),
+      wbFormIDCk('Cateye Mobile Effect (NYI)', [EFSH,NULL])
+    ]).SetRequired
   ]);
 
   wbRecord(LGTM, 'Lighting Template', [
