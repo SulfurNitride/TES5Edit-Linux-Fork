@@ -2394,7 +2394,7 @@ begin
       wbFloat('Color Key 1 - Color Key Time'),
       wbFloat('Color Key 2 - Color Key Time').SetDefaultNativeValue(0.5),
       wbFloat('Color Key 3 - Color Key Time').SetDefaultNativeValue(1)
-    ], cpNormal, True, nil, 25)
+    ], cpNormal, True, nil, 8)
   ]);
 
   wbRecord(ENCH, 'Enchantment', [
