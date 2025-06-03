@@ -1367,6 +1367,19 @@ begin
     for var spec in nif.BlocksByType('NiSpecularProperty') do
       Log.Add(#9 + spec.Name + ': Not supported, does nothing');
 
+  //Effect/LightingShaderProperties can't have the other type of Controllers attached, causes crashes
+  for var Shader in nif.BlocksByType('BSEffectShaderProperty') do begin
+    var Controller := Shader.GetController;
+    if Assigned(Controller) and Controller.BlockType.StartsWith('BSLighting') then
+      Log.Add(#9 + Shader.Name + ': Has Lighting Shader Controllers attached, which crashes the game');
+  end;
+
+  for var Shader in nif.BlocksByType('BSLightingShaderProperty') do begin
+    var Controller := Shader.GetController;
+    if Assigned(Controller) and Controller.BlockType.StartsWith('BSEffect')
+    then
+      Log.Add(#9 + Shader.Name + ': Has Effect Shader Controllers attached, which crashes the game');
+  end;
 end;
 
 //==============================================================================
