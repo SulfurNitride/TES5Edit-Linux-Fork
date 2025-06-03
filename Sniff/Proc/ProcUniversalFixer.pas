@@ -1143,6 +1143,19 @@ begin
           Result := True;
         end;
 
+      if (ShaderType = 'MultiLayer Parallax') or (ShaderType = 'Environment Map') or (ShaderType = 'Eye Envmap') then begin
+        if not Shader.NativeValues['Shader Flags 2\EnvMap_Light_Fade'] then begin
+          Shader.NativeValues['Shader Flags 2\EnvMap_Light_Fade'] := True;
+          Log.Add(#9 + Shader.Name + ': Added EnvMap_Light_Fade flag because Shader Type is Environment/MultiLayer Parallax');
+          Result := True;
+        end;
+      end else
+        if Shader.NativeValues['Shader Flags 2\EnvMap_Light_Fade'] then begin
+          Shader.NativeValues['Shader Flags 2\EnvMap_Light_Fade'] := False;
+          Log.Add(#9 + Shader.Name + ': Removed EnvMap_Light_Fade flag because Shader Type is not Environment/MultiLayer Parallax');
+          Result := True;
+        end;
+
       if ShaderType = 'Glow Shader' then begin
         // add emit + glow flags when shader is glow
         if not shader.NativeValues['Shader Flags 1\Own_Emit'] then begin
@@ -1158,11 +1171,11 @@ begin
       end
       else begin
         // remove glow flags when shader is not glow
-        {if shader.NativeValues['Shader Flags 1\Own_Emit'] then begin
+        if shader.NativeValues['Shader Flags 1\Own_Emit'] then begin
           shader.NativeValues['Shader Flags 1\Own_Emit'] := False;
           Log.Add(#9 + shader.Name + ': Removed Own_Emit flag because Shader Type is not Glow Shader');
           Result := True;
-        end;}
+        end;
         if shader.NativeValues['Shader Flags 2\Glow_Map'] then begin
           shader.NativeValues['Shader Flags 2\Glow_Map'] := False;
           Log.Add(#9 + shader.Name + ': Removed Glow_Map flag because Shader Type is not Glow Shader');
