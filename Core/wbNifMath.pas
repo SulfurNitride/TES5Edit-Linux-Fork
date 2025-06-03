@@ -941,8 +941,12 @@ begin
     end;
   end;
 
-  for i := Low(verts) to High(verts) do
+  for i := Low(verts) to High(verts) do begin
     OrthogonalizeTangent(tan[i], bin[i], norms[i]);
+    tan[i].ValidateNan;
+    bin[i].ValidateNan;
+    norms[i].ValidateNan;
+  end;
 end;
 
 // Unity version https://gist.github.com/aras-p/2843984
