@@ -7558,8 +7558,7 @@ begin
               {0} wbFloat('Comparison Value - Float'),
               {1} wbFormIDCk('Comparison Value - Global', [GLOB])
               ]),
-          {3} wbInteger('Function', itU16, wbConditionFunctionToStr, wbConditionFunctionToInt)
-                .SetAfterSet(wbUpdateSameParentUnions),
+          {3} wbInteger('Function', itU16, wbConditionFunctionToStr, wbConditionFunctionToInt),
           {4} wbUnused(2),
           {5} wbUnion('Parameter #1', wbConditionParam1Decider, wbConditionParameters),
           {6} wbUnion('Parameter #2', wbConditionParam2Decider, wbConditionParameters),
