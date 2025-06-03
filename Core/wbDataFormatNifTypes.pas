@@ -1671,13 +1671,15 @@ end;
 function wbbhkCOFlags(const aName, aDefaultValue: string; const aEvents: array of const): TdfDef;
 begin
   Result := dfFlags(aName, dtU16, [
-    0, 'ACTIVE',
-    2, 'NOTIFY',
-    3, 'SET_LOCAL',
-    4, 'DBG_DISPLAY',
-    5, 'USE_VEL',
-    6, 'RESET',
-    7, 'SYNC_ON_UPDATE',
+    0,  'ACTIVE',
+    2,  'NOTIFY',
+    3,  'SET_LOCAL',
+    4,  'DBG_DISPLAY',
+    5,  'USE_VEL',
+    6,  'RESET',
+    7,  'SYNC_ON_UPDATE',
+    8,  'BLEND_POS',
+    9,  'ALWAYS_BLEND',
     10, 'ANIM_TARGETED',
     11, 'DISMEMBERED_LIMB'
   ], aDefaultValue, aEvents);
