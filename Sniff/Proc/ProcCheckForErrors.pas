@@ -420,8 +420,12 @@ begin
         if (num < 30) or (num > 62) then
           Log.Add(#9 + parts[i].Path + ': Invalid body part ' + parts[i].EditValues['Body Part']);
       end;
-    end;
 
+      var PartCount := Skin.NativeValues['Num Partitions'];
+      var SkinPartition := Skin.Elements['Skin Partition'].LinksTo;
+      if Assigned(SkinPartition) and (PartCount < SkinPartition.NativeValues['Num Partitions']) then
+        Log.Add(#9 + Skin.Name + ': Has lower Num Partitions than in ' + TwbNifBlock(SkinPartition).Name);
+    end;
 end;
 
 //==============================================================================
