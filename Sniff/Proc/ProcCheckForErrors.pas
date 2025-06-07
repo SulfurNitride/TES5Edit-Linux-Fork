@@ -422,7 +422,7 @@ begin
       end;
 
       if Skin.BlockType = 'BSDismemberSkinInstance' then begin
-        var PartCount := Skin.NativeValues['Num Partitions'];
+        var PartCount := Skin.Elements['Partitions'].Count;
         var SkinPartition := Skin.Elements['Skin Partition'].LinksTo;
         if Assigned(SkinPartition) and (PartCount < SkinPartition.NativeValues['Num Partitions']) then
           Log.Add(#9 + Skin.Name + ': Has lower Num Partitions than in ' + TwbNifBlock(SkinPartition).Name);
