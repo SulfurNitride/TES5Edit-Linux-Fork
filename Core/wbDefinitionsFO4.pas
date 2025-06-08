@@ -7981,7 +7981,8 @@ begin
           wbEnum([], [
             0, 'Is Edited',
            32, 'Is Island',
-           64, 'Not Edited'
+           64, 'Not Edited',
+           96, 'Unknown 96'
           ])),
         wbVec3('Approx Location'),
         wbFloat('Preferred %'),
