@@ -1171,7 +1171,7 @@ begin
       end else begin
         // Remove Own_Emit if not Glow Shader and Emissive Color is blank
         // Because Beth doesn't respect their own code's standards...
-        if (Shader.NativeValues['Emissive Color\R'] = 0) and (Shader.NativeValues['Emissive Color\G'] = 0) and (Shader.NativeValues['Emissive Color\B'] = 0) then begin
+        if (Shader.EditValues['Emissive Color'] = '#000000') then begin
           Shader.NativeValues['Shader Flags 1\Own_Emit'] := False;
           Log.Add(#9 + Shader.Name + ': Removed Own_Emit flag because Emissive Color is Blank');
           Result := True;
@@ -1228,7 +1228,7 @@ begin
         end;
 
       // Specular Flag
-      if (Shader.NativeValues['Specular Color\R'] = 0) and (Shader.NativeValues['Specular Color\G'] = 0) and (Shader.NativeValues['Specular Color\B'] = 0) then begin
+      if (Shader.EditValues['Specular Color'] = '#000000') then begin
         Shader.NativeValues['Shader Flags 1\Specular'] := False;
         Log.Add(#9 + Shader.Name + ': Removed Specular flag because Specular Color is Blank');
         Result := True;
