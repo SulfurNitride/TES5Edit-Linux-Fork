@@ -1227,6 +1227,12 @@ begin
           Result := True;
         end;
 
+      // Specular Flag
+      if (Shader.NativeValues['Specular Color\R'] = 0) and (Shader.NativeValues['Specular Color\G'] = 0) and (Shader.NativeValues['Specular Color\B'] = 0) then begin
+        Shader.NativeValues['Shader Flags 1\Specular'] := False;
+        Log.Add(#9 + Shader.Name + ': Removed Specular flag because Specular Color is Blank');
+        Result := True;
+      end;
 
       // Tree_Anim flag (flutter animation)
       // Remove Tree_Anim when the root node type is wrong
