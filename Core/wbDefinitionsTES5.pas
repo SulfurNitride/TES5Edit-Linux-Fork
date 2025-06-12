@@ -982,7 +982,6 @@ end;
 function wbPerkDATAQuestStageToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 var
   Container  : IwbContainerElementRef;
-  Param1     : IwbElement;
   MainRecord : IwbMainRecord;
   EditInfos  : TStringList;
   Stages     : IwbContainerElementRef;
@@ -2589,6 +2588,7 @@ end;
 
 function wbLIGHFalloffDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
 begin
+  Result := 0;
   if not Assigned(aElement) then
     Exit(0);
 
