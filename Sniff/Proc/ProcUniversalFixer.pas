@@ -1168,14 +1168,15 @@ begin
           Log.Add(#9 + shader.Name + ': Added Glow_Map flag');
           Result := True;
         end;
-      end
-      else begin
-        // remove glow flags when shader is not glow
-        if shader.NativeValues['Shader Flags 1\Own_Emit'] then begin
-          shader.NativeValues['Shader Flags 1\Own_Emit'] := False;
-          Log.Add(#9 + shader.Name + ': Removed Own_Emit flag because Shader Type is not Glow Shader');
+      end else begin
+        // Remove Own_Emit if not Glow Shader and Emissive Color is blank
+        // Because Beth doesn't respect their own code's standards...
+        if (Shader.NativeValues['Emissive Color\R'] = 0) and (Shader.NativeValues['Emissive Color\G'] = 0) and (Shader.NativeValues['Emissive Color\B'] = 0) then begin
+          Shader.NativeValues['Shader Flags 1\Own_Emit'] := False;
+          Log.Add(#9 + Shader.Name + ': Removed Own_Emit flag because Emissive Color is Blank');
           Result := True;
         end;
+        // Remove Glow Map flag if shader is not Glow
         if shader.NativeValues['Shader Flags 2\Glow_Map'] then begin
           shader.NativeValues['Shader Flags 2\Glow_Map'] := False;
           Log.Add(#9 + shader.Name + ': Removed Glow_Map flag because Shader Type is not Glow Shader');
