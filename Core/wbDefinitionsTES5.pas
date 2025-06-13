@@ -10672,6 +10672,63 @@ begin
 
   end;
 
+  wbRecord(RGDL, 'Ragdoll', [
+    wbEDID,
+    wbInteger(NVER, 'Version', itU32).SetRequired,
+    wbStruct(DATA, 'General Data', [
+      wbInteger('Dynamic Bone Count', itU32),
+      wbUnused(4),
+      wbStruct('Enabled', [
+        wbInteger('Feedback', itU8, wbBoolEnum),
+        wbInteger('Foot IK (broken, don''t use)', itU8, wbBoolEnum),
+        wbInteger('Look IK (broken, don''t use)', itU8, wbBoolEnum),
+        wbInteger('Grab IK (broken, don''t use)', itU8, wbBoolEnum),
+        wbInteger('Pose Matching', itU8, wbBoolEnum)
+      ]),
+      wbUnused(1)
+    ]).SetRequired,
+    wbFormIDCk(XNAM, 'Actor Base', [CREA, NPC_]).SetRequired,
+    wbFormIDCk(TNAM, 'Body Part Data', [BPTD]).SetRequired,
+    wbStruct(RAFD, 'Feedback Data', [
+      wbFloat('Dynamic/Keyframe Blend Amount'),
+      wbFloat('Hierarchy Gain'),
+      wbFloat('Position Gain'),
+      wbFloat('Velocity Gain'),
+      wbFloat('Acceleration Gain'),
+      wbFloat('Snap Gain'),
+      wbFloat('Velocity Damping'),
+      wbStruct('Snap Max Settings', [
+        wbFloat('Linear Velocity'),
+        wbFloat('Angular Velocity'),
+        wbFloat('Linear Distance'),
+        wbFloat('Angular Distance')
+      ]),
+      wbStruct('Position Max Velocity', [
+        wbFloat('Linear'),
+        wbFloat('Angular')
+      ]),
+      wbStruct('Position Max Velocity', [
+        wbInteger('Projectile', itS32, wbDiv(1000)),
+        wbInteger('Melee', itS32, wbDiv(1000))
+      ])
+    ]).SetRequired,
+    wbArray(RAFB, 'Feedback Dynamic Bones',
+      wbInteger('Bone', itU16)
+    ).SetRequired,
+    wbStruct(RAPS, 'Pose Matching Data', [
+      wbArray('Match Bones',
+        wbInteger('Bone', itU16, wbHideFFFF),
+      3),
+      wbInteger('Disable On Move', itU8, wbBoolEnum),
+      wbUnused(1),
+      wbFloat('Motors Strength'),
+      wbFloat('Pose Activation Delay Time'),
+      wbFloat('Match Error Allowance'),
+      wbFloat('Displacement To Disable')
+    ]).SetRequired,
+    wbString(ANAM, 'Death Pose')
+  ]);
+
   wbRecord(WATR, 'Water', [
     wbEDID,
     wbFULL,
@@ -11100,9 +11157,6 @@ begin
     wbEDID
   ]);
   wbRecord(PWAT, 'PWAT', [
-    wbEDID
-  ]);
-  wbRecord(RGDL, 'RGDL', [
     wbEDID
   ]);
   {
