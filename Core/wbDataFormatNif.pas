@@ -1725,8 +1725,9 @@ begin
   block := nil;
   if IsBSTriShape then begin
     shader := PropertyByType('BSShaderProperty', True);
-    if Assigned(shader) and shader.NativeValues['Shader Flags 1\Model_Space_Normals'] then
-      Exit;
+    if Assigned(shader) then
+      if shader.NativeValues['Shader Flags 1\Model_Space_Normals'] then
+        Exit;
 
     block := Self;
     if (NifFile.NifVersion = nfSSE) and (GetSkin <> nil) then begin
@@ -1803,8 +1804,9 @@ begin
   block := nil;
   if IsBSTriShape then begin
     shader := PropertyByType('BSShaderProperty', True);
-    if Assigned(shader) and shader.NativeValues['Shader Flags 1\Model_Space_Normals'] then
-      Exit;
+    if Assigned(shader) then
+      if shader.NativeValues['Shader Flags 1\Model_Space_Normals'] then
+        Exit;
 
     block := Self;
     if (NifFile.NifVersion = nfSSE) and (GetSkin <> nil) then begin
