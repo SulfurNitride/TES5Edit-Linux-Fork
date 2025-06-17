@@ -12937,9 +12937,6 @@ begin
 end;
 
 function IsUnnecessaryPersistent(MainRecord: IwbMainRecord): Boolean;
-var
-  NAME       : IwbRecord;
-  BaseRecord : IwbMainRecord;
 begin
   if MainRecord.Flags.IsDeleted then begin
     Result := IsMasterTemporary(MainRecord);
@@ -12947,39 +12944,52 @@ begin
   end;
 
   Result := False;
-  if MainRecord.Signature <> 'REFR' then
-    Exit;
-  if MainRecord.EditorID <> '' then
-    Exit;
-  if MainRecord.ReferencedByCount > 0 then
+  if (MainRecord.Signature <> 'ACHR') and (MainRecord.Signature <> 'REFR') then
     Exit;
 
-  if Assigned(MainRecord.RecordBySignature['XESP']) then
+  if wbIsSkyrim or wbIsFallout4 or wbIsFallout76 or wbIsStarfield then
+    if MainRecord.Flags._Flags and $10000 <> 0 then
+      Exit;
+
+  var lRefCount := MainRecord.ReferencedByCount;
+  if (lRefCount > 0) and (wbIsSkyrim or wbIsFallout4 or wbIsFallout76 or wbIsStarfield) then
+    for var i := 0 to Pred(lRefCount) do begin
+      var lRefRecord : IwbMainRecord;
+      if Supports(MainRecord.ReferencedBy[i].LinksTo, IwbMainRecord, lRefRecord) then
+        if lRefRecord.Signature = 'LCTN' then
+          lRefCount := lRefCount - 1;
+    end;
+
+  if lRefCount > 0 then
     Exit;
-  if Assigned(MainRecord.RecordBySignature['XLOC']) then
-    Exit;
-  if Assigned(MainRecord.ElementByName['Map Marker']) then
-    Exit;
-  if Assigned(MainRecord.RecordBySignature['XRTM']) then
-    Exit;
+
   if Assigned(MainRecord.RecordBySignature['XTEL']) then
     Exit;
 
-
-  NAME := MainRecord.RecordBySignature['NAME'];
-  if not Assigned(NAME) then
+  var lNAME := MainRecord.RecordBySignature['NAME'];
+  if not Assigned(lNAME) then
     Exit;
 
-  if not Supports(NAME.LinksTo, IwbMainRecord, BaseRecord) then
+  case lNAME.NativeValue of
+    $4,$5,$6,$10,$12,$15,$1F,$34,$3B,$138C0,$3DF55: Exit;
+  end;
+
+  var lBaseRecord : IwbMainRecord;
+  if not Supports(lNAME.LinksTo, IwbMainRecord, lBaseRecord) then
     Exit;
 
-  if Assigned(BaseRecord.RecordBySignature['SCRI']) then
+  if Assigned(lBaseRecord.RecordBySignature['SCRI']) then
     Exit;
 
-  if BaseRecord.Signature = 'CONT' then
+  if not wbIsMorrowind or not wbIsOblivion then
+    if lBaseRecord.Signature = 'ACTI' then
+      if Assigned(lBaseRecord.RecordBySignature['WNAM']) then
+        Exit;
+
+  if lBaseRecord.Signature = 'SBSP' then
     Exit;
 
-  if BaseRecord.Signature = 'SBSP' then
+  if lBaseRecord.Signature = 'TXST' then
     Exit;
 
   Result := True;
