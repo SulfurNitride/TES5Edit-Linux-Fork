@@ -63,7 +63,6 @@ var
   wbActionFlag: IwbRecordMemberDef;
   wbActorSounds: IwbRecordMemberDef;
   wbCellGrid: IwbRecordMemberDef;
-  wbCinematicIMAD: IwbRecordMemberDef;
   wbDATAPosRot: IwbRecordMemberDef;
   wbDMDT: IwbRecordMemberDef;
   wbFaceGen: IwbRecordMemberDef;
@@ -490,7 +489,8 @@ function wbModelInfos(aSignature: TwbSignature; aName: string = ''; aDontShow  :
 {>>> Debris Function Defs <<<} //1
 function wbDebrisModel(aTextureFileHashes: IwbRecordMemberDef): IwbRecordMemberDef;
 
-{>>> Image Space Adapater Defs <<<} //1
+{>>> Image Space Adapater Defs <<<} //3
+function wbIMADMultAddCount(const aName: string): IwbValueDef;
 function wbTimeInterpolators(const aSignature: TwbSignature; const aName: string): IwbRecordMemberDef;
 function wbTimeInterpolatorsMultAdd(const aSignatureMult, aSignatureAdd: TwbSignature; const aName: string): IwbRecordMemberDef;
 
@@ -5117,7 +5117,26 @@ begin
       .IncludeFlag(dfCollapsed, wbCollapseModels);
 end;
 
-{>>> Image Space Adapter Defs <<<} //2
+{>>> Image Space Adapter Defs <<<} //3
+
+function wbIMADMultAddCount(const aName: string): IwbValueDef;
+begin
+  var lPriority : TwbConflictPriority;
+  if aName = 'Unused' then
+    lPriority := cpIgnore
+  else
+    lPriority := cpNormal;
+
+  Result :=
+    wbStruct(aName, [
+      wbInteger('Mult Count', itU32),
+      wbIntegeR('Add Count', itU32)
+    ], lPriority)
+      .SetSummaryKey([0, 1])
+      .SetSummaryMemberPrefixSuffix(0, 'Mult: ', ',')
+      .SetSummaryMemberPrefixSuffix(1, 'Add: ', '')
+      .IncludeFlag(dfCollapsed);
+end;
 
 function wbTimeInterpolators(const aSignature: TwbSignature; const aName: string): IwbRecordMemberDef;
 begin
@@ -5126,7 +5145,8 @@ begin
       wbArray('', wbTimeInterpolator)
         .SetSummaryPassthroughMaxCount(10)
         .SetSummaryPassthroughMaxLength(100)
-    ).IncludeFlag(dfCollapsed, wbCollapseTimeInterpolators);
+    ).SetRequired
+     .IncludeFlag(dfCollapsed, wbCollapseTimeInterpolators);
 end;
 
 function wbTimeInterpolatorsMultAdd(const aSignatureMult, aSignatureAdd: TwbSignature; const aName: string): IwbRecordMemberDef;
@@ -5143,6 +5163,7 @@ begin
       wbTimeInterpolators(aSignatureMult, sMult),
       wbTimeInterpolators(aSignatureAdd, sAdd)
     ]).SetSummaryKey([0, 1])
+      .SetRequired
       .IncludeFlag(dfCollapsed, wbCollapseTimeInterpolatorsMultAdd);
 end;
 
@@ -6251,14 +6272,6 @@ begin
     .SetDontShow(wbCellInteriorDontShow)
     .SetIsRemovable(wbCellGridIsRemovable)
     .IncludeFlag(dfCollapsed, wbCollapseOther);
-
-  wbCinematicIMAD :=
-    wbRStruct('Cinematic', [
-      wbTimeInterpolatorsMultAdd(_11_IAD, _51_IAD,           'Saturation'),
-      wbTimeInterpolatorsMultAdd(_12_IAD, _52_IAD, IsTES4FO3('Contrast',         'Brightness')),
-      wbTimeInterpolatorsMultAdd(_13_IAD, _53_IAD, IsTES4FO3('Contrast Avg Lum', 'Contrast')),
-      wbTimeInterpolatorsMultAdd(_14_IAD, _54_IAD, IsTES4FO3('Brightness',       'Unused'))
-    ]);
 
   wbDATAPosRot := wbVec3PosRot(DATA).SetRequired;
 
