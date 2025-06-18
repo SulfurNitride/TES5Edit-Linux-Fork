@@ -79,6 +79,7 @@ type
   TBoundSphere = record
     Center: TVector3;
     Radius: Single;
+    procedure SetNone;
   end;
 
   TTransform = record
@@ -326,6 +327,13 @@ begin
   Result := Translation.IsZero and Rotation.IsIdentity and SameValue(Scale, 1.0)
 end;
 
+procedure TBoundSphere.SetNone;
+begin
+  Center.x := 0.0;
+  Center.y := 0.0;
+  Center.z := 0.0;
+  Radius := 0.0;
+end;
 
 procedure Normalize(var x, y, z: Double);
 var

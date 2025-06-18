@@ -1558,6 +1558,13 @@ begin
   // BSTriShape
   else if IsNiObject('BSTriShape') then begin
 
+    if (NativeValues['Num Vertices'] = 0) and (GetSkin <> nil) then begin
+      t.SetNone;
+      SetTransform(t);
+      Result := True;
+      Exit;
+    end;
+
     if not CanTransform(Self) then
       Exit;
 
@@ -1670,24 +1677,21 @@ end;
 
 function TwbNifBlock.UpdateBounds: Boolean;
 var
-  skin, skinpart: TwbNifBlock;
   verts: TVector3Array;
   center: TVector3;
   r: Double;
-  e: TdfElement;
 begin
-  Result := False;
-
   verts := GetVertices;
 
+  {
   if Length(verts) = 0 then
     // skinned BSTriShapes have vertices in NiSkinPartition
     if IsNiObject('BSTriShape') then begin
-      skin := GetSkin;
+      ver skin := GetSkin;
       if Assigned(skin) then begin
-        e := skin.Elements['Skin Partition'];
+        ver e := skin.Elements['Skin Partition'];
         if Assigned(e) then begin
-          skinpart := TwbNifBlock(e.LinksTo);
+          ver skinpart := TwbNifBlock(e.LinksTo);
           if Assigned(skinpart) then
             verts := skinpart.GetVertices;
         end;
@@ -1696,6 +1700,7 @@ begin
 
   if Length(verts) = 0 then
     Exit;
+  }
 
   CalculateCenterRadius(verts, center, r,
     // Oblivion and volatile meshes require a different center algorithm
