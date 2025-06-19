@@ -2995,52 +2995,6 @@ begin
     wbProgressCallback('"'+Container.Name+'" does not contain an element named Type');
 end;
 
-procedure wbIDLAsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-var
-  Element         : IwbElement;
-  Container       : IwbContainer;
-  SelfAsContainer : IwbContainer;
-begin
-  if wbBeginInternalEdit(True) then try
-    if wbCounterAfterSet('IDLC - Animation Count', aElement) then
-      Exit;
-
-    if not Supports(aElement.Container, IwbContainer, Container) then
-      Exit;
-
-    Element := Container.ElementByPath['IDLC'];
-    if Assigned(Element) and Supports(aElement, IwbContainer, SelfAsContainer) and
-      (Element.GetNativeValue<>SelfAsContainer.GetElementCount) then
-      Element.SetNativeValue(SelfAsContainer.GetElementCount);
-  finally
-    wbEndInternalEdit;
-  end;
-end;
-
-procedure wbAnimationsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-var
-  Element         : IwbElement;
-  Elems           : IwbElement;
-  Container       : IwbContainer;
-begin
-  if wbBeginInternalEdit(True) then try
-    if wbCounterContainerAfterSet('IDLC - Animation Count', 'IDLA - Animations', aElement) then
-      Exit;
-
-    if not Supports(aElement, IwbContainer, Container) then
-      Exit;
-
-    Element := Container.ElementByPath['IDLC\Animation Count'];
-    Elems   := Container.ElementByName['IDLA - Animations'];
-
-    if Assigned(Element) and not Assigned(Elems) then
-      if Element.GetNativeValue <> 0 then
-        Element.SetNativeValue(0);
-  finally
-    wbEndInternalEdit;
-  end;
-end;
-
 procedure wbPackageDataInputValueTypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 var
   Container : IwbContainerElementRef;
@@ -7823,21 +7777,12 @@ begin
 
   wbRecord(IDLM, 'Idle Marker',
     wbFlags(wbFlagsList([
-      {0x20000000} 29, 'Child Can Use'
+    29, 'Child Can Use'
     ])), [
     wbEDID,
     wbOBND(True),
     wbKeywords,
-    wbInteger(IDLF, 'Flags', itU8, wbFlags([
-      'Run in Sequence',
-      'Unknown 1',
-      'Do Once',
-      'Unknown 3',
-      'Ignored by Sandbox'
-    ]), cpNormal, False).IncludeFlag(dfCollapsed, wbCollapseFlags),
-    wbInteger(IDLC, 'Animation Count', itU8, nil, cpBenign),
-    wbFloat(IDLT, 'Idle Timer Setting', cpNormal, False),
-    wbArray(IDLA, 'Animations', wbFormIDCk('Animation', [IDLE]), 0, nil, wbIDLAsAfterSet, cpNormal, False),
+    wbIdleAnimation,
     wbGenericModel,
     wbFormIDCk(PNAM, 'Anim Archtype', [KYWD])
       .SetAfterSet(wbIdleMarkerPNAMAfterSet)
@@ -7845,7 +7790,7 @@ begin
     wbFormIDCk(QNAM, 'Flavor Anim', [KYWD])
       .SetAfterSet(wbIdleMarkerQNAMAfterSet)
       .SetDontShow(wbIdleMarkerQNAMDontShow)
-  ], False, nil, cpNormal, False, nil, wbAnimationsAfterSet);
+  ]);
 
   wbRecord(PROJ, 'Projectile', [
     wbEDID,
@@ -11197,21 +11142,7 @@ begin
     ], cpNormal, True),
 
     wbConditions,
-
-    wbRStruct('Idle Animations', [
-      wbInteger(IDLF, 'Flags', itU8, wbEnum([], [
-         0, 'Unknown',
-         8, 'Random',
-         9, 'Run in Sequence',
-        12, 'Random, Do Once',
-        13, 'Run in Sequence, Do Once'
-      ]), cpNormal, True),
-      wbInteger(IDLC, 'Animation Count', itU8, nil, cpBenign),
-      wbFloat(IDLT, 'Idle Timer Setting', cpNormal, True),
-      wbArray(IDLA, 'Animations', wbFormIDCk('Animation', [IDLE]), 0, nil, wbIDLAsAfterSet, cpNormal, True),
-      wbByteArray(IDLB, 'Unknown', 4, cpIgnore)
-    ], [], cpNormal, False, nil, False, nil {cannot be totally removed , wbAnimationsAfterSet}),
-
+    wbIdleAnimation,
     wbFormIDCk(CNAM, 'Combat Style', [CSTY]),
     wbFormIDCk(QNAM, 'Owner Quest', [QUST]),
     wbStruct(PKCU, 'Counter', [

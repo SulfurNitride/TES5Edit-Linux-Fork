@@ -69,6 +69,7 @@ var
   wbFaction: IwbRecordMemberDef;
   wbFactionRelations: IwbRecordMemberDef;
   wbHEDR: IwbRecordMemberDef;
+  wbIdleAnimation: IwbRecordMemberDef;
   wbINOA: IwbRecordMemberDef;
   wbINOM: IwbRecordMemberDef;
   wbKWDAs: IwbRecordMemberDef;
@@ -6466,6 +6467,38 @@ begin
         50).SetRequired
            .IncludeFlag(dfCollapsed, wbCollapseOther)
       ]).SetRequired);
+
+  wbIdleAnimation :=
+    wbRStruct('Idle Animations', [
+      wbInteger(IDLF, 'Flags', itU8,
+        wbFlags([
+        {0} 'Run In Sequence',
+        {1} IsFO76('Old Pick Conditions',''),
+        {2} 'Do Once',
+        {3} IsFO76('Loose Only','Unknown 3'),
+        {4} IsFO3('','Ignored By Sandbox'),
+        {5} IsSF1('Ignore Conditions For Sandbox','Unknown 5')
+        ])
+      ).IncludeFlag(dfCollapsed, wbCollapseFlags),
+      IsFO3(
+        wbStruct(IDLC, '', [
+          wbInteger('Animation Count', itU8, nil, cpBenign).IncludeFlag(dfSkipImplicitEdit),
+          wbBelowVersion(14, wbUnused(3))
+        ]),
+        IsSF1(
+          wbInteger(IDLC, 'Animation Count', itU32, nil, cpBenign).IncludeFlag(dfSkipImplicitEdit),
+          wbInteger(IDLC, 'Animation Count', itU8,  nil, cpBenign).IncludeFlag(dfSkipImplicitEdit)
+        )
+      ),
+      wbFloat(IDLT, 'Idle Timer Setting'),
+      wbArray(IDLA, 'Animations',
+        wbFormIDCk('Animation', [IDLE,NULL])
+      ).SetCountPathOnValue(IsFO3('IDLC\Animation Count', 'IDLC'), False),
+      IsSF1(
+        wbUnknown(IDLB),
+        nil
+      )
+    ]);
 
 {>>>Landscape Common Defs<<<}
   //TES4,FO3,FNV,TES5,FO4,FO76,SF1

@@ -4613,27 +4613,12 @@ begin
 
   wbRecord(IDLM, 'Idle Marker',
     wbFlags(wbFlagsList([
-      10, 'Quest Item',
-      29, 'Child Can Use'
+    10, 'Quest Item',
+    29, 'Child Can Use'
     ])), [
     wbEDIDReq,
     wbOBND(True),
-    wbInteger(IDLF, 'Flags', itU8,
-      wbFlags(wbSparseFlags([
-        0, 'Run in Sequence',
-        2, 'Do Once'
-      ], False, 3))
-    ).SetRequired
-     .IncludeFlag(dfCollapsed, wbCollapseFlags),
-    wbStruct(IDLC, '', [
-      wbInteger('Animation Count', itU8),
-      wbUnused(3)
-    ], cpNormal, True, nil, 1),
-    wbFloat(IDLT, 'Idle Timer Setting').SetRequired,
-    wbArray(IDLA, 'Animations',
-      wbFormIDCk('Animation', [IDLE, NULL])
-    ).SetCountPathOnValue('IDLC\Animation Count', False)
-     .SetRequired  // NULL looks valid if IDLS\Animation Count is 0
+    wbIdleAnimation
   ]);
 
   wbRecord(NOTE, 'Note', [
@@ -6598,25 +6583,7 @@ begin
       wbFloat('Unknown')
     ], cpNormal, False, nil, 3),
     wbConditions,
-    wbRStruct('Idle Animations', [
-      wbInteger(IDLF, 'Flags', itU8,
-        wbFlags(wbSparseFlags([
-          0, 'Run in Sequence',
-          2, 'Do Once'
-        ], False, 3))
-      ).SetRequired
-       .IncludeFlag(dfCollapsed, wbCollapseFlags),
-      wbStruct(IDLC, '', [
-        wbInteger( 'Animation Count', itU8),
-        wbUnused(3)
-      ], cpNormal, True, nil, 1),
-      wbFloat(IDLT, 'Idle Timer Setting').SetRequired,
-      wbArray(IDLA, 'Animations',
-        wbFormIDCk('Animation', [IDLE])
-      ).SetCountPathOnValue('IDLC\Animation Count', False)
-       .SetRequired,
-      wbByteArray(IDLB, 'Unused', 4, cpIgnore)
-    ]),
+    wbIdleAnimation,
     wbFormIDCk(CNAM, 'Combat Style', [CSTY]),
     wbEmpty(PKED, 'Eat Marker'),
     wbInteger(PKE2, 'Escort Distance', itU32),

@@ -2967,45 +2967,6 @@ begin
   Result := Container.ElementByName['Type'].NativeValue + 1;
 end;
 
-procedure wbIDLAsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-var
-  Element         : IwbElement;
-  Container       : IwbContainer;
-  SelfAsContainer : IwbContainer;
-begin
-  if wbBeginInternalEdit(True) then try
-//    if not wbCounterAfterSet('IDLC - Animation Count', aElement) then
-      if Supports(aElement.Container, IwbContainer, Container) then begin
-        Element := Container.ElementByPath['IDLC\Animation Count'];
-        if Assigned(Element) and Supports(aElement, IwbContainer, SelfAsContainer) and
-          (Element.GetNativeValue<>SelfAsContainer.GetElementCount) then
-          Element.SetNativeValue(SelfAsContainer.GetElementCount);
-      end;
-  finally
-    wbEndInternalEdit;
-  end;
-end;
-
-procedure wbAnimationsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-var
-  Element         : IwbElement;
-  Elems           : IwbElement;
-  Container       : IwbContainer;
-begin
-  if wbBeginInternalEdit(True) then try
-//    if not wbCounterContainerAfterSet('IDLC - Animation Count', 'IDLA - Animations', aElement) then
-      if Supports(aElement, IwbContainer, Container) then begin
-        Element := Container.ElementByPath['IDLC\Animation Count'];
-        Elems   := Container.ElementByName['IDLA - Animations'];
-        if Assigned(Element) and not Assigned(Elems) then
-          if Element.GetNativeValue<>0 then
-            Element.SetNativeValue(0);
-      end;
-  finally
-    wbEndInternalEdit;
-  end;
-end;
-
 procedure DefineFNV;
 begin
   DefineCommon;
@@ -5215,23 +5176,13 @@ begin
 
   wbRecord(IDLM, 'Idle Marker',
     wbFlags(wbFlagsList([
-      10, 'Quest Item',
-      29, 'Child Can Use'
+    10, 'Quest Item',
+    29, 'Child Can Use'
     ])), [
     wbEDIDReq,
     wbOBND(True),
-    wbInteger(IDLF, 'Flags', itU8, wbFlags([
-      'Run in Sequence',
-      '',
-      'Do Once'
-    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
-    wbStruct(IDLC, '', [
-      wbInteger('Animation Count', itU8),
-      wbUnused(3)
-    ], cpNormal, True, nil, 1),
-    wbFloat(IDLT, 'Idle Timer Setting', cpNormal, True),
-    wbArray(IDLA, 'Animations', wbFormIDCk('Animation', [IDLE, NULL]), 0, nil, wbIDLAsAfterSet, cpNormal, True)  // NULL looks valid if IDLS\Animation Count is 0
-  ], False, nil, cpNormal, False, nil, wbAnimationsAfterSet);
+    wbIdleAnimation
+  ]);
 
   wbRecord(NOTE, 'Note', [
     wbEDIDReq,
@@ -7324,20 +7275,7 @@ begin
       wbFloat('Unknown')
     ], cpNormal, False, nil, 3),
     wbConditions,
-    wbRStruct('Idle Animations', [
-      wbInteger(IDLF, 'Flags', itU8, wbFlags([
-        'Run in Sequence',
-        '',
-        'Do Once'
-      ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
-      wbStruct(IDLC, '', [
-        wbInteger( 'Animation Count', itU8),
-        wbUnused(3)
-      ], cpNormal, True, nil, 1),
-      wbFloat(IDLT, 'Idle Timer Setting', cpNormal, True),
-      wbArray(IDLA, 'Animations', wbFormIDCk('Animation', [IDLE]), 0, nil, wbIDLAsAfterSet, cpNormal, True),
-      wbByteArray(IDLB, 'Unused', 4, cpIgnore)
-    ], [], cpNormal, False, nil, False, nil {cannot be totally removed , wbAnimationsAfterSet}),
+    wbIdleAnimation,
     wbFormIDCk(CNAM, 'Combat Style', [CSTY]),
     wbEmpty(PKED, 'Eat Marker'),
     wbInteger(PKE2, 'Escort Distance', itU32),

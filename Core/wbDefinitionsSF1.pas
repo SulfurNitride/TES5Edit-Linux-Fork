@@ -2783,28 +2783,6 @@ begin
     wbProgressCallback('"'+Container.Name+'" does not contain an element named Type');
 end;
 
-procedure wbIDLAsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-var
-  Element         : IwbElement;
-  Container       : IwbContainer;
-  SelfAsContainer : IwbContainer;
-begin
-  if wbBeginInternalEdit(True) then try
-    if wbCounterAfterSet('IDLC - Animation Count', aElement) then
-      Exit;
-
-    if not Supports(aElement.Container, IwbContainer, Container) then
-      Exit;
-
-    Element := Container.ElementByPath['IDLC'];
-    if Assigned(Element) and Supports(aElement, IwbContainer, SelfAsContainer) and
-      (Element.GetNativeValue<>SelfAsContainer.GetElementCount) then
-      Element.SetNativeValue(SelfAsContainer.GetElementCount);
-  finally
-    wbEndInternalEdit;
-  end;
-end;
-
 procedure wbPackageDataInputValueTypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 var
   Container : IwbContainerElementRef;
@@ -9717,25 +9695,13 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(IDLM, 'Idle Marker',
     wbFlags(wbFlagsList([
-      {0x20000000} 29, 'Child Can Use'
+    29, 'Child Can Use'
     ])), [
     wbEDID,
     wbOBND(True),
     wbODTYReq,
     wbKeywords,
-    wbInteger(IDLF, 'Flags', itU8, wbFlags([
-      'Run in Sequence',
-      'Unknown 1',
-      'Do Once',
-      'Unknown 3',
-      'Ignored by Sandbox',
-      'Ignore Conditions For Sandbox'
-    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
-    wbRStruct('Animations', [
-      wbInteger(IDLC, 'Animation Count', itU32, nil, cpBenign),
-      wbFloat(IDLT, 'Idle Timer Setting', cpNormal, True),
-      wbArray(IDLA, 'Animations', wbFormIDCk('Animation', [IDLE]), 0, nil, wbIDLAsAfterSet, cpNormal, True)
-    ]),
+    wbIdleAnimation,
     wbGenericModel(True),
     wbFormIDCk(RNAM, 'Actor Action', [AACT]),
     wbFormIDCk(QNAM, 'Animation Flavor', [KYWD]),
@@ -14042,22 +14008,8 @@ end;
       wbUnused(3),
       wbInteger('Duration (minutes)', itS32)
     ], cpNormal, True),
-
     wbConditions,
-
-    wbRStruct('Animations', [
-      wbInteger(IDLF, 'Flags', itU8, wbEnum([], [
-         0, 'Unknown 0',
-         8, 'Random',
-         9, 'Run in Sequence',
-        12, 'Random, Do Once',
-        13, 'Run in Sequence, Do Once'
-      ]), cpNormal, True),
-      wbInteger(IDLC, 'Animation Count', itU32, nil, cpBenign),
-      wbFloat(IDLT, 'Idle Timer Setting'),
-      wbArray(IDLA, 'Animations', wbFormIDCk('Animation', [IDLE]), 0, nil, wbIDLAsAfterSet)
-    ]),
-
+    wbIdleAnimation,
     wbFormIDCk(CNAM, 'Combat Style', [CSTY]),
     wbFormIDCk(QNAM, 'Owner Quest', [QUST]),
     wbFormIDCk(FLAV, 'Anim Flavor', [KYWD]),
