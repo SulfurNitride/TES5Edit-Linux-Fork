@@ -6338,7 +6338,7 @@ begin
       ).SetAfterSet(wbNPCActorSoundsAfterSet);
 
   wbMagicEffectSounds :=
-    wbArray(SNDD, 'Sounds',
+    wbArrayS(SNDD, 'Sounds',
       wbStructSK([0], 'Sound', [
         wbInteger('Type', itU32,
           wbEnum([
