@@ -1780,6 +1780,7 @@ begin
 
   wbRecord(MGEF, 'Magic Effect', @wbKnownSubRecordSignaturesINDX, [
     wbInteger(INDX, 'Effect', itU32, wbMagicEffectEnum),
+    wbDeleted,
     wbStruct(MEDT, 'Data', [
       wbInteger('School', itU32,
         wbEnum([
@@ -2215,8 +2216,9 @@ begin
 
   wbRecord(SKIL, 'Skill', @wbKnownSubRecordSignaturesINDX, [
     wbInteger(INDX, 'Name', itU32, wbSkillEnum).SetRequired,
+    wbDeleted,
     wbStruct(SKDT, 'Data', [
-      wbInteger(' Governing Attribute', itS32, wbAttributeEnum),
+      wbInteger('Governing Attribute', itS32, wbAttributeEnum),
       wbInteger('Type', itU32, wbSpecializationEnum),
       wbUnion('Actions', wbSkillDecider, [
         wbStruct('Block', [
