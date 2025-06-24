@@ -151,7 +151,6 @@ var
   wbQUSTAliasFlags: IwbSubRecordDef;
   wbPDTO: IwbSubRecordDef;
   wbPDTOs: IwbSubRecordArrayDef;
-  wbUNAMs: IwbSubRecordArrayDef;
   wbNull: IwbValueDef;
   wbYNAM: IwbSubRecordDef;
   wbZNAM: IwbSubRecordDef;
@@ -8916,56 +8915,50 @@ begin
     {0x8000}'Unknown 16'
   ]);
 
-  wbUNAMs:= wbRArray('Data Inputs', wbRStruct('Data Input', [
-    wbInteger(UNAM, 'Index', itS8),
-    wbString(BNAM, 'Name'),
-    wbInteger(PNAM, 'Flags', itU32, wbFlags([
-      'Public'
-    ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
-  ]));
-
   wbRecord(PACK, 'Package', [
     wbEDID,
     wbVMADFragmentedPACK,
-
     wbStruct(PKDT, 'Pack Data', [
       wbInteger('General Flags', itU32, wbPackageFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
-      wbInteger('Type', itU8, wbEnum ([], [
+      wbInteger('Type', itU8,
+        wbEnum ([], [
         18, 'Package',
         19, 'Package Template'
-      ])).SetDefaultEditValue('Package'),
-      wbInteger('Interrupt Override', itU8, wbEnum([
-        'None',
-        'Spectator',
-        'ObserveDead',
-        'GuardWarn',
-        'Combat'
+        ])).SetDefaultNativeValue(18),
+      wbInteger('Interrupt Override', itU8,
+        wbEnum([
+        {0} 'None',
+        {1} 'Spectator',
+        {2} 'ObserveDead',
+        {3} 'GuardWarn',
+        {4} 'Combat'
       ])),
-      wbInteger('Preferred Speed', itU8, wbEnum([
-        'Walk',
-        'Jog',
-        'Run',
-        'Fast Walk'
-      ])),
-      wbByteArray('Unknown', 1),
+      wbInteger('Preferred Speed', itU8,
+        wbEnum([
+        {0} 'Walk',
+        {1} 'Jog',
+        {2} 'Run',
+        {3} 'Fast Walk'
+        ])),
+      wbUnknown(1),
       wbInteger('Interrupt Flags', itU16, wbPKDTInterruptFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
-      wbByteArray('Unknown', 2)
-    ], cpNormal, True),
-
+      wbUnknown(2)
+    ]).SetRequired,
     wbStruct(PSDT, 'Schedule', [
       wbInteger('Month', itS8),
-      wbInteger('Day of week', itS8, wbEnum([
-        'Sunday',
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday',
-        'Weekdays',
-        'Weekends',
-        'Monday, Wednesday, Friday',
-        'Tuesday, Thursday'
+      wbInteger('Day of week', itS8,
+        wbEnum([
+        {0}  'Sunday',
+        {1}  'Monday',
+        {2}  'Tuesday',
+        {3}  'Wednesday',
+        {4}  'Thursday',
+        {5}  'Friday',
+        {6}  'Saturday',
+        {7}  'Weekdays',
+        {8}  'Weekends',
+        {9}  'Monday, Wednesday, Friday',
+        {10} 'Tuesday, Thursday'
       ], [
         -1, 'Any'
       ])),
@@ -8973,8 +8966,8 @@ begin
       wbInteger('Hour', itS8),
       wbInteger('Minute', itS8),
       wbUnused(3),
-      wbInteger('Duration (minutes)', itS32)
-    ], cpNormal, True),
+      wbInteger('Duration (Minutes)', itS32)
+    ]).SetRequired,
     wbConditions,
     wbIdleAnimation,
     wbFormIDCk(CNAM, 'Combat Style', [CSTY]),
@@ -8983,96 +8976,102 @@ begin
       wbInteger('Data Input Count', itU32),
       wbFormIDCk('Package Template', [PACK, NULL]),
       wbInteger('Version Counter (autoincremented)', itU32)
-    ], cpNormal, True),
-
+    ]).SetRequired,
     wbRStruct('Package Data', [
       wbRArray('Data Input Values', wbRStruct('Value', [
         wbString(ANAM, 'Type').SetAfterSet(wbPackageDataInputValueTypeAfterSet),
         wbUnion(CNAM, 'Value', wbPubPackCNAMDecider, [
-          {0} wbByteArray('Unknown'),
-          {1} wbInteger('Bool', itU8, wbBoolEnum),
-          {2} wbInteger('Integer', itU32),
-          {3} wbFloat('Float')
+        {0} wbByteArray('Unknown'),
+        {1} wbInteger('Bool', itU8, wbBoolEnum),
+        {2} wbInteger('Integer', itU32),
+        {3} wbFloat('Float')
         ]),
         wbUnknown(BNAM),
         wbPDTOs,
         wbPLDT,
         wbStruct(PTDA, 'Target', [wbTargetData]),
         wbFormIDCK(TPIC, 'Dialogue Topic', [DIAL])
-      ], [], cpNormal, False)),
-      wbUNAMs
+      ])),
+      wbRArray('Indexes', wbInteger(UNAM, 'Index', itS8))
     ]),
     wbByteArray(XNAM, 'Marker', 1).SetRequired,
     wbRStruct('Procedure Tree', [
-      wbRArray('Branches', wbRStruct('Branch', [
-        wbString(ANAM, 'Branch Type'),
-        wbCITCReq,
-        wbConditions,
-        wbStruct(PRCB, 'Root', [
-          wbInteger('Branch Count', itU32),
-          wbInteger('Flags', itU32, wbFlags([
-            'Repeat when Complete',
-            'Unknown 1'
-          ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
-        ]),
-        wbString(PNAM, 'Procedure Type'),
-        wbInteger(FNAM, 'Flags', itU32, wbFlags(['Success Completes Package'])).IncludeFlag(dfCollapsed, wbCollapseFlags),
-        wbRArray('Data Input Indexes', wbInteger(PKC2, 'Index', itU8)),
+      wbRArray('Branches',
+        wbRStruct('Branch', [
+          wbString(ANAM, 'Branch Type'),
+          wbCITCReq,
+          wbConditions,
+          wbStruct(PRCB, 'Root', [
+            wbInteger('Branch Count', itU32),
+            wbInteger('Flags', itU32,
+              wbFlags([
+              {0} 'Repeat when Complete',
+              {1} 'Unknown 1'
+              ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
+          ]),
+          wbString(PNAM, 'Procedure Type'),
+          wbInteger(FNAM, 'Success Completes Package', itU32, wbBoolEnum),
+          wbRArray('Data Input Indexes', wbInteger(PKC2, 'Index', itU8)),
         {>>> PFO2 should be single, there is only 1 PACK [00095F46] <PatrolAndHunt> in Skyrim.esm with 2xPFO2 <<<}
-        wbRArray('Flags Override',
-          wbStruct(PFO2, 'Data', [
-            wbInteger('Set General Flags', itU32, wbPackageFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
-            wbInteger('Clear General Flags', itU32, wbPackageFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
-            wbInteger('Set Interrupt Flags', itU16, wbPKDTInterruptFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
-            wbInteger('Clear Interrupt Flags', itU16, wbPKDTInterruptFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
-            wbInteger('Preferred Speed Override', itU8, wbEnum([
-              'Walk',
-              'Jog',
-              'Run',
-              'Fast Walk'
+          wbRArray('Flags Override',
+            wbStruct(PFO2, 'Data', [
+              wbInteger('Set General Flags', itU32, wbPackageFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
+              wbInteger('Clear General Flags', itU32, wbPackageFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
+              wbInteger('Set Interrupt Flags', itU16, wbPKDTInterruptFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
+              wbInteger('Clear Interrupt Flags', itU16, wbPKDTInterruptFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
+              wbInteger('Preferred Speed Override', itU8,
+                wbEnum([
+                {0} 'Walk',
+                {1} 'Jog',
+                {2} 'Run',
+                {3} 'Fast Walk'
+                ])),
+              wbUnused(3)
             ])),
-            wbByteArray('Unknown', 3)
-          ])
-        ),
-        wbRArray('Unknown', wbUnknown(PFOR), cpIgnore)
-      ]))
+          wbRArray('Unknown', wbUnknown(PFOR), cpIgnore)
+        ]))
     ]),
-    wbUNAMs,
+    wbRArray('Data Inputs',
+      wbRStruct('Data Input', [
+        wbInteger(UNAM, 'Index', itS8),
+        wbString(BNAM, 'Name'),
+        wbInteger(PNAM, 'Public', itU32, wbBoolEnum)
+      ])),
     wbRStruct('OnBegin', [
-      wbEmpty(POBA, 'OnBegin Marker', cpNormal, True),
-      wbFormIDCk(INAM, 'Idle', [IDLE, NULL], False, cpNormal, True),
+      wbEmpty(POBA, 'OnBegin Marker').SetRequired,
+      wbFormIDCk(INAM, 'Idle', [IDLE, NULL]).SetRequired,
       {>>> BEGIN leftover from earlier CK versions <<<}
-      wbByteArray(SCHR, 'Unused', 0, cpIgnore, false, false, wbNeverShow),
-      wbByteArray(SCTX, 'Unused', 0, cpIgnore, false, false, wbNeverShow),
-      wbByteArray(QNAM, 'Unused', 0, cpIgnore, false, false, wbNeverShow),
-      wbByteArray(TNAM, 'Unused', 0, cpIgnore, false, false, wbNeverShow),
+      wbUnused(SCHR, 0),
+      wbUnused(SCTX, 0),
+      wbUnused(QNAM, 0),
+      wbUnused(TNAM, 0),
       {>>> END leftover from earlier CK versions <<<}
       wbPDTOs
-    ], [], cpNormal, True),
+    ]).SetRequired,
     wbRStruct('OnEnd', [
-      wbEmpty(POEA, 'OnEnd Marker', cpNormal, True),
-      wbFormIDCk(INAM, 'Idle', [IDLE, NULL], False, cpNormal, True),
+      wbEmpty(POEA, 'OnEnd Marker').SetRequired,
+      wbFormIDCk(INAM, 'Idle', [IDLE, NULL]).SetRequired,
       {>>> BEGIN leftover from earlier CK versions <<<}
-      wbByteArray(SCHR, 'Unused', 0, cpIgnore, false, false, wbNeverShow),
-      wbByteArray(SCTX, 'Unused', 0, cpIgnore, false, false, wbNeverShow),
-      wbByteArray(QNAM, 'Unused', 0, cpIgnore, false, false, wbNeverShow),
-      wbByteArray(TNAM, 'Unused', 0, cpIgnore, false, false, wbNeverShow),
+      wbUnused(SCHR, 0),
+      wbUnused(SCTX, 0),
+      wbUnused(QNAM, 0),
+      wbUnused(TNAM, 0),
       {>>> END leftover from earlier CK versions <<<}
       wbPDTOs
-    ], [], cpNormal, True),
+    ]).SetRequired,
     wbRStruct('OnChange', [
-      wbEmpty(POCA, 'OnChange Marker', cpNormal, True),
-      wbFormIDCk(INAM, 'Idle', [IDLE, NULL], False, cpNormal, True),
+      wbEmpty(POCA, 'OnChange Marker').SetRequired,
+      wbFormIDCk(INAM, 'Idle', [IDLE, NULL]).SetRequired,
       {>>> BEGIN leftover from earlier CK versions <<<}
-      wbByteArray(SCHR, 'Unused', 0, cpIgnore, false, false, wbNeverShow),
-      wbByteArray(SCDA, 'Unused', 0, cpIgnore, false, false, wbNeverShow),
-      wbByteArray(SCTX, 'Unused', 0, cpIgnore, false, false, wbNeverShow),
-      wbByteArray(QNAM, 'Unused', 0, cpIgnore, false, false, wbNeverShow),
-      wbByteArray(TNAM, 'Unused', 0, cpIgnore, false, false, wbNeverShow),
+      wbUnused(SCHR, 0),
+      wbUnused(SCDA, 0),
+      wbUnused(SCTX, 0),
+      wbUnused(QNAM, 0),
+      wbUnused(TNAM, 0),
       {>>> END leftover from earlier CK versions <<<}
       wbPDTOs
-    ], [], cpNormal, True)
-  ], False, nil, cpNormal, False, nil {wbPACKAfterLoad});
+    ]).SetRequired
+  ]);
 
   wbQUSTAliasFlags :=
     wbStruct(FNAM, 'Alias Flags', [
