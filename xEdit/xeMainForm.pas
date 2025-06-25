@@ -9207,11 +9207,32 @@ var
   Container                   : IwbContainerElementRef;
   Element                     : IwbElement;
   MainRecord                  : IwbMainRecord;
+  CountToAdd                  : Integer;
+  BeSilent                    : Boolean;
+  s                           : string;
 begin
+  if Sender = mniNavAdd then Exit;
+
   FocusedNode := vstNav.FocusedNode;
   NodeData := vstNav.GetNodeData(FocusedNode);
   if Assigned(NodeData) and Supports(NodeData.Element, IwbContainerElementRef, Container) then begin
-    Element := Container.Add(StringReplace((Sender as TMenuItem).Caption, '&', '', [rfReplaceAll]), False);
+    BeSilent := False;
+    CountToAdd := 1;
+
+    if (Supports(NodeData.Element, IwbGroupRecord) and (GetKeyState(VK_SHIFT) < 0)) then
+      if InputQuery('Add multiple', 'How many:', s) then try
+        CountToAdd := StrToInt(s);
+        BeSilent := True;
+      except
+        on E: Exception do
+          Application.HandleException(E);
+      end
+      else
+        Exit;
+
+    for var i := 1 to CountToAdd do
+      Element := Container.Add(StringReplace((Sender as TMenuItem).Caption, '&', '', [rfReplaceAll]), BeSilent);
+
     if Assigned(Element) then begin
       NavFocusedElement := Element;
       NavUpdate(True);
