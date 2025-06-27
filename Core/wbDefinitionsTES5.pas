@@ -1173,6 +1173,28 @@ begin
   Result := wbAliasToStr(aInt, Container.ElementBySignature['ALEQ'] , aType);
 end;
 
+function wbSceneActorAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+begin
+  if not wbResolveAlias then begin
+    case aType of
+      ctToStr, ctToSummary, ctToEditValue: Result := aInt.ToString;
+      ctToSortKey: Result := IntToHex64(aInt, 8);
+    else
+      Result := '';
+    end;
+    Exit;
+  end;
+
+  if not Assigned(aElement) then
+    Exit;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  Result := wbAliasToStr(aInt, lMainRecord.ElementBySignature['PNAM'] , aType);
+end;
+
 procedure wbINFOPNAMAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 var
   Container : IwbContainer;
@@ -7665,7 +7687,7 @@ begin
       ])
     ),
     wbRArray('Actors', wbRStruct('Actor', [
-      wbInteger(ALID, 'Actor ID', itU32, nil, cpNormal, True),
+      wbInteger(ALID, 'Actor ID', itU32, wbSceneActorAliasToStr, wbStrToAlias),
       wbInteger(LNAM, 'Flags', itU32, wbFlags([
         'No Player Activation',
         'Optional'
