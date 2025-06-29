@@ -3031,13 +3031,16 @@ begin
   // Using generic names for the last 3 of them: Form, Value1, Value2
   wbEventMemberEnum := wbEnum([], [
     $0000, 'None',
-    $314F, 'CreatedObject',
-    $314C, '(Old)Location',
-    $324C, '(New)Location',
-    $314B, 'Keyword',
-    $3146, 'Form',
-    $3156, 'Value1',
-    $3256, 'Value2'
+    $3152, 'Actor1',        //R1
+    $3252, 'Actor2',        //R2
+    $314F, 'CreatedObject', //O1
+    $3146, 'Form',          //F1
+    $314B, 'Keyword',       //K1
+    $314C, 'Location1',     //L1
+    $324C, 'Location2',     //L2
+    $3151, 'Quest',         //Q1
+    $3156, 'Value1',        //V1
+    $3256, 'Value2'         //V2
   ]);
 
   wbWeaponAnimTypeEnum := wbEnum([

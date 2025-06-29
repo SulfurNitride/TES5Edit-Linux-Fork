@@ -3899,27 +3899,25 @@ begin
 
   // Event member names and availability are different depending on event type
   // Using generic names for the last 3 of them: Form, Value1, Value2
-  // Event member names and availability are different depending on event type
-  // Using generic names for the last 3 of them: Form, Value1, Value2
   wbEventMemberEnum := wbEnum([], [
     $0000, 'None',
-    $3146, 'Form',          { F1: ObjectForm, SpellForm, Infection, pCrimeGroup, Weapon Aimed, Voice Power }
-    $3147, 'Global',        { G1: GlobalValue }
-    $3149, 'Identifier',    { I1: QuestID }
-    $314B, 'Keyword1',      { K1: GameModeKeyword, Keyword }
-    $324B, 'Keyword2',      { K2: (Exists but unused) }
-    $334B, 'Keyword3',      { K3: (Exists but unused) }
-    $314C, '(Old)Location',  { L1: Location, Old Location, BenchLocation }
-    $324C, '(New)Location',  { L2: New Location }
-    $314F, 'CreatedObject', { O1: CreatedObject }
-    $3150, 'Player1',       { P1: Player, Victim }
-    $3250, 'Player2',       { P2: Criminal }
-    $3251, 'Quest1',        { Q1: Quest }
-    $3152, 'Reference1',    { R1: Victim, OwnerRef, ArrestingGuard, ActorSeesObject, Actor, CastingActor, Workbench, Actor 1, Actor , Computer, Transmitting Actor, Actor in Ironsights, hGuard, hCriminal, RootObject, NPC 1, Ref 1, OwningActor }
-    $3252, 'Reference2',    { R2: Attacker, Killer, Mine, OriginalContainer, Criminal, Object, SpellTarget, Actor 2, Dead Actor, hGuard, Lock Object, NPC 2, ItemRef, Ref 2, Trespasser }
-    $3352, 'Reference3',    { R3: Workshop, Player }
-    $3156, 'Value1',        { V1: Crime, Crime Status, AquireType, iCrimeType, iCommanded, iBountyAmount, Gold Value, Success, New Level, Crime Gold, Is Crime, Connected, Old Relationship, RemoveType, Value 1 }
-    $3256, 'Value2',        { V2: Relationship Rank to Killer Before Death, ItemValue, iBountyReason, New Relationship, Value 2, Days Jail }
+    $314F, 'CreatedObject', //O1
+    $3146, 'Form',          //F1
+    $3147, 'Global',        //G1
+    $3149, 'Identifier',    //I1
+    $314B, 'Keyword1',      //K1
+    $324B, 'Keyword2',      //K2
+    $334B, 'Keyword3',      //K3
+    $314C, 'Location1',     //L1
+    $324C, 'Location2',     //L2
+    $3150, 'Player1',       //P1
+    $3250, 'Player2',       //P2
+    $3251, 'Quest',         //Q1
+    $3152, 'Reference1',    //R1
+    $3252, 'Reference2',    //R2
+    $3352, 'Reference3',    //R3
+    $3156, 'Value1',        //V1
+    $3256, 'Value2',        //V2
     $7FFFFFFF, 'All'
   ]);
 
