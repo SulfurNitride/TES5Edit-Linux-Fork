@@ -968,24 +968,51 @@ begin
       var ShaderType := shader.EditValues['Shader Type'];
 
       // envmap shader + flag
-      if (ShaderType = 'Environment Map') and not shader.NativeValues['Shader Flags 1\Environment_Mapping'] then
-        Log.Add(#9 + shader.Name + ': Environment Map shader type is used but missing Environment_Mapping shader flag');
+      if (ShaderType = 'Environment Map') then begin
+        if not shader.NativeValues['Shader Flags 1\Environment_Mapping'] then
+          Log.Add(#9 + shader.Name + ': Environment Map shader type is used but missing Environment_Mapping shader flag');
+
+        if Assigned(texset) then begin
+          if (texset.EditValues['Textures\[4]'] = '') then
+            Log.Add(#9 + texset.Name + ': Environment Texture must be set for Environment shader');
+
+          if (texset.EditValues['Textures\[5]'] = '') then
+            Log.Add(#9 + texset.Name + ': Environment Mask Texture must be set for Environment shader');
+        end;
+      end;
 
       if (ShaderType <> 'Environment Map') and shader.NativeValues['Shader Flags 1\Environment_Mapping'] then
         Log.Add(#9 + shader.Name + ': Environment_Mapping shader flag is set but shader type is not Environment Map');
 
 
       // eye envmap shader + flag
-      if (ShaderType = 'Eye Envmap') and not shader.NativeValues['Shader Flags 1\Eye_Environment_Mapping'] then
-        Log.Add(#9 + shader.Name + ': Eye Envmap shader type is used but missing Eye_Environment_Mapping shader flag');
+      if (ShaderType = 'Eye Envmap') then begin
+        if not shader.NativeValues['Shader Flags 1\Eye_Environment_Mapping'] then
+          Log.Add(#9 + shader.Name + ': Eye Envmap shader type is used but missing Eye_Environment_Mapping shader flag');
+
+        if Assigned(texset) then begin
+          if (texset.EditValues['Textures\[4]'] = '') then
+            Log.Add(#9 + texset.Name + ': Environment Texture must be set for Eye Envmap shader');
+
+          if (texset.EditValues['Textures\[5]'] = '') then
+            Log.Add(#9 + texset.Name + ': Environment Mask Texture must be set for Eye Envmap shader');
+        end;
+      end;
 
       if (ShaderType <> 'Eye Envmap') and shader.NativeValues['Shader Flags 1\Eye_Environment_Mapping'] then
         Log.Add(#9 + shader.Name + ': Eye_Environment_Mapping shader flag is set but shader type is not Eye Envmap');
 
 
       // glow shader + flag
-      if (ShaderType = 'Glow Shader') and not shader.NativeValues['Shader Flags 2\Glow_Map'] then
-        Log.Add(#9 + shader.Name + ': Glow Shader type is used but missing Glow_Map shader flag');
+      if (ShaderType = 'Glow Shader') then begin
+        if shader.NativeValues['Shader Flags 2\Glow_Map'] then
+          Log.Add(#9 + shader.Name + ': Glow Shader type is used but missing Glow_Map shader flag');
+
+        if Assigned(texset) then begin
+          if (texset.EditValues['Textures\[2]'] = '') then
+            Log.Add(#9 + texset.Name + ': Glow Texture must be set for Glow shader');
+        end;
+      end;
 
       if (ShaderType <> 'Glow Shader') and shader.NativeValues['Shader Flags 2\Glow_Map'] then
         Log.Add(#9 + shader.Name + ': Glow_Map shader flag is set but shader type is not Glow Shader');
@@ -1000,8 +1027,15 @@ begin
 
       // parallax shader + flag
       if nif.NifVersion in [nfTES5, nfSSE] then begin
-        if (ShaderType = 'Parallax') and not shader.NativeValues['Shader Flags 1\Parallax'] then
-          Log.Add(#9 + shader.Name + ': Parallax shader type is used but missing Parallax shader flag');
+        if (ShaderType = 'Parallax') then begin
+          if not shader.NativeValues['Shader Flags 1\Parallax'] then
+            Log.Add(#9 + shader.Name + ': Parallax shader type is used but missing Parallax shader flag');
+
+          if Assigned(texset) then begin
+            if (texset.EditValues['Textures\[3]'] = '') then
+              Log.Add(#9 + texset.Name + ': Parallax Texture must be set for Parallax shader');
+          end;
+        end;
 
         if (ShaderType <> 'Parallax') and shader.NativeValues['Shader Flags 1\Parallax'] then
           Log.Add(#9 + shader.Name + ': Parallax shader flag is set but shader type is not Parallax');
@@ -1019,12 +1053,16 @@ begin
         if not shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] then
           Log.Add(#9 + shader.Name + ': MultiLayer Parallax shader type is used but missing Multi Layer Parallax shader flag');
 
-        if Assigned(texset) and (
-          (texset.EditValues['Textures\[4]'] = '') or
-          (texset.EditValues['Textures\[5]'] = '') or
-          (texset.EditValues['Textures\[6]'] = '')
-        ) then
-          Log.Add(#9 + texset.Name + ': 5th, 6th and 7th textures (counting from 1) must be set for MultiLayer Parallax shader');
+        if Assigned(texset) then begin
+          if (texset.EditValues['Textures\[4]'] = '') then
+            Log.Add(#9 + texset.Name + ': Environment Texture must be set for MultiLayer Parallax shader');
+
+          if (texset.EditValues['Textures\[5]'] = '') then
+            Log.Add(#9 + texset.Name + ': Environment Mask Texture must be set for MultiLayer Parallax shader');
+
+          if (texset.EditValues['Textures\[6]'] = '') then
+          Log.Add(#9 + texset.Name + ': Inner Layer Diffuse Texture must be set for MultiLayer Parallax shader');
+        end;
       end;
 
       if shader.NativeValues['Shader Flags 1\Parallax'] and shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] then
@@ -1033,17 +1071,24 @@ begin
 
       // diffuse and normals textures for lighting shader
       if shader.BlockType = 'BSLightingShaderProperty' then
-        if Assigned(texset) and (
-          (texset.EditValues['Textures\[0]'] = '') or
-          (texset.EditValues['Textures\[1]'] = '')
-        ) then
-          Log.Add(#9 + texset.Name + ': Missing diffuse or normals texture for lighting shader');
+        if Assigned(texset) then begin
+          if (texset.EditValues['Textures\[0]'] = '') then
+            Log.Add(#9 + texset.Name + ': Missing Diffuse texture for lighting shader');
+
+          if (texset.EditValues['Textures\[1]'] = '') then
+            Log.Add(#9 + texset.Name + ': Missing Normal texture for lighting shader');
+        end;
 
 
       // rim or soft lighting
-      if shader.NativeValues['Shader Flags 2\Rim_Lighting'] or shader.NativeValues['Shader Flags 2\Soft_Lighting'] then begin
+      if shader.NativeValues['Shader Flags 2\Rim_Lighting'] then begin
         if Assigned(texset) and (texset.EditValues['Textures\[2]'] = '') then
-          Log.Add(#9 + texset.Name + ': 3rd texture (counting from 1) must be set for Rim or Soft lighting');
+          Log.Add(#9 + texset.Name + ': Rim Lighting Texture must be set with Rim Lighting flag');
+      end;
+
+      if shader.NativeValues['Shader Flags 2\Soft_Lighting'] then begin
+        if Assigned(texset) and (texset.EditValues['Textures\[2]'] = '') then
+          Log.Add(#9 + texset.Name + ': Soft Lighting Texture must be set with Soft lighting flag');
       end;
 
 
@@ -1055,7 +1100,7 @@ begin
       // back lighting
       if shader.NativeValues['Shader Flags 2\Back_Lighting'] then begin
         if Assigned(texset) and (texset.EditValues['Textures\[7]'] = '') then
-          Log.Add(#9 + texset.Name + ': 8th texture (counting from 1) must be set for Back lighting');
+          Log.Add(#9 + texset.Name + ': Back Lighting Texture must be set with Back lighting flag');
       end;
 
 
@@ -1076,14 +1121,14 @@ begin
             Log.Add(#9 + shader.Name + ': Skin Tint shader requires Skin_Tint flag');
 
         if Assigned(texset) and (texset.EditValues['Textures\[2]'] = '') then
-          Log.Add(#9 + texset.Name + ': 3rd texture (counting from 1) must be set for Skin Tint shader');
+          Log.Add(#9 + texset.Name + ': Skin Tint Texture must be set for Skin Tint shader');
       end;
 
 
       // modelspace normals flag + specular flag + texture
       if shader.NativeValues['Shader Flags 1\Model_Space_Normals'] and shader.NativeValues['Shader Flags 1\Specular'] then begin
         if Assigned(texset) and (texset.EditValues['Textures\[7]'] = '') then
-          Log.Add(#9 + texset.Name + ': 8th texture (counting from 1) must be set for Model_Space_Normals + Specular flags');
+          Log.Add(#9 + texset.Name + ': Specular Texture must be set for Model_Space_Normals + Specular flags');
 
         if shader.NativeValues['Shader Flags 2\Back_Lighting'] then
           Log.Add(#9 + shader.Name + ': Back lighting can''t be used with Model Space Normals and Specular flags');
