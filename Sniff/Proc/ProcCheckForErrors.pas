@@ -1005,7 +1005,7 @@ begin
 
       // glow shader + flag
       if (ShaderType = 'Glow Shader') then begin
-        if shader.NativeValues['Shader Flags 2\Glow_Map'] then
+        if not shader.NativeValues['Shader Flags 2\Glow_Map'] then
           Log.Add(#9 + shader.Name + ': Glow Shader type is used but missing Glow_Map shader flag');
 
         if Assigned(texset) then begin
