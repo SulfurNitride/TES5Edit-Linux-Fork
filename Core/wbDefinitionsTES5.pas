@@ -9271,8 +9271,8 @@ begin
             ]))
           ]),
           wbRStruct('Find Matching Reference From Event', [
-            wbString(ALFE, 'From Event', 4),
-            wbByteArray(ALFD, 'Event Data')
+            wbInteger(ALFE, 'From Event', itU32, wbQuestEventEnum),
+            wbInteger(ALFD, 'Event Data', itU32, wbEventMemberEnum)
           ]),
           wbConditions,
           wbKeywords,
@@ -9339,8 +9339,8 @@ begin
             ]))
           ]),
           wbRStruct('Find Matching Reference From Event', [
-            wbString(ALFE, 'From Event', 4),
-            wbByteArray(ALFD, 'Event Data')
+            wbInteger(ALFE, 'From Event', itU32, wbQuestEventEnum),
+            wbInteger(ALFD, 'Event Data', itU32, wbEventMemberEnum)
           ]),
           wbConditions,
           wbKeywords,
