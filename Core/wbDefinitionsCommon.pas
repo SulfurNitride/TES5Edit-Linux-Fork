@@ -210,13 +210,14 @@ function wbFlagNavmeshIgnoreErosionDontSHow(const aElement: IwbElement): Boolean
 function wbFlagNavmeshGroundDontSHow(const aElement: IwbElement): Boolean;
 function wbFlagPartialFormDontShow(const aElement: IwbElement): Boolean;
 
-{>>> Don't Show Callbacks <<<} //13
+{>>> Don't Show Callbacks <<<} //14
 function wbAlwaysDontShow(const aElement: IwbElement): Boolean;
 function wbCellInteriorDontShow(const aElement: IwbElement): Boolean;
 function wbCellExteriorDontShow(const aElement: IwbElement): Boolean;
 function wbIdleMarkerPNAMDontShow(const aElement: IwbElement): Boolean;
 function wbIdleMarkerQNAMDontShow(const aElement: IwbElement): Boolean;
 function wbModelInfoDontShow(const aElement: IwbElement): Boolean;
+function wbLCTNCellDontShow(const aElement: IwbElement): Boolean;
 function wbREGNGrassDontShow(const aElement: IwbElement): Boolean;
 function wbREGNImposterDontShow(const aElement: IwbElement): Boolean;
 function wbREGNLandDontShow(const aElement: IwbElement): Boolean;
@@ -1535,7 +1536,7 @@ begin
   Result := not lMainRecord.CanBePartial;
 end;
 
-{>>> Don't Show Callbacks <<<} //13
+{>>> Don't Show Callbacks <<<} //14
 
 function wbAlwaysDontShow(const aElement: IwbElement): Boolean;
 begin
@@ -1578,6 +1579,23 @@ begin
     Exit;
 
   Result := MainRecord.Version < 38;
+end;
+
+function wbLCTNCellDontShow(const aElement: IwbElement): Boolean;
+begin
+  var lContainer: IwbContainer;
+  if not Supports(aElement, IwbContainer, lContainer) then
+    Exit(False);
+
+  var lLocation := lContainer.ElementByPath['..\Location'];
+  if not Assigned(lLocation) then
+    Exit(False);
+
+  var lMainRecord: IwbMainRecord;
+  if not Supports(lLocation.LinksTo, IwbMainRecord, lMainRecord) then
+    Exit(False);
+
+  Result := lMainRecord.Signature = CELL;
 end;
 
 function wbREGNGrassDontShow(const aElement: IwbElement): Boolean;
