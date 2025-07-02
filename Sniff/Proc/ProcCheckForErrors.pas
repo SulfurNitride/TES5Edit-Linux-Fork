@@ -1019,7 +1019,7 @@ begin
           if not shader.NativeValues['Shader Flags 1\Parallax'] then
             Log.Add(#9 + shader.Name + ': Parallax shader type is used but missing Parallax shader flag');
 
-          if Shape.NativeValues['VertexDesc\VF\VF_COLORS'] then
+          if not Shape.NativeValues['VertexDesc\VF\VF_COLORS'] then
             Log.Add(#9 + shader.Name + ': Parallax shader type is used but missing Vertex Colors on shape');
 
           if Shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] then
