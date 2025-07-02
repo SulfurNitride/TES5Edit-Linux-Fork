@@ -119,7 +119,7 @@ procedure CheckBlocksOrder(aObj: Pointer; Log: TStrings);
       if child.UserData = 1 then Continue;
 
       // skip constraints
-      if child.IsNiObject('bhkConstraint') then
+      if child.IsNiObject('bhkConstraint') or child.IsNiObject('bhkBallSocketConstraintChain') then
         Continue;
 
       // bhkAction references rigid body and must be loaded after it
