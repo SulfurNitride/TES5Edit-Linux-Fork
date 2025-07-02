@@ -119,7 +119,6 @@ var
   wbScriptFragmentsScen: IwbValueDef;
   wbPLDT: IwbSubRecordDef;
   wbPLVD: IwbSubRecordDef;
-  wbTargetData: IwbStructDef;
   wbAttackData: IwbSubRecordStructDef;
   wbLLCT: IwbSubRecordDef;
   wbLVLD: IwbSubRecordDef;
@@ -3486,28 +3485,6 @@ begin
      {12} wbByteArray('Unknown', 4, cpIgnore)
     ]),
     wbInteger('Radius', itS32)
-  ]);
-
-  wbTargetData := wbStruct('Target Data', [
-    wbInteger('Type', itS32, wbEnum([
-      {0} 'Specific Reference',
-      {1} 'Object ID',
-      {2} 'Object Type',
-      {3} 'Linked Reference',
-      {4} 'Ref Alias',
-      {5} 'Unknown 5',
-      {6} 'Self'
-    ]), cpNormal, False, nil, nil, 2),
-    wbUnion('Target', wbTypeDecider, [
-      {0} wbFormIDCkNoReach('Reference', [NULL, PLYR, ACHR, REFR, PGRE, PHZD, PMIS, PARW, PBAR, PBEA, PCON, PFLA], True),
-      {1} wbFormIDCkNoReach('Object ID', [NULL, ACTI, DOOR, STAT, MSTT, FURN, SPEL, SCRL, NPC_, CONT, ARMO, AMMO, MISC, WEAP, BOOK, KEYM, ALCH, INGR, LIGH, FACT, FLST, IDLM, SHOU, SOUN, TXST, PROJ, FLOR, SLGM]),
-      {2} wbInteger('Object Type', itU32, wbObjectTypeEnum),
-      {3} wbFormID('Reference'),
-      {4} wbInteger('Alias', itS32, wbPackageLocationAliasToStr, wbStrToAlias),
-      {5} wbByteArray('Unknown', 4, cpIgnore),
-      {6} wbByteArray('Unknown', 4, cpIgnore)
-    ]),
-    wbInteger('Count / Distance', itS32)
   ]);
 
   wbMO2S := wbArrayS(MO2S, 'Alternate Textures', wbAlternateTexture, -1);
@@ -9029,20 +9006,42 @@ begin
       wbInteger('Version Counter (autoincremented)', itU32)
     ]).SetRequired,
     wbRStruct('Package Data', [
-      wbRArray('Data Input Values', wbRStruct('Value', [
-        wbString(ANAM, 'Type').SetAfterSet(wbPackageDataInputValueTypeAfterSet),
-        wbUnion(CNAM, 'Value', wbPubPackCNAMDecider, [
-        {0} wbByteArray('Unknown'),
-        {1} wbInteger('Bool', itU8, wbBoolEnum),
-        {2} wbInteger('Integer', itU32),
-        {3} wbFloat('Float')
-        ]),
-        wbUnknown(BNAM),
-        wbPDTOs,
-        wbPLDT,
-        wbStruct(PTDA, 'Target', [wbTargetData]),
+      wbRArray('Data Input Values',
+        wbRStruct('Value', [
+          wbString(ANAM, 'Type').SetAfterSet(wbPackageDataInputValueTypeAfterSet),
+          wbUnion(CNAM, 'Value', wbPubPackCNAMDecider, [
+          {0} wbByteArray('Unknown'),
+          {1} wbInteger('Bool', itU8, wbBoolEnum),
+          {2} wbInteger('Integer', itU32),
+          {3} wbFloat('Float')
+          ]),
+          wbUnknown(BNAM),
+          wbPDTOs,
+          wbPLDT,
+          wbStruct(PTDA, 'Target', [
+            wbInteger('Type', itS32,
+              wbEnum([
+              {0} 'Specific Reference',
+              {1} 'Object ID',
+              {2} 'Object Type',
+              {3} 'Linked Reference',
+              {4} 'Ref Alias',
+              {5} 'Unknown 5',
+              {6} 'Self'
+              ])).SetDefaultNativeValue(2),
+            wbUnion('Target', wbTypeDecider, [
+            {0} wbFormIDCkNoReach('Reference', [NULL, PLYR, ACHR, REFR, PGRE, PHZD, PMIS, PARW, PBAR, PBEA, PCON, PFLA], True),
+            {1} wbFormIDCkNoReach('Object ID', [NULL, ACTI, DOOR, STAT, MSTT, FURN, SPEL, SCRL, NPC_, CONT, ARMO, AMMO, MISC, WEAP, BOOK, KEYM, ALCH, INGR, LIGH, FACT, FLST, IDLM, SHOU, SOUN, TXST, PROJ, FLOR, SLGM]),
+            {2} wbInteger('Object Type', itU32, wbObjectTypeEnum),
+            {3} wbFormID('Reference'),
+            {4} wbInteger('Alias', itS32, wbPackageLocationAliasToStr, wbStrToAlias),
+            {5} wbByteArray('Unknown', 4, cpIgnore),
+            {6} wbByteArray('Unknown', 4, cpIgnore)
+            ]),
+            wbInteger('Count / Distance', itS32)
+          ]),
         wbFormIDCK(TPIC, 'Dialogue Topic', [DIAL])
-      ])),
+        ])),
       wbRArray('Indexes', wbInteger(UNAM, 'Index', itS8))
     ]),
     wbByteArray(XNAM, 'Marker', 1).SetRequired,
