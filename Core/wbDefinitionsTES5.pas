@@ -8994,7 +8994,7 @@ begin
       wbInteger('Hour', itS8),
       wbInteger('Minute', itS8),
       wbUnused(3),
-      wbInteger('Duration (Minutes)', itS32)
+      wbInteger('Duration', itU32, wbDiv(60))
     ]).SetRequired,
     wbConditions,
     wbIdleAnimation,
