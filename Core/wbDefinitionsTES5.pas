@@ -2970,6 +2970,39 @@ begin
    {12} 'Near self'
   ]);
 
+  wbObjectTypeEnum :=
+    wbEnum([
+    {0}  'None',
+    {1}  'Activators',
+    {2}  'Armor',
+    {3}  'Books',
+    {4}  'Containers',
+    {5}  'Doors',
+    {6}  'Ingredients',
+    {7}  'Lights',
+    {8}  'Miscellaneous',
+    {9}  'Flora',
+    {10} 'Furniture',
+    {11} 'Weapons: Any',
+    {12} 'Ammo',
+    {13} 'Keys',
+    {14} 'Alchemy',
+    {15} 'Food',
+    {16} 'All: Combat Wearable',
+    {17} 'All: Wearable',
+    {18} 'Weapons: None',
+    {19} 'Weapons: Melee',
+    {20} 'Weapons: Ranged',
+    {21} 'Spells: Any',
+    {22} 'Spells: Range Target',
+    {23} 'Spells: Range Touch',
+    {24} 'Spells: Range Self',
+    {25} 'Actors: Any',
+    {26} 'Furniture: Beds',
+    {27} 'Furniture: Chairs',
+    {28} 'Shouts'
+    ]);
+
   wbEquipType := wbFlags([
     {0x00000001}'Hand To Hand Melee',
     {0x00000002}'One Hand Sword',
@@ -8913,38 +8946,6 @@ begin
         wbInteger(TIAS, 'Preset', itS16)
       ]))
   ], False, nil, cpNormal, False, nil, wbNPCAfterSet);
-
-  wbObjectTypeEnum := wbEnum([
-    ' NONE',
-    'Activators',
-    'Armor',
-    'Books',
-    'Clothing',
-    'Containers',
-    'Doors',
-    'Ingredients',
-    'Lights',
-    'Misc',
-    'Flora',
-    'Furniture',
-    'Weapons: Any',
-    'Ammo',
-    'NPCs',
-    'Creatures',
-    'Keys',
-    'Alchemy',
-    'Food',
-    ' All: Combat Wearable',
-    ' All: Wearable',
-    'Weapons: Ranged',
-    'Weapons: Melee',
-    'Weapons: NONE',
-    'Actor Effects: Any',
-    'Actor Effects: Range Target',
-    'Actor Effects: Range Touch',
-    'Actor Effects: Range Self',
-    'Actors: Any'
-  ]);
 
   wbPKDTInterruptFlags := wbFlags([
     {0x0001}'Hellos to player',
