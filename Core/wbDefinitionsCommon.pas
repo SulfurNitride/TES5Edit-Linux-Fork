@@ -150,16 +150,18 @@ function wbPlacedAddInfo(const aMainRecord: IwbMainRecord): string;
 function wbROADAddInfo(const aMainRecord: IwbMainRecord): string;
 function wbSCENAddInfo(const aMainRecord: IwbMainRecord): string;
 
-{>>> After Load Callbacks <<<} //7
+{>>> After Load Callbacks <<<} //9
 procedure wbACBSLevelMultAfterLoad(const aElement: IwbElement);
 procedure wbAVIFSkillAfterLoad(const aElement: IwbElement);
 procedure wbDOBJObjectsAfterLoad(const aElement: IwbElement);
+procedure wbPACKDateAfterLoad(const aElement: IwbElement);
+procedure wbPACKHourAfterLoad(const aElement: IwbElement);
 procedure wbPNDTAfterLoad(const aElement: IwbElement);
 procedure wbRPLDAfterLoad(const aElement: IwbElement);
 procedure wbSOUNAfterLoad(const aElement: IwbElement);
 procedure wbWorldAfterLoad(const aElement: IwbElement);
 
-{>>> After Set Callbacks <<<} //31
+{>>> After Set Callbacks <<<} //33
 procedure wbACBSLevelMultAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbATANsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbBODCsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -179,6 +181,8 @@ procedure wbModelInfoAfterSet(const aElement: IwbElement; const aOldValue, aNewV
 procedure wbMorphPresetsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbNPCAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbNPCActorSoundsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+procedure wbPACKDateAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+procedure wbPACKHourAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbPERKPRKETypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbPRKRsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbRaceAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -714,6 +718,45 @@ begin
   end;
 end;
 
+procedure wbPACKDateAfterLoad(const aElement: IwbElement);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    var lMonth := aElement.Container.ElementByName['Month'];
+    var lMaxDate : Cardinal;
+    case lMonth.NativeValue of
+      1: lMaxDate := 28;
+      3,5,8,10: lMaxDate := 30;
+      else
+      lMaxDate := 31;
+    end;
+
+    if aElement.NativeValue > lMaxDate then
+      aElement.NativeValue := lMaxDate;
+    if aElement.NativeValue < -1 then
+      aElement.NativeValue := -1;
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
+procedure wbPACKHourAfterLoad(const aElement: IwbElement);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    if aElement.NativeValue > 23 then
+      aElement.NativeValue := 23;
+    if aElement.NativeValue < -1 then
+      aElement.NativeValue := -1;
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
 procedure wbPNDTAfterLoad(const aElement: IwbElement);
 begin
   if not Assigned(aElement) then
@@ -860,7 +903,7 @@ begin
   end;
 end;
 
-{>>> After Set Callbacks <<<} //31
+{>>> After Set Callbacks <<<} //33
 
 procedure wbACBSLevelMultAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
@@ -1090,6 +1133,52 @@ end;
 procedure wbNPCActorSoundsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
   wbCounterAfterSet('CS2H - Count', aElement);
+end;
+
+procedure wbPACKDateAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if VarSameValue(aOldValue, aNewValue) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    var lMonth := aElement.Container.ElementByName['Month'];
+    var lMaxDate : Cardinal;
+    case lMonth.NativeValue of
+      1: lMaxDate := 28;
+      3,5,8,10: lMaxDate := 30;
+      else
+      lMaxDate := 31;
+    end;
+
+    if aElement.NativeValue > lMaxDate then
+      aElement.NativeValue := lMaxDate;
+    if aElement.NativeValue < -1 then
+      aElement.NativeValue := -1;
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
+procedure wbPACKHourAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if VarSameValue(aOldValue, aNewValue) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    if aNewValue > 23 then
+      aElement.NativeValue := 23;
+
+    if aNewValue < -1 then
+      aElement.NativeValue := -1;
+  finally
+    wbEndInternalEdit;
+  end;
 end;
 
 procedure wbPERKPRKETypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);

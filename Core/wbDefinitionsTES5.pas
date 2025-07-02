@@ -8973,8 +8973,28 @@ begin
       wbUnknown(2)
     ]).SetRequired,
     wbStruct(PSDT, 'Schedule', [
-      wbInteger('Month', itS8),
-      wbInteger('Day of week', itS8,
+      wbInteger('Month', itU8,
+        wbEnum([
+        {0}  'January',
+        {1}  'February',
+        {2}  'March',
+        {3}  'April',
+        {4}  'May',
+        {5}  'June',
+        {6}  'July',
+        {7}  'August',
+        {8}  'September',
+        {9}  'October',
+        {10} 'November',
+        {11} 'December',
+        {12} 'Spring (MAM)',
+        {13} 'Summer (JJA)',
+        {14} 'Autumn (SON)',
+        {15} 'Winter (DJF)'
+        ], [
+        255, 'Any'
+        ])).SetDefaultNativeValue(255),
+      wbInteger('Day Of Week', itU8,
         wbEnum([
         {0}  'Sunday',
         {1}  'Monday',
@@ -8987,12 +9007,32 @@ begin
         {8}  'Weekends',
         {9}  'Monday, Wednesday, Friday',
         {10} 'Tuesday, Thursday'
-      ], [
-        -1, 'Any'
-      ])),
-      wbInteger('Date', itU8),
-      wbInteger('Hour', itS8),
-      wbInteger('Minute', itS8),
+        ], [
+        255, 'Any'
+        ])).SetDefaultNativeValue(255),
+      wbInteger('Date', itS8)
+        .SetAfterLoad(wbPACKDateAfterLoad)
+        .SetAfterSet(wbPACKDateAfterSet),
+      wbInteger('Hour', itS8)
+        .SetAfterLoad(wbPACKHourAfterLoad)
+        .SetAfterSet(wbPACKHourAfterSet),
+      wbInteger('Minute', itU8,
+        wbEnum([
+        {0} '0'
+        ], [
+        5,   '5',
+        10,  '10',
+        15,  '15',
+        20,  '20',
+        25,  '25',
+        30,  '30',
+        35,  '35',
+        40,  '40',
+        45,  '45',
+        50,  '50',
+        55,  '55',
+        255, 'Any'
+        ])),
       wbUnused(3),
       wbInteger('Duration', itU32, wbDiv(60))
     ]).SetRequired,
