@@ -3063,16 +3063,16 @@ begin
   // Using generic names for the last 3 of them: Form, Value1, Value2
   wbEventMemberEnum := wbEnum([], [
     $0000, 'None',
-    $3152, 'Actor1',        //R1
-    $3252, 'Actor2',        //R2
-    $314F, 'CreatedObject', //O1
-    $3146, 'Form',          //F1
-    $314B, 'Keyword',       //K1
-    $314C, 'Location1',     //L1
-    $324C, 'Location2',     //L2
-    $3151, 'Quest',         //Q1
-    $3156, 'Value1',        //V1
-    $3256, 'Value2'         //V2
+    $3152, 'Actor 1',        //R1
+    $3252, 'Actor 2',        //R2
+    $314F, 'Created Object', //O1
+    $3146, 'Form',           //F1
+    $314B, 'Keyword',        //K1
+    $314C, 'Location 1',     //L1
+    $324C, 'Location 2',     //L2
+    $3151, 'Quest',          //Q1
+    $3156, 'Value 1',        //V1
+    $3256, 'Value 2'         //V2
   ]);
 
   wbWeaponAnimTypeEnum := wbEnum([
@@ -4431,7 +4431,21 @@ begin
               {0} wbInteger('Unused', itU32, nil, cpIgnore),
               {1} wbFormIDCkNoReach('Reference', [NULL, PLYR, ACHR, REFR, PGRE, PHZD, PMIS, PARW, PBAR, PBEA, PCON, PFLA], False)
               ]),
-          {9} wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1)
+          {9} wbInteger('Parameter #3', itS32,
+                wbEnum([], [
+                -1,    'None',
+                $3152, 'Actor 1',        //R1
+                $3252, 'Actor 2',        //R2
+                $314F, 'Created Object', //O1
+                $3146, 'Form',           //F1
+                $314B, 'Keyword',        //K1
+                $314C, 'Location 1',     //L1
+                $324C, 'Location 2',     //L2
+                $3151, 'Quest',          //Q1
+                $3156, 'Value 1',        //V1
+                $3256, 'Value 2'         //V2
+                ])
+              ).SetDefaultNativeValue(-1)
           ]),
       {1} wbString(CIS1, 'Parameter #1'),
       {2} wbString(CIS2, 'Parameter #2')
