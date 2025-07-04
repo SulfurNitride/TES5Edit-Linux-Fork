@@ -1122,7 +1122,7 @@ begin
               Log.Add(#9 + texset.Name + ': Rim Lighting Texture [Slot 2] must be set with Rim Lighting flag');
 
         if shader.NativeValues['Shader Flags 2\Soft_Lighting'] then
-          if  (ShaderType <> 'Skin Tint') and (ShaderType <> 'Face Tint') and Assigned(texset) and (texset.EditValues['Textures\[2]'] = '') then
+          if  (ShaderType <> 'Skin Tint') and (ShaderType <> 'Facegen') and Assigned(texset) and (texset.EditValues['Textures\[2]'] = '') then
             Log.Add(#9 + texset.Name + ': Soft Lighting Texture [Slot 2] must be set with Soft lighting flag');
 
 
