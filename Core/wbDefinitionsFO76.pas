@@ -373,7 +373,7 @@ type
   end;
 
 const
-  wbConditionFunctions : array[0..637] of TConditionFunction = (
+  wbConditionFunctions : array[0..640] of TConditionFunction = (
     (Index:   0; Name: 'GetWantBlocking'),
     (Index:   1; Name: 'GetDistance'; ParamType1: ptReference),
     (Index:   2; Name: 'AddItem'), { ObjID (Form ID), Count, Flag (Opt), Level (Opt), Equip (Opt) }
@@ -971,6 +971,7 @@ const
     (Index: 5004; Name: 'PlayerHasQuest'; ParamType1: ptQuest),
     (Index: 5005; Name: 'IsBackpackVisible'),
     (Index: 5006; Name: 'GetIsInExpedition'),
+    (Index: 5007; Name: 'HasCAMPWeatherActive'),
     (Index: 6000; Name: 'GetSecondsSinceLastAttack'),
     (Index: 8000; Name: 'IsDailyContentAvailable'), //Param1: ptDailyContentGroup
     (Index: 8001; Name: 'StartDailyContent'),   //Param1: ptDailyContentGroup //Does nothing on the client
@@ -5411,7 +5412,13 @@ begin
    {201} 'Apply Spell On Actor When Limb Crippled',
    {202} 'Mod Rads to Health Mult',
    {203} 'Mod Rads to Radshield Mult',
-   {204} 'Mod Weak Body Part Damage Mult'
+   {204} 'Mod Weak Body Part Damage Mult',
+   {205} 'Mod Projectile Bounce Count',
+   {206} 'Mod NPC Normalized Min Level',
+   {207} 'Mod NPC Normalized Max level',
+   {208} 'Mod NPC Normalized Level',
+   {209} 'Mod Ammo Spender Max Stack Count',
+   {210} 'Mod Ammo Spender Max Reload Stack Mult'
   ]);
 
   wbEquipType := wbFlags([
@@ -9180,7 +9187,8 @@ begin
       wbFloat,
       wbFloat,
       wbFloat
-    ])
+    ]),
+    wbFloat(CSTD)
   ]);
 
   wbRecord(DIAL, 'Dialog Topic',
@@ -9644,7 +9652,10 @@ begin
     wbFloat(FILJ),
     wbFloat(FILA),
     wbFloat(FIHA),
-    wbFormID(FIRI, 'Reel-In Item')
+    wbFormID(FIRI, 'Reel-In Item'),
+    wbFormID(FIEX, 'Splash Explosion'),
+    wbFormID(FISD, 'Splash Sound Effect'),
+    wbFormID(FISU, 'Caught Sound Effect')
   ]);
 
   wbRecord(FURN, 'Furniture',
@@ -13077,6 +13088,10 @@ begin
       ]),
       wbCOED,
       wbConditions,
+      wbStruct(LVUD, 'Leveled Item Data', [
+        wbFormID('Pick Up Sound'),
+        wbUnknown
+      ]),
       wbLVOV,
       wbLVOC,
       wbLVOT,
