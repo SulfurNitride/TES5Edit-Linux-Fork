@@ -6797,7 +6797,7 @@ begin
 
   wbRecord(LCTN, 'Location', [
     wbEDID,
-    wbArrayS(LCPR, 'Master Persist Location References',
+    wbArrayS(ACPR, 'Added Persist Location References',
       wbStructSK([0], 'Reference', [
         wbFormIDCk('Ref', [PLYR, ACHR, REFR, PGRE, PHZD, PMIS, PARW, PBAR, PBEA, PCON, PFLA], False, cpBenign),
         wbFormIDCk('World/Cell', [WRLD, CELL], False, cpBenign),
@@ -6805,7 +6805,7 @@ begin
         wbInteger('Grid X', itS16, nil, cpBenign).SetDontShow(wbLCTNCellDontShow)
       ], cpBenign),
     0, cpBenign),
-    wbArrayS(ACPR, 'Added Persist Location References',
+    wbArrayS(LCPR, 'Location Persist Location References',
       wbStructSK([0], 'Reference', [
         wbFormIDCk('Ref', [PLYR, ACHR, REFR, PGRE, PHZD, PMIS, PARW, PBAR, PBEA, PCON, PFLA], False, cpBenign),
         wbFormIDCk('World/Cell', [WRLD, CELL], False, cpBenign),
@@ -6816,14 +6816,14 @@ begin
     wbArrayS(RCPR, 'Removed Persist Location References',
       wbFormIDCk('Reference', [ACHR, REFR], False, cpBenign),
     0, cpBenign),
-    wbArrayS(LCUN, 'Master Unique NPCs',
+    wbArrayS(ACUN, 'Added Unique NPCs',
       wbStructSK([1], 'Actor', [
         wbFormIDCk('NPC', [NPC_], False, cpBenign),
         wbFormIDCk('Actor Ref', [ACHR], False, cpBenign),
         wbFormIDCk('Location', [LCTN, NULL], False, cpBenign)
       ], cpBenign),
     0, cpBenign),
-    wbArrayS(ACUN, 'Added Unique NPCs',
+    wbArrayS(LCUN, 'Master Unique NPCs',
       wbStructSK([1], 'Actor', [
         wbFormIDCk('NPC', [NPC_], False, cpBenign),
         wbFormIDCk('Actor Ref', [ACHR], False, cpBenign),
@@ -6833,7 +6833,7 @@ begin
     wbArrayS(RCUN, 'Removed Unique NPCs',
       wbFormIDCk('Actor', [NPC_], False, cpBenign),
     0, cpBenign),
-    wbArrayS(LCSR, 'Master Special References',
+    wbArrayS(ACSR, 'Added Special References',
       wbStructSK([1], 'Reference', [
         wbFormIDCk('Loc Ref Type', [LCRT], False, cpBenign),
         wbFormIDCk('Ref', [PLYR, ACHR, REFR, PGRE, PHZD, PMIS, PARW, PBAR, PBEA, PCON, PFLA], False, cpBenign),
@@ -6842,7 +6842,7 @@ begin
         wbInteger('Grid X', itS16, nil, cpBenign).SetDontShow(wbLCTNCellDontShow)
       ], cpBenign),
     0, cpBenign),
-    wbArrayS(ACSR, 'Added Special References',
+    wbArrayS(LCSR, 'Master Special References',
       wbStructSK([1], 'Reference', [
         wbFormIDCk('Loc Ref Type', [LCRT], False, cpBenign),
         wbFormIDCk('Ref', [PLYR, ACHR, REFR, PGRE, PHZD, PMIS, PARW, PBAR, PBEA, PCON, PFLA], False, cpBenign),
@@ -6854,8 +6854,8 @@ begin
     wbArrayS(RCSR, 'Removed Special References',
       wbFormIDCk('Ref', [ACHR, REFR], False, cpBenign),
     0, cpBenign),
-    wbRArrayS('Master Worldspace Cells',
-      wbStructSK(LCEC,[0],'Worldspace', [
+    wbRArrayS('Added Worldspace Cells',
+      wbStructSK(ACEC,[0],'Worldspace', [
         wbFormIDCk('World', [WRLD], False, cpBenign),
         wbArrayS('Cells',
           wbStructSK([0,1],'Coords', [
@@ -6865,8 +6865,8 @@ begin
         0, cpBenign)
       ], cpBenign),
     cpBenign),
-    wbRArrayS('Added Worldsapce Cells',
-      wbStructSK(ACEC, [0], 'Worldspace', [
+    wbRArrayS('Master Worldsapce Cells',
+      wbStructSK(LCEC, [0], 'Worldspace', [
         wbFormIDCk('World', [WRLD], False, cpBenign),
         wbArrayS('Cells',
           wbStructSK([0,1], 'Coords', [
@@ -6887,13 +6887,13 @@ begin
         0, cpBenign)
       ], cpBenign),
     cpBenign),
-    wbArrayS(LCID,'Master Initially Disabled References',
-      wbFormIDCk('Ref', [PLYR, ACHR, REFR, PGRE, PHZD, PMIS, PARW, PBAR, PBEA, PCON, PFLA], False, cpBenign),
-    0, cpBenign),
     wbArrayS(ACID,'Added Initially Disabled References',
       wbFormIDCk('Ref', [PLYR, ACHR, REFR, PGRE, PHZD, PMIS, PARW, PBAR, PBEA, PCON, PFLA], False, cpBenign),
     0, cpBenign),
-    wbArrayS(LCEP,'Master Enable Parent References',
+    wbArrayS(LCID,'Master Initially Disabled References',
+      wbFormIDCk('Ref', [PLYR, ACHR, REFR, PGRE, PHZD, PMIS, PARW, PBAR, PBEA, PCON, PFLA], False, cpBenign),
+    0, cpBenign),
+    wbArrayS(ACEP,'Added Enable Parent References',
       wbStructSK([0],'Reference', [
         wbFormIDCk('Ref', [PLYR, ACHR, REFR, PGRE, PHZD, PMIS, PARW, PBAR, PBEA, PCON, PFLA], False, cpBenign),
         wbFormIDCk('Enable Parent', [PLYR, ACHR, REFR, PGRE, PHZD, PMIS, PARW, PBAR, PBEA, PCON, PFLA], False, cpBenign),
@@ -6906,7 +6906,7 @@ begin
         wbUnused(3)
       ], cpBenign),
     0, cpBenign),
-    wbArrayS(ACEP,'Added Enable Point References',
+    wbArrayS(LCEP,'Master Enable Point References',
       wbStructSK([0],'Reference', [
         wbFormIDCk('Ref', [PLYR, ACHR, REFR, PGRE, PHZD, PMIS, PARW, PBAR, PBEA, PCON, PFLA], False, cpBenign),
         wbFormIDCk('Enable Parent', [PLYR, ACHR, REFR, PGRE, PHZD, PMIS, PARW, PBAR, PBEA, PCON, PFLA], False, cpBenign),
