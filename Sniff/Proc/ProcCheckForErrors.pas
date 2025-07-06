@@ -808,8 +808,6 @@ end;
 
 //==============================================================================
 procedure CheckTextureSetSlots(aObj: Pointer; Log: TStrings);
-var
-  i: Integer;
 begin
   var nif: TwbNifFile := aObj;
 
@@ -826,7 +824,7 @@ begin
     if not Assigned(textures) then
       Continue;
 
-    for i := 0 to Pred(textures.Count) do
+    for var i := 0 to Pred(textures.Count) do
       if TPath.IsPathRooted(textures[i].EditValue) then
         Log.Add(#9 + textures[i].Path + ': Absolute path ' + textures[i].EditValue);
 
@@ -844,6 +842,55 @@ begin
         Log.Add(#9 + shader.Name + ': Has assigned envmap texture in ' + texset.Name + ' but missing envmap flag');
     end;
 
+    if nif.NifVersion in [nfTES5,nfSSE] then begin
+      var ShaderType := Shader.EditValues['Shader Type'];
+      if (Textures.Count > 2) and (Textures[2].EditValue <> '') then begin
+        if  (ShaderType <> 'Glow Shader') and
+            (ShaderType <> 'Facegen') and
+            (ShaderType <> 'Skin Tint') and
+        not (Shader.NativeValues['Shader Flags 2\Soft_Lighting']) and
+        not (Shader.NativeValues['Shader Flags 2\Rim_Lighting'])
+        then
+          Log.Add(#9 + texset.Name + ': Has texture assigned in slot 2, but is not used');
+      end;
+
+      if (Textures.Count > 3) and (Textures[3].EditValue <> '') then begin
+        if (ShaderType <> 'Parallax') and
+           (ShaderType <> 'Facegen')
+        then
+          Log.Add(#9 + texset.Name + ': Has texture assigned in slot 3, but is not used');
+      end;
+
+      if (Textures.Count > 4) and (Textures[4].EditValue <> '') then begin
+        if (ShaderType <> 'Environment Map') and
+           (ShaderType <> 'MultiLayer Parallax') and
+           (ShaderType <> 'Eye Envmap')
+        then
+          Log.Add(#9 + texset.Name + ': Has texture assigned in slot 4, but is not used');
+      end;
+
+      if (Textures.Count > 5) and (Textures[5].EditValue <> '') then begin
+        if (ShaderType <> 'Environment Map') and
+           (ShaderType <> 'MultiLayer Parallax') and
+           (ShaderType <> 'Eye Envmap')
+        then
+          Log.Add(#9 + texset.Name + ': Has texture assigned in slot 5, but is not used');
+      end;
+
+      if (Textures.Count > 6) and (Textures[6].EditValue <> '') then begin
+        if (ShaderType <> 'Facegen') and
+           (ShaderType <> 'MultiLayer Parallax')
+        then
+          Log.Add(#9 + texset.Name + ': Has texture assigned in slot 6, but is not used');
+      end;
+
+      if (Textures.Count > 7) and (Textures[7].EditValue <> '') then begin
+        if not Shader.NativeValues['Shader Flags 2\Back_Lighting'] and
+           not Shader.NativeValues['Shader Flags 1\Model_Space_Normals']
+        then
+          Log.Add(#9 + texset.Name + ': Has texture assigned in slot 7, but is not used');
+      end;
+    end;
   end;
 end;
 
