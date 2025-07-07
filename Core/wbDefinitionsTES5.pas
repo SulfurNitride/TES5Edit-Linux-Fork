@@ -3649,12 +3649,13 @@ begin
       wbFormIDCk(INAM, 'Idle', [IDLE, NULL], False, cpNormal, True),
       {>>> BEGIN leftover from earlier CK versions <<<}
       wbRStruct('Unused', [
-        wbUnknown(SCHR),
-        wbUnknown(SCDA),
-        wbUnknown(SCTX),
-        wbUnknown(QNAM),
-        wbUnknown(SCRO)
-      ], [], cpIgnore, false, wbNeverShow),
+        wbUnused(SCHR, 0),
+        wbUnused(SCDA, 0),
+        wbUnused(SCTX, 0),
+        wbUnused(QNAM, 0),
+        wbUnused(SCRO, 0)
+      ]).IncludeFlag(dfInternalEditOnly)
+        .SetDontShow(wbNeverShow),
       {>>> END leftover from earlier CK versions <<<}
       wbPDTOs,
       wbFormIDCk(TNAM, 'Topic', [DIAL, NULL], False, cpNormal)
@@ -7718,21 +7719,23 @@ begin
         wbEmpty(NEXT, 'Marker', cpNormal, True),
         wbRStruct('Completion Conditions', [wbConditions]),
         {>>> BEGIN leftover from earlier CK versions <<<}
-        wbRStruct('Unused', [
-          wbUnknown(SCHR),
-          wbUnknown(SCDA),
-          wbUnknown(SCTX),
-          wbUnknown(QNAM),
-          wbUnknown(SCRO)
-        ], [], cpIgnore, false, wbNeverShow),
-        wbEmpty(NEXT, 'Marker', cpNormal, True),
-        wbRStruct('Unused', [
-          wbUnknown(SCHR),
-          wbUnknown(SCDA),
-          wbUnknown(SCTX),
-          wbUnknown(QNAM),
-          wbUnknown(SCRO)
-        ], [], cpIgnore, false, wbNeverShow),
+          wbRStruct('Unused', [
+            wbUnused(SCHR, 0),
+            wbUnused(SCDA, 0),
+            wbUnused(SCTX, 0),
+            wbUnused(QNAM, 0),
+            wbUnused(SCRO, 0)
+          ]).IncludeFlag(dfInternalEditOnly)
+            .SetDontShow(wbNeverShow),
+          wbEmpty(NEXT, 'Marker').SetRequired,
+          wbRStruct('Unused', [
+            wbUnused(SCHR, 0),
+            wbUnused(SCDA, 0),
+            wbUnused(SCTX, 0),
+            wbUnused(QNAM, 0),
+            wbUnused(SCRO, 0)
+          ]).IncludeFlag(dfInternalEditOnly)
+            .SetDontShow(wbNeverShow),
         {>>> END leftover from earlier CK versions begin <<<}
         wbInteger(WNAM, 'Editor Width', itU32, nil, cpNormal, True, false, nil, nil, 200),
         wbEmpty(HNAM, 'Marker Phase End', cpNormal, True)
@@ -7836,31 +7839,34 @@ begin
       ]),
       {>>> BEGIN leftover from earlier CK versions <<<}
       wbRStruct('Unused', [
-        wbUnknown(SCHR),
-        wbUnknown(SCDA),
-        wbUnknown(SCTX),
-        wbUnknown(QNAM),
-        wbUnknown(SCRO)
-      ], [], cpIgnore, false, wbNeverShow),
+        wbUnused(SCHR, 0),
+        wbUnused(SCDA, 0),
+        wbUnused(SCTX, 0),
+        wbUnused(QNAM, 0),
+        wbUnused(SCRO, 0)
+      ]).IncludeFlag(dfInternalEditOnly)
+        .SetDontShow(wbNeverShow),
       {>>> END leftover from earlier CK versions <<<}
       wbMarkerReq(ANAM)
     ])),
     {>>> BEGIN leftover from earlier CK versions <<<}
     wbRStruct('Unused', [
-      wbUnknown(SCHR),
-      wbUnknown(SCDA),
-      wbUnknown(SCTX),
-      wbUnknown(QNAM),
-      wbUnknown(SCRO)
-    ], [], cpIgnore, false, wbNeverShow),
-    wbEmpty(NEXT, 'Marker', cpNormal, True),
+      wbUnused(SCHR, 0),
+      wbUnused(SCDA, 0),
+      wbUnused(SCTX, 0),
+      wbUnused(QNAM, 0),
+      wbUnused(SCRO, 0)
+    ]).IncludeFlag(dfInternalEditOnly)
+      .SetDontShow(wbNeverShow),
+    wbEmpty(NEXT, 'Marker').SetRequired,
     wbRStruct('Unused', [
-      wbUnknown(SCHR),
-      wbUnknown(SCDA),
-      wbUnknown(SCTX),
-      wbUnknown(QNAM),
-      wbUnknown(SCRO)
-    ], [], cpIgnore, false, wbNeverShow),
+      wbUnused(SCHR, 0),
+      wbUnused(SCDA, 0),
+      wbUnused(SCTX, 0),
+      wbUnused(QNAM, 0),
+      wbUnused(SCRO, 0)
+    ]).IncludeFlag(dfInternalEditOnly)
+      .SetDontShow(wbNeverShow),
     {>>> END leftover from earlier CK versions <<<}
     wbFormIDCk(PNAM, 'Quest', [QUST]),
     wbInteger(INAM, 'Last Action Index', itU32),
@@ -8272,13 +8278,13 @@ begin
     wbConditions,
 
     {>>> BEGIN leftover from earlier CK versions <<<}
-    wbRArray('Unknown',
-      wbRStruct('Unknown', [
-        wbUnknown(SCHR),
-        wbFormID(QNAM, 'Unknown'),
-        wbEmpty(NEXT, 'Marker', cpNormal, True)
-      ]), cpIgnore, false, nil, nil, wbNeverShow
-    ),
+    wbRArray('Unused',
+      wbRStruct('Unused', [
+        wbUnused(SCHR, 0),
+        wbUnused(QNAM, 0),
+        wbEmpty(NEXT, 'Marker').SetRequired
+      ])).IncludeFlag(dfInternalEditOnly)
+         .SetDontShow(wbNeverShow),
     {>>> END leftover from earlier CK versions <<<}
 
     wbLStringKC(RNAM, 'Prompt', 0, cpTranslate),
@@ -9145,10 +9151,13 @@ begin
       wbEmpty(POBA, 'OnBegin Marker').SetRequired,
       wbFormIDCk(INAM, 'Idle', [IDLE, NULL]).SetRequired,
       {>>> BEGIN leftover from earlier CK versions <<<}
-      wbUnused(SCHR, 0),
-      wbUnused(SCTX, 0),
-      wbUnused(QNAM, 0),
-      wbUnused(TNAM, 0),
+      wbRStruct('Unused', [
+        wbUnused(SCHR, 0),
+        wbUnused(SCTX, 0),
+        wbUnused(QNAM, 0),
+        wbUnused(TNAM, 0)
+      ]).IncludeFlag(dfInternalEditOnly)
+        .SetDontShow(wbNeverShow),
       {>>> END leftover from earlier CK versions <<<}
       wbPDTOs
     ]).SetRequired,
@@ -9156,10 +9165,13 @@ begin
       wbEmpty(POEA, 'OnEnd Marker').SetRequired,
       wbFormIDCk(INAM, 'Idle', [IDLE, NULL]).SetRequired,
       {>>> BEGIN leftover from earlier CK versions <<<}
-      wbUnused(SCHR, 0),
-      wbUnused(SCTX, 0),
-      wbUnused(QNAM, 0),
-      wbUnused(TNAM, 0),
+      wbRStruct('Unused', [
+        wbUnused(SCHR, 0),
+        wbUnused(SCTX, 0),
+        wbUnused(QNAM, 0),
+        wbUnused(TNAM, 0)
+      ]).IncludeFlag(dfInternalEditOnly)
+        .SetDontShow(wbNeverShow),
       {>>> END leftover from earlier CK versions <<<}
       wbPDTOs
     ]).SetRequired,
@@ -9167,11 +9179,14 @@ begin
       wbEmpty(POCA, 'OnChange Marker').SetRequired,
       wbFormIDCk(INAM, 'Idle', [IDLE, NULL]).SetRequired,
       {>>> BEGIN leftover from earlier CK versions <<<}
-      wbUnused(SCHR, 0),
-      wbUnused(SCDA, 0),
-      wbUnused(SCTX, 0),
-      wbUnused(QNAM, 0),
-      wbUnused(TNAM, 0),
+      wbRStruct('Unused', [
+        wbUnused(SCHR, 0),
+        wbUnused(SCDA, 0),
+        wbUnused(SCTX, 0),
+        wbUnused(QNAM, 0),
+        wbUnused(TNAM, 0)
+      ]).IncludeFlag(dfInternalEditOnly)
+        .SetDontShow(wbNeverShow),
       {>>> END leftover from earlier CK versions <<<}
       wbPDTOs
     ]).SetRequired
@@ -9260,9 +9275,12 @@ begin
         wbLStringKC(CNAM, 'Log Entry', 0, cpTranslate),
         wbFormIDCk(NAM0, 'Next Quest', [QUST]),
         {>>> BEGIN leftover from earlier CK versions <<<}
-        wbByteArray(SCHR, 'Unused', 0, cpIgnore, false, false, wbNeverShow),
-        wbByteArray(SCTX, 'Unused', 0, cpIgnore, false, false, wbNeverShow),
-        wbByteArray(QNAM, 'Unused', 0, cpIgnore, false, false, wbNeverShow)
+        wbRStruct('Unused', [
+          wbUnused(SCHR, 0),
+          wbUnused(SCTX, 0),
+          wbUnused(QNAM, 0)
+        ]).IncludeFlag(dfInternalEditOnly)
+          .SetDontShow(wbNeverShow)
         {>>> END leftover from earlier CK versions <<<}
       ]).SetSummaryKey([2,0,1])
         .SetSummaryMemberPrefixSuffix(4, 'Log: "', '"')
