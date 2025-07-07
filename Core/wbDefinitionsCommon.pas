@@ -880,7 +880,7 @@ begin
       Exit;
 
     if wbRemoveOffsetData then begin
-      if wbIsSkyrim or wbIsFallout4 or wbIsFallout76 and (lMainRecord._File.LoadOrder = 0) then
+      if (wbIsSkyrim or wbIsFallout4 or wbIsFallout76) and (lMainRecord._File.LoadOrder = 0) then
 	        lMainRecord.RemoveElement('Large References');
       if wbIsFallout4 or wbIsFallout76 or wbIsStarfield then
         lMainRecord.RemoveElement(CLSZ);
