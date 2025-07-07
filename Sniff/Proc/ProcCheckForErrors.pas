@@ -1391,13 +1391,17 @@ begin
     if not (shape.IsNiObject('BSTriShape') or shape.IsNiObject('NiTriBasedGeom')) then
       Continue;
 
-    // skip leaf animation where vertex colors are required even if all white
+    // skip cases where Vertex Colors are required
     if Assigned(shape.Elements['Shader Property']) then begin
       var shader := TwbNifBlock(shape.Elements['Shader Property'].LinksTo);
       // booleval shortcircuit bug here not working using "and", two "if"s instead
-      if Assigned(shader) then
+      if Assigned(shader) then begin
         if shader.NativeValues['Shader Flags 2\Tree_Anim'] then
           Continue;
+
+        if Shader.EditValues['Shader Type'] = 'Parallax' then
+          Continue;
+      end;
     end;
 
     if shape.IsNiObject('NiTriBasedGeom') then begin
