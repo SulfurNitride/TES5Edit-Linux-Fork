@@ -294,7 +294,7 @@ function wbVertexToInt1(const aString: string; const aElement: IwbElement): Int6
 function wbVertexToInt2(const aString: string; const aElement: IwbElement): Int64;
 function wbWeatherCloudSpeedToInt(const aString: string; const aElement: IwbElement): Int64;
 
-{>>> To String Callback Functions <<<} //23
+{>>> To String Callback Functions <<<} //24
 function wbAliasToStr(aInt: Int64; const aQuestRef: IwbElement; aType: TwbCallbackType): string;
 function wbClmtMoonsPhaseLength(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbClmtTime(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
@@ -309,6 +309,7 @@ function wbFileHashCallback(aInt: Int64; const aElement: IwbElement; aType: TwbC
 function wbFolderHashCallback(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbHideFFFF(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbNVTREdgeToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+function wbPackageLocationAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbREFRNavmeshTriangleToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbScaledInt4ToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbScriptObjectAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
@@ -2423,7 +2424,7 @@ begin
   Result := Min(Round(f), 254);
 end;
 
-{>>> To String Callback Functions <<<} //22
+{>>> To String Callback Functions <<<} //24
 
 function wbAliasToStr(aInt: Int64; const aQuestRef: IwbElement; aType: TwbCallbackType): string;
 var
@@ -2961,6 +2962,26 @@ begin
     case aType of
       ctToStr, ctToSummary: Result := aInt.ToString;
     end;
+end;
+
+function wbPackageLocationAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+begin
+  Result := '';
+  if not Assigned(aElement) then
+    Exit;
+
+  if wbResolveAlias then begin
+    var lMainRecord := aElement.ContainingMainRecord;
+    if not Assigned(lMainRecord) then
+      Exit;
+
+    Result := wbAliasToStr(aInt, lMainRecord.ElementBySignature['QNAM'], aType);
+  end else begin
+    case aType of
+      ctToStr, ctToSummary, ctToEditValue: Result := aInt.ToString;
+      ctToSortKey: Result := IntToHex64(aInt, 8);
+    end;
+  end;
 end;
 
 function wbREFRNavmeshTriangleToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
