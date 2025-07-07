@@ -3645,15 +3645,14 @@ begin
 end;
 
 function wbConditionParam3Decider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
-var
-  Container: IwbContainer;
 begin
-  Result := 0;
-  if not wbTryGetContainerFromUnion(aElement, Container) then
-    Exit;
+   Result := 0;
+   var lContainer : IwbContainer;
+   if not wbTryGetContainerFromUnion(aElement, lContainer) then
+     Exit;
 
-  if Integer(Container.ElementNativeValues['Run On']) = 4 then
-    Result := 1;
+   var lRunOn := lContainer.ElementByName['Run On'].NativeValue;
+   Result := lRunOn;
 end;
 
 function wbConditionReferenceDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;

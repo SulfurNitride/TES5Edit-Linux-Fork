@@ -4432,21 +4432,29 @@ begin
               {0} wbInteger('Unused', itU32, nil, cpIgnore),
               {1} wbFormIDCkNoReach('Reference', [NULL, PLYR, ACHR, REFR, PGRE, PHZD, PMIS, PARW, PBAR, PBEA, PCON, PFLA], False)
               ]),
-          {9} wbInteger('Parameter #3', itS32,
-                wbEnum([], [
-                -1,    'None',
-                $3152, 'Actor 1',        //R1
-                $3252, 'Actor 2',        //R2
-                $314F, 'Created Object', //O1
-                $3146, 'Form',           //F1
-                $314B, 'Keyword',        //K1
-                $314C, 'Location 1',     //L1
-                $324C, 'Location 2',     //L2
-                $3151, 'Quest',          //Q1
-                $3156, 'Value 1',        //V1
-                $3256, 'Value 2'         //V2
-                ])
-              ).SetDefaultNativeValue(-1)
+          {9} wbUnion('Parameter #3', wbConditionParam3Decider, [
+              {0} wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {1} wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {2} wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {3} wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {4} wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {5} wbInteger('Quest Alias', itS32, wbConditionAliasToStr, wbStrToAlias).SetDefaultNativeValue(-1),
+              {6} wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {7} wbInteger('Event Data', itS32,
+                    wbEnum([], [
+                    -1,    'None',
+                    $3152, 'Actor 1',        //R1
+                    $3252, 'Actor 2',        //R2
+                    $314F, 'Created Object', //O1
+                    $3146, 'Form',           //F1
+                    $314B, 'Keyword',        //K1
+                    $314C, 'Location 1',     //L1
+                    $324C, 'Location 2',     //L2
+                    $3151, 'Quest',          //Q1
+                    $3156, 'Value 1',        //V1
+                    $3256, 'Value 2'         //V2
+                    ])).SetDefaultNativeValue(-1)
+              ])
           ]),
       {1} wbString(CIS1, 'Parameter #1'),
       {2} wbString(CIS2, 'Parameter #2')

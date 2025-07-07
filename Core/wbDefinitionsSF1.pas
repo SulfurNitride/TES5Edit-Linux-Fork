@@ -6087,8 +6087,43 @@ end;
                     Exit(False);
                 end),
           {9} wbUnion('Parameter #3', wbConditionParam3Decider, [
-              {0} wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
-              {1} wbFormIDCk('Linked Keyword', [KYWD, NULL])
+              {0}  wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {1}  wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {2}  wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {3}  wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {4}  wbFormIDCk('Linked Keyword', [KYWD, NULL]),
+              {5}  wbInteger('Quest Alias', itS32, wbConditionAliasToStr, wbStrToAlias).SetDefaultNativeValue(-1),
+              {6}  wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {7}  wbInteger('Event Data', itS32,
+                     wbEnum([], [
+                       -1,    'None',
+                       $314F, 'Created Object', //O1
+                       $3146, 'Form',           //F1
+                       $3147, 'Global',         //G1
+                       $3149, 'Identifier',     //I1
+                       $314B, 'Keyword 1',      //K1
+                       $324B, 'Keyword 2',      //K2
+                       $334B, 'Keyword 3',      //K3
+                       $314C, 'Location 1',     //L1
+                       $324C, 'Location 2',     //L2
+                       $3150, 'Player 1',       //P1
+                       $3250, 'Player 2',       //P2
+                       $3251, 'Quest',          //Q1
+                       $3152, 'Reference 1',    //R1
+                       $3252, 'Reference 2',    //R2
+                       $3352, 'Reference 3',    //R3
+                       $3156, 'Value 1',        //V1
+                       $3256, 'Value 2',        //V2
+                       $7FFFFFFF, 'All'
+                     ])).SetDefaultNativeValue(-1),
+              {8}  wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {9}  wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {10} wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {11} wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {12} wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {13} wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {14} wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {15} wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1)
               ])
           ]),
       {1} wbString(CIS1, 'Parameter #1'),
