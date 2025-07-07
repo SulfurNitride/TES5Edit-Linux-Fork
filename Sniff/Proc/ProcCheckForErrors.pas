@@ -1490,6 +1490,15 @@ begin
       end;
     end;
 
+  // TriShapes in Facegen .nifs must be of type BSDynamicTriShape
+  var bFaceGen := Assigned(nif.BlockByName('BSFaceGenNiNodeSkinned', 'NiNode'));
+  if (nif.NifVersion = nfSSE) and bFaceGen then
+    for var i := 0 to Pred(nif.BlocksCount) do begin
+      var shape := nif.Blocks[i];
+      if Shape.BlockType = 'BSTriShape' then
+        Log.Add(#9 + Shape.Name + ': Shapes must be of type BSDynamicTriShape in Facegen nifs');
+    end;
+
   // NiSpecularProperty in TES4 and later games
   if nif.NifVersion >= nfTES4 then
     for var spec in nif.BlocksByType('NiSpecularProperty') do
