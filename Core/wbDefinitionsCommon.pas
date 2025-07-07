@@ -301,6 +301,7 @@ procedure wbBGRAToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; c
 function wbClmtMoonsPhaseLength(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbClmtTime(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 procedure wbConditionToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+function wbConditionAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbConditionStringToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbConditionTypeToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 procedure wbCrowdPropertyToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
@@ -2737,6 +2738,36 @@ begin
     aValue := aValue + ' AND'
   else
     aValue := aValue + ' OR';
+end;
+
+function wbConditionAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+begin
+  Result := '';
+  if not Assigned(aElement) then
+    Exit;
+  if wbResolveAlias then begin
+    var lMainRecord := aElement.ContainingMainRecord;
+    if not Assigned(lMainRecord) then
+      Exit;
+
+    var lSig := lMainRecord.Signature;
+    if lSig = QUST then
+      Result := wbAliasToStr(aInt, lMainRecord, aType)
+    else if lSig = SCEN then
+      Result := wbAliasToStr(aInt, lMainRecord.ElementBySignature['PNAM'], aType)
+    else if (lSig = PACK) or (wbIsFallout76 and (lSig = TERM)) then
+      Result := wbAliasToStr(aInt, lMainRecord.ElementBySignature['QNAM'], aType)
+    else if lSig = INFO then begin
+      // get DIAL for INFO
+      var lTopic := (lMainRecord.ElementByName['Topic'].LinksTo as IwbMainRecord).HighestOverrideVisibleForFile[aElement._File];
+      Result := wbAliasToStr(aInt, lTopic.ElementBySignature['QNAM'], aType);
+    end;
+  end else begin
+    case aType of
+      ctToSortKey: Result := IntToHex64(aInt, 8);
+      ctToStr, ctToSummary, ctToEditValue: Result := aInt.ToString;
+    end;
+  end;
 end;
 
 function wbConditionStringToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;

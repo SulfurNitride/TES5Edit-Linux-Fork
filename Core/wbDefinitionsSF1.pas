@@ -875,46 +875,6 @@ begin
   Result := Succ(Integer(ParamType));
 end;
 
-function wbConditionAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-var
-  Container  : IwbContainer;
-  MainRecord : IwbMainRecord;
-  GroupRecord : IwbGroupRecord;
-begin
-  Result := '';
-  case aType of
-    ctToSortKey: Result := IntToHex64(aInt, 8);
-    ctToStr, ctToSummary, ctToEditValue: Result := aInt.ToString;
-  end;
-
-  if wbResolveAlias then begin
-    if not wbTryGetContainerFromUnion(aElement, Container) then
-      Exit;
-
-    while Assigned(Container) and (Container.ElementType <> etMainRecord) do
-      Container := Container.Container;
-
-    if not Assigned(Container) then
-      Exit;
-
-    if not Supports(Container, IwbMainRecord, MainRecord) then
-      Exit;
-
-    if MainRecord.Signature = QUST then
-      Result := wbAliasToStr(aInt, Container, aType)
-    else if MainRecord.Signature = SCEN then
-      Result := wbAliasToStr(aInt, Container.ElementBySignature['PNAM'], aType)
-    else if MainRecord.Signature = PACK then
-      Result := wbAliasToStr(aInt, Container.ElementBySignature['QNAM'], aType)
-    else if MainRecord.Signature = INFO then begin
-      // get DIAL for INFO
-      if Supports(MainRecord.Container, IwbGroupRecord, GroupRecord) then
-        if Supports(GroupRecord.ChildrenOf, IwbMainRecord, MainRecord) then
-          Result := wbAliasToStr(aInt, MainRecord.ElementBySignature['QNAM'], aType);
-    end;
-  end;
-end;
-
 function wbConditionEventToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 begin
   Result := '';
