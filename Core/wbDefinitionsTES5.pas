@@ -9159,7 +9159,7 @@ begin
       ]).IncludeFlag(dfInternalEditOnly)
         .SetDontShow(wbNeverShow),
       {>>> END leftover from earlier CK versions <<<}
-      wbPDTOs
+      wbPDTO
     ]).SetRequired,
     wbRStruct('OnEnd', [
       wbEmpty(POEA, 'OnEnd Marker').SetRequired,
@@ -9173,7 +9173,7 @@ begin
       ]).IncludeFlag(dfInternalEditOnly)
         .SetDontShow(wbNeverShow),
       {>>> END leftover from earlier CK versions <<<}
-      wbPDTOs
+      wbPDTO
     ]).SetRequired,
     wbRStruct('OnChange', [
       wbEmpty(POCA, 'OnChange Marker').SetRequired,
@@ -9188,7 +9188,7 @@ begin
       ]).IncludeFlag(dfInternalEditOnly)
         .SetDontShow(wbNeverShow),
       {>>> END leftover from earlier CK versions <<<}
-      wbPDTOs
+      wbPDTO
     ]).SetRequired
   ]);
 
