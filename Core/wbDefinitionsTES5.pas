@@ -1036,7 +1036,6 @@ end;
 function wbScriptObjectAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 var
   Container  : IwbContainerElementRef;
-begin
   if not wbResolveAlias then begin
     case aType of
       ctToStr, ctToSummary, ctToEditValue: Result := aInt.ToString;
