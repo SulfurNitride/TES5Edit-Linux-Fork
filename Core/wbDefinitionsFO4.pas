@@ -9418,7 +9418,9 @@ begin
       ])
     ),
     wbRArray('Actors', wbRStruct('Actor', [
-      wbInteger(ALID, 'Alias ID', itS32, nil, cpNormal, True),
+      wbInteger(ALID, 'Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+        .SetDefaultNativeValue(-1)
+        .SetRequired,
       wbInteger(LNAM, 'Flags', itU32, wbFlags([
         'No Player Activation',
         'Optional',
@@ -9463,7 +9465,9 @@ begin
         end)
       .IncludeFlag(dfIncludeValueInDisplaySignature),
       wbString(NAM0, 'Name'),
-      wbInteger(ALID, 'Alias ID', itS32),
+      wbInteger(ALID, 'Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+        .SetDefaultNativeValue(-1)
+        .SetRequired,
       wbInteger(INAM, 'Index', itU32),
       wbInteger(FNAM, 'Flags', itU32, wbFlags([
         {0x00000001} 'Unknown 0',
@@ -9522,7 +9526,9 @@ begin
           ]),
           wbInteger(DEMO, 'Emotion Type', itU32, wbEmotionTypeEnum),
           wbInteger(DEVA, 'Emotion Value', itU32),
-          wbArray(HTID, 'Player Headtracking', wbInteger('Actor ID', itS32)),
+          wbArray(HTID, 'Player Headtracking',
+            wbInteger('Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt).SetDefaultNativeValue(-1)
+          ),
           wbFormIDCk(VENC, 'Dialogue Subtype', [KYWD]),
           wbFormIDCk(ONAM, 'Audio Output Override', [SOPM]),
           wbFormIDCk(PNAM, 'AnimArchType', [KYWD])
@@ -9552,7 +9558,9 @@ begin
           wbFormIDCk(PLVD, 'Player Negative Dialogue Subtype', [KYWD]),
           wbFormIDCk(JOUT, 'Player Neutral Dialogue Subtype', [KYWD]),
           wbFormIDCk(DALC, 'Player Question Dialogue Subtype', [KYWD]),
-          wbArray(DTID, 'NPC Headtracking', wbInteger('Actor ID', itS32)),
+          wbArray(DTID, 'NPC Headtracking',
+            wbInteger('Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt).SetDefaultNativeValue(-1)
+          ),
           wbFormIDCk(ONAM, 'Audio Output Override', [SOPM]),
           wbFormIDCk(NPOT, 'NPC Positive Response', [DIAL]),
           wbFormIDCk(NNGT, 'NPC Negative Response', [DIAL]),
@@ -9562,7 +9570,7 @@ begin
           wbFormIDCk(NNGS, 'NPC Negative Dialogue Subtype', [KYWD]),
           wbFormIDCk(NNUS, 'NPC Neutral Dialogue Subtype', [KYWD]),
           wbFormIDCk(NQUS, 'NPC Question Dialogue Subtype', [KYWD]),
-          wbInteger(DTGT, 'Dialogue Target Actor', itS32)
+          wbInteger(DTGT, 'Dialogue Target Actor', itS32, wbSceneAliasToStr, wbAliasToInt).SetDefaultNativeValue(-1)
         ])
         .IncludeFlag(dfAllowAnyMember)
         .IncludeFlag(dfStructFirstNotRequired),
@@ -9592,7 +9600,9 @@ begin
           wbFormIDCk(PLVD, 'Player Negative Dialogue Subtype', [KYWD]),
           wbFormIDCk(JOUT, 'Player Neutral Dialogue Subtype', [KYWD]),
           wbFormIDCk(DALC, 'Player Question Dialogue Subtype', [KYWD]),
-          wbArray(DTID, 'NPC Headtracking', wbInteger('Actor ID', itS32)),
+          wbArray(DTID, 'NPC Headtracking',
+            wbInteger('Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt).SetDefaultNativeValue(-1)
+          ),
           wbFormIDCk(ONAM, 'Audio Output Override', [SOPM])
         ])
         .IncludeFlag(dfAllowAnyMember)

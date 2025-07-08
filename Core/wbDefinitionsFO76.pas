@@ -11829,7 +11829,9 @@ begin
       ])
     ),
     wbRArray('Actors', wbRStruct('Actor', [
-      wbInteger(ALID, 'Alias ID', itS32, nil, cpNormal, True),
+      wbInteger(ALID, 'Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+        .SetDefaultNativeValue(-1)
+        .SetRequired,
       wbInteger(LNAM, 'Flags', itU32, wbFlags([
         'No Player Activation',
         'Optional',

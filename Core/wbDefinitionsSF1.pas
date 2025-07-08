@@ -1310,31 +1310,6 @@ begin
   Result := MainRecord;
 end;
 
-function wbSCENQuestAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-var
-  Container  : IwbContainer;
-begin
-  if not wbResolveAlias then begin
-    case aType of
-      ctToStr, ctToSummary, ctToEditValue: Result := aInt.ToString;
-      ctToSortKey: Result := IntToHex64(aInt, 8);
-    else
-      Result := '';
-    end;
-    Exit;
-  end;
-
-  if not Assigned(aElement) then
-    Exit;
-
-  Container := aElement.ContainingMainRecord;
-
-  if not Assigned(Container) then
-    Exit;
-
-  Result := wbAliasToStr(aInt, wbParentQuestHelper(aElement) , aType);
-end;
-
 function wbSCENAliasLinksTo(const aElement: IwbElement): IwbElement;
 var
   Container  : IwbContainer;
@@ -4962,7 +4937,7 @@ begin
 
   var wbHNAMHNAM := wbRStruct('Head Tracking', [
     wbMarker(HNAM).SetRequired,
-    wbArray(HTID, ' Aliases', wbInteger('Alias ID', itS32, wbSCENQuestAliasToStr, wbStrToAlias, cpNormal, True)
+    wbArray(HTID, ' Aliases', wbInteger('Alias ID', itS32, wbSceneAliasToStr, wbAliasToInt, cpNormal, True)
       .SetLinksToCallback(wbSCENAliasLinksTo)),
     wbEmpty(FNAM, 'Force Rotate'),
     wbEmpty(PNAM, 'Force Rotate Must Complete'),
@@ -11346,9 +11321,10 @@ end;
       ])
     ),
     wbRArray('Actors', wbRStruct('Actor', [
-      wbInteger(ALID, 'Alias ID', itS32, wbSCENQuestAliasToStr, wbStrToAlias, cpNormal, True)
+      wbInteger(ALID, 'Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
         .SetDefaultNativeValue(-1)
-        .SetLinksToCallbackOnValue(wbSCENAliasLinksTo),
+        .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
+        .SetRequired,
       wbInteger(LNAM, 'Flags', itU32, wbFlags([
         'No Player Activation',
         'Optional',

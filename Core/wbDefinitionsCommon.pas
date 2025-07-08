@@ -296,7 +296,7 @@ function wbVertexToInt1(const aString: string; const aElement: IwbElement): Int6
 function wbVertexToInt2(const aString: string; const aElement: IwbElement): Int64;
 function wbWeatherCloudSpeedToInt(const aString: string; const aElement: IwbElement): Int64;
 
-{>>> To String Callback Functions <<<} //25
+{>>> To String Callback Functions <<<} //27
 function wbAliasToStr(aInt: Int64; const aQuestRef: IwbElement; aType: TwbCallbackType): string;
 function wbClmtMoonsPhaseLength(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbClmtTime(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
@@ -316,6 +316,7 @@ function wbQuestAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCa
 function wbQuestExternalAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbREFRNavmeshTriangleToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbScaledInt4ToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+function wbSceneAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbScriptObjectAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbVertexToStr(aVertex: Integer; aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbVertexToStr0(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
@@ -2511,7 +2512,7 @@ begin
   Result := Min(Round(f), 254);
 end;
 
-{>>> To String Callback Functions <<<} //26
+{>>> To String Callback Functions <<<} //27
 
 function wbAliasToStr(aInt: Int64; const aQuestRef: IwbElement; aType: TwbCallbackType): string;
 var
@@ -3176,6 +3177,26 @@ begin
       Result := PlusMinus[aInt < 0] + Result;
     end;
     ctCheck: Result := '';
+  end;
+end;
+
+function wbSceneAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+begin
+  Result := '';
+  if not Assigned(aElement) then
+    Exit;
+
+  if wbResolveAlias then begin
+    var lMainRecord := aElement.ContainingMainRecord;
+    if not Assigned(lMainRecord) then
+      Exit;
+
+    Result := wbAliasToStr(aInt, lMainRecord.ElementBySignature['PNAM'] , aType);
+  end else begin
+    case aType of
+      ctToSortKey: Result := IntToHex64(aInt, 8);
+      ctToStr, ctToSummary, ctToEditValue: Result := aInt.ToString;
+    end;
   end;
 end;
 

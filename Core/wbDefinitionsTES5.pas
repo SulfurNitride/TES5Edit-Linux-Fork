@@ -1014,28 +1014,6 @@ begin
   Result := StrToIntDef(aString, 0);
 end;
 
-function wbSceneActorAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-begin
-  if not wbResolveAlias then begin
-    case aType of
-      ctToStr, ctToSummary, ctToEditValue: Result := aInt.ToString;
-      ctToSortKey: Result := IntToHex64(aInt, 8);
-    else
-      Result := '';
-    end;
-    Exit;
-  end;
-
-  if not Assigned(aElement) then
-    Exit;
-
-  var lMainRecord := aElement.ContainingMainRecord;
-  if not Assigned(lMainRecord) then
-    Exit;
-
-  Result := wbAliasToStr(aInt, lMainRecord.ElementBySignature['PNAM'] , aType);
-end;
-
 procedure wbINFOPNAMAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 var
   Container : IwbContainer;
@@ -7592,7 +7570,9 @@ begin
       ])
     ),
     wbRArray('Actors', wbRStruct('Actor', [
-      wbInteger(ALID, 'Actor ID', itU32, wbSceneActorAliasToStr, wbStrToAlias),
+      wbInteger(ALID, 'Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+        .SetDefaultNativeValue(-1)
+        .SetRequired,
       wbInteger(LNAM, 'Flags', itU32, wbFlags([
         'No Player Activation',
         'Optional'
@@ -7631,7 +7611,9 @@ begin
         end)
       .IncludeFlag(dfIncludeValueInDisplaySignature),
       wbString(NAM0, 'Name'),
-      wbInteger(ALID, 'Actor ID', itS32),
+      wbInteger(ALID, 'Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+        .SetDefaultNativeValue(-1)
+        .SetRequired,
       wbUnknown(LNAM),
       wbInteger(INAM, 'Index', itU32),
       wbInteger(FNAM, 'Flags', itU32, wbFlags([
@@ -7670,7 +7652,9 @@ begin
         {0 Dialogue}
         wbRStruct('Dialogue', [
           wbFormIDCk(DATA, 'Topic', [DIAL, NULL]),
-          wbInteger(HTID, 'Headtrack Actor ID', itS32),
+          wbInteger(HTID, 'Headtrack Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+            .SetDefaultNativeValue(-1)
+            .SetRequired,
           wbFloat(DMAX, 'Looping - Max'),
           wbFloat(DMIN, 'Looping - Min'),
           wbInteger(DEMO, 'Emotion Type', itU32, wbEmotionTypeEnum),
