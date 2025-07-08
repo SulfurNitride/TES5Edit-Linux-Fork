@@ -4935,10 +4935,12 @@ begin
       wbUnknown(2)
     ]);
 
-  var wbHNAMHNAM := wbRStruct('Head Tracking', [
+  var wbHeadtracking := wbRStruct('Head Tracking', [
     wbMarker(HNAM).SetRequired,
-    wbArray(HTID, ' Aliases', wbInteger('Alias ID', itS32, wbSceneAliasToStr, wbAliasToInt, cpNormal, True)
-      .SetLinksToCallback(wbSCENAliasLinksTo)),
+    wbArray(HTID, ' Aliases',
+      wbInteger('Alias ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+        .SetDefaultNativeValue(-1)
+        .SetLinksToCallback(wbSCENAliasLinksTo)),
     wbEmpty(FNAM, 'Force Rotate'),
     wbEmpty(PNAM, 'Force Rotate Must Complete'),
     wbMarker(HNAM).SetRequired
@@ -12029,7 +12031,7 @@ end;
       wbString(NAM4, 'Alternate LIP Text', 0, cpNormal, True),
       wbByteArray(NAM9, 'Text Hash'),
       wbBNAMAnimation,
-      wbHNAMHNAM,
+      wbHeadtracking,
       wbSoundReference(RVSH)
     ])),
     wbConditions,
