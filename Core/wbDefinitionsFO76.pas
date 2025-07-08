@@ -1865,30 +1865,6 @@ begin
   Result := LegendaryMod[1].EditValue;
 end;    }
 
-function wbStrToAlias(const aString: string; const aElement: IwbElement): Int64;
-var
-  i    : Integer;
-  s    : string;
-begin
-  Result := -1;
-
-  if aString = 'None' then
-    Exit;
-
-  if aString = 'Player' then begin
-    Result := -2;
-    Exit;
-  end;
-
-  i := 1;
-  s := Trim(aString);
-  while (i <= Length(s)) and (s[i] in ['-', '0'..'9']) do
-    Inc(i);
-  s := Copy(s, 1, Pred(i));
-
-  Result := StrToIntDef(s, -1);
-end;
-
 function wbQuestExternalAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 var
   Container  : IwbContainer;
@@ -5597,7 +5573,7 @@ begin
   wbScriptPropertyObject := wbUnion('Object Union', wbScriptObjFormatDecider, [
     wbStructSK([1], 'Object v2', [
       wbInteger('Unused', itU16, nil, cpIgnore, False, wbNeverShow),
-      wbInteger('Alias', itS16, wbScriptObjectAliasToStr, wbStrToAlias).SetDefaultEditValue('None'),
+      wbInteger('Alias', itS16, wbScriptObjectAliasToStr, wbAliasToInt).SetDefaultEditValue('None'),
       wbFormID('FormID').IncludeFlag(dfNoReport)
     ], [2, 1, 0])
       .SetSummaryKey([2, 1])
@@ -5608,7 +5584,7 @@ begin
       .IncludeFlag(dfSummaryNoSortKey),
     wbStructSK([1], 'Object v1', [
       wbFormID('FormID'),
-      wbInteger('Alias', itS16, wbScriptObjectAliasToStr, wbStrToAlias),
+      wbInteger('Alias', itS16, wbScriptObjectAliasToStr, wbAliasToInt),
       wbInteger('Unused', itU16, nil, cpIgnore)
     ])
       .SetSummaryKey([0, 1])
@@ -5945,13 +5921,13 @@ begin
       {5} wbInteger('Object Type', itU32, wbObjectTypeEnum),
       {6} wbFormIDCk('Keyword', [NULL, KYWD]),
       {7} wbUnused(4),
-      {8} wbInteger('Ref Alias', itS32, wbPackageLocationAliasToStr, wbStrToAlias),
-      {9} wbInteger('Loc Alias', itS32, wbPackageLocationAliasToStr, wbStrToAlias),
+      {8} wbInteger('Ref Alias', itS32, wbPackageLocationAliasToStr, wbAliasToInt),
+      {9} wbInteger('Loc Alias', itS32, wbPackageLocationAliasToStr, wbAliasToInt),
      {10} wbInteger('Interrupt Data', itU32),
      {11} wbInteger('Packdata Target', itU32),
      {12} wbByteArray('Unknown', 4, cpIgnore),
      {13} wbByteArray('Unknown', 4),
-     {14} wbInteger('Ref Collection Alias', itS32, wbPackageLocationAliasToStr, wbStrToAlias)
+     {14} wbInteger('Ref Collection Alias', itS32, wbPackageLocationAliasToStr, wbAliasToInt)
     ]),
     wbInteger('Radius', itS32),
     wbInteger('Collection Index', itU32)
@@ -5968,13 +5944,13 @@ begin
       {5} wbInteger('Object Type', itU32, wbObjectTypeEnum),
       {6} wbFormIDCk('Keyword', [NULL, KYWD]),
       {7} wbUnused(4),
-      {8} wbInteger('Ref Alias', itS32, wbPackageLocationAliasToStr, wbStrToAlias),
-      {9} wbInteger('Loc Alias', itS32, wbPackageLocationAliasToStr, wbStrToAlias),
+      {8} wbInteger('Ref Alias', itS32, wbPackageLocationAliasToStr, wbAliasToInt),
+      {9} wbInteger('Loc Alias', itS32, wbPackageLocationAliasToStr, wbAliasToInt),
      {10} wbInteger('Interrupt Data', itU32),
      {11} wbInteger('Packdata Target', itU32),
      {12} wbByteArray('Unknown', 4, cpIgnore),
      {13} wbByteArray('Unknown', 4),
-     {14} wbInteger('Ref Collection Alias', itS32, wbPackageLocationAliasToStr, wbStrToAlias)
+     {14} wbInteger('Ref Collection Alias', itS32, wbPackageLocationAliasToStr, wbAliasToInt)
     ]),
     wbInteger('Radius', itS32),
     wbInteger('Collection Index', itU32)
@@ -5997,7 +5973,7 @@ begin
       {1} wbFormIDCkNoReach('Object ID', [NULL, ACTI, DOOR, STAT, MSTT, FURN, SPEL, NPC_, CONT, ARMO, AMMO, MISC, WEAP, OMOD, BOOK, NOTE, KEYM, ALCH, INGR, LIGH, FACT, FLST, IDLM, TXST, PROJ]),
       {2} wbInteger('Object Type', itU32, wbObjectTypeEnum),
       {3} wbFormIDCk('Keyword', [KYWD, NULL]),
-      {4} wbInteger('Alias', itS32, wbPackageLocationAliasToStr, wbStrToAlias),
+      {4} wbInteger('Alias', itS32, wbPackageLocationAliasToStr, wbAliasToInt),
       {5} wbInteger('Interrupt Data', itU32),
       {6} wbByteArray('Unknown', 4, cpIgnore),
       {7} wbFormIDCk('Keyword', [KYWD, NULL]),
@@ -7280,7 +7256,7 @@ begin
     {3}  wbInteger('Integer', itS32),
     {4}  wbInteger('String', itU32, wbConditionStringToStr, wbConditionStringToInt, cpIgnore),
     {5}  wbActorValue,
-    {6}  wbInteger('Alias', itS32, wbConditionAliasToStr, wbStrToAlias),
+    {6}  wbInteger('Alias', itS32, wbConditionAliasToStr, wbAliasToInt),
     {7}  wbInteger('Attack Data', itU32),
     {8}  wbInteger('Event', itU32, wbConditionEventToStr, wbConditionEventToInt),
     {9}  wbInteger('Packdata ID', itU32),
@@ -7389,7 +7365,7 @@ begin
               {2}  wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
               {3}  wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
               {4}  wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
-              {5}  wbInteger('Quest Alias', itS32, wbConditionAliasToStr, wbStrToAlias).SetDefaultNativeValue(-1),
+              {5}  wbInteger('Quest Alias', itS32, wbConditionAliasToStr, wbAliasToInt).SetDefaultNativeValue(-1),
               {6}  wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
               {7}  wbInteger('Event Data', itS32,
                      wbEnum([], [
@@ -14261,7 +14237,7 @@ begin
       wbLStringKC(NNAM, 'Display Text', 0, cpTranslate, True),
       wbRArray('Targets', wbRStruct('Target', [
         wbStruct(QSTA, 'Target', [
-          wbInteger('Alias', itS32, wbQuestAliasToStr, wbStrToAlias),
+          wbInteger('Alias', itS32, wbQuestAliasToStr, wbAliasToInt),
           wbFromVersion(158, wbInteger('Target Flags', itU8, wbFlags([
             {0x0001} 'Compass Marker Ignores Locks',
             {0x0002} 'Hostile',
@@ -14305,23 +14281,23 @@ begin
           wbFloat(ESRV, 'Unknown'),
           wbFloat(ESRP, 'Unknown'),
           wbQUSTAliasFlags.IncludeFlag(dfCollapsed, wbCollapseFlags),
-          wbInteger(ALFI, 'Force Into Alias When Filled', itS32, wbQuestAliasToStr, wbStrToAlias),
+          wbInteger(ALFI, 'Force Into Alias When Filled', itS32, wbQuestAliasToStr, wbAliasToInt),
           //wbFormIDCk(ALFL, 'Specific Location', [LCTN]),
           wbFormIDCk(ALFR, 'Forced Reference', [ACHR, REFR, PLYR, NULL]),
           wbFormIDCk(ALUA, 'Unique Actor', [NPC_]),
           wbRStruct('Location Alias Reference', [
-            wbInteger(ALFA, 'Alias', itS32, wbQuestAliasToStr, wbStrToAlias),
+            wbInteger(ALFA, 'Alias', itS32, wbQuestAliasToStr, wbAliasToInt),
             wbFormIDCk(KNAM, 'Keyword', [KYWD]),
             wbFormIDCk(ALRT, 'Ref Type', [LCRT])
           ]),
           wbRStruct('External Alias Reference', [
             wbFormIDCk(ALEQ, 'Quest', [QUST]),
-            wbInteger(ALEA, 'Alias', itS32, wbQuestExternalAliasToStr, wbStrToAlias)
+            wbInteger(ALEA, 'Alias', itS32, wbQuestExternalAliasToStr, wbAliasToInt)
           ]),
           wbRStruct('Create Reference to Object', [
             wbFormIDCk(ALCO, 'Object', sigBaseObjects),
             wbStruct(ALCA, 'Alias', [
-              wbInteger('Alias', itS16, wbQuestAliasToStr, wbStrToAlias),
+              wbInteger('Alias', itS16, wbQuestAliasToStr, wbAliasToInt),
               wbInteger('Create', itU16, wbEnum([] ,[
                 $0000, 'At',
                 $8000, 'In'
@@ -14336,7 +14312,7 @@ begin
             ]))
           ]),
           wbRStruct('Find Matching Reference Near Alias', [
-            wbInteger(ALNA, 'Alias', itS32, wbQuestAliasToStr, wbStrToAlias),
+            wbInteger(ALNA, 'Alias', itS32, wbQuestAliasToStr, wbAliasToInt),
             wbInteger(ALNT, 'Type', itU32, wbEnum([
               'Linked From',
               'Linked Ref'
@@ -14346,7 +14322,7 @@ begin
             wbInteger(ALFE, 'From Event', itU32, wbQuestEventEnum),
             wbInteger(ALFD, 'Event Data', itU32, wbEventMemberEnum)
           ]),
-          wbInteger(ALCC, 'Closest To Alias', itS32, wbQuestAliasToStr, wbStrToAlias),
+          wbInteger(ALCC, 'Closest To Alias', itS32, wbQuestAliasToStr, wbAliasToInt),
           wbConditions,
           wbKeywords,
           wbCOCT,
@@ -14357,7 +14333,7 @@ begin
           wbFormIDCk(ECOR, 'Combat override package list', [FLST], False, cpNormal, False),
           wbArray(ALLA, 'Linked Aliases', wbStruct('Linked Alias', [
             wbFormIDCk('Keyword', [KYWD, NULL]),
-            wbInteger('Alias', itS32, wbQuestAliasToStr, wbStrToAlias)
+            wbInteger('Alias', itS32, wbQuestAliasToStr, wbAliasToInt)
           ])),
           wbFormIDCk(ALDN, 'Display Name', [MESG,NULL]),
           wbFormIDCk(ALFV, 'Forced Voice', [VTYP]),
@@ -14388,22 +14364,22 @@ begin
           wbFloat(ESRV, 'Unknown'),
           wbFloat(ESRP, 'Unknown'),
           wbQUSTAliasFlags,
-          wbInteger(ALFI, 'Force Into Alias When Filled', itS32, wbQuestAliasToStr, wbStrToAlias),
+          wbInteger(ALFI, 'Force Into Alias When Filled', itS32, wbQuestAliasToStr, wbAliasToInt),
           wbFormIDCk(ALFL, 'Specific Location', [LCTN]),
           wbRStruct('Reference Alias Location', [
-            wbInteger(ALFA, 'Alias', itS32, wbQuestAliasToStr, wbStrToAlias),
+            wbInteger(ALFA, 'Alias', itS32, wbQuestAliasToStr, wbAliasToInt),
             wbFormIDCk(KNAM, 'Keyword', [KYWD])
           ]),
           wbRStruct('External Alias Location', [
             wbFormIDCk(ALEQ, 'Quest', [QUST]),
-            wbInteger(ALEA, 'Alias', itS32, wbQuestExternalAliasToStr, wbStrToAlias)
+            wbInteger(ALEA, 'Alias', itS32, wbQuestExternalAliasToStr, wbAliasToInt)
           ]),
           wbRStruct('Find Matching Location From Event', [
             wbInteger(ALFE, 'From Event', itU32, wbQuestEventEnum),
             wbInteger(ALFD, 'Event Data', itU32, wbEventMemberEnum)
           ]),
           wbConditions,
-          wbInteger(ALCC, 'Closest To Alias', itS32, wbQuestAliasToStr, wbStrToAlias),
+          wbInteger(ALCC, 'Closest To Alias', itS32, wbQuestAliasToStr, wbAliasToInt),
           wbEmpty(ALED, 'Alias End', cpNormal, True)
         ]).SetSummaryKey([1, 2])
           .SetSummaryDelimiter(' ')

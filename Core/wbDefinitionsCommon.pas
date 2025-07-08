@@ -277,8 +277,9 @@ function wbTryGetContainingMainRecord(const aElement: IwbElement; out aMainRecor
 function wbTryGetMainRecord(const aElement: IwbElement; out aMainRecord: IwbMainRecord; aSignature: string = ''): Boolean;
 function wbTrySetContainer(const aElement: IwbElement; aType: TwbCallbackType; out aContainer: IwbContainerElementRef): Boolean;
 
-{>>> To Integer Callbacks <<<} //17
+{>>> To Integer Callbacks <<<} //18
 function Sig2Int(aSignature: TwbSignature): Cardinal; inline;
+function wbAliasToInt(const aString: string; const aElement: IwbElement): Int64;
 function wbConditionStringToInt(const aString: string; const aElement: IwbElement): Int64;
 function wbConditionTypeToInt(const aString: string; const aElement: IwbElement): Int64;
 function wbQuestStageToInt(const aString: string; const aElement: IwbElement): Int64;
@@ -2295,11 +2296,47 @@ begin
   Result := (aType = ctToSummary) and Supports(aElement, IwbContainerElementRef, aContainer);
 end;
 
-{>>> To Integer Callbacks <<<} //17
+{>>> To Integer Callbacks <<<} //18
 
 function Sig2Int(aSignature: TwbSignature): Cardinal; inline;
 begin
   Result := PCardinal(@aSignature)^;
+end;
+
+function wbAliasToInt(const aString: string; const aElement: IwbElement): Int64;
+begin
+  Result := -1;
+
+  if aString = 'None' then
+    Exit;
+
+  if (aString = 'Player') and not wbIsSkyrim then begin
+    Result := -2;
+    Exit;
+  end;
+
+  if (aString = 'Non-Actor Track') and wbIsStarfield then begin
+    Result := -3;
+    Exit;
+  end;
+
+  if (aString = 'Play Audio At Player(Voice Note)') and wbIsStarfield then begin
+    Result := -4;
+    Exit;
+  end;
+
+  if (aString = 'Dialogue For Scene') and wbIsStarfield then begin
+    Result := -5;
+    Exit;
+  end;
+
+  var i := 1;
+  var s := Trim(aString);
+  while (i <= Length(s)) and (ANSIChar(s[i]) in ['-', '0'..'9']) do
+    Inc(i);
+  s := Copy(s, 1, Pred(i));
+
+  Result := StrToIntDef(s, -1);
 end;
 
 function wbConditionStringToInt(const aString: string; const aElement: IwbElement): Int64;
