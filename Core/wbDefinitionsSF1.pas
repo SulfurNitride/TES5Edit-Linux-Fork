@@ -1233,58 +1233,6 @@ begin
   Result := LegendaryMod.Elements[1].LinksTo;
 end;
 
-{ Alias to string conversion, requires quest reference or quest record specific to record that references alias }
-function wbAliasLinksTo(aInt: Int64; const aQuestRef: IwbElement): IwbElement;
-var
-  MainRecord : IwbMainRecord;
-  Aliases    : IwbContainerElementRef;
-  Alias      : IwbContainerElementRef;
-  i, j       : Integer;
-begin
-  Result := nil;
-
-  if aInt < 0 then
-    Exit;
-
-  if not Assigned(aQuestRef) then
-    Exit;
-
-  // aQuestRef can be a QUST record or reference to QUST record
-  if not Supports(aQuestRef, IwbMainRecord, MainRecord) then
-    if not Supports(aQuestRef.LinksTo, IwbMainRecord, MainRecord) then
-      Exit;
-
-  // get winning quest override except for partial forms
-  if MainRecord.WinningOverride.Flags._Flags and $00004000 = 0 then
-    MainRecord := MainRecord.WinningOverride
-  else if MainRecord.Flags._Flags and $00004000 <> 0 then
-    MainRecord := MainRecord.MasterOrSelf;
-
-  if MainRecord.Signature <> QUST then
-    Exit;
-
-    if Supports(MainRecord.ElementByName['Aliases'], IwbContainerElementRef, Aliases) then
-      for i := 0 to Pred(Aliases.ElementCount) do
-        if Supports(Aliases.Elements[i], IwbContainerElementRef, Alias) then begin
-          var lHasSignature: IwbHasSignature;
-          if Supports(Alias, IwbHasSignature, lHasSignature) and (lHasSignature.Signature = ALCS) then begin
-            var lALST := Alias.ElementBySignature[ALST];
-            if Assigned(lALST) then
-              if not Supports(lALST, IwbContainerElementRef, Alias) then
-                Continue;
-          end;
-          j := Alias.Elements[0].NativeValue;
-          if j = aInt then
-            Exit(Alias);
-        end;
-(* may cause issue if scripts use LinksTo and expect a valid alias element or nil * )
-    if Assigned(Aliases) then
-      Exit(Aliases);
-
-    Exit(MainRecord);
-(**)
-end;
-
 function wbStrToAlias(const aString: string; const aElement: IwbElement): Int64;
 var
   i    : Integer;

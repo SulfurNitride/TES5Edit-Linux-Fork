@@ -258,7 +258,8 @@ function wbWorldWaterIsRemovable(const aElement: IwbElement): Boolean;
 function wbWorldClimateIsRemovable(const aElement: IwbElement): Boolean;
 function wbWorldImageSpaceIsRemovable(const aElement: IwbElement): Boolean;
 
-{>>> Links To Callbacks <<<} //8
+{>>> Links To Callbacks <<<} //9
+function wbAliasLinksTo(aInt: Int64; const aQuestRef: IwbElement): IwbElement;
 function wbConditionSummaryLinksTo(const aElement: IwbElement): IwbElement;
 function wbCoverLinksTo(const aElement: IwbElement): IwbElement;
 function wbEdgeLinksTo(aEdge: Integer; const aElement: IwbElement): IwbElement;
@@ -1959,7 +1960,54 @@ begin
     (aElement.ContainingMainRecord.ElementNativeValues['Parent Worldspace\PNAM'] and $20 = 32);
 end;
 
-{>>> Links To Callbacks <<<} //8
+{>>> Links To Callbacks <<<} //9
+
+function wbAliasLinksTo(aInt: Int64; const aQuestRef: IwbElement): IwbElement;
+begin
+  Result := nil;
+
+  if aInt < 0 then
+    Exit;
+
+  if not Assigned(aQuestRef) then
+    Exit;
+
+  // aQuestRef can be a QUST record or reference to QUST record
+  var lMainRecord : IwbMainRecord;
+  if not Supports(aQuestRef, IwbMainRecord, lMainRecord) then
+    if not Supports(aQuestRef.LinksTo, IwbMainRecord, lMainRecord) then
+      Exit;
+
+  if wbIsSkyrim then
+    lMainRecord := lMainRecord.WinningOverride
+  else
+    // get winning quest override except for partial forms
+    if lMainRecord.WinningOverride.Flags._Flags and $00004000 = 0 then
+      lMainRecord := lMainRecord.WinningOverride
+    else if lMainRecord.Flags._Flags and $00004000 <> 0 then
+      lMainRecord := lMainRecord.MasterOrSelf;
+
+  if lMainRecord.Signature <> QUST then
+    Exit;
+
+  var lAliases : IwbContainerElementRef;
+  if Supports(lMainRecord.ElementByName['Aliases'], IwbContainerElementRef, lAliases) then
+    for var i := 0 to Pred(lAliases.ElementCount) do begin
+      var lAlias : IwbContainerElementRef;
+      if Supports(lAliases.Elements[i], IwbContainerElementRef, lAlias) then begin
+        var lHasSignature: IwbHasSignature;
+        if Supports(lAlias, IwbHasSignature, lHasSignature) and (lHasSignature.Signature = ALCS) then begin
+          var lALST := lAlias.ElementBySignature[ALST];
+          if Assigned(lALST) then
+            if not Supports(lALST, IwbContainerElementRef, lAlias) then
+              Continue;
+        end;
+        var j := lAlias.Elements[0].NativeValue;
+        if j = aInt then
+          Exit(lAlias);
+      end;
+    end;
+end;
 
 function wbConditionSummaryLinksTo(const aElement: IwbElement): IwbElement;
 var
