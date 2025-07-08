@@ -161,7 +161,7 @@ procedure wbRPLDAfterLoad(const aElement: IwbElement);
 procedure wbSOUNAfterLoad(const aElement: IwbElement);
 procedure wbWorldAfterLoad(const aElement: IwbElement);
 
-{>>> After Set Callbacks <<<} //33
+{>>> After Set Callbacks <<<} //34
 procedure wbACBSLevelMultAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbATANsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbBODCsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -186,6 +186,7 @@ procedure wbPACKHourAfterSet(const aElement: IwbElement; const aOldValue, aNewVa
 procedure wbPERKPRKETypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbPRKRsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbRaceAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+procedure wbSceneActionTypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbSDLTListAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbSNDRRatesOfFireAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbSPLOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -258,7 +259,7 @@ function wbWorldWaterIsRemovable(const aElement: IwbElement): Boolean;
 function wbWorldClimateIsRemovable(const aElement: IwbElement): Boolean;
 function wbWorldImageSpaceIsRemovable(const aElement: IwbElement): Boolean;
 
-{>>> Links To Callbacks <<<} //9
+{>>> Links To Callbacks <<<} //10
 function wbAliasLinksTo(aInt: Int64; const aQuestRef: IwbElement): IwbElement;
 function wbConditionSummaryLinksTo(const aElement: IwbElement): IwbElement;
 function wbCoverLinksTo(const aElement: IwbElement): IwbElement;
@@ -266,6 +267,7 @@ function wbEdgeLinksTo(aEdge: Integer; const aElement: IwbElement): IwbElement;
 function wbEdgeLinksTo0(const aElement: IwbElement): IwbElement;
 function wbEdgeLinksTo1(const aElement: IwbElement): IwbElement;
 function wbEdgeLinksTo2(const aElement: IwbElement): IwbElement;
+function wbSCENAliasLinksTo(const aElement: IwbElement): IwbElement;
 function wbTriangleLinksTo(const aElement: IwbElement): IwbElement;
 function wbVertexLinksTo(const aElement: IwbElement): IwbElement;
 
@@ -310,6 +312,7 @@ function wbEdgeToStr2(aInt: Int64; const aElement: IwbElement; aType: TwbCallbac
 function wbFileHashCallback(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbFolderHashCallback(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbHideFFFF(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+function wbINFOAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbNVTREdgeToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbPackageLocationAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbQuestAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
@@ -341,6 +344,11 @@ procedure wbScriptPropertyObjectToStr(const aContainer: IwbContainerElementRef; 
 procedure wbToStringFromLinksToSummary(var aValue:string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbToStringFromLinksToMainRecordName(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbVec3ToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+
+{>>> RUnion Deciders <<<} //2
+
+function wbSceneActionTypeDecider(const aContainer: IwbContainerElementRef): Integer;
+function wbSceneTimelineTypeDecider(const aContainer: IwbContainerElementRef): Integer;
 
 {>>> Union Deciders <<<} //23
 function wbACBSLevelDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
@@ -1232,6 +1240,26 @@ begin
   wbCounterContainerAfterSet('SPCT - Count', 'Actor Effects', aElement);
 end;
 
+procedure wbSceneActionTypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if not (VarIsOrdinal(aOldValue) and VarIsOrdinal(aNewValue)) then
+    Exit;
+
+  if VarSameValue(aOldValue, aNewValue) then
+    Exit;
+
+  var lContainer: IwbContainerElementRef;
+  if not Supports(aElement.Container, IwbContainerElementRef, lContainer) then
+    Exit;
+
+  var lDataElement := lContainer.ElementBySortOrder[8]; //'Type Specific Action'
+  if Assigned(lDataElement) and (lDataElement.Name <> aElement.Value) then
+    lDataElement.Remove;
+end;
+
 procedure wbSDLTListAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
   wbCounterAfterSet('ITMC - Secondary List Count', aElement);
@@ -1963,7 +1991,7 @@ begin
     (aElement.ContainingMainRecord.ElementNativeValues['Parent Worldspace\PNAM'] and $20 = 32);
 end;
 
-{>>> Links To Callbacks <<<} //9
+{>>> Links To Callbacks <<<} //10
 
 function wbAliasLinksTo(aInt: Int64; const aQuestRef: IwbElement): IwbElement;
 begin
@@ -2143,6 +2171,25 @@ end;
 function wbEdgeLinksTo2(const aElement: IwbElement): IwbElement;
 begin
   Result := wbEdgeLinksTo(2, aElement);
+end;
+
+function wbSCENAliasLinksTo(const aElement: IwbElement): IwbElement;
+var
+  Container  : IwbContainer;
+begin
+  Result := nil;
+  if not wbResolveAlias then
+    Exit;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  var lAlias := aElement.NativeValue;
+  if not VarIsOrdinal(lAlias) then
+    Exit;
+
+  Result := wbAliasLinksTo(lAlias, lMainRecord.ElementBySignature['PNAM']);
 end;
 
 function wbTriangleLinksTo(const aElement: IwbElement): IwbElement;
@@ -3006,6 +3053,30 @@ begin
       Result := aInt.ToString;
 end;
 
+function wbINFOAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+begin
+  Result := '';
+  if not Assigned(aElement) then
+    Exit;
+
+  if wbResolveAlias then begin
+    var lMainRecord := aElement.ContainingMainRecord;
+    if not Assigned(lMainRecord) then
+      Exit;
+
+    var lTopic := lMainRecord.ElementByName['Topic'].LinksTo as IwbMainRecord;
+    if not Assigned(lTopic) then
+      Exit;
+
+    Result := wbAliasToStr(aInt, lTopic.ElementBySignature['QNAM'] , aType);
+  end else begin
+    case aType of
+      ctToSortKey: Result := IntToHex64(aInt, 8);
+      ctToStr, ctToSummary, ctToEditValue: Result := aInt.ToString;
+    end;
+  end;
+end;
+
 function wbNVTREdgeToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 var
   Index      : Integer;
@@ -3820,6 +3891,40 @@ begin
   var Z := Container.Elements[2].Summary;
 
   aValue := '' + '(' + X + ', ' + Y + ', ' + Z + ')';
+end;
+
+{>>> RUnion Deciders <<<} //2
+
+function wbSceneActionTypeDecider(const aContainer: IwbContainerElementRef): Integer;
+begin
+  Result := -1;
+  if not Assigned(aContainer) then
+    Exit;
+
+  var lType := aContainer.ElementNativeValues[ANAM];
+  if not VarIsOrdinal(lType) then
+    Exit;
+
+  Result := lType;
+end;
+
+function wbSceneTimelineTypeDecider(const aContainer: IwbContainerElementRef): Integer;
+begin
+  Result := -1;
+  if not Assigned(aContainer) then
+    Exit;
+
+  var lType := aContainer.ElementNativeValues[TNAM];
+  if not VarIsOrdinal(lType) then
+    Exit;
+
+  case lType of
+    2:    Result := 1; // Camera
+    4, 5: Result := 2; // Headtrack/Eyetrack Angles
+    0, 7: Result := 3; // Headtrack/Headtrack Enable
+  else
+    Result := 0;
+  end;
 end;
 
 {>>> Union Deciders <<<} //23

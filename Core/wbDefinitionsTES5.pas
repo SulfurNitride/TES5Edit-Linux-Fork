@@ -7532,157 +7532,147 @@ begin
   wbRecord(SCEN, 'Scene', [
     wbEDID,
     wbVMADFragmentedSCEN,
-    wbInteger(FNAM, 'Flags', itU32, wbFlags([
-      'Begin on Quest Start',
-      'Stop Quest on End',
-      'Show All Text',
-      'Repeat Conditions While True',
-      'Interruptible'
-    ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
+    wbInteger(FNAM, 'Flags', itU32,
+      wbFlags([
+      {0} 'Begin on Quest Start',
+      {1} 'Stop Quest on End',
+      {2} 'Show All Text',
+      {3} 'Repeat Conditions While True',
+      {4} 'Interruptible'
+      ])
+    ).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbRArray('Phases',
       wbRStruct('Phase', [
-        wbEmpty(HNAM, 'Marker Phase Start', cpNormal, True),
-        wbString(NAM0, 'Name', 0, cpNormal, True),
+        wbEmpty(HNAM, 'Marker Phase Start').SetRequired,
+        wbString(NAM0, 'Name').SetRequired,
         wbRStruct('Start Conditions', [wbConditions]),
-        wbEmpty(NEXT, 'Marker', cpNormal, True),
+        wbEmpty(NEXT, 'Marker').SetRequired,
         wbRStruct('Completion Conditions', [wbConditions]),
         {>>> BEGIN leftover from earlier CK versions <<<}
-          wbRStruct('Unused', [
-            wbUnused(SCHR, 0),
-            wbUnused(SCDA, 0),
-            wbUnused(SCTX, 0),
-            wbUnused(QNAM, 0),
-            wbUnused(SCRO, 0)
-          ]).IncludeFlag(dfInternalEditOnly)
-            .SetDontShow(wbNeverShow),
-          wbEmpty(NEXT, 'Marker').SetRequired,
-          wbRStruct('Unused', [
-            wbUnused(SCHR, 0),
-            wbUnused(SCDA, 0),
-            wbUnused(SCTX, 0),
-            wbUnused(QNAM, 0),
-            wbUnused(SCRO, 0)
-          ]).IncludeFlag(dfInternalEditOnly)
-            .SetDontShow(wbNeverShow),
+        wbRStruct('Unused', [
+          wbUnused(SCHR, 0),
+          wbUnused(SCDA, 0),
+          wbUnused(SCTX, 0),
+          wbUnused(QNAM, 0),
+          wbUnused(SCRO, 0)
+        ]).IncludeFlag(dfInternalEditOnly)
+          .SetDontShow(wbNeverShow),
+        wbEmpty(NEXT, 'Marker').SetRequired,
+        wbRStruct('Unused', [
+          wbUnused(SCHR, 0),
+          wbUnused(SCDA, 0),
+          wbUnused(SCTX, 0),
+          wbUnused(QNAM, 0),
+          wbUnused(SCRO, 0)
+        ]).IncludeFlag(dfInternalEditOnly)
+          .SetDontShow(wbNeverShow),
         {>>> END leftover from earlier CK versions begin <<<}
-        wbInteger(WNAM, 'Editor Width', itU32, nil, cpNormal, True, false, nil, nil, 200),
-        wbEmpty(HNAM, 'Marker Phase End', cpNormal, True)
-      ])
-    ),
-    wbRArray('Actors', wbRStruct('Actor', [
-      wbInteger(ALID, 'Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
-        .SetDefaultNativeValue(-1)
-        .SetRequired,
-      wbInteger(LNAM, 'Flags', itU32, wbFlags([
-        'No Player Activation',
-        'Optional'
-      ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
-      wbInteger(DNAM, 'Behaviour Flags', itU32, wbFlags([
-        'Death Pause (unused)',
-        'Death End',
-        'Combat Pause',
-        'Combat End',
-        'Dialogue Pause',
-        'Dialogue End',
-        'OBS_COM Pause',
-        'OBS_COM End'
-      ]), cpNormal, True, false, nil, nil, 26).IncludeFlag(dfCollapsed, wbCollapseFlags)
-    ])),
-    wbRArray('Actions', wbRStructSK([0, 1, 3, 4], 'Action', [
-      wbInteger(ANAM, 'Type', itU16, wbEnum([
-        {0} 'Dialogue',
-        {1} 'Package',
-        {2} 'Timer'
-      ]), cpNormal, True)
-      .SetAfterSet(procedure(const aElement: IwbElement; const aOldValue, aNewValue: Variant)
-        begin
-          if not (VarIsOrdinal(aOldValue) and VarIsOrdinal(aNewValue)) then
-            Exit;
-          if VarSameValue(aOldValue, aNewValue) then
-            Exit;
-          if not Assigned(aElement) then
-            Exit;
-          var lContainer: IwbContainerElementRef;
-          if not Supports(aElement.Container, IwbContainerElementRef, lContainer) then
-            Exit;
-          var lDataElement := lContainer.ElementBySortOrder[7]; //'Type Specific Action'
-          if Assigned(lDataElement) and (lDataElement.Name <> aElement.Value) then
-            lDataElement.Remove;
-        end)
-      .IncludeFlag(dfIncludeValueInDisplaySignature),
-      wbString(NAM0, 'Name'),
-      wbInteger(ALID, 'Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
-        .SetDefaultNativeValue(-1)
-        .SetRequired,
-      wbUnknown(LNAM),
-      wbInteger(INAM, 'Index', itU32),
-      wbInteger(FNAM, 'Flags', itU32, wbFlags([
-        {0x00000001} 'Unknown 1',
-        {0x00000002} 'Unknown 2',
-        {0x00000004} 'Unknown 3',
-        {0x00000008} 'Unknown 4',
-        {0x00000010} 'Unknown 5',
-        {0x00000020} 'Unknown 6',
-        {0x00000040} 'Unknown 7',
-        {0x00000080} 'Unknown 8',
-        {0x00000100} 'Unknown 9',
-        {0x00000200} 'Unknown 10',
-        {0x00000400} 'Unknown 11',
-        {0x00000800} 'Unknown 12',
-        {0x00001000} 'Unknown 13',
-        {0x00002000} 'Unknown 14',
-        {0x00004000} 'Unknown 15',
-        {0x00008000} 'Face Target',
-        {0x00010000} 'Looping',
-        {0x00020000} 'Headtrack Player'
-      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
-      wbInteger(SNAM, 'Start Phase', itU32),
-      wbInteger(ENAM, 'End Phase', itU32),
-      wbRUnion('Type Specific Action', function(const aContainer: IwbContainerElementRef): Integer
-        begin
-          Result := -1;
-          if not Assigned(aContainer) then
-            Exit;
-          var lType := aContainer.ElementNativeValues[ANAM];
-          if not VarIsOrdinal(lType) then
-            Exit;
-          Result := lType;
-        end,
-      [
-        {0 Dialogue}
-        wbRStruct('Dialogue', [
-          wbFormIDCk(DATA, 'Topic', [DIAL, NULL]),
-          wbInteger(HTID, 'Headtrack Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
-            .SetDefaultNativeValue(-1)
-            .SetRequired,
-          wbFloat(DMAX, 'Looping - Max'),
-          wbFloat(DMIN, 'Looping - Min'),
-          wbInteger(DEMO, 'Emotion Type', itU32, wbEmotionTypeEnum),
-          wbInteger(DEVA, 'Emotion Value', itU32)
+        wbInteger(WNAM, 'Editor Width', itU32)
+          .SetDefaultNativeValue(200)
+          .SetRequired,
+        wbEmpty(HNAM, 'Marker Phase End').SetRequired
+      ])),
+    wbRArray('Actors',
+      wbRStruct('Actor', [
+        wbInteger(ALID, 'Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+          .SetDefaultNativeValue(-1)
+          .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
+          .SetRequired,
+        wbInteger(LNAM, 'Flags', itU32,
+          wbFlags([
+          {0} 'No Player Activation',
+          {1} 'Optional'
+          ])
+        ).IncludeFlag(dfCollapsed, wbCollapseFlags)
+         .SetRequired,
+        wbInteger(DNAM, 'Behaviour Flags', itU32,
+          wbFlags([
+          {0} 'Death Pause (unused)',
+          {1} 'Death End',
+          {2} 'Combat Pause',
+          {3} 'Combat End',
+          {4} 'Dialogue Pause',
+          {5} 'Dialogue End',
+          {6} 'OBS_COM Pause',
+          {7} 'OBS_COM End'
+          ])
+        ).SetDefaultNativeValue(26)
+         .SetRequired
+         .IncludeFlag(dfCollapsed, wbCollapseFlags)
+      ])),
+    wbRArray('Actions',
+      wbRStructSK([0, 1, 3, 4], 'Action', [
+        wbInteger(ANAM, 'Type', itU16,
+          wbEnum([
+          {0} 'Dialogue',
+          {1} 'Package',
+          {2} 'Timer'
+          ])
+        ).IncludeFlag(dfIncludeValueInDisplaySignature)
+         .SetAfterSet(wbSceneActionTypeAfterSet)
+         .SetRequired,
+        wbString(NAM0, 'Name'),
+        wbInteger(ALID, 'Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+          .SetDefaultNativeValue(-1)
+          .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
+          .SetRequired,
+        wbUnknown(LNAM),
+        wbInteger(INAM, 'Index', itU32),
+        wbInteger(FNAM, 'Flags', itU32,
+          wbFlags([
+          {0}  'Unknown 0',
+          {1}  'Unknown 1',
+          {2}  'Unknown 2',
+          {3}  'Unknown 3',
+          {4}  'Unknown 4',
+          {5}  'Unknown 5',
+          {6}  'Unknown 6',
+          {7}  'Unknown 7',
+          {8}  'Unknown 8',
+          {9}  'Unknown 9',
+          {10} 'Unknown 10',
+          {11} 'Unknown 11',
+          {12} 'Unknown 12',
+          {13} 'Unknown 13',
+          {14} 'Unknown 14',
+          {15} 'Face Target',
+          {16} 'Looping',
+          {17} 'Headtrack Player'
+          ])
+        ).IncludeFlag(dfCollapsed, wbCollapseFlags),
+        wbInteger(SNAM, 'Start Phase', itU32),
+        wbInteger(ENAM, 'End Phase', itU32),
+        wbRUnion('Type Specific Action', wbSceneActionTypeDecider, [
+        {0} wbRStruct('Dialogue', [
+              wbFormIDCk(DATA, 'Topic', [DIAL, NULL]),
+              wbInteger(HTID, 'Headtrack Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+                .SetDefaultNativeValue(-1)
+                .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
+                .SetRequired,
+              wbFloat(DMAX, 'Looping - Max'),
+              wbFloat(DMIN, 'Looping - Min'),
+              wbInteger(DEMO, 'Emotion Type', itU32, wbEmotionTypeEnum),
+              wbInteger(DEVA, 'Emotion Value', itU32)
+            ]),
+        {1} wbRStruct('Package', [
+              wbRArray('Packages', wbFormIDCk(PNAM, 'Package', [PACK]))
+            ]),
+        {2} wbRStruct('Timer', [
+              wbFloat(SNAM, 'Duration (Seconds)')
+            ])
         ]),
-
-        {1 Package}
-        wbRStruct('Package', [
-          wbRArray('Packages', wbFormIDCk(PNAM, 'Package', [PACK]))
-        ]),
-
-        {2 Timer}
-        wbRStruct('Timer', [
-          wbFloat(SNAM, 'Duration (Seconds)')
-        ])
-      ]),
-      {>>> BEGIN leftover from earlier CK versions <<<}
-      wbRStruct('Unused', [
-        wbUnused(SCHR, 0),
-        wbUnused(SCDA, 0),
-        wbUnused(SCTX, 0),
-        wbUnused(QNAM, 0),
-        wbUnused(SCRO, 0)
-      ]).IncludeFlag(dfInternalEditOnly)
-        .SetDontShow(wbNeverShow),
-      {>>> END leftover from earlier CK versions <<<}
-      wbMarkerReq(ANAM)
-    ])),
+        {>>> BEGIN leftover from earlier CK versions <<<}
+        wbRStruct('Unused', [
+          wbUnused(SCHR, 0),
+          wbUnused(SCDA, 0),
+          wbUnused(SCTX, 0),
+          wbUnused(QNAM, 0),
+          wbUnused(SCRO, 0)
+        ]).IncludeFlag(dfInternalEditOnly)
+          .SetDontShow(wbNeverShow),
+        {>>> END leftover from earlier CK versions <<<}
+        wbMarkerReq(ANAM)
+      ])),
     {>>> BEGIN leftover from earlier CK versions <<<}
     wbRStruct('Unused', [
       wbUnused(SCHR, 0),
@@ -7702,33 +7692,37 @@ begin
     ]).IncludeFlag(dfInternalEditOnly)
       .SetDontShow(wbNeverShow),
     {>>> END leftover from earlier CK versions <<<}
-    wbFormIDCk(PNAM, 'Quest', [QUST]),
+    wbFormIDCk(PNAM, 'Parent Quest', [QUST]).SetRequired,
     wbInteger(INAM, 'Last Action Index', itU32),
     wbStruct(VNAM, 'Actor Behavior Settings', [
-      wbInteger('Death', itU32, wbEnum([
-        'Set All Normal',
-        '',
-        'Set All End',
-        'Don''t Set All'
-      ])),
-      wbInteger('Combat', itU32, wbEnum([
-        'Set All Normal',
-        'Set All Pause',
-        'Set All End',
-        'Don''t Set All'
-      ])),
-      wbInteger('Dialogue', itU32, wbEnum([
-        'Set All Normal',
-        'Set All Pause',
-        'Set All End',
-        'Don''t Set All'
-      ])),
-      wbInteger('Observe Combat', itU32, wbEnum([
-        'Set All Normal',
-        'Set All Pause',
-        'Set All End',
-        'Don''t Set All'
-      ]))
+      wbInteger('Death', itU32,
+        wbEnum([
+        {0} 'Set All Normal',
+        {1} '',
+        {2} 'Set All End',
+        {3} 'Don''t Set All'
+        ])),
+      wbInteger('Combat', itU32,
+        wbEnum([
+        {0} 'Set All Normal',
+        {1} 'Set All Pause',
+        {2} 'Set All End',
+        {3} 'Don''t Set All'
+        ])),
+      wbInteger('Dialogue', itU32,
+        wbEnum([
+        {0} 'Set All Normal',
+        {1} 'Set All Pause',
+        {2} 'Set All End',
+        {3} 'Don''t Set All'
+        ])),
+      wbInteger('Observe Combat', itU32,
+        wbEnum([
+        {0} 'Set All Normal',
+        {1} 'Set All Pause',
+        {2} 'Set All End',
+        {3} 'Don''t Set All'
+        ]))
     ]),
     wbConditions
   ]).SetAddInfo(wbSCENAddInfo);

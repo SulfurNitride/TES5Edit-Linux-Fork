@@ -11680,237 +11680,242 @@ begin
     ])
   ]);
 
-  var wbStartScene :=
-    wbRStruct('Start Scene', [
-      wbFormIDCk(LCEP, 'Scene', [SCEN]),
-      wbInteger(INTT, 'Phase Index', itU16),
-      wbString(SSPN, 'Start Phase for Scene'),
-      wbCITC,
-      wbConditions
-    ]);
-
-  var wbSceneDialogueAction :=
-    wbRStruct('Dialogue', [
-      wbFloat(DMAX, 'Looping - Max'),
-      wbFloat(DMIN, 'Looping - Min'),
-      wbStruct(CRIS, 'Camera', [
-        wbFloat('FOV On Player Camera'),
-        wbFloat('Rate Of Camera Change')
-      ]),
-      wbArray(HTID, 'Player Headtracking', wbInteger('Actor ID', itS32)),
-      wbFormIDCk(VENC, 'Dialogue Subtype', [KYWD]),
-      wbFormIDCk(PNAM, 'AnimArchType', [KYWD]),
-      wbFormIDCk(ONAM, 'Audio Output Override', [SOPM])
-    ]);
-
-  var wbScenePackageAction :=
-    wbRStruct('Package', [
-      wbRArray('Packages', wbFormIDCk(PNAM, 'Package', [PACK]))
-    ]);
-
-  var wbSceneStartSceneActionAlt :=
-    wbRStruct('Start Scene', [
-      wbRArray('Scenes', wbStartScene),
-      wbEmpty(HTID, 'End Scene Say Greeting')
-    ]);
-  var wbSceneStartSceneAction :=
-    wbRStruct('Start Scene', [
-      wbFormIDCk(STSC, 'Start Scene Marker', [SCEN,NULL]),
-      wbRArray('Scenes', wbStartScene),
-      wbEmpty(HTID, 'End Scene Say Greeting')
-    ]);
-
-  var wbSceneNPCResponseDialogue :=
-    wbRStruct('NPC Response Dialogue', [
-      wbFormIDCk(ONAM, 'Sound Output', [SOPM])
-    ]);
-
-  var wbSceneRadioAction :=
-    wbRStruct('Radio', [
-      wbFormIDCk(HTID, 'Play Sound', [SNDR, NULL]),
-      wbFormIDCk(DMAX, 'Sound Output', [SOPM, NULL]),
-      wbFormIDCk(VENC, 'Dialogue Subtype', [KYWD])
-    ]);
-
-  var wbSceneTimerAction :=
-    wbRStruct('Timer',[
-      wbFloat(SNAM, 'Timer - Max Seconds'),
-      wbInteger(SCQS, 'Set Parent Quest Stage', itS16),
-      wbFloat(TNAM, 'Timer - Min Seconds')
-    ]);
-
-  var wbScenePlayerDialogueAction :=
-    wbRStruct('Player Dialogue', [
-      wbInteger(DTGT, 'Dialogue Target Actor', itS32),
-      wbRArray('Dialogue Choices', wbRStruct('Dialogue Choice', [
-        wbFormId(ESCE, 'Dialogue Exit'),
-        wbFormId(ESCS, 'Choice')
-      ])),
-      wbRStruct('Prior Action Info', [
-        wbInteger(ATTR, 'Action to Follow', itU32),
-        wbEmpty(ACBS, 'Action Comes Before Start')
-      ])
-    ]);
-
-  var wbScenePlayerDialogueActionOld :=
-    wbRStruct('Player Dialogue Responses', [
-      wbFormIDCk(PTOP, 'Player Positive Response', [DIAL]),
-      wbFormIDCk(NTOP, 'Player Negative Response', [DIAL]),
-      wbFormIDCk(NETO, 'Player Neutral Response', [DIAL]),
-      wbFormIDCk(QTOP, 'Player Question Response', [DIAL]),
-      wbFormIDCk(VENC, 'Player Positive Dialogue Subtype', [KYWD]),
-      wbFormIDCk(PLVD, 'Player Negative Dialogue Subtype', [KYWD]),
-      wbFormIDCk(JOUT, 'Player Neutral Dialogue Subtype', [KYWD]),
-      wbFormIDCk(DALC, 'Player Question Dialogue Subtype', [KYWD]),
-      wbFormIDCk(NPOT, 'NPC Positive Response', [DIAL]),
-      wbFormIDCk(NNGT, 'NPC Negative Response', [DIAL]),
-      wbFormIDCk(NNUT, 'NPC Neutral Response', [DIAL]),
-      wbFormIDCk(NQUT, 'NPC Question Response', [DIAL]),
-      wbFormIDCk(NPOS, 'NPC Positive Dialogue Subtype', [KYWD]),
-      wbFormIDCk(NNGS, 'NPC Negative Dialogue Subtype', [KYWD]),
-      wbFormIDCk(NNUS, 'NPC Neutral Dialogue Subtype', [KYWD]),
-      wbFormIDCk(NQUS, 'NPC Question Dialogue Subtype', [KYWD]),
-      wbScenePlayerDialogueAction
-    ]).IncludeFlag(dfAllowAnyMember);
-
-  var wbSceneRadioDialogueAction :=
-    wbRStruct('Radio and Dialogue', [
-      wbFormIDCk(DATA, 'Topic', [DIAL, NULL]),
-      wbRUnion('',[
-        wbSceneDialogueAction,
-        wbSceneRadioAction
-      ])
-    ]);
-
   wbRecord(SCEN, 'Scene', [
     wbEDID,
     wbVMADFragmentedSCEN,
-    wbInteger(FNAM, 'Flags', itU32, wbFlags([
-      {0x00000001} 'Begin on Quest Start',
-      {0x00000002} 'Stop on Quest End',
-      {0x00000004} 'Show All Text',
-      {0x00000008} 'Repeat Conditions While True',
-      {0x00000010} 'Interruptible',
-      {0x00000020} 'Unknown 5',
-      {0x00000040} 'Prevent Player Exit Dialogue',
-      {0x00000080} 'Unknown 7',
-      {0x00000100} 'Unknown 8',
-      {0x00000200} 'Unknown 9',
-      {0x00000400} 'Unknown 10',
-      {0x00000800} 'Disable Dialogue Camera',
-      {0x00001000} 'No Follower Idle Chatter',
-      {0x00002000} 'Unknown 13',
-      {0x00004000} 'Unknown 14'
-    ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
+    wbInteger(FNAM, 'Flags', itU32,
+      wbFlags([
+      {0}  'Begin on Quest Start',
+      {1}  'Stop on Quest End',
+      {2}  'Show All Text',
+      {3}  'Repeat Conditions While True',
+      {4}  'Interruptible',
+      {5}  'Unknown 5',
+      {6}  'Prevent Player Exit Dialogue',
+      {7}  'Unknown 7',
+      {8}  'Unknown 8',
+      {9}  'Unknown 9',
+      {10} 'Unknown 10',
+      {11} 'Disable Dialogue Camera',
+      {12} 'No Follower Idle Chatter',
+      {13} 'Unknown 13',
+      {14} 'Unknown 14'
+      ])
+    ).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbRArray('Phases',
       wbRStruct('Phase', [
-        wbEmpty(HNAM, 'Marker Phase Start', cpNormal, True),
-        wbString(NAM0, 'Name', 0, cpNormal, True),
+        wbEmpty(HNAM, 'Marker Phase Start').SetRequired,
+        wbString(NAM0, 'Name').SetRequired,
         wbRStruct('Start Conditions', [wbConditions]),
-        wbEmpty(NEXT, 'Marker Start Conditions', cpNormal, True),
+        wbEmpty(NEXT, 'Marker Start Conditions').SetRequired,
         wbRStruct('Completion Conditions', [wbConditions]),
-        wbEmpty(NEXT, 'Marker Completion Conditions', cpNormal, True),
-        wbInteger(WNAM, 'Editor Width', itU32, nil, cpNormal, True, false, nil, nil, 350),
+        wbEmpty(NEXT, 'Marker Completion Conditions').SetRequired,
+        wbInteger(WNAM, 'Editor Width', itU32)
+          .SetDefaultNativeValue(350)
+          .SetRequired,
         wbUnknown(SPPI),
         wbUnknown(SPPT),
         wbUnknown(SPCT),// Might actually be SDCT but they messed up. Kept since it's used in previous versions
         wbUnknown(SDCT),
-        wbInteger(FNAM, 'Flags', itU16, wbFlags([
-          {0x0001} 'Start - WalkAway Phase',
-          {0x0002} 'Don''t Run End Scripts on Scene Jump',
-          {0x0004} 'Start - Inherit In Templated Scenes',
-          {0x0008} 'Unknown 3'
-        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
+        wbInteger(FNAM, 'Flags', itU16,
+          wbFlags([
+          {0} 'Start - WalkAway Phase',
+          {1} 'Don''t Run End Scripts on Scene Jump',
+          {2} 'Start - Inherit In Templated Scenes',
+          {3} 'Unknown 3'
+          ])
+        ).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbStruct(SCQS, 'Set Parent Quest Stage', [
           wbInteger('On Start', itS16),
           wbInteger('On Completion', itS16)
         ]),
-        wbEmpty(HNAM, 'Marker Phase End', cpNormal, True)
-      ])
-    ),
-    wbRArray('Actors', wbRStruct('Actor', [
-      wbInteger(ALID, 'Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
-        .SetDefaultNativeValue(-1)
-        .SetRequired,
-      wbInteger(LNAM, 'Flags', itU32, wbFlags([
-        'No Player Activation',
-        'Optional',
-        'Run Only Scene Packages',
-        'No Command State'
-      ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
-      wbInteger(DNAM, 'Behaviour Flags', itU32, wbFlags([
-        'Death Pause',
-        'Death End',
-        'Combat Pause',
-        'Combat End',
-        'Dialogue Pause',
-        'Dialogue End',
-        'OBS_COM Pause',
-        'OBS_COM End'
-      ]), cpNormal, True, false, nil, nil, 26).IncludeFlag(dfCollapsed, wbCollapseFlags)
+        wbEmpty(HNAM, 'Marker Phase End').SetRequired
+      ])),
+    wbRArray('Actors',
+      wbRStruct('Actor', [
+        wbInteger(ALID, 'Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+          .SetDefaultNativeValue(-1)
+          .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
+          .SetRequired,
+        wbInteger(LNAM, 'Flags', itU32,
+          wbFlags([
+          {0} 'No Player Activation',
+          {1} 'Optional',
+          {2} 'Run Only Scene Packages',
+          {3} 'No Command State'
+          ])
+        ).IncludeFlag(dfCollapsed, wbCollapseFlags)
+         .SetRequired,
+        wbInteger(DNAM, 'Behaviour Flags', itU32,
+          wbFlags([
+          {0} 'Death Pause',
+          {1} 'Death End',
+          {2} 'Combat Pause',
+          {3} 'Combat End',
+          {4} 'Dialogue Pause',
+          {5} 'Dialogue End',
+          {6} 'OBS_COM Pause',
+          {7} 'OBS_COM End'
+          ])
+        ).SetDefaultNativeValue(26)
+         .SetRequired
+         .IncludeFlag(dfCollapsed, wbCollapseFlags)
+      ])),
+    wbRArray('Actions',
+      wbRStruct('Action', [
+        wbInteger(ANAM, 'Type', itU16,
+          wbEnum([
+          {0} 'Dialogue',
+          {1} 'Package',
+          {2} 'Timer',
+          {3} 'Player Dialogue',
+          {4} 'Start Scene',
+          {5} 'NPC Response Dialogue',
+          {6} 'Radio'
+          ])
+        ).IncludeFlag(dfIncludeValueInDisplaySignature)
+         .SetAfterSet(wbSceneActionTypeAfterSet)
+         .SetRequired,
+        wbString(NAM0, 'Name'),
+        wbInteger(ALID, 'Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+          .SetDefaultNativeValue(-1)
+          .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
+          .SetRequired,
+        wbUnknown(ALSO),
+        wbInteger(INAM, 'Index', itU32),
+        wbInteger(FNAM, 'Flags', itU32,
+          wbFlags([
+          {0}  'Unknown 0',
+          {1}  'Unknown 1',
+          {2}  'Unknown 2',
+          {3}  'Unknown 3',
+          {4}  'Unknown 4',
+          {5}  'Unknown 5',
+          {6}  'Unknown 6',
+          {7}  'Player Positive Use Dialogue Subtype / Hold Into Next Scene',
+          {8}  'Player Negative Use Dialogue Subtype',
+          {9}  'Player Neutral Use Dialogue Subtype',
+          {10} 'Use Dialogue Subtype',
+          {11} 'Player Question Use Dialogue Subtype',
+          {12} 'Keep/Clear Target on Action End',
+          {13} 'Unknown 13',
+          {14} 'Started Talking',
+          {15} 'Face Target',
+          {16} 'Looping',
+          {17} 'Headtrack Player',
+          {18} 'Unknown 18',
+          {19} 'Ignore For Completion',
+          {20} 'Unknown 20',
+          {21} 'Camera Speaker Target',
+          {22} 'Complete Face Target',
+          {23} 'Unknown 23',
+          {24} 'Unknown 24',
+          {25} 'Unknown 25',
+          {26} 'Unknown 26',
+          {27} 'NPC Positive Use Dialogue Subtype',
+          {28} 'NPC Negative Use Dialogue Subtype',
+          {29} 'NPC Neutral Use Dialogue Subtype',
+          {30} 'NPC Question Use Dialogue Subtype'
+          ])
+        ).IncludeFlag(dfCollapsed, wbCollapseFlags),
+        wbInteger(SNAM, 'Start Phase', itU32),
+        wbInteger(ENAM, 'End Phase', itU32),
+        wbRUnion('Type Specific Action', wbSceneActionTypeDecider, [
+        {0} wbRStruct('Dialogue', [
+              wbFormIDCk(DATA, 'Topic', [DIAL,NULL]),
+              wbFloat(DMAX, 'Looping - Max'),
+              wbFloat(DMIN, 'Looping - Min'),
+              wbStruct(CRIS, 'Camera', [
+                wbFloat('FOV On Player Camera'),
+                wbFloat('Rate Of Camera Change')
+              ]),
+              wbArray(HTID, 'Player Headtracking',
+                wbInteger('Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+                  .SetDefaultNativeValue(-1)
+                  .SetLinksToCallback(wbSCENAliasLinksTo)
+              ),
+              wbFormIDCk(VENC, 'Dialogue Subtype', [KYWD]),
+              wbFormIDCk(PNAM, 'AnimArchType', [KYWD]),
+              wbFormIDCk(ONAM, 'Audio Output Override', [SOPM])
+            ]).IncludeFlag(dfAllowAnyMember)
+              .IncludeFlag(dfStructFirstNotRequired),
+        {1} wbRStruct('Package', [
+              wbRArray('Packages', wbFormIDCk(PNAM, 'Package', [PACK]))
+            ]),
+        {2} wbRStruct('Timer',[
+              wbFloat(SNAM, 'Timer - Max Seconds'),
+              wbInteger(SCQS, 'Set Parent Quest Stage', itS16),
+              wbFloat(TNAM, 'Timer - Min Seconds')
+            ]),
+        {3} wbRStruct('Player Dialogue', [
+              wbInteger(DTGT, 'Dialogue Target Actor', itS32, wbSceneAliasToStr, wbAliasToInt)
+                .SetDefaultNativeValue(-1)
+                .SetLinksToCallbackOnValue(wbSCENAliasLinksTo),
+              wbRArray('Dialogue Choices',
+                wbRStruct('Dialogue Choice', [
+                  wbFormId(ESCE, 'Dialogue Exit'),
+                  wbFormId(ESCS, 'Choice')
+                ])),
+              wbRStruct('Prior Action Info', [
+                wbInteger(ATTR, 'Action to Follow', itU32),
+                wbEmpty(ACBS, 'Action Comes Before Start')
+              ])
+            ]),
+        {4} wbRStruct('Start Scene', [
+              wbFormIDCk(STSC, 'Start Scene Marker', [SCEN,NULL]),
+              wbRArray('Scenes',
+                wbRStruct('Start Scene', [
+                  wbFormIDCk(LCEP, 'Scene', [SCEN]),
+                  wbInteger(INTT, 'Phase Index', itU16),
+                  wbString(SSPN, 'Start Phase for Scene'),
+                  wbCITC,
+                  wbConditions
+                ])),
+              wbEmpty(HTID, 'End Scene Say Greeting')
+            ]).IncludeFlag(dfAllowAnyMember)
+              .IncludeFlag(dfStructFirstNotRequired),
+        {5} wbRStruct('NPC Response Dialogue', [
+              wbFormIDCk(PTOP, 'Player Positive Response', [DIAL]),
+              wbFormIDCk(NTOP, 'Player Negative Response', [DIAL]),
+              wbFormIDCk(NETO, 'Player Neutral Response', [DIAL]),
+              wbFormIDCk(QTOP, 'Player Question Response', [DIAL]),
+              wbFormIDCk(VENC, 'Player Positive Dialogue Subtype', [KYWD]),
+              wbFormIDCk(PLVD, 'Player Negative Dialogue Subtype', [KYWD]),
+              wbFormIDCk(JOUT, 'Player Neutral Dialogue Subtype', [KYWD]),
+              wbFormIDCk(DALC, 'Player Question Dialogue Subtype', [KYWD]),
+              wbFormIDCk(NPOT, 'NPC Positive Response', [DIAL]),
+              wbFormIDCk(NNGT, 'NPC Negative Response', [DIAL]),
+              wbFormIDCk(NNUT, 'NPC Neutral Response', [DIAL]),
+              wbFormIDCk(NQUT, 'NPC Question Response', [DIAL]),
+              wbFormIDCk(NPOS, 'NPC Positive Dialogue Subtype', [KYWD]),
+              wbFormIDCk(NNGS, 'NPC Negative Dialogue Subtype', [KYWD]),
+              wbFormIDCk(NNUS, 'NPC Neutral Dialogue Subtype', [KYWD]),
+              wbFormIDCk(NQUS, 'NPC Question Dialogue Subtype', [KYWD]),
+              wbRStruct('Player Dialogue', [
+                wbInteger(DTGT, 'Dialogue Target Actor', itS32, wbSceneAliasToStr, wbAliasToInt)
+                  .SetDefaultNativeValue(-1)
+                  .SetLinksToCallbackOnValue(wbSCENAliasLinksTo),
+                wbRArray('Dialogue Choices',
+                  wbRStruct('Dialogue Choice', [
+                    wbFormId(ESCE, 'Dialogue Exit'),
+                    wbFormId(ESCS, 'Choice')
+                  ])),
+                wbRStruct('Prior Action Info', [
+                  wbInteger(ATTR, 'Action to Follow', itU32),
+                  wbEmpty(ACBS, 'Action Comes Before Start')
+                ])
+              ])
+            ]).IncludeFlag(dfAllowAnyMember),
+          {6} wbRStruct('Radio', [
+                wbFormIDCk(DATA, 'Topic', [DIAL, NULL]),
+                wbFormIDCk(HTID, 'Play Sound', [SNDR, NULL]),
+                wbFormIDCk(DMAX, 'Sound Output', [SOPM, NULL]),
+                wbFormIDCk(VENC, 'Dialogue Subtype', [KYWD])
+              ])
+        ]),
+      wbEmpty(ANAM, 'End Marker').SetRequired
     ])),
-    wbRArray('Actions', wbRStruct('Action', [
-      wbInteger(ANAM, 'Type', itU16, wbEnum([
-        {0} 'Dialogue',
-        {1} 'Package',
-        {2} 'Timer',
-        {3} 'Player Dialogue',
-        {4} 'Start Scene',
-        {5} 'NPC Response Dialogue',
-        {6} 'Radio'
-      ]), cpNormal, True),
-      wbString(NAM0, 'Name'),
-      wbInteger(ALID, 'Alias ID', itS32),
-      wbUnknown(ALSO),
-      wbInteger(INAM, 'Index', itU32),
-      wbInteger(FNAM, 'Flags', itU32, wbFlags([
-        {0x00000001} 'Unknown 0',
-        {0x00000002} 'Unknown 1',
-        {0x00000004} 'Unknown 2',
-        {0x00000008} 'Unknown 3',
-        {0x00000010} 'Unknown 4',
-        {0x00000020} 'Unknown 5',
-        {0x00000040} 'Unknown 6',
-        {0x00000080} 'Player Positive Use Dialogue Subtype / Hold Into Next Scene',
-        {0x00000100} 'Player Negative Use Dialogue Subtype',
-        {0x00000200} 'Player Neutral Use Dialogue Subtype',
-        {0x00000400} 'Use Dialogue Subtype',
-        {0x00000800} 'Player Question Use Dialogue Subtype',
-        {0x00001000} 'Keep/Clear Target on Action End',
-        {0x00002000} 'Unknown 13',
-        {0x00004000} 'Started Talking',
-        {0x00008000} 'Face Target',
-        {0x00010000} 'Looping',
-        {0x00020000} 'Headtrack Player',
-        {0x00040000} 'Unknown 18',
-        {0x00080000} 'Ignore For Completion',
-        {0x00100000} 'Unknown 20',
-        {0x00200000} 'Camera Speaker Target',
-        {0x00400000} 'Complete Face Target',
-        {0x00800000} 'Unknown 23',
-        {0x01000000} 'Unknown 24',
-        {0x02000000} 'Unknown 25',
-        {0x04000000} 'Unknown 26',
-        {0x08000000} 'NPC Positive Use Dialogue Subtype',
-        {0x10000000} 'NPC Negative Use Dialogue Subtype',
-        {0x20000000} 'NPC Neutral Use Dialogue Subtype',
-        {0x40000000} 'NPC Question Use Dialogue Subtype'
-      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
-      wbInteger(SNAM, 'Start Phase', itU32),
-      wbInteger(ENAM, 'End Phase', itU32),
-      wbRUnion('Scene Action Data', [
-        wbScenePackageAction,
-        wbSceneTimerAction,
-        wbScenePlayerDialogueAction,
-        //wbScenePlayerDialogueActionOld,
-        wbSceneStartSceneAction,
-        wbSceneStartSceneActionAlt,
-        wbSceneNPCResponseDialogue,
-        wbSceneRadioDialogueAction
-      ]),
-      wbEmpty(ANAM, 'End Marker', cpNormal, True)
-    ])),
-    wbFormIDCk(PNAM, 'Parent Quest', [QUST]),
+    wbFormIDCk(PNAM, 'Parent Quest', [QUST]).SetRequired,
     wbInteger(INAM, 'Last Action Index', itU32),
     wbUnknown(VNAM),
     wbFloat(CNAM, 'Camera Distance Override'),

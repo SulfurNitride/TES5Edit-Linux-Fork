@@ -1284,53 +1284,6 @@ begin
   Result := wbAliasLinksTo(lAlias, aElement.ContainingMainRecord);
 end;
 
-// takes element being processed for toStr/toLink, returns Quest record or nil
-function wbParentQuestHelper(const aElement: IwbElement): IwbElement;
-var
-  Container   : IwbContainer;
-  MainRecord  : IwbMainRecord;
-  Group       : IwbGroupRecord;
-begin
-  if not Assigned(aElement) then
-    Exit;
-
-  MainRecord := aElement.ContainingMainRecord;
-
-  while MainRecord.Signature <> QUST do begin
-    Container := MainRecord.Container;
-    if Supports(Container, IwbGroupRecord, Group) then
-      MainRecord := Group.ChildrenOf
-    else
-      Exit;
-
-    if not Assigned(MainRecord) then
-      Exit;
-  end;
-
-  Result := MainRecord;
-end;
-
-function wbSCENAliasLinksTo(const aElement: IwbElement): IwbElement;
-var
-  Container  : IwbContainer;
-begin
-  Result := nil;
-
-  if not wbResolveAlias then
-    Exit;
-
-  Container := aElement.ContainingMainRecord;
-
-  if not Assigned(Container) then
-    Exit;
-
-  var lAlias := aElement.NativeValue;
-  if not VarIsOrdinal(lAlias) then
-    Exit;
-
-  Result := wbAliasLinksTo(lAlias, wbParentQuestHelper(aElement));
-end;
-
 function wbStarIDToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 var
   lName : string;
@@ -1508,7 +1461,7 @@ begin
   lContainer.Assign(1, lElement, False);
 end;
 
-procedure wbSCENTimelineTypeAfterSetCallback(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+procedure wbSCENTimelineTypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 var
   lContainer: IwbContainerElementRef;
   lTemplate: TwbTemplateElements;
@@ -4937,8 +4890,8 @@ begin
 
   var wbHeadtracking := wbRStruct('Head Tracking', [
     wbMarker(HNAM).SetRequired,
-    wbArray(HTID, ' Aliases',
-      wbInteger('Alias ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+    wbArray(HTID, ' Actors',
+      wbInteger('Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
         .SetDefaultNativeValue(-1)
         .SetLinksToCallback(wbSCENAliasLinksTo)),
     wbEmpty(FNAM, 'Force Rotate'),
@@ -11274,405 +11227,375 @@ end;
   wbRecord(SCEN, 'Scene', [
     wbEDID,
     wbVMADFragmentedSCEN,
-    wbInteger(FNAM, 'Flags', itU32, wbFlags([
-      {0x00000001} 'Begin on Quest Start',
-      {0x00000002} 'Stop on Quest End',
-      {0x00000004} 'Top Level Topics On End',
-      {0x00000008} 'Interruptable',
-      {0x00000010} 'Player Dialogue',
-      {0x00000020} 'Prevent Player Exit Dialogue',
-      {0x00000040} 'Unknown 6',
-      {0x00000080} 'Unknown 7',
-      {0x00000100} 'Speech Challenge',
-      {0x00000200} 'Unknown 9',
-      {0x00000400} 'Allow/Disable Dialogue Camera',
-      {0x00000800} 'No Follower Idle Chatter',
-      {0x00001000} 'Greeting',
-      {0x00002000} 'Top Level',
-      {0x00004000} 'Force Primary Actor Alias',
-      {0x00008000} 'Hailing',
-      {0x00010000} 'Ship Dialogue Only',
-      {0x00020000} 'Unknown 17',
-      {0x00040000} 'Unknown 18',
-      {0x00080000} 'Unknown 19',
-      {0x00100000} 'Unknown 20',
-      {0x00200000} 'Unknown 21'
-    ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
+    wbInteger(FNAM, 'Flags', itU32,
+      wbFlags([
+      {0} 'Begin on Quest Start',
+      {1} 'Stop on Quest End',
+      {2} 'Top Level Topics On End',
+      {3} 'Interruptable',
+      {4} 'Player Dialogue',
+      {5} 'Prevent Player Exit Dialogue',
+      {6} 'Unknown 6',
+      {7} 'Unknown 7',
+      {8} 'Speech Challenge',
+      {9} 'Unknown 9',
+      {10} 'Allow/Disable Dialogue Camera',
+      {11} 'No Follower Idle Chatter',
+      {12} 'Greeting',
+      {13} 'Top Level',
+      {14} 'Force Primary Actor Alias',
+      {15} 'Hailing',
+      {16} 'Ship Dialogue Only',
+      {17} 'Unknown 17',
+      {18} 'Unknown 18',
+      {19} 'Unknown 19',
+      {20} 'Unknown 20',
+      {21} 'Unknown 21'
+      ])
+    ).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbRArray('Phases',
       wbRStruct('Phase', [
-        wbEmpty(HNAM, 'Marker Phase Start', cpNormal, True),
-        wbString(NAM0, 'Name', 0, cpNormal, True),
+        wbEmpty(HNAM, 'Marker Phase Start').SetRequired,
+        wbString(NAM0, 'Name').SetRequired,
         wbRStruct('Start Conditions', [wbConditions]),
-        wbEmpty(NEXT, 'End Marker Start Conditions', cpNormal, True),
+        wbEmpty(NEXT, 'End Marker Start Conditions').SetRequired,
         wbRStruct('Completion Conditions', [wbConditions]),
-        wbEmpty(NEXT, 'End Marker Completion Conditions', cpNormal, True),
-        wbInteger(WNAM, 'Editor Width', itU32, nil, cpNormal, True, false, nil, nil, 350),
-        wbInteger(FNAM, 'Flags', itU16, wbFlags([
-          {0x0001} 'Start - WalkAway Phase',
-          {0x0002} 'Don''t Run End Scripts on Scene Jump',
-          {0x0004} 'Start - Inherit In Templated Scenes',
-          {0x0008} 'FX Actions - Random',
-          {0x0010} 'FX Actions - Do All Once'
-        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
+        wbEmpty(NEXT, 'End Marker Completion Conditions').SetRequired,
+        wbInteger(WNAM, 'Editor Width', itU32)
+          .SetDefaultNativeValue(350)
+          .SetRequired,
+        wbInteger(FNAM, 'Flags', itU16,
+          wbFlags([
+          {0} 'Start - WalkAway Phase',
+          {1} 'Don''t Run End Scripts on Scene Jump',
+          {2} 'Start - Inherit In Templated Scenes',
+          {3} 'FX Actions - Random',
+          {4} 'FX Actions - Do All Once'
+          ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbStruct(SCQS, 'Set Parent Quest Stage', [
           wbInteger('On Start', itS16),
           wbInteger('On Completion', itS16)
         ]),
         wbEmpty(SPMV, 'Phase Visibility Marker'),
-        wbEmpty(HNAM, 'Marker Phase End', cpNormal, True)
-      ])
-    ),
-    wbRArray('Actors', wbRStruct('Actor', [
-      wbInteger(ALID, 'Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
-        .SetDefaultNativeValue(-1)
-        .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
-        .SetRequired,
-      wbInteger(LNAM, 'Flags', itU32, wbFlags([
-        'No Player Activation',
-        'Optional',
-        'Can Be Removed',
-        'Run Only Scene Packages',
-        'No Command State',
-        'No Player Dialogue',
-        'Timeline Headtracking',
-        'Timeline Cameras'
-      ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
-      wbInteger(DNAM, 'Behaviour Flags', itU32, wbFlags([
-        'Death Pause',
-        'Death End',
-        'Combat Pause',
-        'Combat End',
-        'Dialogue Pause',
-        'Dialogue End',
-        'Observe Combat Pause',
-        'Observe Combat End',
-        'Reaction Radius Pause',
-        'Reaction Radius End'
-      ]), cpNormal, True, false, nil, nil, 26).IncludeFlag(dfCollapsed, wbCollapseFlags)
-    ])),
-    wbRArray('Actions', wbRStructSK([0, 1, 3, 4], 'Action', [
-      wbInteger(ANAM, 'Type', itU16, wbEnum([
-        {0} 'Dialogue',
-        {1} 'Package',
-        {2} 'Timer',
-        {3} 'Player Dialogue',
-        {4} 'Start Scene',
-        {5} 'Radio',
-        {6} 'Move',
-        {7} 'Camera',
-        {8} 'FX',
-        {9} 'Animation',
-        {10}'Timeline'
-      ]), cpNormal, True)
-      .SetAfterSet(procedure(const aElement: IwbElement; const aOldValue, aNewValue: Variant)
-        begin
-          if not (VarIsOrdinal(aOldValue) and VarIsOrdinal(aNewValue)) then
-            Exit;
-          if VarSameValue(aOldValue, aNewValue) then
-            Exit;
-          if not Assigned(aElement) then
-            Exit;
-          var lContainer: IwbContainerElementRef;
-          if not Supports(aElement.Container, IwbContainerElementRef, lContainer) then
-            Exit;
-          var lDataElement := lContainer.ElementBySortOrder[8]; //'Type Specific Action' is the member with index 8 in this struct, be sure to adjust if adding more members before
-          if Assigned(lDataElement) and (lDataElement.Name <> aElement.Value) then
-            lDataElement.Remove;
-
-          {var lTemplate := aElement.Container.GetAssignTemplates(8);
-          if Length(lTemplate) > 0 then
-          Supports(IInterface(lTemplate[0]), IwbElement, lDataElement);
-          lContainer.Assign(8, lDataElement, False);}
-        end)
-      .IncludeFlag(dfIncludeValueInDisplaySignature),
-      wbString(NAM0, 'Name').SetRequired,
-      wbString(SNOT, 'Scene Notes'),
-      wbInteger(ALID, 'Alias ID', itS32, wbSCENQuestAliasToStr, wbStrToAlias, cpNormal, True)
-        .SetDefaultNativeValue(-1)
-        .SetLinksToCallbackOnValue(wbSCENAliasLinksTo),                         //ALID  uint32 // +0x08 - only used if the value is not 0xFFFFFFFB (-5)
-      wbInteger(INAM, 'Index', itU32).SetRequired,                              //INAM  uint32 // +0x10
-      wbInteger(FNAM, 'Flags', itU32, wbFlags([                                 //FNAM  uint32 // +0x0C
-        {0x00000001} 'Unknown 0',
-        {0x00000002} 'Unknown 1',
-        {0x00000004} 'Unknown 2',
-        {0x00000008} 'Unknown 3',
-        {0x00000010} 'Unknown 4',
-        {0x00000020} 'Unknown 5',
-        {0x00000040} 'Unknown 6',
-        {0x00000080} 'Player Positive Use Dialogue Subtype / Hold Into Next Scene',
-        {0x00000100} 'Player Negative Use Dialogue Subtype',
-        {0x00000200} 'Player Neutral Use Dialogue Subtype',
-        {0x00000400} 'Use Dialogue Subtype',
-        {0x00000800} 'Player Question Use Dialogue Subtype',
-        {0x00001000} 'Keep/Clear Target on Action End',
-        {0x00002000} 'Unknown 13',
-        {0x00004000} 'Run on End of Phase',
-        {0x00008000} 'Face Target',
-        {0x00010000} 'Looping',
-        {0x00020000} 'Headtrack Player',
-        {0x00040000} 'Unknown 18',
-        {0x00080000} 'Ignore For Completion',
-        {0x00100000} 'Unknown 20',
-        {0x00200000} 'Disable Camera Speaker Target',
-        {0x00400000} 'Complete Face Target',
-        {0x00800000} 'Animation Only Movement',
-        {0x01000000} 'Unknown 24',
-        {0x02000000} 'Unknown 25',
-        {0x04000000} 'Unknown 26',
-        {0x08000000} 'NPC Positive Use Dialogue Subtype',
-        {0x10000000} 'NPC Negative Use Dialogue Subtype',
-        {0x20000000} 'NPC Neutral Use Dialogue Subtype',
-        {0x40000000} 'NPC Question Use Dialogue Subtype'
-      ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
-      .SetRequired,
-      wbInteger(SNAM, 'Start Phase', itU32).SetRequired,                        //SNAM  uint32 // +0x14 - cast to uint16, ie upper two bytes are dropped
-      wbInteger(ENAM, 'End Phase', itU32).SetRequired,                          //ENAM  uint32 // +0x16 - cast to uint16, ie upper two bytes are dropped
-
-      wbRUnion('Type Specific Action', function(const aContainer: IwbContainerElementRef): Integer
-        begin
-          Result := -1;
-          if not Assigned(aContainer) then
-            Exit;
-          var lType := aContainer.ElementNativeValues[ANAM];
-          if not VarIsOrdinal(lType) then
-            Exit;
-          Result := lType;
-        end,
-      [
-        {0 Dialogue}
-        wbRStruct('Dialogue', [
-          wbFormIDCk(DATA, 'Topic', [DIAL, NULL]).SetRequired,                  //DATA  uint32 // +0x70
-          wbFloat(DMAX, 'Looping - Max').SetRequired,                           //DMAX  uint32 // +0x80
-          wbFloat(DMIN, 'Looping - Min').SetRequired,                           //DMIN  uint32 // +0x84
-          wbHNAMHNAM.SetRequired,                                               //HNAM  none   // +0x50; probably formid; kicks off component-style read (see HNAM fields)
-          wbFormIDCk(VENC, 'Dialogue Subtype', [KYWD]),                         //VENC  uint32 // +0x78
-          wbSoundReference(WED0, 'Voice Override')                              //WED0  SoundReference // +0x20
-        ]),
-        {1 Package}
-        wbRStruct('Package', [
-          wbRArray('Packages', wbFormIDCk(PNAM, 'Package', [PACK]))
-        ]),
-        {2 Timer}
-        wbRStruct('Timer', [
-          wbFloat(SNAM, 'Max Seconds'),                                         //SNAM  uint32 // +0x20, +0x24
-          wbInteger(SCQS, 'Set Parent Quest Stage', itS16),                     //SCQS  int16 // if not -1, registers the timer action in some list with the value //never seen in Starfield.esm
-          wbFloat(TNAM, 'Min Seconds'),                                         //TNAM  uint32 // +0x24
-          wbEmpty(HNAM, 'Hold For Animation Event'),                            //not documented by gibbed, always (4x) empty in Starfield.esm
-          wbInteger(INTV, 'Unknown', itS16)                                     //INTV  int16 // same as SCQS //never seen in Starfield.esm
-        ]),
-        {3 Player Dialogue}
-        wbRStruct('Player Dialogue', [
-          wbSoundReference(WED0).SetRequired(False),                            //WED0  SoundReference // +0x40
-          wbHNAMHNAM.SetRequired,                                               //HNAM  none // +0x20; probably formid; kicks off component-style read (see HNAM fields)
-          wbInteger(DTGT, 'Dialogue Target Actor', itS32, wbSCENQuestAliasToStr, wbStrToAlias, cpNormal, True)
-            .SetDefaultNativeValue(-1)
-            .SetLinksToCallbackOnValue(wbSCENAliasLinksTo),                     //DTGT  uint32 // +0x90 // as an alias ID
-          wbRStructs('Dialogue Topics', 'Choice', [
-            wbFormIDCk(ESCE, 'Player Choice', [DIAL, NULL]),                    //ESCE  uint32 // +0x88 array; repeated; appears to allocate a new item into the array, with the value set to item+0x00 and item+0x08; likely acts as start marker for an item in this array
-            wbFormIDCk(PPST, 'Player Dialogue Subtype', [KYWD]),                //PPST  uint32 // +0x88 array; repeated; stored in item+0x10, also sets item+0x24 to 1 (uint8/byte)
-            wbRStruct('NPC Dialogue Subtype', [
-              wbFormIDCk(PNST, 'Subtype', [KYWD], False, cpNormal, True),       //PNST  uint32 // +0x88 array; repeated; stored in item+0x18, also sets item+0x25 to 1 (uint8/byte)
-              wbFormIDCk(PASP, 'Start Scene', [NULL, SCEN]),                    //PASP  uint32 // +0x88 array; repeated; stored in item+0x28
-              wbInteger(PAPI, 'Phase Index', itU32),                            //PAPI  uint32 // +0x88 array; repeated; stored in item+0x20; some sort of parenting/hierarchy index with the items in the array
-              wbString(PAPN, 'Phase Name'),
-              wbUnknown(PAQO)                                                   //PAQO  uint32 // Seems to get set if a NPC dialogue subtype is present and the 'Only Parent Quest Scenes' box is unchecked. But has 4 bytes of zero.
-            ]),
-            wbFormIDCk(ESCS, 'NPC Response', [DIAL, NULL]).SetRequired          //ESCS  uint32 // +0x88 array; repeated; each item is 0x30 bytes; stored in item+0x08; increases +0x88 index *after* storing the value, likely acts as end marker for an item in this array
-          ]),
-          wbRStruct('NPC Reaction', [
-            wbInteger(ATTR, 'React to Action', itU32, nil, cpNormal, True),     //ATTR  uint32 // +0x94
-            wbEmpty(ACBS, 'NPC Reaction flag', cpNormal, True)                  //ACBS  nothing // +0x98 set to 1 (uint8/bool)
-          ]),
-          wbEmpty(JAIL, 'Unknown')                                              //JAIL  none // +0x99 set to 1 (uint8/bool) // never seen in Starfield.esm
-        ])
-        .IncludeFlag(dfAllowAnyMember)
-        .IncludeFlag(dfStructFirstNotRequired),
-        {4 Start Scene}
-        wbRStruct('Start Scene', [
-          wbRStructs('Start Scenes', 'Start Scene', [
-            wbRUnion('Scene', [
-              wbFormIDCk(LCEP, 'Scene', [SCEN]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole),  //LCEP same as STSC
-              wbFormIDCk(STSC, 'Scene', [SCEN]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole)   //STSC +0x28 array; repeated; appears to allocate a new item into the array, with the value set to item+0x18; likely acts as start marker for an item in this array
-            ]),
-            wbRUnion('Phase Index', [
-              wbInteger(INTT, 'Phase Index', itU16).SetRequired,                //INTT  uint16 // +0x28 array; repeated; sets to item+0x0E
-              wbInteger(ACTV, 'Phase Index', itU16).SetRequired                 //ACTV  same as INTT
-            ]).SetRequired,
-            wbString(SSPN, 'Start Phase for Scene'),                            //not documented by gibbed from source, occurs in Starfield.esm
-            wbCITCReq,                                                          //CITC uint32 // +0x28 array; repeated; item+0x08; count of following fields, CTDA/CNDD, others will be ignored
-            wbConditions
-          ]).SetRequired(False),
-          wbEmpty(HTID, 'End Scene Flag')
-        ], [], cpNormal, True)
-        .IncludeFlag(dfAllowAnyMember)
-        .IncludeFlag(dfStructFirstNotRequired),
-        {5 Radio}
-        wbRStruct('Radio', [
-          wbFormIDCk(DATA, 'Topic', [DIAL, NULL]).SetRequired,                  //DATA  uint32 // +0x80  probably formid
-          wbSoundReference(WED0, 'Voice Override'),                             //WED0  SoundReference // +0x20
-          wbSoundReference(WED1, 'Sound Effect'),                               //WED1  SoundReference // +0x50
-          wbFormIDCk(VENC, 'Dialogue Subtype', [KYWD])                          //uint32 // +0x88  probably formid
-        ]),
-        {6 Move}
-        wbRStruct('Move', [
-          wbEmpty(DNAM, 'Disable Character Controller'),                        //DNAM  none // sets +0x3D to 1 (uint8/bool)
-          wbEmpty(NVCI, 'Off Navmesh Flag'),                                    //NVCI  none // sets +0x3C to 0 (uint8/bool)
-          wbInteger(ALLA, 'Target Alias', itS32, wbSCENQuestAliasToStr, wbStrToAlias, cpNormal, True)
-            .SetDefaultNativeValue(-1)
-            .SetLinksToCallbackOnValue(wbSCENAliasLinksTo),                     //ALLA  uint32 // +0x34
-          wbFormIDCk(REPL, 'Target Reference', sigReferences).SetRequired,      //REPL  uint32 // +0x20  probably formid
-          wbFloat(HNAM, 'Front/Back').SetRequired,                              //HNAM  uint32 // +0x28
-          wbFloat(VCLR, 'Left/Right').SetRequired,                              //VCLR  uint32 // +0x2C
-          wbFloat(VNML, 'Up/Down').SetRequired,                                 //VNML  uint32 // +0x30
-          wbInteger(FLMV, 'Flags', itU32, wbFlags([                             //FLMV  uint32 // +0x38
-            {0x00000001} 'Front',
-            {0x00000002} 'Back',
-            {0x00000004} 'Right',
-            {0x00000008} 'Left',
-            {0x00000010} 'Target Alias',
-            {0x00000020} 'Target Reference',
-            {0x00000040} 'Up',
-            {0x00000080} 'Down',
-            {0x00000100} 'Unknown 8',
-            {0x00000200} 'Unknown 9',
-            {0x00000400} 'Unknown 10',
-            {0x00000800} 'Unknown 11',
-            {0x00001000} 'Unknown 12',
-            {0x00002000} 'Unknown 13',
-            {0x00004000} 'Unknown 14',
-            {0x00008000} 'Unknown 15',
-            {0x00010000} 'Unknown 16'
-          ])).IncludeFlag(dfCollapsed, wbCollapseFlags).SetRequired
-        ])
-        .IncludeFlag(dfAllowAnyMember)
-        .IncludeFlag(dfStructFirstNotRequired),
-        {7 Camera}
-        wbRStruct('Camera', [
-          wbRStructs('Camera Shots', 'Camera Shot', [
-            wbFormIDCk(CNAM, 'Camera Shot', [NULL, CAMS]),                      //CNAM  uint32 // +0x28 array; repeated; allocates new item for the array; value set to item+0x20 probably formid; kicks off component-style read
-            wbFormIDCk(ALLA, 'Camera Location Reference', sigReferences).SetRequired, //ALLA  formid // +0x28
-            wbFormIDCk(REPL, 'Look Target Reference', sigReferences).SetRequired,     //REPL  formid // +0x30
-            wbInteger(HNAM, 'Look Target Alias', itS32, wbSCENQuestAliasToStr, wbStrToAlias, cpNormal, True)
-              .SetDefaultNativeValue(-1)
-              .SetLinksToCallbackOnValue(wbSCENAliasLinksTo),                   //HNAM  uint32 // +0x40
-            wbInteger(VCLR, 'Camera Location Alias', itS32, wbSCENQuestAliasToStr, wbStrToAlias, cpNormal, True)
-              .SetDefaultNativeValue(-1)
-              .SetLinksToCallbackOnValue(wbSCENAliasLinksTo),                   //VCLR  uint32 // +0x3C
-            wbFloat(LVCR, 'Delay Start Time Action').SetRequired,               //LVCR  uint32 // +0x38
-            wbEmpty(BTXT, 'Use Camera Location Reference'),                     //BTXT  none // sets +0x44 to 1 (uint8/bool)
-            wbEmpty(ATXT, 'Use Look Target Reference'),                         //ATXT  none // sets +0x45 to 1 (uint8/bool)
-            wbEmpty(VTXT, 'Use Camera Location Alias'),                         //VTXT  none // sets +0x46 to 1 (uint8/bool)
-            wbEmpty(AIDT, 'Ignore Collision'),                                  //AIDT  none // sets +0x48 to 1 (uint8/bool)
-            wbEmpty(MPCD, 'Use Look Target Alias'),                             //MPCD  none // sets +0x47 to 1 (uint8/bool)
-            wbEmpty(VNAM, 'Force Look At 1st Person Camera'),                   //VNAM  none // sets +0x49 to 1 (uint8/bool)
-            wbConditions,                                                       //CTDA  standard CTDA reading // +0x10 //not found in Starfield.esm
-            wbMarkerReq(XNAM)                                                   //XNAM  end marker for CNAM fields
+        wbEmpty(HNAM, 'Marker Phase End').SetRequired
+      ])),
+    wbRArray('Actors',
+      wbRStruct('Actor', [
+        wbInteger(ALID, 'Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+          .SetDefaultNativeValue(-1)
+          .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
+          .SetRequired,
+        wbInteger(LNAM, 'Flags', itU32,
+          wbFlags([
+          {0} 'No Player Activation',
+          {1} 'Optional',
+          {2} 'Can Be Removed',
+          {3} 'Run Only Scene Packages',
+          {4} 'No Command State',
+          {5} 'No Player Dialogue',
+          {6} 'Timeline Headtracking',
+          {7} 'Timeline Cameras'
           ])
-        ]),
-        {8 FX}
-        wbRStruct('FX', [
-          wbFormIDCk(REPL, 'Image Space Mod', [NULL, IMAD]).SetRequired,        //REPL  uint32 // +0x68  probably formid
-          wbFloat(HNAM, 'Fade Out Time').SetRequired,                           //HNAM  uint32 // +0x78
-          wbFloat(VCLR, 'IS Strength/Sound Volume').SetRequired,                //VCLR  uint32 // +0x7C
-          wbFloat(BTXT, 'Start Time').SetRequired,                              //BTXT  uint32 // +0x80
-          wbInteger(FLMV, 'Flags', itU32, wbFlags([                             //FLMV  uint32 // +0x88
-            {0x00000001} 'Fade Out',
-            {0x00000002} 'Fade In',
-            {0x00000004} 'Fader - White',
-            {0x00000008} 'Fader - Black',
-            {0x00000010} 'Use Fader Opts',
-            {0x00000020} 'Use Image Space Mod',
-            {0x00000040} 'Hold Fade Out',
-            {0x00000080} 'Use Sound File',
-            {0x00000100} 'Use Reference',
-            {0x00000200} 'Use Alias',
-            {0x00000400} 'Use Disable/Enable Reference',
-            {0x00000800} 'Enable Reference',
-            {0x00001000} 'Disable Reference',
-            {0x00002000} 'Unknown 13',
-            {0x00004000} 'Unknown 14',
-            {0x00008000} 'Unknown 15',
-            {0x00010000} 'Unknown 16'
-          ])).IncludeFlag(dfCollapsed, wbCollapseFlags).SetRequired,
-          wbSoundReference(WED0),                                               //WED0  SoundReference // +0x38
-          wbConditions,                                                              //CTDA  standard CTDA reading // +0x20
-          wbFormIDCk(BIPL, 'Reference', [REFR, PLYR, NULL]).SetRequired,        //BIPL  uint32 // +0x70  probably formid
-          wbInteger(LVLO, 'Alias', itS32, wbSCENQuestAliasToStr, wbStrToAlias, cpNormal, True)
-            .SetDefaultNativeValue(-1)
-            .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)                      //LVLO  uint32 // +0x84
-        ]),
-        {9 Animation}
-        wbRStruct('Animation', [
-          wbRArray('Animations', wbBNAMAnimation)
-        ]),
-        {10 Timeline}
-        wbRStruct('Timeline', [
-          wbInteger(TNAM, 'Type', itU32, wbEnum([
-            {0} 'Headtrack',
-            {1} 'Headtrack Stop',
-            {2} 'Camera',
-            {3} 'Phase Time',
-            {4} 'Headtrack Angles',
-            {5} 'Eyetrack Angles',
-            {6} 'Headtrack Disable',
-            {7} 'Headtrack Enable'
-          ])).SetAfterSet(wbSCENTimelineTypeAfterSetCallback),
-          wbFloat(SNAM, 'Start Time', cpNormal, True),
-          wbRUnion('Data', function(const aContainer: IwbContainerElementRef): Integer
-            begin
-              Result := -1;
-              if not Assigned(aContainer) then
-                Exit;
-              var lType := aContainer.ElementNativeValues[TNAM];
-              if not VarIsOrdinal(lType) then
-                Exit;
-
-              case lType of
-                2:      // Camera
-                  Result := 1;
-                4, 5:   // Headtrack/Eyetrack Angles
-                  Result := 2;
-                0, 7:   // Headtrack/Headtrack Enable
-                  Result := 3;
-                else
-                 Result := 0;
-              end;
-            end, [
-          {0} wbRStruct('Data', [
-                wbByteArray(UNAM, 'Unused', 4, cpIgnore, True),
-                wbByteArray(LNAM, 'Unused', 4, cpIgnore, True),
-                wbByteArray(CNAM, 'Unused', 4, cpIgnore, True)
+        ).IncludeFlag(dfCollapsed, wbCollapseFlags)
+         .SetRequired,
+        wbInteger(DNAM, 'Behaviour Flags', itU32,
+          wbFlags([
+          {0} 'Death Pause',
+          {1} 'Death End',
+          {2} 'Combat Pause',
+          {3} 'Combat End',
+          {4} 'Dialogue Pause',
+          {5} 'Dialogue End',
+          {6} 'Observe Combat Pause',
+          {7} 'Observe Combat End',
+          {8} 'Reaction Radius Pause',
+          {9} 'Reaction Radius End'
+          ])
+        ).SetDefaultNativeValue(26)
+         .SetRequired
+         .IncludeFlag(dfCollapsed, wbCollapseFlags)
+      ])),
+    wbRArray('Actions',
+      wbRStructSK([0, 1, 3, 4], 'Action', [
+        wbInteger(ANAM, 'Type', itU16,
+          wbEnum([
+          {0} 'Dialogue',
+          {1} 'Package',
+          {2} 'Timer',
+          {3} 'Player Dialogue',
+          {4} 'Start Scene',
+          {5} 'Radio',
+          {6} 'Move',
+          {7} 'Camera',
+          {8} 'FX',
+          {9} 'Animation',
+          {10}'Timeline'
+          ])
+        ).SetAfterSet(wbSceneActionTypeAfterSet)
+         .SetRequired
+         .IncludeFlag(dfIncludeValueInDisplaySignature),
+        wbString(NAM0, 'Name').SetRequired,
+        wbString(SNOT, 'Scene Notes'),
+        wbInteger(ALID, 'Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)     //ALID  uint32 // +0x08 - only used if the value is not 0xFFFFFFFB (-5)
+          .SetDefaultNativeValue(-1)
+          .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
+          .SetRequired,
+        wbInteger(INAM, 'Index', itU32).SetRequired,                            //INAM  uint32 // +0x10
+        wbInteger(FNAM, 'Flags', itU32,                                         //FNAM  uint32 // +0x0C
+          wbFlags([
+          {0}  'Unknown 0',
+          {1}  'Unknown 1',
+          {2}  'Unknown 2',
+          {3}  'Unknown 3',
+          {4}  'Unknown 4',
+          {5}  'Unknown 5',
+          {6}  'Unknown 6',
+          {7}  'Player Positive Use Dialogue Subtype / Hold Into Next Scene',
+          {8}  'Player Negative Use Dialogue Subtype',
+          {9}  'Player Neutral Use Dialogue Subtype',
+          {10} 'Use Dialogue Subtype',
+          {11} 'Player Question Use Dialogue Subtype',
+          {12} 'Keep/Clear Target on Action End',
+          {13} 'Unknown 13',
+          {14} 'Run on End of Phase',
+          {15} 'Face Target',
+          {16} 'Looping',
+          {17} 'Headtrack Player',
+          {18} 'Unknown 18',
+          {19} 'Ignore For Completion',
+          {20} 'Unknown 20',
+          {21} 'Disable Camera Speaker Target',
+          {22} 'Complete Face Target',
+          {23} 'Animation Only Movement',
+          {24} 'Unknown 24',
+          {25} 'Unknown 25',
+          {26} 'Unknown 26',
+          {27} 'NPC Positive Use Dialogue Subtype',
+          {28} 'NPC Negative Use Dialogue Subtype',
+          {29} 'NPC Neutral Use Dialogue Subtype',
+          {30} 'NPC Question Use Dialogue Subtype'
+          ])
+        ).SetRequired
+         .IncludeFlag(dfCollapsed, wbCollapseFlags),
+        wbInteger(SNAM, 'Start Phase', itU32).SetRequired,                      //SNAM  uint32 // +0x14 - cast to uint16, ie upper two bytes are dropped
+        wbInteger(ENAM, 'End Phase', itU32).SetRequired,                        //ENAM  uint32 // +0x16 - cast to uint16, ie upper two bytes are dropped
+        wbRUnion('Type Specific Action', wbSceneActionTypeDecider, [
+        {0} wbRStruct('Dialogue', [
+              wbFormIDCk(DATA, 'Topic', [DIAL,NULL]).SetRequired,              //DATA  uint32 // +0x70
+              wbFloat(DMAX, 'Looping - Max').SetRequired,                       //DMAX  uint32 // +0x80
+              wbFloat(DMIN, 'Looping - Min').SetRequired,                       //DMIN  uint32 // +0x84
+              wbHeadtracking.SetRequired,                                       //HNAM  none   // +0x50; probably formid; kicks off component-style read (see HNAM fields)
+              wbFormIDCk(VENC, 'Dialogue Subtype', [KYWD]),                     //VENC  uint32 // +0x78
+              wbSoundReference(WED0, 'Voice Override')                          //WED0  SoundReference // +0x20
+            ]),
+        {1} wbRStruct('Package', [
+              wbRArray('Packages', wbFormIDCk(PNAM, 'Package', [PACK]))
+            ]),
+        {2} wbRStruct('Timer', [
+              wbFloat(SNAM, 'Max Seconds'),                                                  //SNAM  uint32 // +0x20, +0x24
+              wbInteger(SCQS, 'Set Parent Quest Stage', itS16),                              //SCQS  int16 // if not -1, registers the timer action in some list with the value //never seen in Starfield.esm
+              wbFloat(TNAM, 'Min Seconds'),                                                  //TNAM  uint32 // +0x24
+              wbEmpty(HNAM, 'Hold For Animation Event'),                                     //HNAM not documented by gibbed, always (4x) empty in Starfield.esm
+              wbInteger(INTV, 'Unknown', itS16)                                              //INTV  int16 // same as SCQS //never seen in Starfield.esm
+            ]),
+        {3} wbRStruct('Player Dialogue', [
+              wbSoundReference(WED0),                                           //WED0  SoundReference // +0x40
+              wbHeadtracking.SetRequired,                                                     //HNAM  none // +0x20; probably formid; kicks off component-style read (see HNAM fields)
+              wbInteger(DTGT, 'Dialogue Target Actor', itS32, wbSceneAliasToStr, wbAliasToInt)
+                .SetDefaultNativeValue(-1)
+                .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
+                .SetRequired,                                                   //DTGT  uint32 // +0x90 // as an alias ID
+              wbRStructs('Dialogue Topics', 'Choice', [
+                wbFormIDCk(ESCE, 'Player Choice', [DIAL,NULL]),                    //ESCE  uint32 // +0x88 array; repeated; appears to allocate a new item into the array, with the value set to item+0x00 and item+0x08; likely acts as start marker for an item in this array
+                wbFormIDCk(PPST, 'Player Dialogue Subtype', [KYWD]),                //PPST  uint32 // +0x88 array; repeated; stored in item+0x10, also sets item+0x24 to 1 (uint8/byte)
+                wbRStruct('NPC Dialogue Subtype', [
+                  wbFormIDCk(PNST, 'Subtype', [KYWD]).SetRequired,              //PNST  uint32 // +0x88 array; repeated; stored in item+0x18, also sets item+0x25 to 1 (uint8/byte)
+                  wbFormIDCk(PASP, 'Start Scene', [SCEN,NULL]),                    //PASP  uint32 // +0x88 array; repeated; stored in item+0x28
+                  wbInteger(PAPI, 'Phase Index', itU32),                            //PAPI  uint32 // +0x88 array; repeated; stored in item+0x20; some sort of parenting/hierarchy index with the items in the array
+                  wbString(PAPN, 'Phase Name'),
+                  wbUnknown(PAQO)                                                   //PAQO  uint32 // Seems to get set if a NPC dialogue subtype is present and the 'Only Parent Quest Scenes' box is unchecked. But has 4 bytes of zero.
+                ]),
+                wbFormIDCk(ESCS, 'NPC Response', [DIAL,NULL]).SetRequired          //ESCS  uint32 // +0x88 array; repeated; each item is 0x30 bytes; stored in item+0x08; increases +0x88 index *after* storing the value, likely acts as end marker for an item in this array
               ]),
-          {1} wbRStruct('Data', [  //  Camera
-                wbInteger(UNAM, 'Target Alias ID', itS32, wbSCENQuestAliasToStr, wbStrToAlias, cpNormal, True)
+              wbRStruct('NPC Reaction', [
+                wbInteger(ATTR, 'React to Action', itU32).SetRequired,          //ATTR  uint32 // +0x94
+                wbEmpty(ACBS, 'NPC Reaction flag').SetRequired                  //ACBS  nothing // +0x98 set to 1 (uint8/bool)
+              ]),
+              wbEmpty(JAIL, 'Unknown')                                              //JAIL  none // +0x99 set to 1 (uint8/bool) // never seen in Starfield.esm
+            ]).IncludeFlag(dfAllowAnyMember)
+              .IncludeFlag(dfStructFirstNotRequired),
+        {4} wbRStruct('Start Scene', [
+              wbRStructs('Start Scenes', 'Start Scene', [
+                wbRUnion('Scene', [
+                  wbFormIDCk(LCEP, 'Scene', [SCEN]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole),  //LCEP same as STSC
+                  wbFormIDCk(STSC, 'Scene', [SCEN]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole)   //STSC +0x28 array; repeated; appears to allocate a new item into the array, with the value set to item+0x18; likely acts as start marker for an item in this array
+                ]),
+                wbRUnion('Phase Index', [
+                  wbInteger(INTT, 'Phase Index', itU16).SetRequired,                //INTT  uint16 // +0x28 array; repeated; sets to item+0x0E
+                  wbInteger(ACTV, 'Phase Index', itU16).SetRequired                 //ACTV  same as INTT
+                ]).SetRequired,
+                wbString(SSPN, 'Start Phase for Scene'),                            //not documented by gibbed from source, occurs in Starfield.esm
+                wbCITCReq,                                                          //CITC uint32 // +0x28 array; repeated; item+0x08; count of following fields, CTDA/CNDD, others will be ignored
+                wbConditions
+              ]),
+              wbEmpty(HTID, 'End Scene Flag')
+            ]).SetRequired
+              .IncludeFlag(dfAllowAnyMember)
+              .IncludeFlag(dfStructFirstNotRequired),
+        {5} wbRStruct('Radio', [
+              wbFormIDCk(DATA, 'Topic', [DIAL,NULL]).SetRequired,                  //DATA  uint32 // +0x80  probably formid
+              wbSoundReference(WED0, 'Voice Override'),                             //WED0  SoundReference // +0x20
+              wbSoundReference(WED1, 'Sound Effect'),                               //WED1  SoundReference // +0x50
+              wbFormIDCk(VENC, 'Dialogue Subtype', [KYWD])                          //uint32 // +0x88  probably formid
+            ]),
+        {6} wbRStruct('Move', [
+              wbEmpty(DNAM, 'Disable Character Controller'),                        //DNAM  none // sets +0x3D to 1 (uint8/bool)
+              wbEmpty(NVCI, 'Off Navmesh Flag'),                                    //NVCI  none // sets +0x3C to 0 (uint8/bool)
+              wbInteger(ALLA, 'Target Alias', itS32, wbSceneAliasToStr, wbAliasToInt) //ALLA  uint32 // +0x34
+                .SetDefaultNativeValue(-1)
+                .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
+                .SetRequired,
+              wbFormIDCk(REPL, 'Target Reference', sigReferences).SetRequired,      //REPL  uint32 // +0x20  probably formid
+              wbFloat(HNAM, 'Front/Back').SetRequired,                              //HNAM  uint32 // +0x28
+              wbFloat(VCLR, 'Left/Right').SetRequired,                              //VCLR  uint32 // +0x2C
+              wbFloat(VNML, 'Up/Down').SetRequired,                                 //VNML  uint32 // +0x30
+              wbInteger(FLMV, 'Flags', itU32,                                       //FLMV  uint32 // +0x38
+                wbFlags([
+                {0}  'Front',
+                {1}  'Back',
+                {2}  'Right',
+                {3}  'Left',
+                {4}  'Target Alias',
+                {5}  'Target Reference',
+                {6}  'Up',
+                {7}  'Down',
+                {8}  'Unknown 8',
+                {9}  'Unknown 9',
+                {10} 'Unknown 10',
+                {11} 'Unknown 11',
+                {11} 'Unknown 12',
+                {12} 'Unknown 13',
+                {13} 'Unknown 14',
+                {14} 'Unknown 15',
+                {15} 'Unknown 16'
+                ])).IncludeFlag(dfCollapsed, wbCollapseFlags).SetRequired
+            ]).IncludeFlag(dfAllowAnyMember)
+              .IncludeFlag(dfStructFirstNotRequired),
+        {7} wbRStruct('Camera', [
+              wbRStructs('Camera Shots', 'Camera Shot', [
+                wbFormIDCk(CNAM, 'Camera Shot', [NULL, CAMS]),                      //CNAM  uint32 // +0x28 array; repeated; allocates new item for the array; value set to item+0x20 probably formid; kicks off component-style read
+                wbFormIDCk(ALLA, 'Camera Location Reference', sigReferences).SetRequired, //ALLA  formid // +0x28
+                wbFormIDCk(REPL, 'Look Target Reference', sigReferences).SetRequired,     //REPL  formid // +0x30
+                wbInteger(HNAM, 'Look Target Alias', itS32, wbSceneAliasToStr, wbAliasToInt) //HNAM  uint32 // +0x40
+                  .SetDefaultNativeValue(-1)
                   .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
-                  .SetDefaultNativeValue(-1),
-                wbInteger(LNAM, 'Location Alias ID', itS32, wbSCENQuestAliasToStr, wbStrToAlias, cpNormal, True)
+                  .SetRequired,
+                wbInteger(VCLR, 'Camera Location Alias', itS32, wbSceneAliasToStr, wbAliasToInt)  //VCLR  uint32 // +0x3C
+                  .SetDefaultNativeValue(-1)
                   .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
-                  .SetDefaultNativeValue(-1),
-                wbFormIDCk(CNAM, 'Unknown', [CAMS], False, cpNormal, True)
-              ], [], cpNormal, True),
-          {2} wbRStruct('Data', [  // Headtrack/Eyetrack Angles
-                wbInteger(UNAM, 'Track Angle X', itS32, nil, cpNormal, True),
-                wbInteger(LNAM, 'Track Angle Y', itS32, nil, cpNormal, True),
-                wbByteArray(CNAM, 'Unused', 4, cpIgnore, True)
-              ], [], cpNormal, True),
-          {3} wbRStruct('Data', [  // Headtrack/Headtrack Enable
-                wbInteger(UNAM, 'Target Alias ID', itS32, wbSCENQuestAliasToStr, wbStrToAlias, cpNormal, True)
-                  .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
-                  .SetDefaultNativeValue(-1),
-                wbByteArray(LNAM, 'Unused', 4, cpIgnore, True),
-                wbByteArray(CNAM, 'Unused', 4, cpIgnore, True)
-              ], [], cpNormal, True)
-           ], [], cpNormal, True).IncludeFlag(dfMustBeUnion)
-           {end Timeline Runion Data}
-        ])
-      {end Type Specific Union}
-      ]),
-      wbMarkerReq(ANAM)
-    ])),
-
-    wbFormIDCk(PNAM, 'Quest', [QUST], False, cpNormal, True),
+                  .SetRequired,
+                wbFloat(LVCR, 'Delay Start Time Action').SetRequired,               //LVCR  uint32 // +0x38
+                wbEmpty(BTXT, 'Use Camera Location Reference'),                     //BTXT  none // sets +0x44 to 1 (uint8/bool)
+                wbEmpty(ATXT, 'Use Look Target Reference'),                         //ATXT  none // sets +0x45 to 1 (uint8/bool)
+                wbEmpty(VTXT, 'Use Camera Location Alias'),                         //VTXT  none // sets +0x46 to 1 (uint8/bool)
+                wbEmpty(AIDT, 'Ignore Collision'),                                  //AIDT  none // sets +0x48 to 1 (uint8/bool)
+                wbEmpty(MPCD, 'Use Look Target Alias'),                             //MPCD  none // sets +0x47 to 1 (uint8/bool)
+                wbEmpty(VNAM, 'Force Look At 1st Person Camera'),                   //VNAM  none // sets +0x49 to 1 (uint8/bool)
+                wbConditions,                                                       //CTDA  standard CTDA reading // +0x10 //not found in Starfield.esm
+                wbMarkerReq(XNAM)                                                   //XNAM  end marker for CNAM fields
+              ])
+            ]),
+        {8} wbRStruct('FX', [
+              wbFormIDCk(REPL, 'Image Space Mod', [NULL, IMAD]).SetRequired,        //REPL  uint32 // +0x68  probably formid
+              wbFloat(HNAM, 'Fade Out Time').SetRequired,                           //HNAM  uint32 // +0x78
+              wbFloat(VCLR, 'IS Strength/Sound Volume').SetRequired,                //VCLR  uint32 // +0x7C
+              wbFloat(BTXT, 'Start Time').SetRequired,                              //BTXT  uint32 // +0x80
+              wbInteger(FLMV, 'Flags', itU32,                                       //FLMV  uint32 // +0x88
+                wbFlags([
+                {0}  'Fade Out',
+                {1}  'Fade In',
+                {2}  'Fader - White',
+                {3}  'Fader - Black',
+                {4}  'Use Fader Opts',
+                {5}  'Use Image Space Mod',
+                {6}  'Hold Fade Out',
+                {7}  'Use Sound File',
+                {8}  'Use Reference',
+                {9}  'Use Alias',
+                {10} 'Use Disable/Enable Reference',
+                {11} 'Enable Reference',
+                {12} 'Disable Reference',
+                {13} 'Unknown 13',
+                {14} 'Unknown 14',
+                {15} 'Unknown 15',
+                {16} 'Unknown 16'
+                ])
+              ).SetRequired
+               .IncludeFlag(dfCollapsed, wbCollapseFlags),
+              wbSoundReference(WED0),                                               //WED0  SoundReference // +0x38
+              wbConditions,                                                              //CTDA  standard CTDA reading // +0x20
+              wbFormIDCk(BIPL, 'Reference', [REFR, PLYR, NULL]).SetRequired,        //BIPL  uint32 // +0x70  probably formid
+              wbInteger(LVLO, 'Alias', itS32, wbSceneAliasToStr, wbAliasToInt)     //LVLO  uint32 // +0x84
+                .SetDefaultNativeValue(-1)
+                .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
+                .SetRequired
+            ]),
+        {9} wbRStruct('Animation', [
+              wbRArray('Animations', wbBNAMAnimation)
+            ]),
+        {10} wbRStruct('Timeline', [
+               wbInteger(TNAM, 'Type', itU32,
+                 wbEnum([
+                 {0} 'Headtrack',
+                 {1} 'Headtrack Stop',
+                 {2} 'Camera',
+                 {3} 'Phase Time',
+                 {4} 'Headtrack Angles',
+                 {5} 'Eyetrack Angles',
+                 {6} 'Headtrack Disable',
+                 {7} 'Headtrack Enable'
+                 ])
+               ).SetAfterSet(wbSCENTimelineTypeAfterSet),
+               wbFloat(SNAM, 'Start Time').SetRequired,
+               wbRUnion('Data', wbSceneTimelineTypeDecider, [
+               {0} wbRStruct('Data', [  // Default
+                     wbUnused(UNAM, 4).SetRequired,
+                     wbUnused(LNAM, 4).SetRequired,
+                     wbUnused(CNAM, 4).SetRequired
+                   ]),
+               {1} wbRStruct('Data', [  //  Camera
+                     wbInteger(UNAM, 'Target Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+                       .SetDefaultNativeValue(-1)
+                       .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
+                       .SetRequired,
+                     wbInteger(LNAM, 'Location Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+                       .SetDefaultNativeValue(-1)
+                       .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
+                       .SetRequired,
+                     wbFormIDCk(CNAM, 'Unknown', [CAMS]).SetRequired
+                   ]).SetRequired,
+               {2} wbRStruct('Data', [  // Headtrack/Eyetrack Angles
+                     wbInteger(UNAM, 'Track Angle X', itS32).SetRequired,
+                     wbInteger(LNAM, 'Track Angle Y', itS32).SetRequired,
+                     wbUnused(CNAM, 4).SetRequired
+                   ]).SetRequired,
+               {3} wbRStruct('Data', [  // Headtrack/Headtrack Enable
+                     wbInteger(UNAM, 'Target Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+                       .SetDefaultNativeValue(-1)
+                       .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
+                       .SetRequired,
+                     wbUnused(LNAM, 4).SetRequired,
+                     wbUnused(CNAM, 4).SetRequired
+                   ]).SetRequired
+                ]).IncludeFlag(dfMustBeUnion)
+                  .SetRequired
+                {end Timeline Runion Data}
+             ])
+        {end Type Specific Union}
+        ]),
+        wbMarkerReq(ANAM)
+      ])),
+    wbFormIDCk(PNAM, 'Parent Quest', [QUST]).SetRequired,
     wbInteger(INAM, 'Last Action Index', itU32),
     wbUnknown(VNAM),
     wbConditions,
@@ -11685,30 +11608,39 @@ end;
     wbEmpty(BOLV, 'Unknown'), // seems to always be present unless DEVT is present
     wbInteger(XNAM, 'Index', itU32),
     wbInteger(SCPI, 'Priority', itU16),
-    wbInteger(JNAM, 'Override Subtitle Priority', itU32, wbEnum([
-      'Low',
-      'Normal',
-      'High',
-      'Force'
-    ])),
-    wbFormIDCk(SCPP, 'Unknown', [NULL, SCEN]),
+    wbInteger(JNAM, 'Override Subtitle Priority', itU32,
+      wbEnum([
+      {0} 'Low',
+      {1} 'Normal',
+      {2} 'High',
+      {3} 'Force'
+      ])),
+    wbFormIDCk(SCPP, 'Unknown', [SCEN,NULL]),
     wbRStruct('Speech Challenge Data', [
       wbEmpty(SCSP, 'Marker', cpNormal, True),
       wbArray(SPMA, 'Mandatory Next Challenges', wbFormIDCk('Challenge Scene', [SCEN])),
       wbArray(SPEX, 'Excluded Challenges', wbFormIDCk('Challenge Scene', [SCEN])),
-      wbInteger(SPRK, 'Risk', itU16, wbEnum([
-        'Easy',
-        'Medium',
-        'Hard',
-        'Always'
-      ]), cpNormal, True),
-      wbInteger(SPRW, 'Reward', itU32, nil, cpNormal, True),
+      wbInteger(SPRK, 'Risk', itU16,
+        wbEnum([
+        {0} 'Easy',
+        {1} 'Medium',
+        {2} 'Hard',
+        {3} 'Always'
+        ])
+      ).SetRequired,
+      wbInteger(SPRW, 'Reward', itU32).SetRequired,
       wbEmpty(SPRP, 'Repeatable Flag'),
       wbEmpty(SPDF, 'Default Flag'),
-      wbEmpty(SPPQ, 'Unknown', cpNormal, True),
-      wbArray(SPKW, 'AND - Keywords', wbFormIDCk('Keyword',[KYWD])).IncludeFlag(dfCollapsed, wbCollapseKeywords),
-      wbArray(SPKY, 'OR - Keywords', wbFormIDCk('Keyword',[KYWD])).IncludeFlag(dfCollapsed, wbCollapseKeywords),
-      wbArray(SPPK, 'Perks', wbFormIDCk('Perk', [PERK])).IncludeFlag(dfCollapsed, wbCollapsePerk)
+      wbEmpty(SPPQ, 'Unknown').SetRequired,
+      wbArray(SPKW, 'AND - Keywords',
+        wbFormIDCk('Keyword',[KYWD])
+      ).IncludeFlag(dfCollapsed, wbCollapseKeywords),
+      wbArray(SPKY, 'OR - Keywords',
+        wbFormIDCk('Keyword',[KYWD])
+      ).IncludeFlag(dfCollapsed, wbCollapseKeywords),
+      wbArray(SPPK, 'Perks',
+        wbFormIDCk('Perk', [PERK])
+      ).IncludeFlag(dfCollapsed, wbCollapsePerk)
     ]),
     wbEmpty(DEVT, 'Show One Dialogue Track Flag')
   ]).SetAddInfo(wbSCENAddInfo);
@@ -12031,7 +11963,15 @@ end;
       wbString(NAM4, 'Alternate LIP Text', 0, cpNormal, True),
       wbByteArray(NAM9, 'Text Hash'),
       wbBNAMAnimation,
-      wbHeadtracking,
+      wbRStruct('Head Tracking', [
+        wbMarker(HNAM).SetRequired,
+        wbArray(HTID, ' Aliases',
+          wbInteger('Actor ID', itS32, wbINFOAliasToStr, wbAliasToInt)
+            .SetDefaultNativeValue(-1)),
+        wbEmpty(FNAM, 'Force Rotate'),
+        wbEmpty(PNAM, 'Force Rotate Must Complete'),
+        wbMarker(HNAM).SetRequired
+      ]).IncludeFlag(dfTemplate),
       wbSoundReference(RVSH)
     ])),
     wbConditions,
