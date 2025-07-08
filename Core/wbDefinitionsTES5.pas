@@ -17,7 +17,6 @@ uses
 
 var
   wbBipedObjectFlags: IwbFlagsDef;
-  wbEquipType: IwbFlagsDef;
   wbFurnitureEntryTypeFlags: IwbFlagsDef;
   wbPKDTInterruptFlags: IwbFlagsDef;
 
@@ -2821,22 +2820,6 @@ begin
     {27} 'Furniture: Chairs',
     {28} 'Shouts'
     ]);
-
-  wbEquipType := wbFlags([
-    {0x00000001}'Hand To Hand Melee',
-    {0x00000002}'One Hand Sword',
-    {0x00000004}'One Hand Dagger',
-    {0x00000008}'One Hand Axe',
-    {0x00000010}'One Hand Mace',
-    {0x00000020}'Two Hand Sword',
-    {0x00000040}'Two Hand Axe',
-    {0x00000080}'Bow',
-    {0x00000100}'Staff',
-    {0x00000200}'Spell',
-    {0x00000400}'Shield',
-    {0x00000800}'Torch',
-    {0x00001000}'Crossbow'
-  ], True);
 
   wbEmotionTypeEnum := wbEnum([
     {0} 'Neutral',
@@ -9785,7 +9768,24 @@ begin
         wbFloat('Unknown')
       ])
     ])),
-    wbInteger(VNAM, 'Equipment Flags', itU32, wbEquipType).SetRequired.IncludeFlag(dfCollapsed, wbCollapseFlags),
+    wbInteger(VNAM, 'Equipment Flags', itU32,
+      wbFlags([
+      {0}  'Hand To Hand Melee',
+      {1}  'One Hand Sword',
+      {2}  'One Hand Dagger',
+      {3}  'One Hand Axe',
+      {4}  'One Hand Mace',
+      {5}  'Two Hand Sword',
+      {6}  'Two Hand Axe',
+      {7}  'Bow',
+      {8}  'Staff',
+      {9}  'Spell',
+      {10} 'Shield',
+      {11} 'Torch',
+      {12} 'Crossbow'
+      ], True)
+    ).SetRequired
+     .IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbRArrayS('Equip Slots', wbFormIDCk(QNAM, 'Equip Slot', [EQUP, NULL])),
     wbFormIDCk(UNES, 'Unarmed Equip Slot', [EQUP, NULL]),
     wbRArray('Phoneme Target Names', wbString(PHTN, 'Name')),
