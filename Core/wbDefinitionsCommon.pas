@@ -2239,8 +2239,6 @@ begin
 end;
 
 function wbSCENAliasLinksTo(const aElement: IwbElement): IwbElement;
-var
-  Container  : IwbContainer;
 begin
   Result := nil;
   if not wbResolveAlias then
@@ -3223,8 +3221,6 @@ begin
 end;
 
 function wbQuestExternalAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-var
-  Container  : IwbContainer;
 begin
   Result := '';
   if not Assigned(aElement) then

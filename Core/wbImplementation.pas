@@ -2468,7 +2468,6 @@ end;
 
 procedure TwbFile.AddMasterIfMissing(const aMaster: string; aSortMasters: Boolean = True; aSilent: Boolean = False);
 var
-  i       : Integer;
   Masters : TStringList;
 begin
   if HasMaster(aMaster) then

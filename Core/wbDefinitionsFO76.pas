@@ -1229,8 +1229,6 @@ var
   EditInfos  : TStringList;
   Stages     : IwbContainerElementRef;
   Stage      : IwbContainerElementRef;
-  Objectives : IwbContainerElementRef;
-  Objective  : IwbContainerElementRef;
   GroupRecord: IwbGroupRecord;
   Element    : IwbElement;
 begin
@@ -1325,8 +1323,6 @@ var
   EditInfos  : TStringList;
   Stages     : IwbContainerElementRef;
   Stage      : IwbContainerElementRef;
-  Objectives : IwbContainerElementRef;
-  Objective  : IwbContainerElementRef;
 begin
   Result := '';
   case aType of

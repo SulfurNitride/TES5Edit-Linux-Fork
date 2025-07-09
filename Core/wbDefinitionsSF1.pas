@@ -1921,7 +1921,6 @@ end;
 
 function wbINNRTargetDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
 var
-  Container: IwbContainerElementRef;
   MainRecord: IwbMainRecord;
   TypeElement: IwbElement;
 begin
