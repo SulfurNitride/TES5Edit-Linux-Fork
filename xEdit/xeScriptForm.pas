@@ -264,7 +264,7 @@ end;
 procedure TfrmScript.UpdateCaretPos;
 begin
   with Editor.CaretPos do
-    lblPosition.Caption := Format('Line:%d Col:%d', [Succ(y), Succ(x)]);
+    lblPosition.Caption := Format('Line:%d Col:%d', [y, x]);
 end;
 
 procedure TfrmScript.EditorMouseUp(Sender: TObject; Button: TMouseButton;
