@@ -15789,20 +15789,14 @@ begin
     ], cpNormal, True, nil, 2),
     wbInteger(STXF, 'Unknown Bool', itU8, wbBoolEnum),
     wbNVNM,
-    wbArray(MNAM, 'Distant LOD',
-      wbStruct('LOD', [
-        {>>> Contains null-terminated mesh FileName followed by random data up to 260 bytes <<<}
-        wbString(True, 'Mesh', 260)
-        //wbByteArray('Mesh', 260, cpIgnore)
-      ]), [
-        'Level 0',
-        'Level 1',
-        'Level 2',
-        'Level 3'
-      ],
-      cpNormal, False
-    )
-  ], True);  // unordered, NVNM can be before or after MNAM
+    wbStruct(MNAM, 'Distant LOD', [ {>>> Contains null-terminated mesh FileName followed by random data up to 260 bytes <<<}
+      wbString(True, 'Level 0', 260),
+      wbString(True, 'Level 1', 260).SetDontShow(wbSTATLOD1DontShow),
+      wbString(True, 'Level 2', 260).SetDontShow(wbSTATLOD2DontShow),
+      wbString(True, 'Level 3', 260).SetDontShow(wbSTATLOD3DontShow)
+    ]).SetDontShow(wbSTATLODDontShow)
+  ], True).SetAfterLoad(wbSTATAfterLoad) // unordered, NVNM can be before or after MNAM
+          .SetAfterSet(wbSTATAfterSet);
 
   wbRecord(TES4, 'Main File Header',
     wbFlags(wbFlagsList([

@@ -10378,21 +10378,14 @@ begin
         wbUnused(3),
         nil)
     ], cpNormal, True, nil, 2),
-    wbArray(MNAM, 'Distant LOD',
-      wbStruct('LOD', [
-        {>>> Contains null-terminated mesh FileName followed by random data up to 260 bytes <<<}
-        wbString(True, 'Mesh', 260)
-        //wbByteArray('Mesh', 260, cpIgnore)
-      ]), [
-        'Level 0',
-        'Level 1',
-        'Level 2',
-        'Level 3'
-      ],
-      cpNormal, False
-    ),
-    wbUnknown(ENAM)
-  ]);
+    wbStruct(MNAM, 'Distant LOD', [ {>>> Contains null-terminated mesh FileName followed by random data up to 260 bytes <<<}
+      wbString(True, 'Level 0', 260),
+      wbString(True, 'Level 1', 260).SetDontShow(wbSTATLOD1DontShow),
+      wbString(True, 'Level 2', 260).SetDontShow(wbSTATLOD2DontShow),
+      wbString(True, 'Level 3', 260).SetDontShow(wbSTATLOD3DontShow)
+    ]).SetDontShow(wbSTATLODDontShow)
+  ]).SetAfterLoad(wbSTATAfterLoad)
+    .SetAfterSet(wbSTATAfterSet);
 
   wbRecord(TES4, 'Main File Header',
     wbFlags(wbFlagsList([

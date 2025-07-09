@@ -159,6 +159,7 @@ procedure wbPACKHourAfterLoad(const aElement: IwbElement);
 procedure wbPNDTAfterLoad(const aElement: IwbElement);
 procedure wbRPLDAfterLoad(const aElement: IwbElement);
 procedure wbSOUNAfterLoad(const aElement: IwbElement);
+procedure wbSTATAfterLoad(const aElement: IwbElement);
 procedure wbWorldAfterLoad(const aElement: IwbElement);
 
 {>>> After Set Callbacks <<<} //34
@@ -190,6 +191,7 @@ procedure wbSceneActionTypeAfterSet(const aElement: IwbElement; const aOldValue,
 procedure wbSDLTListAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbSNDRRatesOfFireAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbSPLOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+procedure wbSTATAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbTERMCNTOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbTERMDisplayItemsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbTERMMenuItemsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -230,6 +232,10 @@ function wbREGNMapDontShow(const aElement: IwbElement): Boolean;
 function wbREGNObjectsDontShow(const aElement: IwbElement): Boolean;
 function wbREGNSoundDontShow(const aElement: IwbElement): Boolean;
 function wbREGNWeatherDontShow(const aElement: IwbElement): Boolean;
+function wbSTATLODDontShow(const aElement: IwbElement): Boolean;
+function wbSTATLOD1DontShow(const aElement: IwbElement): Boolean;
+function wbSTATLOD2DontShow(const aElement: IwbElement): Boolean;
+function wbSTATLOD3DontShow(const aElement: IwbElement): Boolean;
 
 {>>> Float Normalizers <<<} //1
 function wbNormalizeToRange(aMin, aMax: Extended): TwbFloatNormalizer;
@@ -879,6 +885,24 @@ begin
   end;
 end;
 
+procedure wbSTATAfterLoad(const aElement: IwbElement);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    if (lMainRecord.Flags._Flags and $8000) = 0 then
+      if Assigned(lMainRecord.ElementBySignature['MNAM']) then
+        lMainRecord.RemoveElement(MNAM);
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
 procedure wbWorldAfterLoad(const aElement: IwbElement);
 
   function OutOfRange(aValue: Integer; aRange: Integer = 256): Boolean;
@@ -1273,6 +1297,27 @@ end;
 procedure wbSPLOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
   wbCounterAfterSet('SPCT - Count', aElement);
+end;
+
+procedure wbSTATAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if VarSameValue(aOldValue, aNewValue) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    var lMainRecord := aElement.ContainingMainRecord;
+    if not Assigned(lMainRecord) then
+      Exit;
+
+    if (lMainRecord.Flags._Flags and $8000) = 0 then
+      if Assigned(lMainRecord.ElementBySignature['MNAM']) then
+        lMainRecord.RemoveElement(MNAM);
+  finally
+    wbEndInternalEdit;
+  end;
 end;
 
 procedure wbTERMCNTOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -1758,6 +1803,26 @@ end;
 function wbREGNWeatherDontShow(const aElement: IwbElement): Boolean;
 begin
   Result := wbGetREGNType(aElement) <> 3;
+end;
+
+function wbSTATLODDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := aElement.ContainingMainRecord.Flags._Flags and $8000 = 0;
+end;
+
+function wbSTATLOD1DontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := aElement.Container.Elements[0].EditValue = '';
+end;
+
+function wbSTATLOD2DontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := aElement.Container.Elements[1].EditValue = '';
+end;
+
+function wbSTATLOD3DontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := aElement.Container.Elements[2].EditValue = '';
 end;
 
 {>>> Float Normalizers <<<} //1
