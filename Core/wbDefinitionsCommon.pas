@@ -2570,7 +2570,7 @@ var
 begin
   Result := '';
   case aType of
-    ctToStr, ctToSummary:
+    ctToEditValue, ctToStr, ctToSummary:
       if aInt = -1 then
         Result := 'None'
       else if (aInt = -2) and not wbIsSkyrim then
@@ -2586,12 +2586,6 @@ begin
         if aType = ctToStr then
           Result := Result + ' <Warning: Could not resolve alias>';
       end;
-
-    ctToEditValue:
-      if aInt = -1 then
-        Result := 'None'
-      else
-        Result := aInt.ToString;
 
     ctToSortKey: Exit(IntToHex64(aInt, 8));
 
@@ -3278,7 +3272,7 @@ begin
     Exit;
 
   if wbResolveAlias then begin
-    var lCER : IwbContainerElementRef;
+    var lCER := aElement.Container as IwbContainerElementRef;
     if not Assigned(lCER) then
       Exit;
 
