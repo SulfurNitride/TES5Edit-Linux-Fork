@@ -9,6 +9,9 @@ object FrameVertexPaint: TFrameVertexPaint
     Top = 169
     Width = 111
     Height = 15
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
     Caption = 'RGBA hex color code'
   end
   object lblColor2: TLabel
@@ -16,6 +19,9 @@ object FrameVertexPaint: TFrameVertexPaint
     Top = 169
     Width = 64
     Height = 15
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
     Caption = 'replace with'
   end
   object lblHelper: TLabel
@@ -24,6 +30,9 @@ object FrameVertexPaint: TFrameVertexPaint
     Width = 21
     Height = 13
     Cursor = crHandPoint
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
     Caption = 'Help'
     Color = clHighlight
     Font.Charset = DEFAULT_CHARSET
@@ -40,6 +49,10 @@ object FrameVertexPaint: TFrameVertexPaint
     Top = 0
     Width = 550
     Height = 33
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Align = alTop
     AutoSize = False
     Caption = 
@@ -53,6 +66,10 @@ object FrameVertexPaint: TFrameVertexPaint
     Top = 48
     Width = 153
     Height = 17
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Caption = 'Set vertex colors'
     Checked = True
     TabOrder = 1
@@ -64,6 +81,10 @@ object FrameVertexPaint: TFrameVertexPaint
     Top = 108
     Width = 153
     Height = 17
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Caption = 'Remove vertex colors'
     TabOrder = 2
     OnClick = rbSetColorsClick
@@ -73,6 +94,10 @@ object FrameVertexPaint: TFrameVertexPaint
     Top = 108
     Width = 290
     Height = 17
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Caption = 'only if all colors are equal to the specified color'
     TabOrder = 3
   end
@@ -81,6 +106,10 @@ object FrameVertexPaint: TFrameVertexPaint
     Top = 166
     Width = 73
     Height = 23
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     TabOrder = 4
     Text = 'FFFFFFFF'
   end
@@ -89,6 +118,10 @@ object FrameVertexPaint: TFrameVertexPaint
     Top = 165
     Width = 34
     Height = 25
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Caption = '...'
     TabOrder = 5
     OnClick = btnColorSelectClick
@@ -98,6 +131,10 @@ object FrameVertexPaint: TFrameVertexPaint
     Top = 48
     Width = 145
     Height = 17
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Caption = 'add if missing'
     TabOrder = 6
   end
@@ -106,6 +143,10 @@ object FrameVertexPaint: TFrameVertexPaint
     Top = 78
     Width = 153
     Height = 17
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Caption = 'Adjust vertex colors'
     TabOrder = 7
     OnClick = rbSetColorsClick
@@ -115,6 +156,10 @@ object FrameVertexPaint: TFrameVertexPaint
     Top = 76
     Width = 74
     Height = 23
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Style = csDropDownList
     ItemIndex = 0
     TabOrder = 8
@@ -128,8 +173,16 @@ object FrameVertexPaint: TFrameVertexPaint
     Top = 76
     Width = 36
     Height = 23
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     EditLabel.Width = 12
     EditLabel.Height = 23
+    EditLabel.Margins.Left = 5
+    EditLabel.Margins.Top = 5
+    EditLabel.Margins.Right = 5
+    EditLabel.Margins.Bottom = 5
     EditLabel.Caption = 'H:'
     LabelPosition = lpLeft
     TabOrder = 9
@@ -140,8 +193,16 @@ object FrameVertexPaint: TFrameVertexPaint
     Top = 76
     Width = 36
     Height = 23
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     EditLabel.Width = 9
     EditLabel.Height = 23
+    EditLabel.Margins.Left = 5
+    EditLabel.Margins.Top = 5
+    EditLabel.Margins.Right = 5
+    EditLabel.Margins.Bottom = 5
     EditLabel.Caption = 'S:'
     LabelPosition = lpLeft
     TabOrder = 10
@@ -152,8 +213,16 @@ object FrameVertexPaint: TFrameVertexPaint
     Top = 76
     Width = 36
     Height = 23
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     EditLabel.Width = 9
     EditLabel.Height = 23
+    EditLabel.Margins.Left = 5
+    EditLabel.Margins.Top = 5
+    EditLabel.Margins.Right = 5
+    EditLabel.Margins.Bottom = 5
     EditLabel.Caption = 'L:'
     LabelPosition = lpLeft
     TabOrder = 11
@@ -164,8 +233,16 @@ object FrameVertexPaint: TFrameVertexPaint
     Top = 76
     Width = 36
     Height = 23
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     EditLabel.Width = 11
     EditLabel.Height = 23
+    EditLabel.Margins.Left = 5
+    EditLabel.Margins.Top = 5
+    EditLabel.Margins.Right = 5
+    EditLabel.Margins.Bottom = 5
     EditLabel.Caption = 'A:'
     LabelPosition = lpLeft
     TabOrder = 12
@@ -176,6 +253,10 @@ object FrameVertexPaint: TFrameVertexPaint
     Top = 137
     Width = 153
     Height = 17
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Caption = 'Replace vertex color'
     TabOrder = 13
     OnClick = rbSetColorsClick
@@ -185,6 +266,10 @@ object FrameVertexPaint: TFrameVertexPaint
     Top = 166
     Width = 73
     Height = 23
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     TabOrder = 14
     Text = 'FFFFFFFF'
   end
@@ -193,6 +278,10 @@ object FrameVertexPaint: TFrameVertexPaint
     Top = 165
     Width = 34
     Height = 25
+    Margins.Left = 5
+    Margins.Top = 5
+    Margins.Right = 5
+    Margins.Bottom = 5
     Caption = '...'
     TabOrder = 15
     OnClick = btnColorSelectClick

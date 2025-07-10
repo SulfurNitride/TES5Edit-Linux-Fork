@@ -416,6 +416,20 @@ begin
           if not Assigned(entries) then
             Continue;
 
+          if Nif.NifVersion = nfTES5 then begin
+            var Shader := Block.PropertyByType('BSShaderProperty', True);
+            if not Assigned(Shader) then
+              Exit;
+
+            if Shader.BlockType = 'BSLightingShaderProperty' then begin
+              if Shader.EditValues['Shader Type'] = 'Parallax' then
+                Continue;
+
+              if Shader.NativeValues['Shader Flags2\Tree_Anim'] then
+                Continue;
+            end;
+          end;
+
           bWhite := True;
           // check existing colors if we want to remove the white ones only
           if fAllWhite then begin
@@ -511,6 +525,20 @@ begin
 
           if block.NativeValues['VertexDesc\VF\VF_COLORS'] = 0 then
             Continue;
+
+          if Nif.NifVersion = nfSSE then begin
+            var Shader := Block.PropertyByType('BSShaderProperty', True);
+            if not Assigned(Shader) then
+              Exit;
+
+            if Shader.BlockType = 'BSLightingShaderProperty' then begin
+              if Shader.EditValues['Shader Type'] = 'Parallax' then
+                Continue;
+
+              if Shader.NativeValues['Shader Flags2\Tree_Anim'] then
+                Continue;
+            end;
+          end;
 
           entries := block.Elements['Vertex Data'];
           // Warning: this won't remove colors flag in SSE BSTriShape with present NiSkinPartition
