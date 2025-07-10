@@ -6677,7 +6677,7 @@ begin
         0, cpBenign)
       ], cpBenign),
     cpBenign),
-    wbRArrayS('Master Worldsapce Cells',
+    wbRArrayS('Master Worldspace Cells',
       wbStructSK(LCEC, [0], 'Worldspace', [
         wbFormIDCk('World', [WRLD], False, cpBenign),
         wbArrayS('Cells',
