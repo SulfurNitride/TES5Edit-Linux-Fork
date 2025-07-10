@@ -416,7 +416,7 @@ begin
           if not Assigned(entries) then
             Continue;
 
-          if Nif.NifVersion = nfTES5 then begin
+          if Nif.NifVersion in [nfTES5, nfSSE] then begin
             var Shader := Block.PropertyByType('BSShaderProperty', True);
             if not Assigned(Shader) then
               Exit;
