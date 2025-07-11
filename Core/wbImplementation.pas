@@ -5097,6 +5097,9 @@ begin
     if FileHeader.Signature <> wbHeaderSignature then
       raise Exception.Create('File ' + GetFileName + ' has invalid record ' + cntElements[0].Name + ' with invalid signature as file header.');
 
+    if (FileHeader.Flags._Flags and $10 <> 0) and not wbHasAddedOptimizedSupport then
+      raise Exception.Create('Modules with the "Optimized" file flag set can not be saved in ' + wbAppName + wbToolName);
+
     HEDR := FileHeader.RecordBySignature['HEDR'];
     if not Assigned(HEDR) then
       raise Exception.Create('File ' + GetFileName + ' has a file header with missing HEDR subrecord');
