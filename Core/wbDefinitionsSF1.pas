@@ -15,6 +15,9 @@ interface
 uses
   wbInterface;
 
+var
+  wbTerminalArtThemeEnum: IwbEnumDef;
+
 procedure DefineSF1;
 
 implementation
@@ -26,6 +29,7 @@ uses
   System.Math,
   System.StrUtils,
   System.Variants,
+  System.IOUtils,
   System.Generics.Defaults,
   System.Generics.Collections,
   JsonDataObjects,
@@ -3687,7 +3691,7 @@ begin
       ]);
 
   var wbPhotoModeEnum  := wbEnum([
-    {0} 'Texture Overlay',
+    {0} 'Texture',
     {1} 'Frame',
     {2} 'Filter'
   ]);
@@ -5171,7 +5175,7 @@ end;
       {07} 'Anim Archetype',
       {08} 'Function Call',
       {09} 'Recipe Filter',
-      {10} 'Attraction',
+      {10} 'Attraction Type',
       {11} 'Dialogue Subtype',
       {12} 'Quest Target',
       {13} 'Anim Flavor',
@@ -5181,41 +5185,41 @@ end;
       {17} 'Anim Injured',
       {18} 'Dispel Effect',
       {19} 'Crowd Target',
-      {20} 'Exclusive Location Encounter',
+      {20} 'Exclusive Location Encounter Type',
       {21} 'Weapon Holster',
       {22} 'HUD Marker Override',
       {23} 'Interaction Root Offset',
       {24} 'Misc Item Quality',
       {25} 'Component Quantity',
-      {26} 'Quest',
-      {27} 'Faction',
+      {26} 'Quest Type',
+      {27} 'Faction Type',
       {28} 'Traversal',
       {29} 'Inventory Category',
       {30} 'Form Link',
       {31} 'Manufacturer',
       {32} 'UI Icon Personal Effect',
       {33} 'UI Icon Environment Effect',
-      {34} 'Primitive',
-      {35} 'Planet',
-      {36} 'Planet Atmosphere',
+      {34} 'Primitive Type',
+      {35} 'Planet Type',
+      {36} 'Planet Atmosphere Type',
       {37} 'Planet Atmosphere Toxicity',
-      {38} 'Planet Gravity',
+      {38} 'Planet Gravity Type',
       {39} 'Planet Water Abundance',
       {40} 'Planet Water Quality',
       {41} 'Planet Magnetosphere',
       {42} 'Planet Flora Probability',
       {43} 'Planet Fauna Probability',
       {44} 'Planet Traits',
-      {45} 'Planet Temperature',
-      {46} 'Planet Pressure',
+      {45} 'Planet Temperature Type',
+      {46} 'Planet Pressure Type',
       {47} 'Planet Flora Abundance',
       {48} 'Planet Fauna Abundance',
-      {49} 'Biome Marker',
-      {50} 'Hand Scanner Info',
+      {49} 'Biome Marker Type',
+      {50} 'Hand Scanner Info Type',
       {51} 'Ship Module Class',
       {52} 'Layered Material Swap Key',
       {53} 'UI Icon Linkage Name',
-      {54} 'Mission',
+      {54} 'Mission Type',
       {55} 'Sound Engine',
       {56} 'Sound Engine Mod',
       {57} 'Sound Cockpit',
@@ -5237,14 +5241,15 @@ end;
       {73} 'Facial Hair Subtype',
       {74} 'Brow Subtype',
       {75} 'AVMS Condition Sequence',
-      {76} 'Biome Creature',
+      {76} 'Biome Creature Type',
       {77} 'Ship Module Upgrade',
       {78} 'Display Name',
       {79} 'AVMS Appearance Variation Mod',
       {80} 'UI Icon Treatment',
       {81} 'Form Pair',
       {82} 'Item Description',
-      {83} 'Weapon Display'
+      {83} 'Weapon Type Display',
+      {84} 'AVMS Condition Keyword'
 
     ]);
 
@@ -7788,19 +7793,38 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(AMMO, 'Ammunition',
     wbFlags(wbFlagsList([
-      {0x00000004}  2, 'Non-Playable'
-    ])), [
+        {0x00000004}  2, 'Non-Playable',
+        {0x00000010}  4, 'Ground Piece',
+        {0x00000200}  9, 'Hidden From Local Map',
+        {0x00000800} 11, 'Used As Platform',
+        {0x00080000} 19, 'Has Currents',
+        {0x04000000} 26, 'Navmesh - Filter',
+        {0x08000000} 27, 'Navmesh - Bounding Box',
+        {0x10000000} 28, 'Navmesh - Only Cut',
+        {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+        {0x40000000} 30, 'Navmesh - Ground',
+                     31, 'Must Be Unique'
+      ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbOBND(True),
     wbODTYReq,
+    wbSNTP,
+    wbSNBH,
+    wbDEFL,
+    wbXALG,
+    wbBaseFormComponents,
     wbPTT2,
     wbFULL,
     wbGenericModel(True),
+    wbDEST,
     wbPUSH,
     wbPDSH,
     wbDESC().SetRequired,
     wbKeywords,
-    wbDEST,
     wbStruct(DATA, 'Data', [
       wbInteger('Value', itU32),
       wbFloat('Weight')
@@ -7821,9 +7845,11 @@ end;
       wbInteger('Health', itU32)
     ], cpNormal, True),
     wbLStringKC(ONAM, 'Short Name', 0, cpTranslate),
-    wbString(NAM1, 'Casing Model'),
-    //wbModelInfo(NAM2)
-    wbFLLD
+    wbRStruct('Shell Casing', [
+      wbString(NAM1, 'Casing Model'),
+      //wbModelInfo(NAM2)
+      wbFLLD
+    ])
   ], False, nil, cpNormal, False);
 
   {subrecords checked against Starfield.esm}
@@ -16276,8 +16302,20 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(LAYR, 'Layer',
     wbFlags(wbFlagsList([
-      {0x08000000} {27} 27, 'Starts Frozen'
-    ])), [
+        {0x00000004}  2, 'Non-Playable',
+        {0x00000010}  4, 'Ground Piece',
+        {0x00000200}  9, 'Hidden From Local Map',
+        {0x00000800} 11, 'Used As Platform',
+        {0x00080000} 19, 'Has Currents',
+        {0x04000000} 26, 'Navmesh - Filter',
+        {0x08000000} 27, 'Starts Frozen/Navmesh - Bounding Box',
+        {0x10000000} 28, 'Navmesh - Only Cut',
+        {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+        {0x40000000} 30, 'Navmesh - Ground'
+      ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbBaseFormComponents,
     wbFormIDCk(PNAM, 'Parent', [LAYR]),
@@ -16290,8 +16328,25 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(LENS, 'Lens Flare', [
+  wbRecord(LENS, 'Lens Flare',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbFloat(CNAM, 'Color Influence', cpNormal, True),
     wbFloat(DNAM, 'Fade Distance Radius Scale', cpNormal, True).SetDefaultEditValue('1.0'),
     wbFloat(ENAM, 'Exposure Influence', cpNormal, True),
@@ -16538,12 +16593,32 @@ end;
     end;
 
   {subrecords checked against Starfield.esm}
-  wbRecord(LGDI, 'Legendary Item', [
+  wbRecord(LGDI, 'Legendary Item',
+    wbFlags(wbFlagsList([
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00080000} 19, 'Has Currents',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground',
+                   31, 'Must Be Unique'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbOBND,
     wbODTYReq,
     wbOPDS,
     wbPTT2,
+    wbSNTP,
+    wbSNBH,
+    wbDEFL,
     wbXALG,
     wbBaseFormComponents,
     wbGenericModel(True),
@@ -16570,7 +16645,24 @@ end;
   ]);
 
   { still exists in game code, but not in Starfield.esm }
-  wbRecord(NOTE, 'Note', [
+  wbRecord(NOTE, 'Note',
+    wbFlags(wbFlagsList([
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00080000} 19, 'Has Currents',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground',
+                   31, 'Must Be Unique'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbVMAD,
     wbOBND,
@@ -16821,8 +16913,25 @@ end;
 
 
   {subrecords checked against Starfield.esm}
-  wbRecord(STAG, 'Animation Sound Tag Set', [
+  wbRecord(STAG, 'Animation Sound Tag Set',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbInteger(STMS, 'Count', itU32, nil, cpBenign).IncludeFlag(dfSkipImplicitEdit),
     wbRStructsSK('Entries', 'Entry', [0], [
       wbString(STAE, 'Tag').SetRequired,
@@ -16830,17 +16939,24 @@ end;
     ]).SetCountPath(STMS)
   ]);
 
-  var wbTerminalArtThemeEnum := wbEnum([], [
-    0, 'Constellation',
-    1, 'Freestar Collective',
-    2, 'Generic',
-    3, 'NASA',
-    4, 'Ryujin Industries',
-    5, 'Slayton Aerospace',
-    6, 'United Colonies',
-    7, 'Crimson Fleet',
-    9, 'House Varuun'
-  ]);
+  // load terminal theme list from external file if present
+  var s := ExtractFilePath(ParamStr(0)) + wbAppName + 'TerminalArtThemes.txt';
+  if FileExists(s) then try
+    wbTerminalArtThemeEnum := wbEnum(TFile.ReadAllLines(s));
+  except end;
+
+  if not Assigned(wbTerminalArtThemeEnum) then
+    wbTerminalArtThemeEnum := wbEnum([], [
+      0, 'Constellation',
+      1, 'Freestar Collective',
+      2, 'Generic',
+      3, 'NASA',
+      4, 'Ryujin Industries',
+      5, 'Slayton Aerospace',
+      6, 'United Colonies',
+      7, 'Crimson Fleet',
+      9, 'House Varuun'
+    ]);
 
   {subrecords checked against Starfield.esm}
   wbRecord(TERM, 'Terminal',
@@ -16952,13 +17068,28 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(TRNS, 'Transform',
     wbFlags(wbFlagsList([
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
       {0x00008000} 16, 'Around Origin',
-      {0x00010000} 17, 'Apply Translation'
-    ])), [
+      {0x00010000} 17, 'Apply Translation',
+      {0x00080000} 19, 'Has Currents',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbStruct(DATA, 'Data', [
       wbPosRot,
-      wbFloat('Scale'),
+      wbFloat('Scale').SetDefaultEditValue('1.0'),
       wbFloat('Zoom Min'),
       wbFloat('Zoom Max')
     ], cpNormal, True, nil, 2)
@@ -16970,17 +17101,35 @@ end;
     wbInteger(BNAM, 'Basis', itU8, wbEnum([
       'World Bound',
       'Object Origin'
-    ])),
+    ])).SetRequired,
     wbInteger(ENAM, 'Color Mode Flags', itU32, wbFlags([
       'Normal',
       'Monochromatic',
       'Alpha Fill'
     ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
+    .SetRequired
   ]).SetSummaryKey([1]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(AAPD, 'Aim Assist Pose Data', [
+  wbRecord(AAPD, 'Aim Assist Pose Data',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbRStruct('Aim Assist Pill', [
       wbEmpty(AAAP, 'Aim Assist Pill Marker'),
       wbString(ANAM, 'Start Bone Name'),
@@ -16998,40 +17147,82 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(AAMD, 'Aim Assist Model Data', [
+  wbRecord(AAMD, 'Aim Assist Model Data',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbStruct(SNAM, 'Data', [
-      wbFloat('Inner Cone Angle Degrees'),
-      wbFloat('Outer Cone Angle Degrees'),
-      wbFloat('Steering Degrees Per Sec'),
-      wbFloat('Pitch Scale'),
-      wbFloat('Inner Steering Ring'),
-      wbFloat('Outer Steering Ring'),
-      wbFloat('Friction'),
-      wbFloat('Move Follow Degrees Per Sec'),
-      wbFloat('ADS Snap Steering Mult'),
-      wbFloat('ADS Snap Seconds'),
-      wbFloat('ADS Snap Cone Angle Degrees'),
-      wbFloat('No Steering'),
-      wbFloat('Bullet Bending Cone Angle Degrees'),
-      wbFloat('ADS Snap Steering Mutliplier Inner Ring'),
-      wbFloat('ADS Snap Steering Mutliplier Outer Ring'),
-      wbFloat('ADS Multiplier Inner Cone Angle Degrees'),
-      wbFloat('ADS Multiplier Outer Cone Angle Degrees'),
-      wbFloat('ADS Multiplier Inner Steering Ring'),
-      wbFloat('ADS Multiplier Outer Steering Ring'),
-      wbFloat('ADS Multiplier Friction'),
-      wbFloat('ADS Multiplier Steering Degrees Per Sec'),
-      wbInteger('Aim Assist Enabled', itU8, wbBoolEnum)
+      wbFloat('Inner Cone Angle Degrees').SetDefaultEditValue('6.0'),
+      wbFloat('Outer Cone Angle Degrees').SetDefaultEditValue('25.0'),
+      wbFloat('Steering Degrees Per Sec').SetDefaultEditValue('5.0'),
+      wbFloat('Pitch Scale').SetDefaultEditValue('0.25'),
+      wbFloat('Inner Steering Ring').SetDefaultEditValue('600.0'),
+      wbFloat('Outer Steering Ring').SetDefaultEditValue('1750.0'),
+      wbFloat('Friction').SetDefaultEditValue('0.333'),
+      wbFloat('Move Follow Degrees Per Sec').SetDefaultEditValue('10.0'),
+      wbFloat('ADS Snap Steering Mult').SetDefaultEditValue('2.5'),
+      wbFloat('ADS Snap Seconds').SetDefaultEditValue('0.25'),
+      wbFloat('ADS Snap Cone Angle Degrees').SetDefaultEditValue('5.0'),
+      wbFloat('No Steering').SetDefaultEditValue('1.0'),
+      wbFloat('Bullet Bending Cone Angle Degrees').SetDefaultEditValue('7.0'),
+      wbFloat('ADS Snap Steering Mutliplier Inner Ring').SetDefaultEditValue('600.0'),
+      wbFloat('ADS Snap Steering Mutliplier Outer Ring').SetDefaultEditValue('1750.0'),
+      wbFloat('ADS Multiplier Inner Cone Angle Degrees').SetDefaultEditValue('1.0'),
+      wbFloat('ADS Multiplier Outer Cone Angle Degrees').SetDefaultEditValue('1.0'),
+      wbFloat('ADS Multiplier Inner Steering Ring').SetDefaultEditValue('1.0'),
+      wbFloat('ADS Multiplier Outer Steering Ring').SetDefaultEditValue('1.0'),
+      wbFloat('ADS Multiplier Friction').SetDefaultEditValue('1.0'),
+      wbFloat('ADS Multiplier Steering Degrees Per Sec').SetDefaultEditValue('1.0'),
+      wbInteger('Aim Assist Enabled', itU8, wbBoolEnum).SetDefaultEditValue('True')
     ])
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(SECH, 'Sound Echo Marker', [
+  wbRecord(SECH, 'Sound Echo Marker',
+    wbFlags(wbFlagsList([
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00008000} 16, 'Random Anim Start',
+      {0x00080000} 19, 'Has Currents',
+                   25, 'Obstacle',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut/Show in world map (ref must be in sky cell)',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground',
+                   31, 'Must Be Unique'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbOBND,
     wbODTYReq,
+    wbOPDS,
+    wbPTT2,
+    wbSNTP,
+    wbSNBH,
+    wbDEFL,
     wbXALG,
+    wbBaseFormComponents,
     wbString(NNAM, 'Description'),
     wbSoundReference(ECHL, 'Looping Sound'),
     wbRArray('Echos',
@@ -17061,16 +17252,56 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(CURV, 'Curve Table', [
+  wbRecord(CURV, 'Curve Table',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbREFL
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(STND, 'Snap Template Node', [
+  wbRecord(STND, 'Snap Template Node',
+    wbFlags(wbFlagsList([
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00080000} 19, 'Has Currents',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground',
+                   31, 'Must Be Unique'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbOBND,
     wbODTYReq,
+    wbOPDS,
+    wbPTT2,
+    wbSNTP,
+    wbSNBH,
+    wbDEFL,
+    wbXALG,
     wbBaseFormComponents,
     wbGenericModel(True),
     wbKeywords,
@@ -17096,7 +17327,23 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(STMP, 'Snap Template', [
+  wbRecord(STMP, 'Snap Template',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbBaseFormComponents,
     wbPTT2,
@@ -17151,7 +17398,23 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(GCVR, 'Ground Cover', [
+  wbRecord(GCVR, 'Ground Cover',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbBaseFormComponents,
     wbRArray('Grasses', wbRStruct('Grass', [
@@ -17159,18 +17422,52 @@ end;
       wbInteger(DNAM, 'Override Density', itS16).SetDefaultEditValue('-1')
     ])),
     wbRArray('Landscape Textures', wbFormIDCk(LNAM, 'Landscape Texture', [LTEX])),
-    wbFloat(YNAM, 'Painted Material Threshold', cpNormal, True, 100.0, 0, nil, wbNormalizeToRange(0.1, 1.0))
+    wbFloat(YNAM, 'Painted Material Threshold', cpNormal, True, 100.0, 0, nil, wbNormalizeToRange(0.1, 1.0)).SetDefaultEditValue('28.0')
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(VOLI, 'Volumetric Lighting', [
+  wbRecord(VOLI, 'Volumetric Lighting',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbREFL
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(PMFT, 'Photo Mode Feature', [
+  wbRecord(PMFT, 'Photo Mode Feature',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbFULL,
     wbConditions,
     wbStruct(FNAM, 'Data', [
@@ -17192,13 +17489,46 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(CHAL, 'Challenge', [
+  wbRecord(CHAL, 'Challenge',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbBaseFormComponents
   ]);
 
-  wbRecord(FXPD, 'Facial Expression', [
+  wbRecord(FXPD, 'Facial Expression',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbFULL,
     wbRArray('Morphs', wbRStruct('Morph Data', [
         wbString(MNAM, 'Morph'),
@@ -17207,24 +17537,87 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(CNDF, 'Condition Form', [
+  wbRecord(CNDF, 'Condition Form',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbConditions,
     wbFormIDCk(QNAM, 'Owner Quest', [QUST]),
     wbFormIDCk(PNAM, 'Owner Package', [PACK])
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(AOPF, 'Audio Occlusion Primitive', [
+  wbRecord(AOPF, 'Audio Occlusion Primitive',
+    wbFlags(wbFlagsList([
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00008000} 16, 'Random Anim Start',
+      {0x00080000} 19, 'Has Currents',
+                   25, 'Obstacle',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut/Show in world map (ref must be in sky cell)',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground',
+                   31, 'Must Be Unique'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbOBND(True),
     wbODTYReq,
+    wbODTYReq,
+    wbOPDS,
+    wbPTT2,
+    wbSNTP,
+    wbSNBH,
+    wbDEFL,
+    wbXALG,
+    wbBaseFormComponents,
     wbFloat(OBSV, 'Obstruction'),
     wbFloat(OCCV, 'Occlusion')
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(PDCL, 'Projected Decal', [
+  wbRecord(PDCL, 'Projected Decal',
+    wbFlags(wbFlagsList([
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00008000} 16, 'Random Anim Start',
+      {0x00080000} 19, 'Has Currents',
+                   25, 'Obstacle',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut/Show in world map (ref must be in sky cell)',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground',
+                   31, 'Must Be Unique'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbOBND(True),
     wbODTYReq,
@@ -17247,21 +17640,59 @@ end;
   ]).SetSummaryKey([7]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(CUR3, 'Curve 3D', [
+  wbRecord(CUR3, 'Curve 3D',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbREFL
   ]);
 
   {subrecords checked against Starfield.esm}
   wbRecord(BMMO, 'Biome Marker',
     wbFlags(wbFlagsList([
-      {0x00100000} 20, 'Calculate Once Per Location' //all occurences on prey/preditor BMMOs
-    ])), [
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00080000} 19, 'Has Currents',
+      {0x00100000} 20, 'Calculate Once Per Location', //all occurences on prey/preditor BMMOs
+                   25, 'Obstacle',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut/Show in world map (ref must be in sky cell)',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground',
+                   31, 'Must Be Unique'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
+    wbPTT2,
+    wbSNTP,
+    wbSNBH,
+    wbDEFL,
+    wbXALG,
     wbBaseFormComponents,
     wbGenericModel(True),
     wbKeywords,
@@ -17272,8 +17703,25 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(GBFT, 'Generic Base Form Template', [
+  wbRecord(GBFT, 'Generic Base Form Template',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbRArray('Components', wbString(STRV, 'Component'))
   ]);
 
@@ -17300,14 +17748,33 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(LVLB, 'Leveled Base Form',
     wbFlags(wbFlagsList([
-      {0x00008000}  15, 'Calculate All (Still picks just one)'
-    ])), [
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00008000} 15, 'Calculate All (Still picks just one)',
+      {0x00080000} 19, 'Has Currents',
+                   25, 'Obstacle',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut/Show in world map (ref must be in sky cell)',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground',
+                   31, 'Must Be Unique'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
     wbPTT2,
+    wbSNTP,
+    wbSNBH,
+    wbDEFL,
     wbXALG,
     wbBaseFormComponents,
     wbLVLDReq,
@@ -17340,23 +17807,55 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(MAAM, 'Melee Aim Assist Model', [
+  wbRecord(MAAM, 'Melee Aim Assist Model',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbBaseFormComponents,
     wbStruct(SNAM, 'Data', [
-      wbFloat('Inner Cone Angle Degrees'),
-      wbFloat('Outer Cone Angle Degrees'),
-      wbFloat('Steering Degrees Per Sec'),
-      wbFloat('Acelleration Deg Per Sec'),
-      wbFloat('Decelleration Deg Per Sec'),
-      wbFloat('Actor Target Finder Max Distance'),
-      wbInteger('Melee Aim Assist Enabled', itU8, wbBoolEnum),
-      wbFloat('Max Capsule Angle For Vertical Aiming Correction Deg')
+      wbFloat('Inner Cone Angle Degrees').SetDefaultEditValue('100.0'),
+      wbFloat('Outer Cone Angle Degrees').SetDefaultEditValue('120.0'),
+      wbFloat('Steering Degrees Per Sec').SetDefaultEditValue('180.0'),
+      wbFloat('Acelleration Deg Per Sec').SetDefaultEditValue('500.0'),
+      wbFloat('Decelleration Deg Per Sec').SetDefaultEditValue('-1000.0'),
+      wbFloat('Actor Target Finder Max Distance').SetDefaultEditValue('5.0'),
+      wbInteger('Melee Aim Assist Enabled', itU8, wbBoolEnum).SetDefaultEditValue('True'),
+      wbFloat('Max Capsule Angle For Vertical Aiming Correction Deg').SetDefaultEditValue('10.0')
     ])
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(IRES, 'Resource', [
+  wbRecord(IRES, 'Resource',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbBaseFormComponents,
     wbFULL,
@@ -17585,7 +18084,23 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(AOPS, 'Aim Optical Sight Marker', [
+  wbRecord(AOPS, 'Aim Optical Sight Marker',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbBaseFormComponents,
     wbStruct(ANAM, 'Data', [
@@ -17599,7 +18114,7 @@ end;
       wbFloat('Delay Between Shots'),
       wbFormIdCk('Laser Art Object', [ARTO, NULL]),
       wbFormIdCk('Laser Dot Art Object', [ARTO,  NULL]),
-      wbFloat('Max Laser Pointer Distance'),
+      wbFloat('Max Laser Pointer Distance').SetDefaultEditValue('200.0'),
       wbInteger('Sight Controls Firing Direction', itU8, wbBoolEnum),
       wbInteger('Activate Sight on Non Sighted Mode', itU8, wbBoolEnum),
       wbInteger('Activate Sight on Scoped Mode', itU8, wbBoolEnum)
@@ -17607,8 +18122,25 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(ATMO, 'Atmosphere', [
+  wbRecord(ATMO, 'Atmosphere',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbREFL,
     wbFormIDCk(RFDP, 'Reflection Parent', [ATMO]),
     wbRDIF
@@ -17786,7 +18318,23 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(BMOD, 'Bone Modifier', [
+  wbRecord(BMOD, 'Bone Modifier',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbBaseFormComponents,
     wbStruct(DATA, 'Data', [
@@ -17860,14 +18408,46 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(CLDF, 'Clouds', [
+  wbRecord(CLDF, 'Clouds',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbBaseFormComponents,
     wbREFL
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(EFSQ, 'Effect Sequence', [
+  wbRecord(EFSQ, 'Effect Sequence',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbBaseFormComponents,
     wbREFL
@@ -17881,7 +18461,23 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(FORC, 'Force Data', [
+  wbRecord(FORC, 'Force Data',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbBaseFormComponents,
     wbREFL
@@ -17895,7 +18491,23 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(LVSC, 'Leveled Space Cell', [
+  wbRecord(LVSC, 'Leveled Space Cell',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbBaseFormComponents,
     wbLVLDReq,
@@ -17924,7 +18536,23 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(MRPH, 'Morphable Object', [
+  wbRecord(MRPH, 'Morphable Object',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbBaseFormComponents,
     wbString(TMPP, 'Target Morph Path'),
@@ -17937,14 +18565,48 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(MTPT, 'Material Path', [
+  wbRecord(MTPT, 'Material Path',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbREFL
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(OSWP, 'Object Swap', [
+  wbRecord(OSWP, 'Object Swap',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbRArrayS('Swap Map', wbRStructSK([0,1], 'Item', [
       wbFormID(KNAM, 'Original Object'),
       wbFormID(VNAM, 'Replacement Object')
@@ -17987,8 +18649,25 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(PCMT, 'Planet Content Manager Tree', [
+  wbRecord(PCMT, 'Planet Content Manager Tree',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID.SetRequired,
+    wbBaseFormComponents,
     wbInteger(NAM1, 'Node Type', itU32, wbEnum(['Root']), cpIgnore, True),      // PCMT only has root type
     wbInteger(NAM2, 'Child Selection', itU32, wbEnum(['','Stacked']), cpNormal, True)
       .SetDefaultNativeValue(1),                                                // PCMT only allows stacked node
@@ -18180,7 +18859,7 @@ end;
   ]).SetAfterLoad(wbPNDTAfterLoad);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(PSDC, 'Particle System Define Collision', [ //PSDC -> EDID REFL  (9)
+  wbRecord(PSDC, 'Particle System Define Collection', [ //PSDC -> EDID REFL  (9)
     wbEDID,
     wbREFL
   ]);
