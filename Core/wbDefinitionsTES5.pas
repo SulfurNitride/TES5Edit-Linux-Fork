@@ -3553,8 +3553,8 @@ begin
     wbDEST,
     wbKeywords,
     wbByteColors(PNAM, 'Marker Color').SetRequired,
-    wbFormIDCk(SNAM, 'Sound - Looping', [SNDR]),
-    wbFormIDCk(VNAM, 'Sound - Activation', [SNDR]),
+    wbFormIDCk(SNAM, 'Sound - Looping', [SNDR, SOUN]),
+    wbFormIDCk(VNAM, 'Sound - Activation', [SNDR, SOUN]),
     wbFormIDCk(WNAM, 'Water Type', [WATR]),
     wbLString(RNAM, 'Activate Text Override', 0, cpTranslate),
     wbInteger(FNAM, 'Flags', itU16, wbFlags([
@@ -3578,7 +3578,7 @@ begin
     wbDEST,
     wbKeywords,
     wbUnknown(PNAM, cpIgnore, True),
-    wbFormIDCk(SNAM, 'Looping Sound', [SNDR]),
+    wbFormIDCk(SNAM, 'Looping Sound', [SNDR, SOUN]),
     wbUnknown(FNAM, cpIgnore, True),
     wbFormIDCk(VNAM, 'Voice Type', [VTYP])
   ]);
@@ -4258,15 +4258,14 @@ begin
                     $3256, 'Value 2'         //V2
                     ])).SetDefaultNativeValue(-1)
               ])
-          ]),
       {1} wbString(CIS1, 'Parameter #1'),
       {2} wbString(CIS2, 'Parameter #2')
       ]).SetToStr(wbConditionToStr)
         .IncludeFlag(dfCollapsed, wbCollapseConditions)
     ).SetCountPath(CITC);
 
-  wbYNAM := wbFormIDCk(YNAM, 'Sound - Pick Up', [SNDR]);
-  wbZNAM := wbFormIDCk(ZNAM, 'Sound - Put Down', [SNDR]);
+  wbYNAM := wbFormIDCk(YNAM, 'Sound - Pick Up', [SNDR, SOUN]);
+  wbZNAM := wbFormIDCk(ZNAM, 'Sound - Put Down', [SNDR, SOUN]);
 
   var wbEffect :=
     wbRStruct('Effect', [
@@ -4285,6 +4284,7 @@ begin
       29, 'Medicine'
     ])), [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbFULL,
     wbKeywords,
@@ -4320,7 +4320,7 @@ begin
       ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbFormID('Addiction'),
       wbFloat('Addiction Chance'),
-      wbFormIDCk('Sound - Consume', [SNDR, NULL])
+      wbFormIDCk('Sound - Consume', [SNDR, SOUN, NULL])
     ], cpNormal, True),
     wbEffectsReq
   ]);
@@ -4750,8 +4750,8 @@ begin
       ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbFloat('Weight')
     ], cpNormal, True),
-    wbFormIDCk(SNAM, 'Sound - Open', [SNDR]),
-    wbFormIDCk(QNAM, 'Sound - Close', [SNDR])
+    wbFormIDCk(SNAM, 'Sound - Open', [SNDR, SOUN]),
+    wbFormIDCk(QNAM, 'Sound - Close', [SNDR, SOUN])
   ], True, nil, cpNormal, False, nil, wbContainerAfterSet);
 
   wbCSDT := wbRStructSK([0], 'Sound Type', [
@@ -5150,9 +5150,9 @@ begin
     wbFULL,
     wbGenericModel,
     wbDEST,
-    wbFormIDCk(SNAM, 'Sound - Open', [SNDR]),
-    wbFormIDCk(ANAM, 'Sound - Close', [SNDR]),
-    wbFormIDCk(BNAM, 'Sound - Loop', [SNDR]),
+    wbFormIDCk(SNAM, 'Sound - Open', [SNDR, SOUN]),
+    wbFormIDCk(ANAM, 'Sound - Close', [SNDR, SOUN]),
+    wbFormIDCk(BNAM, 'Sound - Loop', [SNDR, SOUN]),
     wbInteger(FNAM, 'Flags', itU8, wbFlags([
       '',
       'Automatic',
@@ -5322,19 +5322,32 @@ begin
     wbEDID,
     wbOBND(True),
     wbFULL,
+    wbKeywords,
     wbStruct(ENIT, 'Effect Data', [
       wbInteger('Enchantment Cost', itS32),
       wbInteger('Flags', itU32, wbFlags([
         'No Auto-Calc',
-        '',
+        'Food Item',
         'Extend Duration On Recast'
       ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Cast Type', itU32, wbCastEnum),
       wbInteger('Enchantment Amount', itS32),
       wbInteger('Target Type', itU32, wbTargetEnum),
-      wbInteger('Enchant Type', itU32, wbEnum([], [
-        $06, 'Enchantment',
-        $0C, 'Staff Enchantment'
+      wbInteger('Type', itU32, wbEnum([
+        {0} 'Spell',
+        {1} 'Disease',
+        {2} 'Power',
+        {3} 'Lesser Power',
+        {4} 'Ability',
+        {5} 'Poison',
+        {6} 'Enchantment',
+        {7} 'Potion',
+        {8} 'Ingredient',
+        {9} 'Leveled Spell',
+       {10} 'Addiction',
+       {11} 'Voice',
+       {12} 'Staff Enchantment',
+       {13} 'Scroll'
       ])),
       wbFloat('Charge Time'),
       wbFormIDCk('Base Enchantment', [ENCH, NULL]),
@@ -5643,7 +5656,7 @@ begin
   wbRecord(ASPC, 'Acoustic Space', [
     wbEDID,
     wbOBND(True),
-    wbFormIDCk(SNAM, 'Ambient Sound', [SNDR]),
+    wbFormIDCk(SNAM, 'Ambient Sound', [SNDR, SOUN]),
     wbFormIDCk(RDAT, 'Use Sound from Region (Interiors Only)', [REGN]),
     wbFormIDCk(BNAM, 'Environment Type (reverb)', [REVB])
   ]);
@@ -5675,7 +5688,7 @@ begin
       {2} 'Static'
       ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
          .SetRequired,
-    wbFormIDCk(SNAM, 'Looping Sound', [SNDR])
+    wbFormIDCk(SNAM, 'Looping Sound', [SNDR, SOUN])
   ]);
 
   wbRecord(IDLM, 'Idle Marker',
@@ -5727,12 +5740,12 @@ begin
       {28} wbFloat('Explosion - Alt. Trigger - Proximity'),
       {32} wbFloat('Explosion - Alt. Trigger - Timer'),
       {36} wbFormIDCk('Explosion', [EXPL, NULL]),
-      {40} wbFormIDCk('Sound', [SNDR, NULL]),
+      {40} wbFormIDCk('Sound', [SNDR, SOUN, NULL]),
       {44} wbFloat('Muzzle Flash - Duration'),
       {48} wbFloat('Fade Duration'),
       {52} wbFloat('Impact Force'),
-      {56} wbFormIDCk('Sound - Countdown', [SNDR, NULL]),
-      {60} wbFormIDCk('Sound - Disable', [SNDR, NULL]),
+      {56} wbFormIDCk('Sound - Countdown', [SNDR, SOUN, NULL]),
+      {60} wbFormIDCk('Sound - Disable', [SNDR, SOUN, NULL]),
       {64} wbFormIDCk('Default Weapon Source', [WEAP, NULL]),
       {68} wbFloat('Cone Spread'),
       {72} wbFloat('Collision Radius'),
@@ -5770,7 +5783,7 @@ begin
       wbFormIDCk('Spell', [SPEL, ENCH, NULL]),
       wbFormIDCk('Light', [LIGH, NULL]),
       wbFormIDCk('Impact Data Set', [IPDS, NULL]),
-      wbFormIDCk('Sound', [SNDR, NULL])
+      wbFormIDCk('Sound', [SNDR, SOUN, NULL])
     ])
   ]);
 
@@ -6012,8 +6025,8 @@ begin
     wbFormIDCk(MNAM, 'Image Space Modifier', [IMAD]),
     wbStruct(DATA, 'Data', [  // Contradicted by FireStormExplosion02 [EXPL:000877F9]
       wbFormIDCk('Light', [LIGH, NULL]),
-      wbFormIDCk('Sound 1', [SNDR, NULL]),
-      wbFormIDCk('Sound 2', [SNDR, NULL]),
+      wbFormIDCk('Sound 1', [SNDR, SOUN, NULL]),
+      wbFormIDCk('Sound 2', [SNDR, SOUN, NULL]),
       wbFormIDCk('Impact Data Set', [IPDS, NULL]),
       wbFormID('Placed Object'),
       wbFormIDCk('Spawn Projectile', [PROJ, NULL]),
@@ -6401,7 +6414,7 @@ begin
     wbOBND(True),
     wbGenericModel,
     wbInteger(DATA, 'Node Index', itS32, nil, cpNormal, True),
-    wbFormIDCk(SNAM, 'Sound', [SNDR, NULL]),
+    wbFormIDCk(SNAM, 'Sound', [SNDR, SOUN, NULL]),
     wbStruct(DNAM, 'Data', [
       wbInteger('Master Particle System Cap', itU16),
       wbInteger('Flags', itU16, wbEnum([], [
@@ -7304,7 +7317,7 @@ begin
       {0x02} 'Abrupt Transition',
       {0x04} 'Cycle Tracks',
       {0x08} 'Maintain Track Order',
-      {0x10} 'Unknown 4',
+      {0x10} 'Removal Queued',
       {0x20} 'Ducks Current Track',
       {0x40} IsSSE('Doesn''t Queue', 'Unknown 6')
     ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
@@ -7788,7 +7801,7 @@ begin
       Int64($1EEF540A), 'Standard'
     ])),
     wbFormIDCk(GNAM, 'Category', [SNCT]),
-    wbFormIDCk(SNAM, 'Alternate Sound For', [SNDR, NULL]),
+    wbFormIDCk(SNAM, 'Alternate Sound For', [SNDR, SOUN, NULL]),
     wbSoundDescriptorSounds,
     wbFormIDCk(ONAM, 'Output Model', [SOPM, NULL]),
     wbBelowVersion(35, FNAM,
@@ -8073,7 +8086,7 @@ begin
         wbUnused(4),
         wbInteger('Response number', itU8),
         wbUnused(3),
-        wbFormIDCk('Sound', [SNDR, NULL]),
+        wbFormIDCk('Sound', [SNDR, SOUN, NULL]),
         wbInteger('Flags', itU8, wbFlags([
           'Use Emotion Animation'
         ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
@@ -8126,7 +8139,7 @@ begin
         {0x00000001} 'No auto-calculation',
         {0x00000002} 'Food item',
         {0x00000004} 'Unknown 3',
-        {0x00000008} 'Unknown 4',
+        {0x00000008} 'Extend Duration',
         {0x00000010} 'Unknown 5',
         {0x00000020} 'Unknown 6',
         {0x00000040} 'Unknown 7',
@@ -8204,7 +8217,7 @@ begin
         {1}  'Can be Carried',
         {2}  'Negative',
         {3}  'Flicker',
-        {4}  'Unknown',
+        {4}  'Deep Copy',
         {5}  'Off By Default',
         {6}  'Flicker Slow',
         {7}  'Pulse',
@@ -8234,7 +8247,7 @@ begin
     wbFloat(FNAM, 'Fade value')
       .SetDefaultNativeValue(1.0)
       .SetRequired,
-    wbFormIDCk(SNAM, 'Sound', [SNDR]),
+    wbFormIDCk(SNAM, 'Sound', [SNDR, SOUN]),
     // SSE
     wbFormIDCk(LNAM, 'Lens', [LENS])
   ]);
@@ -8285,7 +8298,9 @@ begin
     wbLVLD,
     wbInteger(LVLF, 'Flags', itU8, wbFlags([
       {0x01} 'Calculate from all levels <= player''s level',
-      {0x02} 'Calculate for each item in count'
+      {0x02} 'Calculate for each item in count',
+      {0x04} 'Use All',
+      {0x08} 'Special Loot'
     ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbFormIDCk(LVLG, 'Global', [GLOB]),
     wbLLCT,
@@ -8327,8 +8342,10 @@ begin
     wbInteger(LVLF, 'Flags', itU8, wbFlags([
       {0x01} 'Calculate from all levels <= player''s level',
       {0x02} 'Calculate for each item in count',
-      {0x04} 'Use All Spells'
+      {0x04} 'Use All Spells',
+      {0x08} 'Special Loot'
     ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
+    wbFormIDCk(LVLG, 'Global', [GLOB]),
     wbLLCT,
     wbRArrayS('Leveled List Entries',
       wbRStructSK([0], 'Leveled List Entry', [
@@ -9748,8 +9765,8 @@ begin
     wbFormIDCk(NAM4, 'Material Type', [MATT, NULL]),
     wbFormIDCk(NAM5, 'Impact Data Set', [IPDS, NULL]),
     wbFormIDCk(NAM7, 'Decapitation FX', [ARTO, NULL]),
-    wbFormIDCk(ONAM, 'Open Loot Sound', [SNDR, NULL]),
-    wbFormIDCk(LNAM, 'Close Loot Sound', [SNDR, NULL]),
+    wbFormIDCk(ONAM, 'Open Loot Sound', [SNDR, SOUN, NULL]),
+    wbFormIDCk(LNAM, 'Close Loot Sound', [SNDR, SOUN, NULL]),
     {>>> When NAME is user defined wbBipedObjectEnum will be incorrect <<<}
     wbRArray('Biped Object Names', wbString(NAME, 'Name'), 32).IncludeFlag(dfNotAlignable).SetRequired,
     wbRArrayS('Movement Types', wbRStructSK([0], 'Movement Types', [
@@ -10252,16 +10269,16 @@ begin
     wbOBND(True),
     wbUnknown(FNAM, cpIgnore), // leftover, unused
     wbUnknown(SNDD, cpIgnore), // leftover, unused
-    wbFormIDCk(SDSC, 'Sound Descriptor', [SNDR, NULL])
+    wbFormIDCk(SDSC, 'Sound Descriptor', [SNDR, SOUN, NULL])
   ]);
 
   wbSPIT := wbStruct(SPIT, 'Data', [
     wbInteger('Base Cost', itU32),
     wbInteger('Flags', itU32, wbFlags([
       {0x00000001} 'Manual Cost Calc',
-      {0x00000002} 'Unknown 2',
+      {0x00000002} 'Food Item',
       {0x00000004} 'Unknown 3',
-      {0x00000008} 'Unknown 4',
+      {0x00000008} 'Extend Duration',
       {0x00000010} 'Unknown 5',
       {0x00000020} 'Unknown 6',
       {0x00000040} 'Unknown 7',
@@ -10276,7 +10293,7 @@ begin
       {0x00008000} 'Unknown 16',
       {0x00010000} 'Unknown 17',
       {0x00020000} 'PC Start Spell',
-      {0x00040000} 'Unknown 19',
+      {0x00040000} 'Instant Cast',
       {0x00080000} 'Area Effect Ignores LOS',
       {0x00100000} 'Ignore Resistance',
       {0x00200000} 'No Absorb/Reflect',
@@ -10298,12 +10315,14 @@ begin
       {3} 'Lesser Power',
       {4} 'Ability',
       {5} 'Poison',
-      {6} 'Unknown 6',
-      {7} 'Unknown 7',
-      {8} 'Unknown 8',
-      {9} 'Unknown 9',
-     {10} 'Addiction',
-     {11} 'Voice'
+      {6} 'Enchantment',
+      {7} 'Potion',
+      {8} 'Ingredient',
+      {9} 'Leveled Spell',
+      {10} 'Addiction',
+      {11} 'Voice',
+      {12} 'Staff Enchantment',
+      {13} 'Scroll'
     ])),
     wbFloat('Charge Time'),
     wbInteger('Cast Type', itU32, wbCastEnum),
@@ -10366,6 +10385,7 @@ begin
        .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
        .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbGenericModel,
     wbStruct(DNAM, 'Direction Material', [
@@ -10431,7 +10451,7 @@ begin
     wbOBND(True),
     wbGenericModel,
     wbFormIDCK(PFIG, 'Ingredient', [INGR, ALCH, MISC, LVLI, NULL]),
-    wbFormIDCK(SNAM, 'Harvest Sound', [SNDR, NULL]),
+    wbFormIDCK(SNAM, 'Harvest Sound', [SNDR, SOUN, NULL]),
     wbStruct(PFPC, 'Ingredient Production', [
       wbInteger('Spring', itU8),
       wbInteger('Summer', itU8),
@@ -10471,7 +10491,7 @@ begin
         1, 'Ignored by Sandbox'
     ],False, 2))).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbFormIDCk(PFIG, 'Ingredient', [ALCH, AMMO, APPA, ARMO, BOOK, INGR, KEYM, LIGH, LVLI, MISC, SCRL, SLGM, WEAP, NULL]),
-    wbFormIDCK(SNAM, 'Harvest Sound', [SNDR, NULL]),
+    wbFormIDCK(SNAM, 'Harvest Sound', [SNDR, SOUN, NULL]),
     wbSeasons
   ]);
 
@@ -10592,7 +10612,7 @@ begin
     ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbByteArray(MNAM, 'Unused', 0, cpIgnore, False),  // leftover
     wbFormIDCk(TNAM, 'Material', [MATT]),
-    wbFormIDCk(SNAM, 'Open Sound', [SNDR, NULL]),
+    wbFormIDCk(SNAM, 'Open Sound', [SNDR, SOUN, NULL]),
     wbFormIDCk(XNAM, 'Spell', [SPEL]),
     wbFormIDCk(INAM, 'Image Space', [IMGS]),
     IsSSE(
@@ -10755,13 +10775,13 @@ begin
     wbByteArray(NNAM, 'Unused', 0, cpIgnore, False), // leftover
     wbFormIDCk(INAM, 'Impact Data Set', [IPDS, NULL]),
     wbFormIDCk(WNAM, '1st Person Model Object', [STAT, NULL]),
-    wbFormIDCk(SNAM, 'Attack Sound', [SNDR]),
-    wbFormIDCk(XNAM, 'Attack Sound 2D', [SNDR]),
-    wbFormIDCk(NAM7, 'Attack Loop Sound', [SNDR]),
-    wbFormIDCk(TNAM, 'Attack Fail Sound', [SNDR]),
-    wbFormIDCk(UNAM, 'Idle Sound', [SNDR]),
-    wbFormIDCk(NAM9, 'Equip Sound', [SNDR]),
-    wbFormIDCk(NAM8, 'Unequip Sound', [SNDR]),
+    wbFormIDCk(SNAM, 'Attack Sound', [SNDR, SOUN]),
+    wbFormIDCk(XNAM, 'Attack Sound 2D', [SNDR, SOUN]),
+    wbFormIDCk(NAM7, 'Attack Loop Sound', [SNDR, SOUN]),
+    wbFormIDCk(TNAM, 'Attack Fail Sound', [SNDR, SOUN]),
+    wbFormIDCk(UNAM, 'Idle Sound', [SNDR, SOUN]),
+    wbFormIDCk(NAM9, 'Equip Sound', [SNDR, SOUN]),
+    wbFormIDCk(NAM8, 'Unequip Sound', [SNDR, SOUN]),
     wbStruct(DATA, 'Game Data', [
       wbInteger('Value', itU32),
       wbFloat('Weight'),
@@ -11019,6 +11039,7 @@ begin
 
   wbRecord(SCOL, 'Static Collection', [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbGenericModel(True),
     wbRArray('Parts', wbStaticPart)
