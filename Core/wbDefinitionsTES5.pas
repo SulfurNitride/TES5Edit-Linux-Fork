@@ -8331,7 +8331,6 @@ begin
       {0x02} 'Calculate for each item in count',
       {0x04} 'Use All Spells'
     ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
-    wbFormIDCk(LVLG, 'Global', [GLOB]),
     wbLLCT,
     wbRArrayS('Leveled List Entries',
       wbRStructSK([0], 'Leveled List Entry', [
