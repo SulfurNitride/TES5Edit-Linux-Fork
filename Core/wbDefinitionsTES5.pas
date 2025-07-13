@@ -4258,6 +4258,7 @@ begin
                     $3256, 'Value 2'         //V2
                     ])).SetDefaultNativeValue(-1)
               ])
+          ]),
       {1} wbString(CIS1, 'Parameter #1'),
       {2} wbString(CIS2, 'Parameter #2')
       ]).SetToStr(wbConditionToStr)
