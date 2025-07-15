@@ -52,8 +52,8 @@ begin
     AddMessage(#9'Can be turned into ESL by compacting FormIDs first, then adding ESL flag in TES4 header');
     
   // check if plugin has new cell(s)
-  if HasCELL then
-    AddMessage(#9'Warning: Plugin has new CELL(s) which won''t work when flagged ESL + ESM and overridden by other mods due to the game bug');
+  if HasCELL and GetIsESM(f) then
+    AddMessage(#9'Warning: Plugin has new CELL(s) which won''t work when flagged ESL + ESM and overridden by other mods due to a bug in the engine');
 end;
   
 function Initialize: integer;
