@@ -1755,17 +1755,21 @@ end;
 
 function wbLCTNCellDontShow(const aElement: IwbElement): Boolean;
 begin
-  var lContainer: IwbContainer;
-  if not Supports(aElement, IwbContainer, lContainer) then
-    Exit(False);
+  Result := False;
+  if not Assigned(aElement) then
+    Exit;
 
-  var lLocation := lContainer.ElementByPath['..\Location'];
+  var lContainer := aElement.Container;
+  if not Assigned(lContainer) then
+    Exit;
+
+  var lLocation := lContainer.ElementByName['World/Cell'];
   if not Assigned(lLocation) then
-    Exit(False);
+    Exit;
 
-  var lMainRecord: IwbMainRecord;
-  if not Supports(lLocation.LinksTo, IwbMainRecord, lMainRecord) then
-    Exit(False);
+  var lMainRecord := lLocation.LinksTo as IwbMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
 
   Result := lMainRecord.Signature = CELL;
 end;
