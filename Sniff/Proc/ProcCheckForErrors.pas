@@ -482,6 +482,11 @@ begin
       Log.Add(#9 + block.Name + ': "' + name + '" is an emitter but missing the same named NiParticleSystem and not a target of any NiPSysEmitter');
   end;
 
+  // Num Subtexture Offsets
+  for var Block in Nif.BlocksByType('NiParticlesData', True) do
+    if Block.NativeValues['Num Subtexture Offsets'] > 16 then
+      Log.Add(#9 + Block.Name + ': Num Subtexture Offsets cannot be higher than 16');
+
   // mesh emitters
   if nif.NifVersion >= nfSSE then
   for var block in nif.BlocksByType('NiPSysMeshEmitter', True) do begin
