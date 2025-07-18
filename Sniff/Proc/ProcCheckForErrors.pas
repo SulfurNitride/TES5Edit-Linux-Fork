@@ -483,13 +483,13 @@ begin
   end;
 
   // Num Subtexture Offsets
+  var S:= 16;
+  if Nif.NifVersion >= nfTES5 then
+    S := 256;
+
   for var Block in Nif.BlocksByType('NiParticlesData', True) do
-    if Nif.NifVersion < nfTES5 then begin
-      if Block.NativeValues['Num Subtexture Offsets'] > 16 then
-        Log.Add(#9 + Block.Name + ': Num Subtexture Offsets cannot be higher than 16');
-    end else
-      if Block.NativeValues['Num Subtexture Offsets'] > 256 then
-        Log.Add(#9 + Block.Name + ': Num Subtexture Offsets cannot be higher than 256');
+    if Block.NativeValues['Num Subtexture Offsets'] > S then
+      Log.Add(#9 + Block.Name + ': Num Subtexture Offsets cannot be higher than 16');
 
   // mesh emitters
   if nif.NifVersion >= nfSSE then
