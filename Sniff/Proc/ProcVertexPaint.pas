@@ -361,22 +361,24 @@ begin
     for i := 0 to Pred(nif.BlocksCount) do begin
       block := nif.Blocks[i];
 
-      if block.IsNiobject('NiTriBasedGeomData') then begin
+      if block.IsNiobject('NiTriBasedGeom') then begin
+        var Data := TwbNifBlock(Block.ElementByName('Data').LinksTo);
+        if not Assigned(Data) then
+          Continue;
 
         // NiTriBasedGeomData: set vertex colors
         if fMode = 0 then begin
-          if fAddIfMissing and (block.NativeValues['Has Vertex Colors'] = 0) then begin
-            block.NativeValues['Has Vertex Colors'] := 1;
-
+          if fAddIfMissing and (Data.NativeValues['Has Vertex Colors'] = 0) then begin
+            Data.NativeValues['Has Vertex Colors'] := 1;
             bChanged := True;
           end;
 
-          entries := block.Elements['Vertex Colors'];
+          entries := Data.Elements['Vertex Colors'];
           if not Assigned(entries) then
             Continue;
 
-          if (entries.Count = 0) and Assigned(block.Elements['Vertices']) then
-            entries.Count := block.Elements['Vertices'].Count;
+          if (entries.Count = 0) and Assigned(Data.Elements['Vertices']) then
+            entries.Count := Data.Elements['Vertices'].Count;
 
           for j := 0 to Pred(entries.Count) do
             if entries[j].EditValue <> c then begin
@@ -387,7 +389,7 @@ begin
 
         // NiTriBasedGeomData: adjust vertex colors
         else if fMode = 1 then begin
-          entries := block.Elements['Vertex Colors'];
+          entries := Data.Elements['Vertex Colors'];
           if not Assigned(entries) then
             Continue;
 
@@ -407,15 +409,10 @@ begin
 
             bChanged := True;
           end;
-
         end
 
         // NiTriBasedGeomData: remove vertex colors
         else if fMode = 2 then begin
-          entries := block.Elements['Vertex Colors'];
-          if not Assigned(entries) then
-            Continue;
-
           if Nif.NifVersion in [nfTES5, nfSSE] then begin
             var Shader := Block.PropertyByType('BSShaderProperty', True);
             if not Assigned(Shader) then
@@ -425,10 +422,14 @@ begin
               if Shader.EditValues['Shader Type'] = 'Parallax' then
                 Continue;
 
-              if Shader.NativeValues['Shader Flags2\Tree_Anim'] then
+              if Shader.NativeValues['Shader Flags 2\Tree_Anim'] then
                 Continue;
             end;
           end;
+
+          entries := Data.Elements['Vertex Colors'];
+          if not Assigned(entries) then
+            Continue;
 
           bWhite := True;
           // check existing colors if we want to remove the white ones only
@@ -441,15 +442,14 @@ begin
           end;
 
           if bWhite then begin
-            block.NativeValues['Has Vertex Colors'] := 0;
+            Data.NativeValues['Has Vertex Colors'] := 0;
             bChanged := True;
           end;
-
         end
 
         // NiTriBasedGeomData: replace vertex color
         else if fMode = 3 then begin
-          entries := block.Elements['Vertex Colors'];
+          entries := Data.Elements['Vertex Colors'];
           if not Assigned(entries) then
             Continue;
 
@@ -458,13 +458,10 @@ begin
               entries[j].EditValue := c2;
               bChanged := True;
             end;
-
         end;
-
       end
 
       else if block.IsNiObject('BSTriShape') or ( (nif.NifVersion = nfSSE) and block.IsNiObject('NiSkinPartition') ) then begin
-
         // BSTriShape: set vertex colors
         if fMode = 0 then begin
           if block.NativeValues['VertexDesc\VF\VF_COLORS'] = 0 then
@@ -535,7 +532,7 @@ begin
               if Shader.EditValues['Shader Type'] = 'Parallax' then
                 Continue;
 
-              if Shader.NativeValues['Shader Flags2\Tree_Anim'] then
+              if Shader.NativeValues['Shader Flags 2\Tree_Anim'] then
                 Continue;
             end;
           end;
@@ -577,13 +574,9 @@ begin
               entries[j].EditValues['Vertex Colors'] := c2;
               bChanged := True;
             end;
-
         end;
-
       end;
-
     end;
-
 
     if bChanged then
       nif.SaveToData(Result);
@@ -591,7 +584,6 @@ begin
   finally
     nif.Free;
   end;
-
 end;
 
 
