@@ -306,6 +306,12 @@ begin
     bsx.EditValues['Name'] := 'BSX';
     Log.Add(#9 + bsx.Name + ': Added missing BSXFlags');
     Result := True;
+  end else begin
+    if flags = 0 then begin
+      Log.Add(#9 + bsx.Name + ': Removed emtpy BSXFlags');
+      bsx.RemoveBranch(True);
+      Result := True;
+    end;
   end;
 
   var oldflags := bsx.NativeValues['Flags'];
