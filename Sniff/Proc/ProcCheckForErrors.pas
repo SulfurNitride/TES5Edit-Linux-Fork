@@ -770,8 +770,9 @@ begin
       Log.Add(Format(#9'%s: No %s but bit %d (%s) is set', [bsxname, cWhy[i], i, cFlags[i]]));
   end;
 
-  if newFlags = 0 then
-    Log.Add(#9 + bsx.Name + ': BSXFlags is present but not needed');
+  if Assigned(bsx) then
+    if (newFlags = 0) then
+      Log.Add(#9 + bsx.Name + ': BSXFlags is present but not needed');
 end;
 
 //==============================================================================
