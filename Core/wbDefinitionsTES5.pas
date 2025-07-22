@@ -8851,9 +8851,9 @@ begin
         .SetAfterSet(wbPACKHourAfterSet),
       wbInteger('Minute', itU8,
         wbEnum([
-        {0} '0'
+        {0} '00'
         ], [
-        5,   '5',
+        5,   '05',
         10,  '10',
         15,  '15',
         20,  '20',
