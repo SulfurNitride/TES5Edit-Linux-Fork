@@ -7816,11 +7816,9 @@ end;
       wbInteger('Health', itU32)
     ], cpNormal, True),
     wbLStringKC(ONAM, 'Short Name', 0, cpTranslate),
-    wbRStruct('Shell Casing', [
-      wbString(NAM1, 'Casing Model'),
-      //wbModelInfo(NAM2)
-      wbFLLD
-    ])
+    wbString(NAM1, 'Casing Model'),
+    //wbModelInfo(NAM2)
+    wbFLLD
   ], False, nil, cpNormal, False);
 
   {subrecords checked against Starfield.esm}
@@ -10524,13 +10522,27 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(LCTN, 'Location',
     wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
     11, 'Interior Cells Use Ref Location for world map player marker',
     14, 'Unknown 14', //Partial Form
     17, 'Off Limits',
     19, 'Can''t Wait',
-    20, 'Public Area'
-    ])), [
+    20, 'Public Area',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(14, wbFlagPartialFormDontShow)
+    .SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbPRPS,
     wbArrayS(ACPR, 'Added Persist Location References',
       wbStructSK([0], 'Reference', [
@@ -10538,7 +10550,7 @@ end;
         wbFormIDCk('World/Cell', [WRLD, CELL], False, cpBenign),
         wbInteger('Grid Y', itS16, nil, cpBenign).SetDontShow(wbLCTNCellDontShow),
         wbInteger('Grid X', itS16, nil, cpBenign).SetDontShow(wbLCTNCellDontShow),
-        wbUnknown(4)
+        wbUnknown(4, cpBenign)
       ], cpBenign),
     0, cpBenign),
     wbArrayS(LCPR, 'Master Persist Location References',
@@ -10547,7 +10559,7 @@ end;
         wbFormIDCk('World/Cell', [WRLD, CELL], False, cpBenign),
         wbInteger('Grid Y', itS16, nil, cpBenign).SetDontShow(wbLCTNCellDontShow),
         wbInteger('Grid X', itS16, nil, cpBenign).SetDontShow(wbLCTNCellDontShow),
-        wbUnknown(4)
+        wbUnknown(4, cpBenign)
       ], cpBenign),
     0, cpBenign),
     wbArrayS(RCPR, 'Removed Persist Location References',
@@ -10594,7 +10606,7 @@ end;
         wbFormIDCk('World/Cell', [WRLD, CELL], False, cpBenign),
         wbInteger('Grid Y', itS16, nil, cpBenign).SetDontShow(wbLCTNCellDontShow),
         wbInteger('Grid X', itS16, nil, cpBenign).SetDontShow(wbLCTNCellDontShow),
-        wbUnknown(4)
+        wbUnknown(4, cpBenign)
       ], cpBenign),
     0, cpBenign),
     wbArrayS(LCSR, 'Master Special References',
@@ -10604,7 +10616,7 @@ end;
         wbFormIDCk('World/Cell', [WRLD, CELL], False, cpBenign),
         wbInteger('Grid Y', itS16, nil, cpBenign).SetDontShow(wbLCTNCellDontShow),
         wbInteger('Grid X', itS16, nil, cpBenign).SetDontShow(wbLCTNCellDontShow),
-        wbUnknown(4)
+        wbUnknown(4, cpBenign)
       ], cpBenign),
     0, cpBenign),
     wbArrayS(RCSR, 'Removed Special References',
@@ -10698,7 +10710,7 @@ end;
     wbFormIDCk(FNAM, 'Unreported Crime Faction', [FACT]),
     wbFormIDCk(MNAM, 'World Location Marker Ref', [REFR, ACHR]),
     wbFloat(RNAM, 'World Location Radius'),
-    wbFloat(ANAM, 'Actor Fade Mult'),
+    wbFloat(ANAM, 'Actor Fade Mult').SetDefaultEditValue('1.0'),
     wbFloat(TNAM, 'Random Conversation Timer'),
     wbByteArray(NAM0, 'Horse Marker (Unused', 4),
     wbCNAM,
@@ -12019,10 +12031,24 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(CLFM, 'Color',
     wbFlags(wbFlagsList([
-      {0x00000004}  2, 'Non-Playable'
-    ])), [
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
-//    wbFULL,
+    wbBaseFormComponents,
+    wbFULL,
     // union decider doesn't work during copying since decision data FNAM is located after it
     // workaround using integer formatters
     wbInteger(CNAM, 'Color/Index', itU32, wbCLFMColorToStr, wbCLFMColorToInt),
@@ -12408,20 +12434,18 @@ end;
     wbBaseFormComponents,
     wbDESCReq(),
     wbConditions,
-    wbString(ICON, 'Loadscreen')
-    {
-    wbFormIDCk(NNAM, 'Loading Screen NIF', [STAT, SCOL, NULL], False, cpNormal, True),
+    wbString(ICON, 'Loadscreen'),
+    wbFormIDCk(NNAM, 'Loading Screen NIF', [STAT, SCOL, NULL]),
     wbFormIDCk(TNAM, 'Transform', [TRNS]),
     wbStruct(ONAM, 'Rotation', [
-      wbInteger('Min', itS16),
+      wbInteger('Min', itS16).SetDefaultEditValue('-180'),
       wbInteger('Max', itS16)
     ]),
     wbStruct(ZNAM, 'Zoom', [
-      wbFloat('Min'),
-      wbFloat('Max')
+      wbFloat('Min').SetDefaultEditValue('-1.0'),
+      wbFloat('Max').SetDefaultEditValue('1.0')
     ]),
     wbString(MOD2, 'Camera Path', 0, cpNormal, False)
-    }
   ]);
 
   {subrecords checked against Starfield.esm}
@@ -15606,7 +15630,7 @@ end;
       ]))
     ]),
 
-    wbInteger(XLLD, 'Light Layer Data', itU32, wbBoolEnum),
+    wbInteger(XLLD, 'Light Layer Data', itU32),
 
     wbFloat(XLVD, 'Light Volumetric Data'),
 
@@ -20085,10 +20109,22 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(WRLD, 'Worldspace',
     wbFlags(wbFlagsList([
-       2, 'Unique',
-      14, 'Partial Form',
-      19, 'Can''t Wait'
-    ]), [14]), [
+    2, 'Unique/Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    14, 'Partial Form',
+    19, 'Can''t Wait/Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ]), [14]).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbBaseFormComponents,
     wbWorldLargeRefs,
