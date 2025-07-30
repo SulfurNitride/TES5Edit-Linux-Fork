@@ -702,19 +702,28 @@ begin
   for var rigid in nif.BlocksByType('bhkRigidBody', True) do begin
     var layer: Integer := rigid.NativeValues['Havok Filter\Layer'];
 
+    var S: string;
+    case layer of
+      1:  S := 'Static';
+      2:  S := 'Animstatic';
+      4:  S := 'Clutter';
+      5:  S := 'Weapon';
+      9:  S := 'Tree';
+      10: S := 'Weapon';
+      15: S := 'Non-Collidable';
+    end;
+
     // static, tree and noncollidable layer
-    if (layer in  [1, 15]) or
-      // only BSLeafAnimNode trees because BSTreeNode is rigged so not static
-      ((layer = 9) and (nif.RootNode.BlockType = 'BSLeafAnimNode'))
+    if (layer in  [1,9,15])
     then begin
       Result := UpdateElement(rigid, 'Motion System', 'MO_SYS_FIXED') or Result;
       Result := UpdateElement(rigid, 'Motion Quality', 'MO_QUAL_FIXED') or Result;
-      //Result := UpdateElement(rigid, 'Deactivator Type', 'DEACTIVATOR_NEVER') or Result;
+      Result := UpdateElement(rigid, 'Deactivator Type', 'DEACTIVATOR_NEVER') or Result;
       Result := UpdateElement(rigid, 'Enable Deactivation', 'no') or Result;
       Result := UpdateElement(rigid, 'Solver Deactivation', 'SOLVER_DEACTIVATION_OFF') or Result;
       if not SameValue(rigid.NativeValues['Mass'], 0.0) then begin
         rigid.NativeValues['Mass'] := 0.0;
-        Log.Add(#9 + rigid.Name + ': Changed Mass to 0.0 because of static/tree collision layer');
+        Log.Add(#9 + rigid.Name + ': Changed Mass to 0.0 because of ' + S + ' collision layer');
         Result := True;
       end;
       if not (
@@ -725,22 +734,38 @@ begin
         rigid.NativeValues['Inertia Tensor\m11'] := 0.0;
         rigid.NativeValues['Inertia Tensor\m22'] := 0.0;
         rigid.NativeValues['Inertia Tensor\m33'] := 0.0;
-        Log.Add(#9 + rigid.Name + ': Changed Inertia Tensor to (0.0, 0.0, 0.0) because of static/tree collision layer');
+        Log.Add(#9 + rigid.Name + ': Changed Inertia Tensor to (0.0, 0.0, 0.0) because of ' + S + ' collision layer');
         Result := True;
       end;
     end
 
-    // animstatic layer except keyframed
-    else if (nif.NifVersion >= nfTES5) and (layer = 2) and (rigid.EditValues['Motion System'] <> 'MO_SYS_KEYFRAMED') then begin
+    // animstatic layer
+    else if (layer = 2) then begin
       Result := UpdateElement(rigid, 'Motion System', 'MO_SYS_BOX_STABILIZED', 'MO_SYS_BOX_INERTIA') or Result;
-      Result := UpdateElement(rigid, 'Motion Quality', 'MO_QUAL_MOVING') or Result;
-      Result := UpdateElement(rigid, 'Deactivator Type', 'DEACTIVATOR_SPATIAL') or Result;
-      Result := UpdateElement(rigid, 'Enable Deactivation', 'yes') or Result;
-      Result := UpdateElement(rigid, 'Solver Deactivation', 'SOLVER_DEACTIVATION_LOW') or Result;
+      Result := UpdateElement(rigid, 'Motion Quality', 'MO_QUAL_FIXED') or Result;
+      Result := UpdateElement(rigid, 'Deactivator Type', 'DEACTIVATOR_NEVER') or Result;
+      Result := UpdateElement(rigid, 'Enable Deactivation', 'no') or Result;
+      Result := UpdateElement(rigid, 'Solver Deactivation', 'SOLVER_DEACTIVATION_OFF') or Result;
+      if not SameValue(rigid.NativeValues['Mass'], 0.0) then begin
+        rigid.NativeValues['Mass'] := 0.0;
+        Log.Add(#9 + rigid.Name + ': Changed Mass to 0.0 because of ' + S + ' collision layer');
+        Result := True;
+      end;
+      if not (
+        SameValue(rigid.NativeValues['Inertia Tensor\m11'], 0.0) and
+        SameValue(rigid.NativeValues['Inertia Tensor\m22'], 0.0) and
+        SameValue(rigid.NativeValues['Inertia Tensor\m33'], 0.0)
+      ) then begin
+        rigid.NativeValues['Inertia Tensor\m11'] := 0.0;
+        rigid.NativeValues['Inertia Tensor\m22'] := 0.0;
+        rigid.NativeValues['Inertia Tensor\m33'] := 0.0;
+        Log.Add(#9 + rigid.Name + ': Changed Inertia Tensor to (0.0, 0.0, 0.0) because of ' + S + ' collision layer');
+        Result := True;
+      end;
     end
 
-    // clutter or props layer and defined mass
-    else if (layer in [4, 10]) and not SameValue(rigid.NativeValues['Mass'], 0.0) then begin
+    // clutter, props, or weapon layer and defined mass
+    else if (layer in [4,5,10]) then begin
       if nif.NifVersion >= nfTES5 then begin
         Result := UpdateElement(rigid, 'Motion System', 'MO_SYS_SPHERE_STABILIZED', 'MO_SYS_SPHERE_INERTIA') or Result;
         Result := UpdateElement(rigid, 'Motion Quality', 'MO_QUAL_MOVING') or Result;
@@ -752,6 +777,11 @@ begin
       Result := UpdateElement(rigid, 'Deactivator Type', 'DEACTIVATOR_SPATIAL') or Result;
       Result := UpdateElement(rigid, 'Enable Deactivation', 'yes') or Result;
       Result := UpdateElement(rigid, 'Solver Deactivation', 'SOLVER_DEACTIVATION_LOW') or Result;
+      if SameValue(rigid.NativeValues['Mass'], 0.0) then begin
+        rigid.NativeValues['Mass'] := 1.0;
+        Log.Add(#9 + rigid.Name + ': Changed Mass to 1.0 because of ' + S + ' collision layer and Mass was 0.0');
+        Result := True;
+      end;
       if BadTensor(rigid.NativeValues['Inertia Tensor\m11']) or
          BadTensor(rigid.NativeValues['Inertia Tensor\m22']) or
          BadTensor(rigid.NativeValues['Inertia Tensor\m33'])
