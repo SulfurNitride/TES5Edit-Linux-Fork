@@ -26,6 +26,7 @@ var
   wbBipedObjectEnum: IwbEnumDef;
   wbCastEnum: IwbEnumDef;
   wbCastingSourceEnum: IwbEnumDef;
+  wbDeliveryEnum: IwbEnumDef;
   wbEmotionTypeEnum: IwbEnumDef;
   wbEntryPointsEnum: IwbEnumDef;
   wbEventFunctionEnum: IwbEnumDef;
@@ -40,7 +41,6 @@ var
   wbQuestTypeEnum: IwbEnumDef;
   wbSkillEnum: IwbEnumDef;
   wbSoundLevelEnum: IwbEnumDef;
-  wbTargetEnum: IwbEnumDef;
   wbTintMaskTypeEnum: IwbEnumDef;
   wbVatsValueFunctionEnum: IwbEnumDef;
   wbWardStateEnum: IwbEnumDef;
@@ -3826,11 +3826,10 @@ begin
   wbCastEnum := wbEnum([
     {0} 'Constant Effect',
     {1} 'Fire and Forget',
-    {2} 'Concentration',
-    {3} 'Scroll'
+    {2} 'Concentration'
   ]);
 
-  wbTargetEnum := wbEnum([
+  wbDeliveryEnum := wbEnum([
     {0} 'Self',
     {1} 'Touch',
     {2} 'Aimed',
@@ -4122,7 +4121,7 @@ begin
              {5} 'Barrier',
              {6} 'Arrow'
            ])),
-    {19} wbInteger('Delivery Type', itU32, wbTargetEnum),
+    {19} wbInteger('Delivery', itU32, wbDeliveryEnum),
     {20} wbInteger('Casting Type', itU32, wbCastEnum)
   ];
 
@@ -5332,7 +5331,7 @@ begin
       ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Cast Type', itU32, wbCastEnum),
       wbInteger('Enchantment Amount', itS32),
-      wbInteger('Target Type', itU32, wbTargetEnum),
+      wbInteger('Delivery', itU32, wbDeliveryEnum),
       wbInteger('Enchant Type', itU32,
         wbEnum([], [
         $06, 'Enchantment',
@@ -8459,7 +8458,7 @@ begin
       wbFormIDCk('Projectile', [PROJ, NULL]),
       wbFormIDCk('Explosion', [EXPL, NULL]),
       wbInteger('Casting Type', itU32, wbCastEnum),
-      wbInteger('Delivery', itU32, wbTargetEnum),
+      wbInteger('Delivery', itU32, wbDeliveryEnum),
       wbInteger('Second Actor Value', itS32, wbActorValueEnum),
       wbFormIDCk('Casting Art', [ARTO, NULL]),
       wbFormIDCk('Hit Effect Art', [ARTO, NULL]),
@@ -10257,64 +10256,6 @@ begin
     wbFormIDCk(SDSC, 'Sound Descriptor', [SNDR,NULL])
   ]);
 
-  wbSPIT := wbStruct(SPIT, 'Data', [
-    wbInteger('Base Cost', itU32),
-    wbInteger('Flags', itU32, wbFlags([
-      {0x00000001} 'Manual Cost Calc',
-      {0x00000002} 'Unknown 2',
-      {0x00000004} 'Unknown 3',
-      {0x00000008} 'Unknown 4',
-      {0x00000010} 'Unknown 5',
-      {0x00000020} 'Unknown 6',
-      {0x00000040} 'Unknown 7',
-      {0x00000080} 'Unknown 8',
-      {0x00000100} 'Unknown 9',
-      {0x00000200} 'Unknown 10',
-      {0x00000400} 'Unknown 11',
-      {0x00000800} 'Unknown 12',
-      {0x00001000} 'Unknown 13',
-      {0x00002000} 'Unknown 14',
-      {0x00004000} 'Unknown 15',
-      {0x00008000} 'Unknown 16',
-      {0x00010000} 'Unknown 17',
-      {0x00020000} 'PC Start Spell',
-      {0x00040000} 'Unknown 19',
-      {0x00080000} 'Area Effect Ignores LOS',
-      {0x00100000} 'Ignore Resistance',
-      {0x00200000} 'No Absorb/Reflect',
-      {0x00400000} 'Unknown 23',
-      {0x00800000} 'No Dual Cast Modification',
-      {0x01000000} 'Unknown 25',
-      {0x02000000} 'Unknown 26',
-      {0x04000000} 'Unknown 27',
-      {0x08000000} 'Unknown 28',
-      {0x10000000} 'Unknown 29',
-      {0x20000000} 'Unknown 30',
-      {0x40000000} 'Unknown 31',
-      {0x80000000} 'Unknown 32'
-    ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
-    wbInteger('Type', itU32, wbEnum([
-      {0} 'Spell',
-      {1} 'Disease',
-      {2} 'Power',
-      {3} 'Lesser Power',
-      {4} 'Ability',
-      {5} 'Poison',
-      {6} 'Unknown 6',
-      {7} 'Unknown 7',
-      {8} 'Unknown 8',
-      {9} 'Unknown 9',
-      {10} 'Addiction',
-      {11} 'Voice'
-    ])),
-    wbFloat('Charge Time'),
-    wbInteger('Cast Type', itU32, wbCastEnum),
-    wbInteger('Target Type', itU32, wbTargetEnum),
-    wbFloat('Cast Duration'),
-    wbFloat('Range'),
-    wbFormIDCk('Half-cost Perk', [NULL, PERK])
-  ], cpNormal, True);
-
   wbRecord(SPEL, 'Spell', [
     wbEDID,
     wbOBND(True),
@@ -10323,7 +10264,40 @@ begin
     wbMDOB,
     wbETYP,
     wbDESCReq,
-    wbSPIT,
+    wbStruct(SPIT, 'Data', [
+      wbInteger('Base Cost', itU32),
+      wbInteger('Flags', itU32,
+        wbFlags(wbSparseFlags([
+        0,  'Manual Cost Calc',
+        16, 'Unknown 16',
+        17, 'PC Start Spell',
+        18, 'Unknown 18',
+        19, 'Area Effect Ignores LOS',
+        20, 'Ignore Resistance',
+        21, 'Disallow Absorb/Reflect',
+        22, 'Unknown 22',
+        23, 'No Dual Cast Modification'
+        ], False, 24))
+      ).IncludeFlag(dfCollapsed, wbCollapseFlags),
+      wbInteger('Type', itU32,
+        wbEnum([
+        {0} 'Spell',
+        {1} 'Disease',
+        {2} 'Power',
+        {3} 'Lesser Power',
+        {4} 'Ability',
+        {5} 'Poison'
+        ], [
+        10, 'Addiction',
+        11, 'Voice'
+        ])),
+      wbFloat('Charge Time'),
+      wbInteger('Cast Type', itU32, wbCastEnum),
+      wbInteger('Delivery', itU32, wbDeliveryEnum),
+      wbFloat('Cast Duration'),
+      wbFloat('Range'),
+      wbFormIDCk('Half-cost Perk', [NULL, PERK])
+    ]).SetRequired,
     wbEffectsReq
   ]);
 
@@ -10343,7 +10317,35 @@ begin
       wbInteger('Value', itU32),
       wbFloat('Weight')
     ], cpNormal, True),
-    wbSPIT,
+    wbStruct(SPIT, 'Data', [
+      wbInteger('Base Cost', itU32),
+      wbInteger('Flags', itU32,
+        wbFlags(wbSparseFlags([
+        0,  'Manual Cost Calc',
+        19, 'Area Effect Ignores LOS',
+        20, 'Script Effect Always Applies',
+        21, 'Disallow Spell Absorb/Reflect'
+        ], False, 22))
+      ).IncludeFlag(dfCollapsed, wbCollapseFlags),
+      wbInteger('Type', itU32,
+        wbEnum([], [
+        0, 'Scroll'
+        ])
+      ).SetAfterLoad(wbScrollTypeAfterLoad)
+       .IncludeFlag(dfInternalEditOnly),
+      wbFloat('Charge Time'),
+      wbInteger('Cast Type', itU32,
+        wbEnum([], [
+        3, 'Scroll'
+        ])
+      ).SetAfterLoad(wbScrollCastAfterLoad)
+       .SetDefaultNativeValue(3)
+       .IncludeFlag(dfInternalEditOnly),
+      wbInteger('Delivery', itU32, wbDeliveryEnum),
+      wbFloat('Cast Duration'),
+      wbFloat('Range'),
+      wbFormIDCk('Half-cost Perk', [NULL, PERK])
+    ]).SetRequired,
     wbEffectsReq
   ]);
 

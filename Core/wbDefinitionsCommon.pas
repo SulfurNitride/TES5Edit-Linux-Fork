@@ -150,7 +150,7 @@ function wbPlacedAddInfo(const aMainRecord: IwbMainRecord): string;
 function wbROADAddInfo(const aMainRecord: IwbMainRecord): string;
 function wbSCENAddInfo(const aMainRecord: IwbMainRecord): string;
 
-{>>> After Load Callbacks <<<} //9
+{>>> After Load Callbacks <<<} //12
 procedure wbACBSLevelMultAfterLoad(const aElement: IwbElement);
 procedure wbAVIFSkillAfterLoad(const aElement: IwbElement);
 procedure wbDOBJObjectsAfterLoad(const aElement: IwbElement);
@@ -158,6 +158,8 @@ procedure wbPACKDateAfterLoad(const aElement: IwbElement);
 procedure wbPACKHourAfterLoad(const aElement: IwbElement);
 procedure wbPNDTAfterLoad(const aElement: IwbElement);
 procedure wbRPLDAfterLoad(const aElement: IwbElement);
+procedure wbScrollCastAfterLoad(const aElement: IwbElement);
+procedure wbScrollTypeAfterLoad(const aElement: IwbElement);
 procedure wbSOUNAfterLoad(const aElement: IwbElement);
 procedure wbSTATAfterLoad(const aElement: IwbElement);
 procedure wbWorldAfterLoad(const aElement: IwbElement);
@@ -692,7 +694,7 @@ begin
   end;
 end;
 
-{>>> After Load Callbacks <<<} //7
+{>>> After Load Callbacks <<<} //12
 
 procedure wbACBSLevelMultAfterLoad(const aElement: IwbElement);
 begin
@@ -851,6 +853,32 @@ begin
     end;
     if NeedsFlip then
       lContainerElementRef.ReverseElements;
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
+procedure wbScrollCastAfterLoad(const aElement: IwbElement);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    if aElement.NativeValue <> 3 then
+      aElement.NativeValue := 3;
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
+procedure wbScrollTypeAfterLoad(const aElement: IwbElement);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    if aElement.NativeValue <> 0 then
+      aElement.NativeValue := 0;
   finally
     wbEndInternalEdit;
   end;
