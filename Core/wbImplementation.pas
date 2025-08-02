@@ -13204,18 +13204,18 @@ begin
                 Signature := RefRecord.Signature;
                 if Signature = 'SCEN' then begin
                   if Supports(RefRecord.ElementLinksTo['PNAM'], IwbMainRecord, MainRecord) then
-                    if MainRecord.LoadOrderFormID = GetLoadOrderFormID then
+                    if Master.IsReachable then
                       (RefRecord as IwbElementInternal).Reached;
                 end else if Signature = 'DLBR' then begin
                   if Supports(RefRecord.ElementLinksTo['QNAM'], IwbMainRecord, MainRecord) then
                     if MainRecord.LoadOrderFormID = GetLoadOrderFormID then begin
-                      if RefRecord.ElementNativeValues['DNAM'] > 0 then
+                      if Master.IsReachable then
                         (RefRecord as IwbElementInternal).Reached;
                     end;
                 end else if Signature = 'DIAL' then begin
                   if Supports(RefRecord.ElementLinksTo['QNAM'], IwbMainRecord, MainRecord) then
                     if MainRecord.LoadOrderFormID = GetLoadOrderFormID then begin
-                      if Int64(RefRecord.GetElementNativeValue('DATA\Category')) in [3, 4, 5, 7] then
+                      if Master.IsReachable then
                         (RefRecord as IwbElementInternal).Reached;
                     end;
                 end;
