@@ -10990,9 +10990,9 @@ begin
     wbFormIDCk(ZNAM, 'Music', [MUSC]),
     wbString(NNAM, 'Canopy Shadow (unused)', 0, cpIgnore),
     wbString(XNAM, 'Water Noise Texture'),
+    wbString(XWEM, 'Water Environment Map (unused)', 0, cpIgnore),
     wbString(TNAM, 'HD LOD Diffuse Texture'),
     wbString(UNAM, 'HD LOD Normal Texture'),
-    wbString(XWEM, 'Water Environment Map (unused)', 0, cpIgnore),
     wbWorldOffsetData
   ]).SetAfterLoad(wbWorldAfterLoad)
     .SetAfterSet(wbWorldAfterSet);
