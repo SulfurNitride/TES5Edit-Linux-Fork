@@ -7713,6 +7713,7 @@ end;
       {0x20000000} 29, 'Medicine'
     ])), [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
@@ -7781,6 +7782,7 @@ end;
       .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
       .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbSNTP,
@@ -7827,6 +7829,7 @@ end;
       {0x00000200}  9, 'Unknown 9'
     ]), [9]), [
     wbEDID,
+    wbVMAD,
     wbXALG,
     wbBaseFormComponents,
     wbGenericModel(True)
@@ -7911,6 +7914,7 @@ end;
       {0x40000000} 30, 'Hi-Res 1st Person Only'
     ])), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbBO64,
     wbFormIDCk(RNAM, 'Race', [RACE]),
@@ -8302,6 +8306,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(CLAS, 'Class', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbFULLReq,
     wbDESCReq(),
     wbICON,
@@ -8314,6 +8320,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(CLMT, 'Climate', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbArrayS(WLST, 'Weather Types', wbStructSK([0], 'Weather Type', [
       wbFormIDCk('Weather', [WTHR, NULL]),
       wbInteger('Chance', itS32),
@@ -8330,6 +8338,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(SPGD, 'Shader Particle Geometry', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbStruct(DATA, 'Data', [
       wbFloat('Gravity Velocity'),
       wbUnused(4),
@@ -8977,8 +8987,10 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(ENCH, 'Enchantment', [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
+    wbBaseFormComponents,
     wbFULL,
     wbStruct(ENIT, 'Effect Data', [
       wbInteger('Enchantment Cost', itS32),
@@ -9039,6 +9051,7 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(FACT, 'Faction', [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbFULL,
     wbFactionRelations,
@@ -9272,6 +9285,7 @@ end;
     .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
     .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     {
     wbInteger(FNAM, 'Type', itU8, wbEnum([], [
@@ -9306,6 +9320,7 @@ end;
       {0x00080000} {15} 15, 'Restricted'
     ])), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbCNAM.SetRequired,
     wbString(DNAM, 'Notes'),
@@ -9363,6 +9378,7 @@ end;
     .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
     .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbCNAM,
     wbString(DNAM, 'Notes'),
@@ -9393,6 +9409,7 @@ end;
     .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
     .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbCNAM,
     wbString(DNAM, 'Notes'),
@@ -9406,9 +9423,11 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(TXST, 'Texture Set', [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
+    wbBaseFormComponents,
     wbRStruct('Textures (RGB/A)', [
       wbString(TX00, 'Diffuse'),
       wbString(TX01, 'Normal/Gloss'),
@@ -9441,6 +9460,7 @@ end;
       {0x00000004}  2, 'Non-Playable'
     ])), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbFULL,
     wbGenericModel(True),
@@ -9505,8 +9525,10 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(ASPC, 'Acoustic Space', [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
+    wbBaseFormComponents,
     wbSoundReference(ASLS, 'Looping Sound'),
     wbSoundReference(WED0, 'Interior Sound'),
     wbSoundReference(WED1, 'Exterior Sound'),
@@ -9585,8 +9607,10 @@ end;
     29, 'Child Can Use'
     ])), [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
+    wbBaseFormComponents,
     wbKeywords,
     wbIdleAnimation,
     wbGenericModel(True),
@@ -9601,6 +9625,7 @@ end;
       15, 'Apply Charge Multiplier'
     ])), [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
@@ -9713,6 +9738,7 @@ end;
       .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
       .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
@@ -9970,6 +9996,7 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(DEBR, 'Debris', [
     wbEDID,
+    wbBaseFormComponents,
     wbRArray('Models', wbDebrisModel(wbMODT), cpNormal, True)
   ]);
 
@@ -10265,6 +10292,7 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(ADDN, 'Addon Node', [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbBaseFormComponents,
@@ -10302,6 +10330,7 @@ end;
       .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
       .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbFULL,
     wbNLDT,
@@ -10362,6 +10391,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(CAMS, 'Camera Shot', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbGenericModel(True),
     wbKeywords,
     wbNLDT,
@@ -10439,6 +10470,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(VTYP, 'Voice Type', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbInteger(DNAM, 'Flags', itU8, wbFlags([
       'Allow Default Dialog',
       'Female'
@@ -10455,6 +10488,7 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(MATT, 'Material Type', [
     wbEDID,
+    wbBaseFormComponents,
     wbFormIDCk(PNAM, 'Material Parent', [MATT, NULL]),
     wbString(MNAM, 'Material Name'),
     wbFloatColors(CNAM, 'Havok Display Color'),
@@ -10512,6 +10546,7 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(IPDS, 'Impact Data Set', [
     wbEDID,
+    wbBaseFormComponents,
     wbRArrayS('Data', wbStructSK(PNAM, [0], '', [
       wbFormIDCk('Material Type', [MATT]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole),
       wbFormIDCk('Impact Data', [IPCT])
@@ -10542,6 +10577,7 @@ end;
     .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
     .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbPRPS,
     wbArrayS(ACPR, 'Added Persist Location References',
@@ -10760,6 +10796,7 @@ end;
       .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
       .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbDESCReq(),
     wbFULL,
@@ -11218,6 +11255,7 @@ end;
   // Lighting Templates are no longer used and are legacy records
   wbRecord(LGTM, 'Lighting Template', [
     wbEDID,
+    wbBaseFormComponents,
     wbStruct(DATA, 'Lighting', [
       wbByteColors('Ambient Color'),
       wbByteColors('Directional Color'),
@@ -11253,6 +11291,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(MUSC, 'Music Type', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbInteger(FNAM, 'Flags', itU32, wbFlags([
       {0x01} 'Plays One Selection',
       {0x02} 'Abrupt Transition',
@@ -11275,6 +11315,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(FSTP, 'Footstep', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbFormIDCk(DATA, 'Impact Data Set', [IPDS, NULL], False, cpNormal, True),
     wbString(ANAM, 'Tag', 0, cpNormal, True)
   ]);
@@ -11282,6 +11324,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(FSTS, 'Footstep Set', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbStruct(XCNT, 'Count', [
       wbInteger('Walking', itU32),
       wbInteger('Running', itU32),
@@ -11374,6 +11418,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(MUST, 'Music Track', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbInteger(CNAM, 'Track Type', itU32, wbEnum([], [
       Int64($23F678C3), 'Palette',
       Int64($6ED7E048), 'Single Track',
@@ -11405,6 +11451,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(EQUP, 'Equip Type', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbArray(PNAM, 'Slot Parents', wbFormIDCk('Parent', [EQUP])),
     wbInteger(DATA, 'Flags', itU32, wbFlags([
       'Use All Parents',
@@ -11416,6 +11464,8 @@ end;
 
   wbRecord(RELA, 'Relationship', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbStruct(DATA, 'Data', [
       wbFormIDCk('Parent', [NPC_, NULL]),
       wbFormIDCk('Child', [NPC_, NULL]),
@@ -11870,6 +11920,8 @@ end;
   (* still exists in game code, but not in Starfield.esm *)
   wbRecord(ASTP, 'Association Type', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbString(MPRT, 'Male Parent Title'),
     wbString(FPRT, 'Female Parent Title'),
     wbString(MCHT, 'Male Child Title'),
@@ -11930,12 +11982,15 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(OTFT, 'Outfit', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbArrayS(INAM, 'Items', wbFormIDCk('Item', [ARMO, LVLI]))
   ]);
 
   {subrecords checked against Starfield.esm}
   wbRecord(ARTO, 'Art Object', [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
@@ -11978,6 +12033,7 @@ end;
   (* still exists in game code, but not in Starfield.esm *)
   wbRecord(DUAL, 'Dual Cast Data', [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
@@ -11986,6 +12042,7 @@ end;
     wbSNBH,
     wbDEFL,
     wbXALG,
+    wbBaseFormComponents,
     wbStruct(DATA, 'Data', [
       wbFormIDCk('Projectile', [PROJ, NULL]),
       wbFormIDCk('Explosion', [EXPL, NULL]),
@@ -12003,6 +12060,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(COLL, 'Collision Layer', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     //wbDESCReq,
     wbNLDT,
     wbInteger(BNAM, 'Index', itU32, nil, cpNormal, True),
@@ -12047,6 +12106,7 @@ end;
       .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
       .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbFULL,
     // union decider doesn't work during copying since decision data FNAM is located after it
@@ -12067,6 +12127,7 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(REVB, 'Reverb Parameters', [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbWwiseGUID(RABG, 'Aux Bus'),
     wbInteger(ANAM, 'Reverb Class', itU32, wbReverbClassEnum, cpNormal, True)
@@ -12431,6 +12492,7 @@ end;
       {0x00008000} 15, 'No Rotation'
     ])), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbDESCReq(),
     wbConditions,
@@ -12454,6 +12516,8 @@ end;
       {0x00000200}  9, 'Unknown 9'
     ])), [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbString(BNAM, 'Material File'),
     wbFormIDCk(MNAM, 'Material Type', [MATT, NULL], False, cpNormal, True),
     wbStruct(HNAM, 'Havok Data', [
@@ -12645,6 +12709,7 @@ end;
     .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
     .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
@@ -12957,6 +13022,7 @@ end;
     .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
     .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID.SetRequired,
+    wbVMAD,
     wbBaseFormComponents,
     wbFULL,
     wbDESC().SetRequired,
@@ -14776,6 +14842,7 @@ end;
       {0x00080000} 19, 'Unknown 19'
     ])), [
     wbEDID,
+    wbVMAD,
     wbXALG,
     wbBaseFormComponents,
     wbFULL,
@@ -15772,9 +15839,11 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(SOUN, 'Sound Marker', [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbXALG,
+    wbBaseFormComponents,
     wbKeywords,
     wbSoundReference(SMLS),
     wbStruct(DEVT, 'Sound Detection', [
@@ -15844,8 +15913,10 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(SPEL, 'Spell', [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
+    wbBaseFormComponents,
     wbFULL,
     wbKeywords,
     wbMDOB,
@@ -15902,7 +15973,7 @@ end;
        .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
        .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
-//    wbVMAD,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
@@ -16064,6 +16135,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(AORU, 'Attraction Rule', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbStruct(AOR2, 'Data', [
       wbFloat('Radius'),
       wbFloat('Min Delay'),
@@ -16080,6 +16153,7 @@ end;
       {0x00800000} 23, 'Unknown 23'
     ])), [
     wbEDID,
+    wbVMAD,
     wbOBND,
     wbODTYReq,
     wbBaseFormComponents,
@@ -16098,6 +16172,7 @@ end;
   wbRecord(DFOB, 'Default Object', [
     wbEDID,
     wbXALG,
+    wbBaseFormComponents,
     wbFormID(DATA, 'Object')
   ])
   .IncludeFlag(dfIndexEditorID);
@@ -16105,6 +16180,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(DMGT, 'Damage Type', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbFULL,
     wbStruct(DNAM, 'Damage Type', [
       wbFormIDck('Resistance Actor Value', [AVIF, NULL]),
@@ -16115,6 +16192,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(INNR, 'Instance Naming Rules', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbInteger(UNAM, 'Target', itU32, wbEnum([], [
         0, 'None',
       $22, 'Armor',
@@ -16411,6 +16490,7 @@ end;
       .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
       .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbFormIDCk(PNAM, 'Parent', [LAYR]),
     wbByteColors(XCLP).SetRequired,
@@ -16440,6 +16520,7 @@ end;
       .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
       .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbFloat(CNAM, 'Color Influence', cpNormal, True),
     wbFloat(DNAM, 'Fade Distance Radius Scale', cpNormal, True).SetDefaultEditValue('1.0'),
@@ -16706,6 +16787,7 @@ end;
     .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
     .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbOBND,
     wbODTYReq,
     wbOPDS,
@@ -16801,6 +16883,7 @@ end;
       {0x00000100} 8, 'Property Collection'
     ])), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbFULL,
     wbDESC(),
@@ -16995,6 +17078,7 @@ end;
        .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
        .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbSNTP,
@@ -17025,6 +17109,7 @@ end;
       .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
       .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbInteger(STMS, 'Count', itU32, nil, cpBenign).IncludeFlag(dfSkipImplicitEdit),
     wbRStructsSK('Entries', 'Entry', [0], [
@@ -17308,6 +17393,7 @@ end;
     .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
     .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbOBND,
     wbODTYReq,
     wbOPDS,
@@ -17388,6 +17474,7 @@ end;
     .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
     .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbOBND,
     wbODTYReq,
     wbOPDS,
@@ -17510,6 +17597,7 @@ end;
       .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
       .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbRArray('Grasses', wbRStruct('Grass', [
       wbFormIDCk(GNAM, 'Grass', [GRAS]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole),
@@ -17713,6 +17801,7 @@ end;
     .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
     .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
@@ -17951,6 +18040,7 @@ end;
       .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
       .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbFULL,
     wbKeywords,
@@ -18137,6 +18227,7 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(AMBS, 'Ambience Set', [
     wbEDID,
+    wbBaseFormComponents,
     wbRStruct('Ambient Sounds', [
       wbInteger(ASAS, 'Count', itU32, nil, cpBenign, True).IncludeFlag(dfSkipImplicitEdit), //count
       wbRArray('Sounds', wbStruct(ASAE, 'Sound Events', [ // DO NOT SORT - this array appears deliberately ordered in CK
@@ -18603,6 +18694,7 @@ end;
       .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
       .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbLVLDReq,
     wbInteger(LVLM, 'Max Count', itU8, nil, cpNormal, True), { Always 00 } {Unavailable}
@@ -18648,6 +18740,7 @@ end;
       .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
       .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbString(TMPP, 'Target Morph Path'),
     wbString(TCMP, 'Target Chargen Morph Path'),
@@ -18700,6 +18793,7 @@ end;
       .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
       .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbRArrayS('Swap Map', wbRStructSK([0,1], 'Item', [
       wbFormID(KNAM, 'Original Object'),
@@ -19014,6 +19108,7 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(RSGD, 'Resource Generation Data', [
     wbEDID,
+    wbBaseFormComponents,
     wbRArray('Resources',
       wbRStruct('Resource', [
         wbFormIDCk(RNAM, 'Resource', [IRES], False, cpNormal, True),
@@ -19073,6 +19168,7 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(SDLT, 'Secondary Damage List', [
     wbEDID,
+    wbBaseFormComponents,
     wbInteger(ITMC, 'Secondary List Count', itU32).SetRequired,
     wbRArray('Secondary Damages',
       wbRStruct('Secondary Damage', [
@@ -19278,6 +19374,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(SPCH, 'Speech Challenge', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbSPCHQuestStage(SPWI, 'Quest Stage on Win'),
     wbSPCHQuestStage(SPLO, 'Quest Stage on Loss'),
     wbEmpty(SRAN, 'Sequential Scenes'),
@@ -19559,6 +19657,7 @@ end;
       .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
       .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbStruct(DNAM, 'Data', [
       wbInteger('Type', itU32, wbEnum([
@@ -19680,6 +19779,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(WATR, 'Water', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbFULL,
     wbInteger(ANAM, 'Opacity (unused)', itU8),
     wbInteger(FNAM, 'Flags', itU8, wbFlags([
@@ -20100,6 +20201,7 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(WTHS, 'Weather Settings', [
     wbEDID,
+    wbBaseFormComponents,
     wbREFL,
     wbFormIDCk(RFDP, 'Reflection Parent', [WTHS]),
     wbRDIF,
@@ -20207,6 +20309,7 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(WWED, 'Wwise Event Data', [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbWwiseGuid(WSED, 'Start'),
     wbFormIDCk(CNAM, 'Condition', [CNDF]),
