@@ -4603,7 +4603,7 @@ begin
     wbFormIDCk(XCWT, 'Water', [WATR]),
     wbOwnership([XRGD]),
     wbFormIDCk(XILL, 'Lock List', [FLST, NPC_]),
-    wbString(XWEM, 'Water Environment Map'),
+    wbString(XWEM, 'Water Environment Map').SetDontShow(wbCellExteriorDontShow),
     wbFormIDCk(XCCM, 'Sky/Weather from Region', [REGN]),
     wbFormIDCk(XCAS, 'Acoustic Space', [ASPC]),
     wbFormIDCk(XEZN, 'Encounter Zone', [ECZN]),
@@ -10960,7 +10960,7 @@ begin
     wbFormIDCk(ZNAM, 'Music', [MUSC]),
     wbString(NNAM, 'Canopy Shadow (unused)', 0, cpIgnore),
     wbString(XNAM, 'Water Noise Texture'),
-    wbString(XWEM, 'Water Environment Map (unused)', 0, cpIgnore),
+    wbString(XWEM, 'Water Environment Map').SetDontShow(wbWorldXWEMDontShow),
     wbString(TNAM, 'HD LOD Diffuse Texture'),
     wbString(UNAM, 'HD LOD Normal Texture'),
     wbWorldOffsetData

@@ -219,7 +219,7 @@ function wbFlagNavmeshIgnoreErosionDontSHow(const aElement: IwbElement): Boolean
 function wbFlagNavmeshGroundDontSHow(const aElement: IwbElement): Boolean;
 function wbFlagPartialFormDontShow(const aElement: IwbElement): Boolean;
 
-{>>> Don't Show Callbacks <<<} //14
+{>>> Don't Show Callbacks <<<} //19
 function wbAlwaysDontShow(const aElement: IwbElement): Boolean;
 function wbCellInteriorDontShow(const aElement: IwbElement): Boolean;
 function wbCellExteriorDontShow(const aElement: IwbElement): Boolean;
@@ -238,6 +238,7 @@ function wbSTATLODDontShow(const aElement: IwbElement): Boolean;
 function wbSTATLOD1DontShow(const aElement: IwbElement): Boolean;
 function wbSTATLOD2DontShow(const aElement: IwbElement): Boolean;
 function wbSTATLOD3DontShow(const aElement: IwbElement): Boolean;
+function wbWorldXWEMDontShow(const aElement: IwbElement): Boolean;
 
 {>>> Float Normalizers <<<} //1
 function wbNormalizeToRange(aMin, aMax: Extended): TwbFloatNormalizer;
@@ -948,6 +949,10 @@ begin
     var lMainRecord : IwbMainRecord;
     if not Supports(aElement, IwbMainRecord, lMainRecord) then
       Exit;
+
+    if Assigned(lMainRecord.ElementBySignature['XWEM']) then
+      if (lMainRecord.ElementNativeValues['Flags'] and $0) = 0 then
+        lMainRecord.RemoveElement(XWEM);
 
     if wbRemoveOffsetData then begin
       if (wbIsSkyrim or wbIsFallout4 or wbIsFallout76) and (lMainRecord._File.LoadOrder = 0) then
@@ -1736,7 +1741,7 @@ begin
   Result := not lMainRecord.CanBePartial;
 end;
 
-{>>> Don't Show Callbacks <<<} //14
+{>>> Don't Show Callbacks <<<} //19
 
 function wbAlwaysDontShow(const aElement: IwbElement): Boolean;
 begin
@@ -1855,6 +1860,11 @@ end;
 function wbSTATLOD3DontShow(const aElement: IwbElement): Boolean;
 begin
   Result := aElement.Container.Elements[2].EditValue = '';
+end;
+
+function wbWorldXWEMDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := (aElement.ContainingMainRecord.ElementNativeValues['DATA'] and 1 = 0);
 end;
 
 {>>> Float Normalizers <<<} //1
