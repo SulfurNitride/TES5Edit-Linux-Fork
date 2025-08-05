@@ -10882,8 +10882,18 @@ begin
       nil
      ),
     wbWeatherDirectionalLighting,
-    wbFloatColors(NAM2, 'Sun Glare'),
-    wbFloatColors(NAM3, 'Moon Glare'),
+    wbStruct(NAM2, 'Sun Glare', [
+      wbByteColors('Sunrise'),
+      wbByteColors('Day'),
+      wbByteColors('Sunset'),
+      wbByteColors('Night')
+    ]),
+    wbStruct(NAM3, 'Moon Glare', [
+      wbByteColors('Sunrise'),
+      wbByteColors('Day'),
+      wbByteColors('Sunset'),
+      wbByteColors('Night')
+    ]),
     wbRStruct('Aurora', [
       wbGenericModel
     ]),
