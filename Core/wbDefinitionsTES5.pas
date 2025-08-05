@@ -10821,13 +10821,12 @@ begin
 
   wbRecord(WTHR, 'Weather', [
     wbEDID,
-    wbRStruct('Old Cloud Textures', [
+    wbRStruct('Old Cloud Textures (Unused)', [
       wbString(DNAM, 'Layer #0', 0),
       wbString(CNAM, 'Layer #1', 0),
       wbString(ANAM, 'Layer #2', 0),
       wbString(BNAM, 'Layer #3', 0)
-    ], [], cpIgnore).SetDontShow(wbNeverShow)
-      .IncludeFlag(dfCollapsed, wbCollapseOther),
+    ]).IncludeFlag(dfCollapsed, wbCollapseOther),
     wbWeatherCloudTextures,
     wbInteger(LNAM, 'Max Cloud Layers', itU32)
       .SetDefaultNativeValue(29)
@@ -10836,7 +10835,9 @@ begin
       .SetRequired,
     wbFormIDCK(NNAM, 'Visual Effect', [RFCT, NULL])
       .SetRequired,
-    wbUnused(ONAM, 0),
+    wbArray(ONAM, 'Old Cloud Speeds (Unused)',
+      wbInteger('Layer', itU8),
+    4),
     wbWeatherCloudSpeed,
     wbWeatherCloudColors,
     wbWeatherCloudAlphas,
@@ -10881,8 +10882,8 @@ begin
       nil
      ),
     wbWeatherDirectionalLighting,
-    wbByteArray(NAM2, 'Unused', 0, cpIgnore),
-    wbByteArray(NAM3, 'Unused', 0, cpIgnore),
+    wbUnused(NAM2, 16),
+    wbUnused(NAM3, 16),
     wbRStruct('Aurora', [
       wbGenericModel
     ]),
