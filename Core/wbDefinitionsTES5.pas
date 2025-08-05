@@ -10579,160 +10579,130 @@ begin
   ]);
 
   wbRecord(WATR, 'Water', [
-    wbEDID,
+    wbEDID.SetRequired,
     wbFULL,
-    wbRArray('Unused', wbString(NNAM, 'Noise Map', 0, cpIgnore, False)), // leftover
-    wbInteger(ANAM, 'Opacity', itU8, nil, cpNormal, True),
-    wbInteger(FNAM, 'Flags', itU8, wbFlags([
-      {0x01} 'Causes Damage',
-      {0x02} 'Unknown 1',
-      {0x04} 'Unknown 2',
-      {0x08} IsSSE('Enable Flowmap', 'Unknown 3'),
-      {0x10} IsSSE('Blend Normals', 'Unknown 4'),
-      {0x20} 'Unknown 5',
-      {0x40} 'Unknown 6',
-      {0x80} 'Unknown 7'
-    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
-    wbByteArray(MNAM, 'Unused', 0, cpIgnore, False),  // leftover
+    wbRStruct('Noise Textures', [
+      wbString(NNAM, 'Layer One', 0),
+      wbString(NNAM, 'Layer Two', 0),
+      wbString(NNAM, 'Layer Three', 0)
+    ]),
+    wbInteger(ANAM, 'Opacity', itU8)
+      .SetDefaultNativeValue(75)
+      .SetRequired,
+    wbInteger(FNAM, 'Flags', itU8,
+      wbFlags(wbSparseFlags([
+      0, 'Causes Damage',
+      3, IsSSE('Enable Flowmap', 'Unknown 3'),
+      4, IsSSE('Blend Normals', 'Unknown 4')
+      ], False, 5))
+    ).SetRequired
+     .IncludeFlag(dfCollapsed, wbCollapseFlags),
+    wbByteArray(MNAM, 'Material ID (Unused)', 0, cpIgnore),
     wbFormIDCk(TNAM, 'Material', [MATT]),
     wbFormIDCk(SNAM, 'Open Sound', [SNDR,NULL]),
     wbFormIDCk(XNAM, 'Spell', [SPEL]),
     wbFormIDCk(INAM, 'Image Space', [IMGS]),
+    wbInteger(DATA, 'Damage Per Second', itU16).SetRequired,
+    wbStruct(DNAM, 'Data', [
+      wbFloat('Wind Velocity (Unused)').SetDefaultNativeValue(0.1),
+      wbFloat('Wind Direction (Unused)').SetDefaultNativeValue(90),
+      wbFloat('Wave Amplitude (Unused)').SetDefaultNativeValue(0.5),
+      wbFloat('Wave Frequency (Unused)').SetDefaultNativeValue(1),
+      wbFloat('Specular Properties - Sun Specular Power').SetDefaultNativeValue(50),
+      wbFloat('Water Properties - Reflectivity Amount').SetDefaultNativeValue(0.5),
+      wbFloat('Water Properties - Fresnel Amount').SetDefaultNativeValue(0.02),
+      wbFloat,
+      wbFloat('Fog Properties - Above Water - Fog Distance - Near Plane'),
+      wbFloat('Fog Properties - Above Water - Fog Distance - Far Plane'),
+      wbStruct('Color Properties', [
+        wbByteColors('Shallow Color', '0', '128', '128'),
+        wbByteColors('Deep Color', '0', '0', '25'),
+        wbByteColors('Reflection Color', '255', '255', '255')
+      ]),
+      wbInteger('Texture Blend', itU8),
+      wbUnused(3),
+      wbStruct('Rain Simulator (Unused)', [
+        wbFloat.SetDefaultNativeValue(0.1),
+        wbFloat.SetDefaultNativeValue(0.6),
+        wbFloat.SetDefaultNativeValue(0.985),
+        wbFloat.SetDefaultNativeValue(2)
+      ]),
+      wbStruct('Displacement Simulator', [
+        wbFloat('Starting Size').SetDefaultNativeValue(0.01),
+        wbFloat('Force').SetDefaultNativeValue(0.4),
+        wbFloat('Velocity').SetDefaultNativeValue(0.6),
+        wbFloat('Falloff').SetDefaultNativeValue(0.985),
+        wbFloat('Dampner').SetDefaultNativeValue(10)
+      ]),
+      wbFloat.SetDefaultNativeValue(0.05),
+      wbFloat('Noise Properties - Noise Falloff').SetDefaultNativeValue(300),
+      wbStruct('Noise Properties - Wind Direction', [
+        wbFloat('Layer One'),
+        wbFloat('Layer Two'),
+        wbFloat('Layer Three')
+      ]),
+      wbStruct('Noise Properties - Wind Speed', [
+        wbFloat('Layer One'),
+        wbFloat('Layer Two'),
+        wbFloat('Layer Three')
+      ]),
+      wbFloat.SetDefaultNativeValue(300),
+      wbFloat.SetDefaultNativeValue(300),
+      wbFloat('Fog Properties - Above Water - Fog Amount').SetDefaultNativeValue(1),
+      wbFloat,
+      wbStruct('Fog Properties - Under Water', [
+        wbFloat('Fog Amount').SetDefaultNativeValue(1),
+        wbFloat('Fog Distance - Near Plane'),
+        wbFloat('Fog Distance - Far Plane').SetDefaultNativeValue(1000)
+      ]),
+      wbFloat('Water Properties - Refraction Magnitude').SetDefaultNativeValue(100),
+      wbFloat('Specular Properties - Specular Power').SetDefaultNativeValue(100),
+      wbFloat.SetDefaultNativeValue(1),
+      wbFloat('Specular Properties - Specular Radius').SetDefaultNativeValue(10000),
+      wbFloat('Specular Properties - Specular Brightness').SetDefaultNativeValue(1),
+      wbStruct('Noise Properties - UV Scale', [
+        wbFloat('Layer One').SetDefaultNativeValue(100),
+        wbFloat('Layer Two').SetDefaultNativeValue(100),
+        wbFloat('Layer Three').SetDefaultNativeValue(100)
+      ]),
+      wbStruct('Noise Properties - Amplitude Scale', [
+        wbFloat('Layer One'),
+        wbFloat('Layer Two'),
+        wbFloat('Layer Three')
+      ]),
+      wbFloat('Water Properties - Reflection Magnitude').SetDefaultNativeValue(1),
+      wbFloat('Specular Properties - Sun Sparkle Magnitude').SetDefaultNativeValue(1),
+      wbFloat('Specular Properties - Sun Specular Magnitude').SetDefaultNativeValue(1),
+      wbStruct('Depth Properties', [
+        wbFloat('Reflections').SetDefaultNativeValue(1),
+        wbFloat('Refraction').SetDefaultNativeValue(1),
+        wbFloat('Normals').SetDefaultNativeValue(1),
+        wbFloat('Specular Lighting').SetDefaultNativeValue(1)
+      ]),
+      wbFloat('Specular Properties - Sun Sparkle Power').SetDefaultNativeValue(1),
+      IsSSE(
+        wbFloat('Noise Properties - Flowmap Scale').SetDefaultNativeValue(1),
+        nil
+      )
+    ], cpNormal, True, nil, 36),
+    wbStruct(GNAM, 'Related Waters (Unused)', [
+      wbFormIDCk('Daytime', [WATR,NULL]),
+      wbFormIDCk('Nighttime', [WATR,NULL]),
+      wbFormIDCk('Underwater', [WATR,NULL])
+    ]).SetRequired
+      .IncludeFlag(dfCollapsed),
+    wbVec3(NAM0, 'Linear Velocity').SetRequired,
+    wbVec3(NAM1, 'Angular Velocity').SetRequired,
+    wbRStruct('Noise Textures', [
+      wbString(NAM2, 'Layer One').SetRequired,
+      wbString(NAM3, 'Layer Two').SetRequired,
+      wbString(NAM4, 'Layer Three').SetRequired
+    ]).SetRequired,
     IsSSE(
-      wbInteger(DATA, 'Unused', itU16, nil, cpIgnore, True, True),
-      wbInteger(DATA, 'Damage Per Second', itU16, nil, cpNormal, True, True)
-    ),
-    IsSSE(
-      wbStruct(DNAM, 'Visual Data', [
-        wbFloat('Unknown'),
-        wbFloat('Unknown'),
-        wbFloat('Unknown'),
-        wbFloat('Unknown'),
-        wbFloat('Specular Properties - Sun Specular Power'),
-        wbFloat('Water Properties - Reflectivity Amount'),
-        wbFloat('Water Properties - Fresnel Amount'),
-        wbByteArray('Unknown', 4),
-        wbFloat('Fog Properties - Above Water - Fog Distance - Near Plane'),
-        wbFloat('Fog Properties - Above Water - Fog Distance - Far Plane'),
-        wbByteColors('Shallow Color'),
-        wbByteColors('Deep Color'),
-        wbByteColors('Reflection Color'),
-        wbByteArray('Unknown', 4),
-        wbFloat('Unknown'),
-        wbFloat('Unknown'),
-        wbFloat('Unknown'),
-        wbFloat('Unknown'),
-        wbFloat('Displacement Simulator - Starting Size'),
-        wbFloat('Displacement Simulator - Force'),
-        wbFloat('Displacement Simulator - Velocity'),
-        wbFloat('Displacement Simulator - Falloff'),
-        wbFloat('Displacement Simulator - Dampner'),
-        wbFloat('Unknown'),
-        wbFloat('Noise Properties - Noise Falloff'),
-        wbFloat('Noise Properties - Layer One - Wind Direction'),
-        wbFloat('Noise Properties - Layer Two - Wind Direction'),
-        wbFloat('Noise Properties - Layer Three - Wind Direction'),
-        wbFloat('Noise Properties - Layer One - Wind Speed'),
-        wbFloat('Noise Properties - Layer Two - Wind Speed'),
-        wbFloat('Noise Properties - Layer Three - Wind Speed'),
-        wbFloat('Unknown'),
-        wbFloat('Unknown'),
-        wbFloat('Fog Properties - Above Water - Fog Amount'),
-        wbFloat('Unknown'),
-        wbFloat('Fog Properties - Under Water - Fog Amount'),
-        wbFloat('Fog Properties - Under Water - Fog Distance - Near Plane'),
-        wbFloat('Fog Properties - Under Water - Fog Distance - Far Plane'),
-        wbFloat('Water Properties - Refraction Magnitude'),
-        wbFloat('Specular Properties - Specular Power'),
-        wbFloat('Unknown'),
-        wbFloat('Specular Properties - Specular Radius'),
-        wbFloat('Specular Properties - Specular Brightness'),
-        wbFloat('Noise Properties - Layer One - UV Scale'),
-        wbFloat('Noise Properties - Layer Two - UV Scale'),
-        wbFloat('Noise Properties - Layer Three - UV Scale'),
-        wbFloat('Noise Properties - Layer One - Amplitude Scale'),
-        wbFloat('Noise Properties - Layer Two - Amplitude Scale'),
-        wbFloat('Noise Properties - Layer Three - Amplitude Scale'),
-        wbFloat('Water Properties - Reflection Magnitude'),
-        wbFloat('Specular Properties - Sun Sparkle Magnitude'),
-        wbFloat('Specular Properties - Sun Specular Magnitude'),
-        wbFloat('Depth Properties - Reflections'),
-        wbFloat('Depth Properties - Refraction'),
-        wbFloat('Depth Properties - Normals'),
-        wbFloat('Depth Properties - Specular Lighting'),
-        wbFloat('Specular Properties - Sun Sparkle Power'),
-        // SSE
-        wbFloat('Noise Properties - Flowmap Scale')
-      ], cpNormal, True, nil, 57),
-      wbStruct(DNAM, 'Visual Data', [
-        wbFloat('Unknown'),
-        wbFloat('Unknown'),
-        wbFloat('Unknown'),
-        wbFloat('Unknown'),
-        wbFloat('Specular Properties - Sun Specular Power'),
-        wbFloat('Water Properties - Reflectivity Amount'),
-        wbFloat('Water Properties - Fresnel Amount'),
-        wbByteArray('Unknown', 4),
-        wbFloat('Fog Properties - Above Water - Fog Distance - Near Plane'),
-        wbFloat('Fog Properties - Above Water - Fog Distance - Far Plane'),
-        wbByteColors('Shallow Color'),
-        wbByteColors('Deep Color'),
-        wbByteColors('Reflection Color'),
-        wbByteArray('Unknown', 4),
-        wbFloat('Unknown'),
-        wbFloat('Unknown'),
-        wbFloat('Unknown'),
-        wbFloat('Unknown'),
-        wbFloat('Displacement Simulator - Starting Size'),
-        wbFloat('Displacement Simulator - Force'),
-        wbFloat('Displacement Simulator - Velocity'),
-        wbFloat('Displacement Simulator - Falloff'),
-        wbFloat('Displacement Simulator - Dampner'),
-        wbFloat('Unknown'),
-        wbFloat('Noise Properties - Noise Falloff'),
-        wbFloat('Noise Properties - Layer One - Wind Direction'),
-        wbFloat('Noise Properties - Layer Two - Wind Direction'),
-        wbFloat('Noise Properties - Layer Three - Wind Direction'),
-        wbFloat('Noise Properties - Layer One - Wind Speed'),
-        wbFloat('Noise Properties - Layer Two - Wind Speed'),
-        wbFloat('Noise Properties - Layer Three - Wind Speed'),
-        wbFloat('Unknown'),
-        wbFloat('Unknown'),
-        wbFloat('Fog Properties - Above Water - Fog Amount'),
-        wbFloat('Unknown'),
-        wbFloat('Fog Properties - Under Water - Fog Amount'),
-        wbFloat('Fog Properties - Under Water - Fog Distance - Near Plane'),
-        wbFloat('Fog Properties - Under Water - Fog Distance - Far Plane'),
-        wbFloat('Water Properties - Refraction Magnitude'),
-        wbFloat('Specular Properties - Specular Power'),
-        wbFloat('Unknown'),
-        wbFloat('Specular Properties - Specular Radius'),
-        wbFloat('Specular Properties - Specular Brightness'),
-        wbFloat('Noise Properties - Layer One - UV Scale'),
-        wbFloat('Noise Properties - Layer Two - UV Scale'),
-        wbFloat('Noise Properties - Layer Three - UV Scale'),
-        wbFloat('Noise Properties - Layer One - Amplitude Scale'),
-        wbFloat('Noise Properties - Layer Two - Amplitude Scale'),
-        wbFloat('Noise Properties - Layer Three - Amplitude Scale'),
-        wbFloat('Water Properties - Reflection Magnitude'),
-        wbFloat('Specular Properties - Sun Sparkle Magnitude'),
-        wbFloat('Specular Properties - Sun Specular Magnitude'),
-        wbFloat('Depth Properties - Reflections'),
-        wbFloat('Depth Properties - Refraction'),
-        wbFloat('Depth Properties - Normals'),
-        wbFloat('Depth Properties - Specular Lighting'),
-        wbFloat('Specular Properties - Sun Sparkle Power')
-      ])
-    ),
-    wbByteArray(GNAM, 'Unused', 0, cpNormal, True),  // leftover
-    wbVec3(NAM0, 'Linear Velocity'),
-    wbVec3(NAM1, 'Angular Velocity'),
-    wbString(NAM2, 'Noise Layer One - Noise Texture', 0, cpNormal, False),
-    wbString(NAM3, 'Noise Layer Two - Noise Texture', 0, cpNormal, False),
-    wbString(NAM4, 'Noise Layer Three - Noise Texture', 0, cpNormal, False),
-    // SSE
-    wbString(NAM5, 'Flow Normals - Noise Texture', 0, cpNormal, False)
-  ], False, nil, cpNormal, False);
+      wbString(NAM5, 'Flow Normals - Noise Texture').SetRequired,
+      nil
+    )
+  ]);
 
   wbRecord(WEAP, 'Weapon',
     wbFlags(wbFlagsList([
