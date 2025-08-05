@@ -10882,8 +10882,8 @@ begin
       nil
      ),
     wbWeatherDirectionalLighting,
-    wbUnused(NAM2, 16),
-    wbUnused(NAM3, 16),
+    wbFloatColors(NAM2, 'Sun Glare'),
+    wbFloatColors(NAM3, 'Moon Glare'),
     wbRStruct('Aurora', [
       wbGenericModel
     ]),
