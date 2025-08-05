@@ -10821,14 +10821,14 @@ begin
 
   wbRecord(WTHR, 'Weather', [
     wbEDID,
-    wbWeatherCloudTextures,
-    wbRStruct('Unused', [
-      wbUnused(DNAM, 0),
-      wbUnused(CNAM, 0),
-      wbUnused(ANAM, 0),
-      wbUnused(BNAM, 0)
-    ], [], cpIgnore, False, wbNeverShow)
+    wbRStruct('Old Cloud Textures', [
+      wbString(DNAM, 'Layer #0', 0),
+      wbString(CNAM, 'Layer #1', 0),
+      wbString(ANAM, 'Layer #2', 0),
+      wbString(BNAM, 'Layer #3', 0)
+    ], [], cpIgnore).SetDontShow(wbNeverShow)
       .IncludeFlag(dfCollapsed, wbCollapseOther),
+    wbWeatherCloudTextures,
     wbInteger(LNAM, 'Max Cloud Layers', itU32)
       .SetDefaultNativeValue(29)
       .SetRequired,
