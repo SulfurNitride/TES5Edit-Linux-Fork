@@ -635,7 +635,6 @@ type
     dtLString,
     dtLenString,
     dtByteArray,
-    dtReflection,
     dtInteger,
     dtIntegerFormater,
     dtIntegerFormaterUnion,
@@ -2742,10 +2741,6 @@ type
     ['{3069E1AC-4307-421B-93E4-797E18075EF9}']
   end;
 
-  IwbReflectionDef = interface(IwbByteArrayDef)
-    ['{46330B2B-78BB-4787-BA61-19CF986D2484}']
-  end;
-
   IwbEmptyDef = interface(IwbValueDef)
     ['{0A858744-947B-4B6E-9972-D8BF5398C87C}']
     function GetSorted: Boolean;
@@ -3558,17 +3553,6 @@ function wbByteArray(const aName          : string;
                            aDontShow      : TwbDontShowCallback = nil;
                            aGetCP         : TwbGetConflictPriority = nil)
                                           : IwbByteArrayDef; overload;
-
-function wbReflection(const aSignature : TwbSignature;
-                      const aName      : string = 'Unknown Reflection';
-                            aPriority  : TwbConflictPriority = cpNormal;
-                            aRequired      : Boolean = False)
-                                       : IwbSubRecordDef; overload;
-
-function wbReflection(const aName      : string = 'Unknown Reflection';
-                            aPriority  : TwbConflictPriority = cpNormal;
-                            aRequired      : Boolean = False)
-                                       : IwbReflectionDef; overload;
 
 function wbUnknown(const aSignature : TwbSignature;
                          aPriority  : TwbConflictPriority = cpNormal;
@@ -6932,15 +6916,6 @@ type
     function SetToDefault(aBasePtr, aEndPtr: Pointer; const aElement: IwbElement): Boolean; override;
   end;
 
-  TwbReflectionDef = class(TwbByteArrayDef, IwbReflectionDef)
-  protected
-    {---IwbDef---}
-    function GetDefType: TwbDefType; override;
-    function GetDefTypeName: string; override;
-  public
-    procedure AfterConstruction; override;
-  end;
-
   TwbEmptyDef = class(TwbValueDef, IwbEmptyDef)
   protected {private}
     edSorted: Boolean;
@@ -8328,23 +8303,6 @@ function wbByteArray(const aName          : string;
                                           : IwbByteArrayDef; overload;
 begin
   Result := TwbByteArrayDef.Create(aPriority, aRequired, aName, 0, aDontShow, aCountCallback, aGetCP, False);
-end;
-
-function wbReflection(const aSignature : TwbSignature;
-                      const aName      : string = 'Unknown Reflection';
-                            aPriority  : TwbConflictPriority = cpNormal;
-                            aRequired  : Boolean = False)
-                                       : IwbSubRecordDef; overload;
-begin
-  Result := wbSubRecord(aSignature, aName, wbReflection('', aPriority), nil, nil, aPriority, aRequired, False, nil, nil);
-end;
-
-function wbReflection(const aName     : string = 'Unknown Reflection';
-                            aPriority : TwbConflictPriority = cpNormal;
-                            aRequired : Boolean = False)
-                                      : IwbReflectionDef; overload;
-begin
-  Result := TwbReflectionDef.Create(aPriority, aRequired, aName, 0, nil, nil, nil, False);
 end;
 
 function wbUnknown(const aSignature : TwbSignature;
@@ -24139,28 +24097,6 @@ begin
     begin
       Result := Right.LoadOrder - Left.LoadOrder;
     end);
-end;
-
-{ TwbReflectionDef }
-
-procedure TwbReflectionDef.AfterConstruction;
-begin
-  inherited;
-  Include(defFlags, dfNoReport);
-  Include(defFlags, dfDontAssign);
-  Include(defFlags, dfInternalEditOnly);
-  Include(defFlags, dfCanContainReflection);
-  Include(defFlags, dfCanContainFormID);
-end;
-
-function TwbReflectionDef.GetDefType: TwbDefType;
-begin
-  Result := dtReflection;
-end;
-
-function TwbReflectionDef.GetDefTypeName: string;
-begin
-  Result := 'Reflection';
 end;
 
 initialization

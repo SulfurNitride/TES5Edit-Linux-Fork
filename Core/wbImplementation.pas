@@ -18884,9 +18884,6 @@ begin
 
   if dfCanContainReflection in lValueDef.DefFlags then
     Exit(True);
-
-  if lValueDef.DefType = dtReflection then
-    Exit(True);
 end;
 
 function TwbElement.ContainsUnmappedFormID: Boolean;
