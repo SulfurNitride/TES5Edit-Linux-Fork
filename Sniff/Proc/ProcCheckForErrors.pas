@@ -886,7 +886,6 @@ begin
         then
           Log.Add(#9 + texset.Name + ': Has texture assigned in slot 5, but is not used');
 
-
       if (Textures.Count > 6) and (Textures[6].EditValue <> '') then
         if (ShaderType <> 'Facegen') and
            (ShaderType <> 'MultiLayer Parallax')
@@ -940,7 +939,8 @@ begin
     var flags: Cardinal := prop.NativeValues['Flags'];
     var alpha_blend := flags and 1 = 1;
 
-    if alpha_blend then
+    var Shader : TwbNifBlock := shape.PropertyByType('BSShaderProperty', True);
+    if alpha_blend and not Shader.NativeValues['Shader Flags 2\Assume_Shadowmask'] then
       Log.Add(#9 + prop.Name + ': Blend alpha forces the object to be in single-pass mode, and can cause lighting issues if multiple lights are illuminating the object');
 
     //var src_blend_mode := flags shr 1 and $f;
@@ -964,12 +964,20 @@ begin
     Exit;
 
   bExternalEmitShader := False;
-  //var bFaceGen := Assigned(nif.BlockByName('BSFaceGenNiNodeSkinned'));
+  var bFaceGen := Assigned(nif.BlockByName('BSFaceGenNiNodeSkinned', 'NiNode'));
 
   for i := 0 to Pred(nif.BlocksCount) do begin
     var shape := nif.Blocks[i];
     if not (shape.IsNiObject('BSTriShape') or shape.IsNiObject('NiGeometry')) then
       Continue;
+
+    var bHasVertexColors := False;
+    if shape.IsNiObject('NiGeometry') then begin
+      var shapedata: TwbNifBlock := TwbNifBlock(shape.Elements['Data'].LinksTo);
+      if Assigned(shapedata) then
+        bHasVertexColors := shapedata.NativeValues['Has Vertex Colors'];
+    end else
+      bHasVertexColors := shape.NativeValues['VertexDesc\VF\VF_COLORS'];
 
     var shader: TwbNifBlock := shape.PropertyByType('BSShaderProperty', True);
     if not Assigned(shader) then begin
@@ -998,10 +1006,6 @@ begin
       Continue;
     end;
 
-    // external material file is used, shader settings are unused
-    if (nif.NifVersion >= nfFO4) and (shader.EditValues['Name'] <> '')  then
-      Continue;
-
     var texset: TwbNifBlock := nil;
     if Assigned(shader.Elements['Texture Set']) then
       texset := TwbNifBlock(shader.Elements['Texture Set'].LinksTo);
@@ -1014,42 +1018,66 @@ begin
     if shader.NativeValues['Shader Flags 1'] = 0 then
       Log.Add(#9 + shader.Name + ': Empty shader flags');
 
-    if nif.NifVersion = nfFO3 then
+    if nif.NifVersion = nfFO3 then begin
       if shader.NativeValues['Shader Flags 1\Environment_Mapping'] and not shader.NativeValues['Shader Flags 2\Envmap_Light_Fade'] then
         Log.Add(#9 + shader.Name + ': Environment_Mapping flag is set but no Envmap_Light_Fade flag');
+    end;
 
-    if (nif.NifVersion >= nfTES5) then begin
+    if (nif.NifVersion in [nfTES5, nfSSE]) then begin
+
+      // Tangents are required on BSTriShapes
+      if Shape.IsNiObject('BSTriShape') then
+        if not (Shader.NativeValues['Shader Flags 1\Model_Space_Normals'] or Shape.NativeValues['VertexDesc\VF\VF_TANGENT']) then
+          Log.Add(#9 + shape.Name + ': Has no tangentspace and is not using modelspace normals and will not render');
+
+
+      // Dynamic_Decal flag
+      if Shader.NativeValues['Shader Flags 1\Dynamic_Decal'] then begin
+        if not Shader.NativeValues['Shader Flags 1\Decal'] then
+          Log.Add(#9 + Shader.Name + ': Dynamic_Decal flag is used, but Decal flag is not set');
+
+        if not Shader.NativeValues['Shader Flags 2\Assume_Shadowmask'] then
+          Log.Add(#9 + Shader.Name + ': Dynamic_Decal flag is used, but Assume_Shadowmask flag is not set');
+      end;
+
+
+      if Shader.BlockType = 'BSEffectShaderProperty' then begin
+        // grayscale flags + texture
+        if (shader.NativeValues['Shader Flags 1\Grayscale_To_PaletteColor'] or shader.NativeValues['Shader Flags 1\Grayscale_To_PaletteAlpha']) and
+           (shader.EditValues['Grayscale Texture'] = '')
+        then
+          Log.Add(#9 + shader.Name + ': Grayscale Texture must be set for Grayscale_To_PaletteColor or Grayscale_To_PaletteAlpha flags');
+      end;
+
 
       if Shader.BlockType = 'BSLightingShaderProperty' then begin
+        if not Assigned(texset) then begin
+          Log.Add(#9 + Shader.Name + ': Missing BSShaderTextureSet');
+          Continue;
+        end;
 
         var ShaderType := Shader.EditValues['Shader Type'];
 
-        // diffuse and normals textures
-        if Assigned(texset) then begin
-          if texset.EditValues['Textures\[0]'] = '' then
-            Log.Add(#9 + texset.Name + ': Missing Diffuse Texture [Slot 0] for lighting shader');
+        // Diffuse Texture
+        if texset.EditValues['Textures\[0]'] = '' then
+          Log.Add(#9 + texset.Name + ': Diffuse Texture [Slot 0] must be set for all Shaders');
 
-          if texset.EditValues['Textures\[1]'] = '' then
-            Log.Add(#9 + texset.Name + ': Missing Normal Texture [Slot 1] for lighting shader');
-        end;
+        // Normal Texture
+        if texset.EditValues['Textures\[1]'] = '' then
+          Log.Add(#9 + texset.Name + ': Normal Texture [Slot 1] must be set for all Shaders');
 
         // envmap shader + flags + textures
         if ShaderType = 'Environment Map' then begin
           if not shader.NativeValues['Shader Flags 1\Environment_Mapping'] then
             Log.Add(#9 + shader.Name + ': Environment Map shader type is used but missing Environment_Mapping shader flag');
 
-          if not Shader.NativeValues['Shader Flags 2\EnvMap_Light_Fade'] then
-            Log.Add(#9 + Shader.Name + ': Environment Map shader type is used but missing EnvMap_Light_Fade shader flag');
+          if texset.EditValues['Textures\[4]'] = '' then
+            Log.Add(#9 + texset.Name + ': Environment Texture [Slot 4] must be set for Environment shader');
 
-          if Assigned(texset) then begin
-            if texset.EditValues['Textures\[4]'] = '' then
-              Log.Add(#9 + texset.Name + ': Environment Texture [Slot 4] must be set for Environment shader');
-
-            if texset.EditValues['Textures\[5]'] = '' then
-              Log.Add(#9 + texset.Name + ': Environment Mask Texture [Slot 5] must be set for Environment shader');
-          end;
+          if texset.EditValues['Textures\[5]'] = '' then
+            Log.Add(#9 + texset.Name + ': Environment Mask Texture [Slot 5] must be set for Environment shader');
         end else if Shader.NativeValues['Shader Flags 1\Environment_Mapping'] then
-            Log.Add(#9 + shader.Name + ': Environment_Mapping shader flag is set but shader type is not Environment Map');
+          Log.Add(#9 + shader.Name + ': Environment_Mapping shader flag is set but shader type is not Environment Map');
 
         // glow shader + flags + texture
         if ShaderType = 'Glow Shader' then begin
@@ -1059,55 +1087,49 @@ begin
           if not Shader.NativeValues['Shader Flags 1\Own_Emit'] then
             Log.Add(#9 + Shader.Name + ': Glow Shader type is used but missing Own_Emit shader flag');
 
-          if Assigned(texset) then begin
-            if texset.EditValues['Textures\[2]'] = '' then
-              Log.Add(#9 + texset.Name + ': Glow Texture [Slot 2] must be set for Glow shader');
-          end;
+          if (Shader.EditValues['Emissive Color'] = '#000000') then
+            Log.Add(#9 + Shader.Name + ': Glow Shader type is used but Emissive Color is blank');
+
+          if texset.EditValues['Textures\[2]'] = '' then
+            Log.Add(#9 + texset.Name + ': Glow Texture [Slot 2] must be set for Glow shader');
         end else if Shader.NativeValues['Shader Flags 2\Glow_Map'] then
           Log.Add(#9 + shader.Name + ': Glow_Map shader flag is set but shader type is not Glow Shader');
 
         // parallax shader + flag + colors + texture
-        if nif.NifVersion in [nfTES5, nfSSE] then begin
-          if ShaderType = 'Parallax' then begin
-            if not shader.NativeValues['Shader Flags 1\Parallax'] then
-              Log.Add(#9 + shader.Name + ': Parallax shader type is used but missing Parallax shader flag');
+        if ShaderType = 'Parallax' then begin
+          if not shader.NativeValues['Shader Flags 1\Parallax'] then
+            Log.Add(#9 + shader.Name + ': Parallax shader type is used but missing Parallax shader flag');
 
-            if not Shape.NativeValues['VertexDesc\VF\VF_COLORS'] then
-              Log.Add(#9 + shader.Name + ': Parallax shader type is used but missing Vertex Colors on shape');
+          if not bHasVertexColors then
+            Log.Add(#9 + shader.Name + ': Parallax shader type is used but missing Vertex Colors on shape');
 
-            if Shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] then
-              Log.Add(#9 + Shader.Name + ': Multi_Layer_Parallax shader flag can''t be used with Parallax shader type');
+          if Shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] then
+            Log.Add(#9 + Shader.Name + ': Multi_Layer_Parallax shader flag can''t be used with Parallax shader type');
 
-            if Assigned(texset) then begin
-              if texset.EditValues['Textures\[3]'] = '' then
-                Log.Add(#9 + texset.Name + ': Parallax Texture [Slot 3] must be set for Parallax shader');
-            end;
-          end else if Shader.NativeValues['Shader Flags 1\Parallax'] then
-            Log.Add(#9 + shader.Name + ': Parallax shader flag is set but shader type is not Parallax');
-        end;
+          if texset.EditValues['Textures\[3]'] = '' then
+            Log.Add(#9 + texset.Name + ': Parallax Texture [Slot 3] must be set for Parallax shader');
+        end else if Shader.NativeValues['Shader Flags 1\Parallax'] then
+          Log.Add(#9 + shader.Name + ': Parallax shader flag is set but shader type is not Parallax');
 
         // facegen shader + flags + textures
         if ShaderType = 'Facegen' then begin
           if not Shader.NativeValues['Shader Flags 1\Facegen'] then
             Log.Add(#9 + Shader.Name + ': Facegen shader type is used but missing Facegen shader flag');
 
-          // no Soft_Lighting in FO4
-          if (nif.NifVersion in [nfTES5, nfSSE]) and not Shader.NativeValues['Shader Flags 2\Soft_Lighting'] then
+          if not Shader.NativeValues['Shader Flags 2\Soft_Lighting'] then
             Log.Add(#9 + Shader.Name + ': Facegen shader type is used but missing Soft_Lighting shader flag');
 
           if Shader.NativeValues['Shader Flags 2\Anisotropic_Lighting'] then
             Log.Add(#9 + Shader.Name + ': Anisotropic_Lighting shader flag cannot be used with Facegen Shader Type');
 
-          if Assigned(texset) then begin
-            if texset.EditValues['Textures\[2]'] = '' then
-              Log.Add(#9 + texset.Name + ': Skin Tint Texture [Slot 2] must be set for Facegen shader');
+          if texset.EditValues['Textures\[2]'] = '' then
+            Log.Add(#9 + texset.Name + ': Skin Tint Texture [Slot 2] must be set for Facegen shader');
 
-            if texset.EditValues['Textures\[3]'] = '' then
-              Log.Add(#9 + texset.Name + ': Facegen Detail Texture [Slot 3] must be set for Facegen shader');
+          if texset.EditValues['Textures\[3]'] = '' then
+            Log.Add(#9 + texset.Name + ': Facegen Detail Texture [Slot 3] must be set for Facegen shader');
 
-            if texset.EditValues['Textures\[6]'] = '' then
-              Log.Add(#9 + texset.Name + ': Facegen Tint Texture [Slot 6] must be set for Facegen shader');
-          end;
+          if texset.EditValues['Textures\[6]'] = '' then
+            Log.Add(#9 + texset.Name + ': Facegen Tint Texture [Slot 6] must be set for Facegen shader');
         end else if Shader.NativeValues['Shader Flags 1\Facegen'] then
           Log.Add(#9 + Shader.Name + ': Facegen shader flag is set but shader type is not Facegen');
 
@@ -1116,14 +1138,11 @@ begin
           if not Shader.NativeValues['Shader Flags 1\Skin_Tint'] then
             Log.Add(#9 + Shader.Name + ': Skin Tint shader type is used but missing Skin_Tint shader flag');
 
-          // no Soft_Lighting in FO4
-          if (nif.NifVersion in [nfTES5, nfSSE]) and not Shader.NativeValues['Shader Flags 2\Soft_Lighting'] then
+          if not Shader.NativeValues['Shader Flags 2\Soft_Lighting'] then
             Log.Add(#9 + Shader.Name + ': Skin Tint shader type is used but missing Soft_Lighting shader flag');
 
-          if Assigned(texset) then begin
-            if texset.EditValues['Textures\[2]'] = '' then
-              Log.Add(#9 + texset.Name + ': Skin Tint Texture [Slot 2] must be set for Skin Tint shader');
-          end;
+          if texset.EditValues['Textures\[2]'] = '' then
+            Log.Add(#9 + texset.Name + ': Skin Tint Texture [Slot 2] must be set for Skin Tint shader');
         end else if Shader.NativeValues['Shader Flags 1\Skin_Tint'] then
           Log.Add(#9 + Shader.Name + ': Skin_Tint shader flag is set but shader type is not Skin Tint');
 
@@ -1142,16 +1161,14 @@ begin
           if Shader.NativeValues['Shader Flags 1\Parallax'] then
             Log.Add(#9 + Shader.Name + ': Parallax shader flag can''t be used with MultiLayer Parallax shader type');
 
-          if Assigned(texset) then begin
-            if texset.EditValues['Textures\[4]'] = '' then
-              Log.Add(#9 + texset.Name + ': Environment Texture [Slot 4] must be set for MultiLayer Parallax shader');
+          if texset.EditValues['Textures\[4]'] = '' then
+            Log.Add(#9 + texset.Name + ': Environment Texture [Slot 4] must be set for MultiLayer Parallax shader');
 
-            if texset.EditValues['Textures\[5]'] = '' then
-              Log.Add(#9 + texset.Name + ': Environment Mask Texture [Slot 5] must be set for MultiLayer Parallax shader');
+          if texset.EditValues['Textures\[5]'] = '' then
+            Log.Add(#9 + texset.Name + ': Environment Mask Texture [Slot 5] must be set for MultiLayer Parallax shader');
 
-            if texset.EditValues['Textures\[6]'] = '' then
-              Log.Add(#9 + texset.Name + ': Inner Layer Texture [Slot 6] must be set for MultiLayer Parallax shader');
-          end;
+          if texset.EditValues['Textures\[6]'] = '' then
+            Log.Add(#9 + texset.Name + ': Inner Layer Texture [Slot 6] must be set for MultiLayer Parallax shader');
         end else if Shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] then
           Log.Add(#9 + Shader.Name + ': Multi_Layer_Parallax shader flag is set but shader type is not MultiLayer Parallax');
 
@@ -1160,37 +1177,66 @@ begin
           if not shader.NativeValues['Shader Flags 1\Eye_Environment_Mapping'] then
             Log.Add(#9 + shader.Name + ': Eye Envmap shader type is used but missing Eye_Environment_Mapping shader flag');
 
-          if Assigned(texset) then begin
-            if texset.EditValues['Textures\[4]'] = '' then
-              Log.Add(#9 + texset.Name + ': Environment Texture [Slot 4] must be set for Eye Envmap shader');
+          if texset.EditValues['Textures\[4]'] = '' then
+            Log.Add(#9 + texset.Name + ': Environment Texture [Slot 4] must be set for Eye Envmap shader');
 
-            if texset.EditValues['Textures\[5]'] = '' then
-              Log.Add(#9 + texset.Name + ': Environment Mask Texture [Slot 5] must be set for Eye Envmap shader');
-          end;
+          if texset.EditValues['Textures\[5]'] = '' then
+            Log.Add(#9 + texset.Name + ': Environment Mask Texture [Slot 5] must be set for Eye Envmap shader');
         end else if Shader.NativeValues['Shader Flags 1\Eye_Environment_Mapping'] then
           Log.Add(#9 + shader.Name + ': Eye_Environment_Mapping shader flag is set but shader type is not Eye Envmap');
 
-        // rim or soft lighting
-        if shader.NativeValues['Shader Flags 2\Rim_Lighting'] then
-          if Assigned(texset) then
-            if (texset.EditValues['Textures\[2]'] = '') then
-              Log.Add(#9 + texset.Name + ': Rim Lighting Texture [Slot 2] must be set with Rim Lighting flag');
+        // Back_Lighting flag
+        if Shader.NativeValues['Shader Flags 2\Back_Lighting'] then
+          if texset.EditValues['Textures\[7]'] = '' then
+            Log.Add(#9 + texset.Name + ': Back Lighting Texture [Slot 7] must be set with Back lighting flag');
 
-        if shader.NativeValues['Shader Flags 2\Soft_Lighting'] then
-          if  (ShaderType <> 'Skin Tint') and (ShaderType <> 'Facegen') and Assigned(texset) and (texset.EditValues['Textures\[2]'] = '') then
-            Log.Add(#9 + texset.Name + ': Soft Lighting Texture [Slot 2] must be set with Soft lighting flag');
+        // Character_Lighting flag
+        if bFacegen then begin
+          if not Shader.NativeValues['Shader Flags 2\Character_Lighting'] then
+            Log.Add(#9 + Shader.Name + ': .nif is a Facegen .nif but Character_Lighting flag is not set');
+        end else begin
+          if Shader.NativeValues['Shader Flags 2\Character_Lighting'] then
+            Log.Add(#9 + Shader.Name + ': .nif is not a Facegen .nif but Character_Lighting flag is set');
+        end;
 
+        // EnvMap_Light_Fade flag
+        if (ShaderType = 'Environment Map') or (ShaderType = 'MultiLayer Parallax') or (ShaderType = 'Eye Envmap') then begin
+          if not Shader.NativeValues['Shader Flags 2\EnvMap_Light_Fade'] then
+            Log.Add(#9 + Shader.Name + ': Shader Type is Environment/MultiLayer Parallax, but missing EnvMap_Light_Fade flag');
+        end else begin
+          if Shader.NativeValues['Shader Flags 2\EnvMap_Light_Fade'] then
+            Log.Add(#9 + Shader.Name + ': EnvMap_Light_Fade flag is set, but Shader Type is not Environment/MultiLayer_Parallax');
+        end;
 
-        // rim and soft lighting
-        if shader.NativeValues['Shader Flags 2\Rim_Lighting'] and shader.NativeValues['Shader Flags 2\Soft_Lighting'] then
+        // Rim Lighting flag
+        if Shader.NativeValues['Shader Flags 2\Rim_Lighting'] then
+          if texset.EditValues['Textures\[2]'] = '' then
+            Log.Add(#9 + texset.Name + ': Rim Lighting Texture [Slot 2] must be set with Rim_Lighting flag');
+
+        // Soft_Lighting flag
+        if Shader.NativeValues['Shader Flags 2\Soft_Lighting'] then
+          if ((ShaderType <> 'Skin Tint') and (ShaderType <> 'Facegen')) then
+            if texset.EditValues['Textures\[2]'] = '' then
+              Log.Add(#9 + texset.Name + ': Soft Lighting Texture [Slot 2] must be set with Soft_lighting flag');
+
+        // Rim and Soft lighting flags
+        if Shader.NativeValues['Shader Flags 2\Rim_Lighting'] and shader.NativeValues['Shader Flags 2\Soft_Lighting'] then
           Log.Add(#9 + shader.Name + ': Rim and Soft lighting can not be used together');
 
+        // specular flag
+        if Shader.NativeValues['Shader Flags 1\Specular'] then begin
+          if Shader.EditValues['Specular Color'] = '#000000' then
+            Log.Add(#9 + Shader.Name + ': Specular flag is set, but Specular Color is blank');
 
-        // back lighting
-        if Shader.NativeValues['Shader Flags 2\Back_Lighting'] then
-          if Assigned(texset) then
-            if (texset.EditValues['Textures\[7]'] = '') then
-              Log.Add(#9 + texset.Name + ': Back Lighting Texture [Slot 7] must be set with Back lighting flag');
+          // model_space_normals flag
+          if Shader.NativeValues['Shader Flags 1\Model_Space_Normals'] then begin
+            if texset.EditValues['Textures\[7]'] = '' then
+              Log.Add(#9 + texset.Name + ': Specular Texture [Slot 7] must be set for Model_Space_Normals + Specular flags');
+
+            if Shader.NativeValues['Shader Flags 2\Back_Lighting'] then
+              Log.Add(#9 + Shader.Name + ': Back_Lighting flag can''t be used with Model_Space_Normals and Specular flags');
+          end;
+        end;
 
         // tree_anim flag
         if Shader.NativeValues['Shader Flags 2\Tree_Anim'] then begin
@@ -1208,58 +1254,36 @@ begin
             Log.Add(#9 + Shader.Name + ': Tree_Anim shader flag requires Vertex_Alpha shader flag');
         end;
 
-        // modelspace normals flag + specular flag + texture
-        if shader.NativeValues['Shader Flags 1\Model_Space_Normals'] and shader.NativeValues['Shader Flags 1\Specular'] then begin
-          if Assigned(texset) then
-            if (texset.EditValues['Textures\[7]'] = '') then
-              Log.Add(#9 + texset.Name + ': Specular Texture [Slot 7] must be set for Model_Space_Normals + Specular shader flags');
-
-          if shader.NativeValues['Shader Flags 2\Back_Lighting'] then
-            Log.Add(#9 + shader.Name + ': Back lighting shader flag can''t be used with Model Space Normals and Specular shader flags');
-        end;
-
-        // either tangents in shape or modelspace normals flag required
-        if nif.NifVersion >= nfSSE then
-          if not (shader.NativeValues['Shader Flags 1\Model_Space_Normals'] or shape.NativeValues['VertexDesc\VF\VF_TANGENT']) then
-            // the same error message as in CK
-            Log.Add(#9 + shape.Name + ': Has no tangentspace and is not using modelspace normals and will not render');
-
-        // zero Glossiness
+        // Glossiness
         var glossiness := shader.Elements['Glossiness'];
         if Assigned(glossiness) and SameValue(glossiness.NativeValue, 0.0) then
           Log.Add(#9 + shader.Name + ': Zero Glossiness causes lighting issues');
-
       end;
-
-      if Shader.BlockType = 'BSEffectShaderProperty' then begin
-
-        // grayscale flags + texture
-        if (shader.NativeValues['Shader Flags 1\Grayscale_To_PaletteColor'] or shader.NativeValues['Shader Flags 1\Grayscale_To_PaletteAlpha']) and
-           (shader.EditValues['Grayscale Texture'] = '')
-        then
-          Log.Add(#9 + shader.Name + ': Grayscale Texture must be set for Grayscale_To_PaletteColor or Grayscale_To_PaletteAlpha flags');
-
-      end;
-
 
       //Vertex Colors
       if shape.IsNiObject('NiGeometry') then begin
         var shapedata: TwbNifBlock := TwbNifBlock(shape.Elements['Data'].LinksTo);
         if Assigned(shapedata) then begin
-          if (shapedata.NativeValues['Has Vertex Colors'] <> 0) and not shader.NativeValues['Shader Flags 2\Vertex_Colors'] then
+          if bHasVertexColors and not shader.NativeValues['Shader Flags 2\Vertex_Colors'] then
             Log.Add(#9 + shapedata.Name + ': Has Vertex Colors is true but missing Vertex Colors shader flag in ' + shader.Name);
 
-          if (shapedata.NativeValues['Has Vertex Colors'] = 0) and shader.NativeValues['Shader Flags 2\Vertex_Colors'] then
+          if not bHasVertexColors and shader.NativeValues['Shader Flags 2\Vertex_Colors'] then
             Log.Add(#9 + shapedata.Name + ': Has Vertex Colors is false but Vertex Colors shader flag is set in ' + shader.Name);
         end;
       end
       else begin
-        if shape.NativeValues['VertexDesc\VF\VF_COLORS'] and not shader.NativeValues['Shader Flags 2\Vertex_Colors'] then
+        if bHasVertexColors and not shader.NativeValues['Shader Flags 2\Vertex_Colors'] then
           Log.Add(#9 + shape.Name + ': Has vertex colors but missing Vertex Colors shader flag in ' + shader.Name);
 
-        if not shape.NativeValues['VertexDesc\VF\VF_COLORS'] and shader.NativeValues['Shader Flags 2\Vertex_Colors'] then
+        if not bHasVertexColors and shader.NativeValues['Shader Flags 2\Vertex_Colors'] then
           Log.Add(#9 + shape.Name + ': Has no vertex colors but Vertex Colors shader flag is set in ' + shader.Name);
       end;
+    end;
+
+    if nif.NifVersion = nfFO4 then begin
+      // external material file is used, shader settings are unused
+      if shader.EditValues['Name'] <> '' then
+        Continue;
     end;
   end;
 
