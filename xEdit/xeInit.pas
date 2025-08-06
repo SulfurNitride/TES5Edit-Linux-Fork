@@ -1256,9 +1256,6 @@ begin
   else if FindCmdLineSwitch('hidefixup') then
     wbShowInternalEdit := False;
 
-  if FindCmdLineSwitch('IgnoreWorldMHDT') then
-    wbIgnoreWorldMHDT := True;
-
   if FindCmdLineSwitch('AllowEditHEDRVersion') then
     wbAllowEditHEDRVersion := True;
 
