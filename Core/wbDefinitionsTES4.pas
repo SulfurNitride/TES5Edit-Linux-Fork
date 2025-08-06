@@ -3096,10 +3096,10 @@ begin
           {9}  'October',
           {10} 'November',
           {11} 'December',
-          {12} 'Spring',
-          {13} 'Summer',
-          {14} 'Autumn',
-          {15} 'Winter'
+          {12} 'Spring (MAM)',
+          {13} 'Summer (JJA)',
+          {14} 'Autumn (SON)',
+          {15} 'Winter (DJF)'
         ], [
           255, 'Any'
         ])).SetDefaultNativeValue(255),
