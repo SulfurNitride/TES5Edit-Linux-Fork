@@ -103,9 +103,6 @@ object FormMain: TFormMain
       Proportional = True
       Stretch = True
       Transparent = True
-      ExplicitLeft = 345
-      ExplicitTop = 95
-      ExplicitWidth = 66
     end
     object Label2: TLabel
       Left = 8
@@ -278,8 +275,6 @@ object FormMain: TFormMain
       Proportional = True
       Stretch = True
       Transparent = True
-      ExplicitTop = -24
-      ExplicitWidth = 759
     end
     object Label3: TLabel
       Left = 8

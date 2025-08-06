@@ -19,7 +19,7 @@ uses
   Vcl.Menus, Vcl.Themes;
 
 const
-  sSniffVersion = '1.7';
+  sSniffVersion = '1.8';
   sSniffCaption = 'S''Lanter''s NIF Helper';
   sSniffTitle = sSniffCaption + ' ' + sSniffVersion;
   WM_PROCESSING_START = WM_USER + 10;
