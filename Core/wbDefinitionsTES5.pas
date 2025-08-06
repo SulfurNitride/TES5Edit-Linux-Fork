@@ -10581,7 +10581,7 @@ begin
   wbRecord(WATR, 'Water', [
     wbEDID.SetRequired,
     wbFULL,
-    wbRStruct('Noise Textures', [
+    wbRStruct('Old Noise Textures', [
       wbString(NNAM, 'Layer One', 0),
       wbString(NNAM, 'Layer Two', 0),
       wbString(NNAM, 'Layer Three', 0)
