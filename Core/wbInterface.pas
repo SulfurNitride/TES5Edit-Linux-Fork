@@ -284,6 +284,7 @@ var
   wbComplexFileFileID                : Boolean    = False;
 
   wbCS                               : Boolean    = False;
+  wbOBME                             : Boolean    = False;
 
   wbAllowMakePartial                 : Boolean    = False;
 
