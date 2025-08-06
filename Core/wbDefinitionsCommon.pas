@@ -799,7 +799,7 @@ begin
 
     if lMainRecord.IsMaster then begin
       if not Assigned(lCNAM) then
-        lMainRecord.Add('CNAM', True);
+        lCNAM := lMainRecord.Add('CNAM', True) as IwbContainerElementRef;
 
       for var i := Pred(lCNAM.ElementCount) downto 0 do begin
         var lWorldspace := lCNAM.Elements[i] as IwbContainerElementRef;
@@ -811,7 +811,7 @@ begin
         lEOVR.Remove;
     end else begin
       if not Assigned(lEOVR) then
-        lMainRecord.Add('EOVR', True);
+        lEOVR := lMainRecord.Add('EOVR', True) as IwbContainerElementRef;
 
       for var i := Pred(lEOVR.ElementCount) downto 0 do begin
         var lWorldspace := lEOVR.Elements[i] as IwbContainerElementRef;
