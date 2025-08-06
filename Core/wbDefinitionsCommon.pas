@@ -7030,8 +7030,8 @@ begin
         wbFormIDCk('Animation', [IDLE,NULL])
       ).SetCountPathOnValue(IsFO3('IDLC\Animation Count', 'IDLC'), False),
       IsSF1(
-        wbUnknown(IDLB),
-        nil
+        nil,
+        wbUnknown(IDLB)
       )
     ]);
 
