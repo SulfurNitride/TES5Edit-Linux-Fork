@@ -2911,7 +2911,7 @@ begin
     wbArrayS(ESCE, 'Counter Effects', wbInteger('Counter Effect Code', itU32, wbChar4))
       .SetCountPathOnValue('DATA\Counter Effect Count', False)
   ]).SetAfterLoad(wbMGEFAfterLoad)
-    .IncludeFlag(dfIndexEditorID);;
+    .IncludeFlag(dfIndexEditorID);
 
   wbRecord(MISC, 'Misc. Item',
     wbFlags(wbFlagsList([
