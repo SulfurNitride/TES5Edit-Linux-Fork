@@ -1442,14 +1442,14 @@ begin
   // compressed sound and string files
   for var asset in Assets do
     if asset.Compressed and
-      (asset.AssetName.StartsWith(cAssetSound.Root + '\', True) or
+      (asset.AssetName.StartsWith(cAssetSound.Root + '\', True) and not asset.AssetName.EndsWith('.fuz', True) or
        asset.AssetName.StartsWith(cAssetMusic.Root + '\', True) or
        asset.AssetName.StartsWith(cAssetStrings.Root + '\', True)) then
       BadAssets := BadAssets + [asset];
 
   if Length(BadAssets) <> 0 then begin
     dlgPackingCheck.Text :=
-      'Compressed music/sound/string file:'#13 +
+      'Compressed Music/Sound/String file:'#13 +
       BadAssets[Low(BadAssets)].AssetName + #13#13 +
       'Music/Sound/String files don''t work in the game when compressed. Press "Continue" ' +
       'to compress anyway if you have some sort of a bugfix mod installed to amend that.';
