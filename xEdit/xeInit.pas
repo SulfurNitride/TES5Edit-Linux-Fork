@@ -1042,6 +1042,7 @@ begin
       wbLoadBSAs            := True;
       wbAllowInternalEdit   := false;
       wbCanSortINFO         := True;
+      wbOBME                := FileExists(wbDataPath + 'OBSE\Plugins\OBME.dll');
     end;
     gmTES4R: begin
       wbLoadBSAs            := False;
