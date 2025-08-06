@@ -686,7 +686,7 @@ begin
     Exit;
 
   if wbIsSkyrim then
-    Result := aMainRecord.ElementEditValues['QNAM']
+    Result := aMainRecord.ElementEditValues['PNAM']
   else
     Result := aMainRecord.ElementEditValues['Quest'];
 
