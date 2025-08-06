@@ -1017,6 +1017,8 @@ begin
   if not (nif.NifVersion in [nfTES4, nfFO3, nfTES5, nfSSE, nfFO4]) then
     Exit;
 
+  var bFaceGen := Assigned(nif.BlockByName('BSFaceGenNiNodeSkinned', 'NiNode'));
+
   for var i := 0 to Pred(nif.BlocksCount) do begin
     shape := nif.Blocks[i];
     if not (shape.IsNiObject('BSTriShape') or shape.IsNiObject('NiGeometry')) then
@@ -1074,233 +1076,340 @@ begin
       Result := True;
     end;
 
-    // shader type and flags for Skyrim and later games
-    if (nif.NifVersion >= nfTES5) and Assigned(texset) and Assigned(shader.Elements['Shader Type']) then begin
-      var ShaderType := shader.EditValues['Shader Type'];
-      var bTexEmissive := texset.EditValues['Textures\[2]'] <> '';
-      var bTexParallax := texset.EditValues['Textures\[3]'] <> '';
-      var bTexEnvMapped := (texset.EditValues['Textures\[4]'] <> '') or (texset.EditValues['Textures\[5]'] <> '');
-      var bTexSubSurface := texset.EditValues['Textures\[6]'] <> '';
-
-      // decide on shader when multiple features
-      var NewShaderType := '';
-
-      // perfect matches first: type + texture + flags
-      if (ShaderType = 'MultiLayer Parallax') and bTexEnvMapped and bTexSubSurface and Shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] then
-        NewShaderType := 'MultiLayer Parallax' else
-      if (ShaderType = 'Environment Map') and bTexEnvMapped and shader.NativeValues['Shader Flags 1\Environment_Mapping'] then
-        NewShaderType := 'Environment Map' else
-      if (ShaderType = 'Eye Envmap') and bTexEnvMapped and shader.NativeValues['Shader Flags 1\Eye_Environment_Mapping'] then
-        NewShaderType := 'Eye Envmap' else
-      if (ShaderType = 'Glow Shader') and bTexEmissive and shader.NativeValues['Shader Flags 2\Glow_Map'] then
-        NewShaderType := 'Glow Shader' else
-      if (ShaderType = 'Skin Tint') and bTexSubSurface and shader.NativeValues['Shader Flags 1\Skin_Tint'] then
-        NewShaderType := 'Skin Tint' else
-      if (ShaderType = 'Parallax') and bTexParallax and shader.NativeValues['Shader Flags 1\Parallax'] then
-        NewShaderType := 'Parallax' else
-
-      // less perfect matches: type + texture
-      if (ShaderType = 'MultiLayer Parallax') and bTexEnvMapped and bTexSubSurface then
-        NewShaderType := 'MultiLayer Parallax' else
-      if (ShaderType = 'Environment Map') and bTexEnvMapped then
-        NewShaderType := 'Environment Map' else
-      if (ShaderType = 'Eye Envmap') and bTexEnvMapped then
-        NewShaderType := 'Eye Envmap' else
-      if (ShaderType = 'Glow Shader') and bTexEmissive  then
-        NewShaderType := 'Glow Shader' else
-      if (ShaderType = 'Skin Tint') and bTexSubSurface then
-        NewShaderType := 'Skin Tint' else
-      if (ShaderType = 'Parallax') and bTexParallax then
-        NewShaderType := 'Parallax' else
-
-      // even less perfect matches: texture + flags
-      if bTexEnvMapped and bTexSubSurface and Shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] then
-        NewShaderType := 'MultiLayer Parallax' else
-      if bTexEnvMapped and shader.NativeValues['Shader Flags 1\Environment_Mapping'] then
-        NewShaderType := 'Environment Map' else
-      if bTexEnvMapped and shader.NativeValues['Shader Flags 1\Eye_Environment_Mapping'] then
-        NewShaderType := 'Eye Envmap' else
-      if bTexEmissive and shader.NativeValues['Shader Flags 2\Glow_Map'] then
-        NewShaderType := 'Glow Shader' else
-      if bTexSubSurface and shader.NativeValues['Shader Flags 1\Skin_Tint'] then
-        NewShaderType := 'Skin Tint' else
-      if bTexParallax and shader.NativeValues['Shader Flags 1\Parallax'] then
-        NewShaderType := 'Parallax';
-
-      // empty NewShaderType means we couldn't decide
-      if (NewShaderType <> '') and (ShaderType <> NewShaderType) then begin
-        shader.EditValues['Shader Type'] := NewShaderType;
-        Log.Add(#9 + shader.Name + ': Changed Shader Type from ' + ShaderType + ' to ' + NewShaderType + ' based on assigned textures and flags');
-        Result := True;
-      end;
-
-      ShaderType := shader.EditValues['Shader Type'];
-
-      if ShaderType = 'MultiLayer Parallax' then begin
-        // add Multi_Layer_Parallax flag when shader is MultiLayer Parallax
-        if not shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] then begin
-          shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] := True;
-          Log.add(#9 + shader.Name + ': Added Multi_Layer_Parallax flag');
-          Result := True;
-        end;
-      end else
-        // remove Multi_Layer_Parallax flag when shader is not MultiLayer Parallax
-        if shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] then begin
-          shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] := False;
-          Log.Add(#9 + shader.Name + ': Removed Multi_Layer_Parallax flag because Shader Type is not MultiLayer Parallax');
-          Result := True;
-        end;
-
-      if ShaderType = 'Environment Map' then begin
-        // add Environment_Mapping flag when shader is Environment Map
-        if not shader.NativeValues['Shader Flags 1\Environment_Mapping'] then begin
-          shader.NativeValues['Shader Flags 1\Environment_Mapping'] := True;
-          Log.Add(#9 + shader.Name + ': Added Environment_Mapping flag');
-          Result := True;
-        end;
-      end else
-        // remove Environment_Mapping flag when shader is not Environment Map
-        if shader.NativeValues['Shader Flags 1\Environment_Mapping'] then begin
-          shader.NativeValues['Shader Flags 1\Environment_Mapping'] := False;
-          Log.Add(#9 + shader.Name + ': Removed Environment_Mapping flag because Shader Type is not Environment Map');
-          Result := True;
-        end;
-
-      if ShaderType = 'Eye Envmap' then begin
-        if not shader.NativeValues['Shader Flags 1\Eye_Environment_Mapping'] then begin
-          shader.NativeValues['Shader Flags 1\Eye_Environment_Mapping'] := True;
-          Log.Add(#9 + shader.Name + ': Added Eye_Environment_Mapping flag');
-          Result := True;
-        end;
-      end else
-        if shader.NativeValues['Shader Flags 1\Eye_Environment_Mapping'] then begin
-          shader.NativeValues['Shader Flags 1\Eye_Environment_Mapping'] := False;
-          Log.Add(#9 + shader.Name + ': Removed Eye_Environment_Mapping flag because Shader Type is not Eye Envmap');
-          Result := True;
-        end;
-
-      if (ShaderType = 'MultiLayer Parallax') or (ShaderType = 'Environment Map') or (ShaderType = 'Eye Envmap') then begin
-        if not Shader.NativeValues['Shader Flags 2\EnvMap_Light_Fade'] then begin
-          Shader.NativeValues['Shader Flags 2\EnvMap_Light_Fade'] := True;
-          Log.Add(#9 + Shader.Name + ': Added EnvMap_Light_Fade flag because Shader Type is Environment/MultiLayer Parallax');
-          Result := True;
-        end;
-      end else
-        if Shader.NativeValues['Shader Flags 2\EnvMap_Light_Fade'] then begin
-          Shader.NativeValues['Shader Flags 2\EnvMap_Light_Fade'] := False;
-          Log.Add(#9 + Shader.Name + ': Removed EnvMap_Light_Fade flag because Shader Type is not Environment/MultiLayer Parallax');
-          Result := True;
-        end;
-
-      if ShaderType = 'Glow Shader' then begin
-        // add emit + glow flags when shader is glow
-        if not shader.NativeValues['Shader Flags 1\Own_Emit'] then begin
-          shader.NativeValues['Shader Flags 1\Own_Emit'] := True;
-          Log.Add(#9 + shader.Name + ': Added Own_Emit flag');
-          Result := True;
-        end;
-        if not shader.NativeValues['Shader Flags 2\Glow_Map'] then begin
-          shader.NativeValues['Shader Flags 2\Glow_Map'] := True;
-          Log.Add(#9 + shader.Name + ': Added Glow_Map flag');
-          Result := True;
-        end;
-      end else begin
-        // Remove Own_Emit if not Glow Shader and Emissive Color is blank
-        // Because Beth doesn't respect their own code's standards...
-        if (Shader.NativeValues['Shader Flags 1\Own_Emit']) and (Shader.EditValues['Emissive Color'] = '#000000') then begin
-          Shader.NativeValues['Shader Flags 1\Own_Emit'] := False;
-          Log.Add(#9 + Shader.Name + ': Removed Own_Emit flag because Emissive Color is Blank');
-          Result := True;
-        end;
-        // Remove Glow Map flag if shader is not Glow
-        if shader.NativeValues['Shader Flags 2\Glow_Map'] then begin
-          shader.NativeValues['Shader Flags 2\Glow_Map'] := False;
-          Log.Add(#9 + shader.Name + ': Removed Glow_Map flag because Shader Type is not Glow Shader');
-          Result := True;
-        end;
-        // External_Emittance doesn't work without glow
-        if shader.NativeValues['Shader Flags 1\External_Emittance'] then begin
-          shader.NativeValues['Shader Flags 1\External_Emittance'] := False;
-          Log.Add(#9 + shader.Name + ': Removed External_Emittance flag because Shader Type is not Glow Shader');
-          Result := True;
-        end;
-      end;
-
-      if ShaderType = 'Skin Tint' then begin
-        // add Skin_Tint flag when shader is Skin Tint
-        if not shader.NativeValues['Shader Flags 1\Skin_Tint'] then begin
-          shader.NativeValues['Shader Flags 1\Skin_Tint'] := True;
-          Log.Add(#9 + shader.Name + ': Added Skin_Tint flag');
-          Result := True;
-        end;
-        // add Soft_Lighting flag when shader is Skin Tint except facegen meshes (no Soft_lighting in FO4)
-        if (nif.NifVersion < nfFO4) and not Assigned(nif.BlockByName('BSFaceGenNiNodeSkinned')) then
-          if not shader.NativeValues['Shader Flags 2\Soft_Lighting'] then begin
-            shader.NativeValues['Shader Flags 2\Soft_Lighting'] := True;
-            Log.Add(#9 + shader.Name + ': Added Soft_Lighting flag');
-            Result := True;
-          end;
-      end else
-        // remove Skin_Tint flag when shader is not Skin Tint
-        if shader.NativeValues['Shader Flags 1\Skin_Tint'] then begin
-          shader.NativeValues['Shader Flags 1\Skin_Tint'] := False;
-          Log.Add(#9 + shader.Name + ': Removed Skin_Tint flag because Shader Type is not Skin Tint');
-          Result := True;
-        end;
-
-      if ShaderType = 'Parallax' then begin
-        // add Parallax flag when shader is Parallax
-        if not shader.NativeValues['Shader Flags 1\Parallax'] then begin
-          shader.NativeValues['Shader Flags 1\Parallax'] := True;
-          Log.Add(#9 + shader.Name + ': Added Parallax flag');
-          Result := True;
-        end;
-      end else
-        // remove Parallax flag when shader is not Parallax
-        if shader.NativeValues['Shader Flags 1\Parallax'] then begin
-          shader.NativeValues['Shader Flags 1\Parallax'] := False;
-          Log.Add(#9 + shader.Name + ': Removed Parallax flag because Shader Type is not Parallax');
-          Result := True;
-        end;
-
-      // Specular Flag
-      if (Shader.NativeValues['Shader Flags 1\Specular']) and (Shader.EditValues['Specular Color'] = '#000000') then begin
-        Shader.NativeValues['Shader Flags 1\Specular'] := False;
-        Log.Add(#9 + Shader.Name + ': Removed Specular flag because Specular Color is Blank');
-        Result := True;
-      end;
-
-      // Tree_Anim flag (flutter animation)
-      // Remove Tree_Anim when the root node type is wrong
-      if shader.NativeValues['Shader Flags 2\Tree_Anim'] and (nif.RootNode.BlockType <> 'BSLeafAnimNode') and (nif.RootNode.BlockType <> 'BSTreeNode') then begin
-        shader.NativeValues['Shader Flags 2\Tree_Anim'] := False;
-        Log.Add(#9 + shader.Name + ': Removed Tree_Anim flag because the root node is not BSLeafAnimNode or BSTreeNode');
-        Result := True;
-      end;
-
-      // Remove Tree_Anim when shader is wrong
-      if (ShaderType <> 'Default') and (ShaderType <> 'Tree Anim') and shader.NativeValues['Shader Flags 2\Tree_Anim'] then begin
-        shader.NativeValues['Shader Flags 2\Tree_Anim'] := False;
-        Log.Add(#9 + shader.Name + ': Removed Tree_Anim flag because of wrong Shader Type');
-        Result := True;
-      end;
-
-      // Remove Tree_Anim when no vertex colors
-      if not bHasVertexColors and shader.NativeValues['Shader Flags 2\Tree_Anim'] then begin
-        shader.NativeValues['Shader Flags 2\Tree_Anim'] := False;
-        Log.Add(#9 + shader.Name + ': Removed Tree_Anim flag because vertex colors are missing');
-        Result := True;
-      end;
-
-      // Add Vertex_Alpha if Tree_Anim is set
-      if bHasVertexColors and shader.NativeValues['Shader Flags 2\Tree_Anim'] and not shader.NativeValues['Shader Flags 1\Vertex_Alpha'] then begin
-        shader.NativeValues['Shader Flags 1\Vertex_Alpha'] := True;
-        Log.Add(#9 + shader.Name + ': Added Vertex_Alpha flag because Tree_Anim flag is set');
-        Result := True;
-      end;
-
+    if nif.NifVersion = nfTES4 then begin
+      // Nothing for TES4 yet :(
     end;
 
+    if nif.NifVersion = nfFO3 then begin
+      // Nothing for FO3 yet :(
+    end;
+
+    // shader type and flags for Skyrim and later games
+    if nif.NifVersion in [nfTES5, nfSSE] then begin
+
+      // Dynamic_Decal flag
+      if Shader.NativeValues['Shader Flags 1\Dynamic_Decal'] then begin
+        if not Shader.NativeValues['Shader Flags 1\Decal'] then begin
+          Shader.NativeValues['Shader Flags 1\Decal'] := True;
+          Log.Add(#9 + Shader.Name + ': Added Decal flag because Dynamic_Decal flag is used');
+          Result := True;
+        end;
+
+        if not Shader.NativeValues['Shader Flags 2\Assume_Shadowmask'] then begin
+          Shader.NativeValues['Shader Flags 2\Assume_Shadowmask'] := True;
+          Log.Add(#9 + Shader.Name + ': Added Assume_Shadowmask flag because Dynamic_Decal flag is used');
+          Result := True;
+        end;
+      end;
+
+      if Shader.BlockType = 'BSEffectShaderProperty' then begin
+        //Nothing for BSEffectShaders yet. :(
+      end;
+
+      if Shader.BlockType = 'BSLightingShaderProperty' then begin
+        if not Assigned(texset) then
+          Continue;
+
+        var ShaderType := shader.EditValues['Shader Type'];
+        var bTexEmissive := texset.EditValues['Textures\[2]'] <> '';
+        var bTexParallax := texset.EditValues['Textures\[3]'] <> '';
+        var bTexEnvMapped := (texset.EditValues['Textures\[4]'] <> '') or (texset.EditValues['Textures\[5]'] <> '');
+        var bTexSubSurface := texset.EditValues['Textures\[6]'] <> '';
+
+        // decide on shader when multiple features
+        var NewShaderType := '';
+
+        // perfect matches first: type + texture + flags
+        if (ShaderType = 'Facegen') and bTexEmissive and bTexParallax and bTexSubSurface and Shader.NativeValues['Shader Flags 1\Facegen'] then
+          NewShaderType := 'Facegen' else
+        if (ShaderType = 'MultiLayer Parallax') and bTexEnvMapped and bTexSubSurface and Shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] then
+          NewShaderType := 'MultiLayer Parallax' else
+        if (ShaderType = 'Environment Map') and bTexEnvMapped and shader.NativeValues['Shader Flags 1\Environment_Mapping'] then
+          NewShaderType := 'Environment Map' else
+        if (ShaderType = 'Eye Envmap') and bTexEnvMapped and shader.NativeValues['Shader Flags 1\Eye_Environment_Mapping'] then
+          NewShaderType := 'Eye Envmap' else
+        if (ShaderType = 'Glow Shader') and bTexEmissive and shader.NativeValues['Shader Flags 2\Glow_Map'] then
+          NewShaderType := 'Glow Shader' else
+        if (ShaderType = 'Skin Tint') and bTexEmissive and shader.NativeValues['Shader Flags 1\Skin_Tint'] then
+          NewShaderType := 'Skin Tint' else
+        if (ShaderType = 'Parallax') and bTexParallax and shader.NativeValues['Shader Flags 1\Parallax'] then
+          NewShaderType := 'Parallax' else
+
+        // less perfect matches: type + texture
+        if (ShaderType = 'Facegen') and bTexEmissive and bTexParallax and bTexSubSurface then
+          NewShaderType := 'Facegen' else
+        if (ShaderType = 'MultiLayer Parallax') and bTexEnvMapped and bTexSubSurface then
+          NewShaderType := 'MultiLayer Parallax' else
+        if (ShaderType = 'Environment Map') and bTexEnvMapped then
+          NewShaderType := 'Environment Map' else
+        if (ShaderType = 'Eye Envmap') and bTexEnvMapped then
+          NewShaderType := 'Eye Envmap' else
+        if (ShaderType = 'Glow Shader') and bTexEmissive  then
+          NewShaderType := 'Glow Shader' else
+        if (ShaderType = 'Skin Tint') and bTexEmissive then
+          NewShaderType := 'Skin Tint' else
+        if (ShaderType = 'Parallax') and bTexParallax then
+          NewShaderType := 'Parallax' else
+
+        // even less perfect matches: texture + flags
+        if bTexEmissive and bTexParallax and bTexSubSurface and Shader.NativeValues['Shader Flags 1\Facegen'] then
+          NewShaderType := 'Facegen' else
+        if bTexEnvMapped and bTexSubSurface and Shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] then
+          NewShaderType := 'MultiLayer Parallax' else
+        if bTexEnvMapped and shader.NativeValues['Shader Flags 1\Environment_Mapping'] then
+          NewShaderType := 'Environment Map' else
+        if bTexEnvMapped and shader.NativeValues['Shader Flags 1\Eye_Environment_Mapping'] then
+          NewShaderType := 'Eye Envmap' else
+        if bTexEmissive and shader.NativeValues['Shader Flags 2\Glow_Map'] then
+          NewShaderType := 'Glow Shader' else
+        if bTexEmissive and shader.NativeValues['Shader Flags 1\Skin_Tint'] then
+          NewShaderType := 'Skin Tint' else
+        if bTexParallax and shader.NativeValues['Shader Flags 1\Parallax'] then
+          NewShaderType := 'Parallax';
+
+        // empty NewShaderType means we couldn't decide
+        if (NewShaderType <> '') and (ShaderType <> NewShaderType) then begin
+          shader.EditValues['Shader Type'] := NewShaderType;
+          Log.Add(#9 + shader.Name + ': Changed Shader Type from ' + ShaderType + ' to ' + NewShaderType + ' based on assigned textures and flags');
+          Result := True;
+        end;
+
+        ShaderType := Shader.EditValues['Shader Type'];
+
+        if ShaderType = 'Environment Map' then begin
+          // add Environment_Mapping flag when shader is Environment Map
+          if not shader.NativeValues['Shader Flags 1\Environment_Mapping'] then begin
+            shader.NativeValues['Shader Flags 1\Environment_Mapping'] := True;
+            Log.Add(#9 + shader.Name + ': Added Environment_Mapping flag because Shader Type is Environment Map');
+            Result := True;
+          end;
+        end else
+          // remove Environment_Mapping flag when shader is not Environment Map
+          if shader.NativeValues['Shader Flags 1\Environment_Mapping'] then begin
+            shader.NativeValues['Shader Flags 1\Environment_Mapping'] := False;
+            Log.Add(#9 + shader.Name + ': Removed Environment_Mapping flag because Shader Type is not Environment Map');
+            Result := True;
+          end;
+
+        if ShaderType = 'Glow Shader' then begin
+          // add Glow_Map flag when shader is Glow Shader
+          if not shader.NativeValues['Shader Flags 2\Glow_Map'] then begin
+            shader.NativeValues['Shader Flags 2\Glow_Map'] := True;
+            Log.Add(#9 + shader.Name + ': Added Glow_Map flag because Shader Type is Glow Shader');
+            Result := True;
+          end;
+          // add Own_Emit flag when shader is Glow Shader
+          if not shader.NativeValues['Shader Flags 1\Own_Emit'] then begin
+            shader.NativeValues['Shader Flags 1\Own_Emit'] := True;
+            Log.Add(#9 + shader.Name + ': Added Own_Emit flag because Shader Type is Glow Shader');
+            Result := True;
+          end;
+        end else begin
+          // Remove Glow Map flag if shader is not Glow Shader
+          if shader.NativeValues['Shader Flags 2\Glow_Map'] then begin
+            shader.NativeValues['Shader Flags 2\Glow_Map'] := False;
+            Log.Add(#9 + shader.Name + ': Removed Glow_Map flag because Shader Type is not Glow Shader');
+            Result := True;
+          end;
+          // Remove Own_Emit if not Glow Shader and Emissive Color is blank
+          // Because Beth doesn't respect their own code's standards...
+          if (Shader.NativeValues['Shader Flags 1\Own_Emit']) and (Shader.EditValues['Emissive Color'] = '#000000') then begin
+            Shader.NativeValues['Shader Flags 1\Own_Emit'] := False;
+            Log.Add(#9 + Shader.Name + ': Removed Own_Emit flag because Emissive Color is Blank');
+            Result := True;
+          end;
+          // External_Emittance doesn't work without glow
+          if shader.NativeValues['Shader Flags 1\External_Emittance'] then begin
+            shader.NativeValues['Shader Flags 1\External_Emittance'] := False;
+            Log.Add(#9 + shader.Name + ': Removed External_Emittance flag because Shader Type is not Glow Shader');
+            Result := True;
+          end;
+        end;
+
+        if ShaderType = 'Parallax' then begin
+          // add Parallax flag when shader is Parallax
+          if not shader.NativeValues['Shader Flags 1\Parallax'] then begin
+            shader.NativeValues['Shader Flags 1\Parallax'] := True;
+            Log.Add(#9 + shader.Name + ': Added Parallax flag because Shader Type is Parallax');
+            Result := True;
+          end;
+        end else
+          // remove Parallax flag when shader is not Parallax
+          if shader.NativeValues['Shader Flags 1\Parallax'] then begin
+            shader.NativeValues['Shader Flags 1\Parallax'] := False;
+            Log.Add(#9 + shader.Name + ': Removed Parallax flag because Shader Type is not Parallax');
+            Result := True;
+          end;
+
+        if ShaderType = 'Facegen' then begin
+          // add Facegen flag when shader is Facegen
+          if not Shader.NativeValues['Shader Flags 1\Facegen'] then begin
+            Shader.NativeValues['Shader Flags 1\Facegen'] := True;
+            Log.Add(#9 + Shader.Name + ': Added Facegen flag because Shader Type is Facegen');
+            Result := True;
+          end;
+          // add Soft_Lighting flag when shader is Facegen
+          if not (Shader.NativeValues['Shader Flags 2\Soft_Lighting']) then begin
+            Shader.NativeValues['Shader Flags 2\Soft_Lighting'] := True;
+            Log.Add(#9 + Shader.Name + ': Added Soft_Lighting flag because Shader Type is Facegen');
+            Result := True;
+          end;
+          // Anisotropic_Lighting is incompatible with Facegen shader
+          if Shader.NativeValues['Shader Flags 2\Anisotropic_Lighting'] then begin
+            Shader.NativeValues['Shader Flags 2\Anisotropic_Lighting'] := False;
+            Log.Add(#9 + Shader.Name + ': Removed Anisotropic_Lighting flag because Shader Type is Facegen');
+            Result := True;
+          end;
+        end else
+          // Remove Facegen flag when shader is not Facegen
+          if Shader.NativeValues['Shader Flags 1\Facegen'] then begin
+            Shader.NativeValues['Shader Flags 1\Facegen'] := False;
+            Log.Add(#9 + Shader.Name + ': Removed Facegen flag because Shader Type is not Facegen');
+            Result := True;
+          end;
+
+        if ShaderType = 'Skin Tint' then begin
+          // add Skin_Tint flag when shader is Skin Tint
+          if not shader.NativeValues['Shader Flags 1\Skin_Tint'] then begin
+            shader.NativeValues['Shader Flags 1\Skin_Tint'] := True;
+            Log.Add(#9 + shader.Name + ': Added Skin_Tint flag because Shader Type is Skin Tint');
+            Result := True;
+          end;
+          // add Soft_Lighting flag when shader is Skin Tint
+          if not shader.NativeValues['Shader Flags 2\Soft_Lighting'] then begin
+            shader.NativeValues['Shader Flags 2\Soft_Lighting'] := True;
+            Log.Add(#9 + shader.Name + ': Added Soft_Lighting flag because Shader Type is Skin Tint');
+            Result := True;
+          end;
+        end else
+          // remove Skin_Tint flag when shader is not Skin Tint
+          if shader.NativeValues['Shader Flags 1\Skin_Tint'] then begin
+            shader.NativeValues['Shader Flags 1\Skin_Tint'] := False;
+            Log.Add(#9 + shader.Name + ': Removed Skin_Tint flag because Shader Type is not Skin Tint');
+            Result := True;
+          end;
+
+        if ShaderType = 'Hair Tint' then begin
+          // add Hair_Tint flag when shader is Hair Tint
+          if not Shader.NativeValues['Shader Flags 1\Hair_Tint'] then begin
+            Shader.NativeValues['Shader Flags 1\Hair_Tint'] := True;
+            Log.Add(#9 + Shader.Name + ': Added Hair_Tint flag because Shader Type is Hair Tint');
+            Result := True;
+          end;
+        end else
+          // remove Hair_Tint flag when shader is not Hair Tint
+          if Shader.NativeValues['Shader Flags 1\Hair_Tint'] then begin
+            Shader.NativeValues['Shader Flags 1\Hair_Tint'] := False;
+            Log.Add(#9 + Shader.Name + ': Removed Hair_Tint flag because Shader Type is not Hair Tint');
+            Result := True;
+          end;
+
+        if ShaderType = 'MultiLayer Parallax' then begin
+          // add Multi_Layer_Parallax flag when shader is MultiLayer Parallax
+          if not shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] then begin
+            shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] := True;
+            Log.add(#9 + shader.Name + ': Added Multi_Layer_Parallax flag because Shader Type is MultiLayer Parallax');
+            Result := True;
+          end;
+        end else
+          // remove Multi_Layer_Parallax flag when shader is not MultiLayer Parallax
+          if shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] then begin
+            shader.NativeValues['Shader Flags 2\Multi_Layer_Parallax'] := False;
+            Log.Add(#9 + shader.Name + ': Removed Multi_Layer_Parallax flag because Shader Type is not MultiLayer Parallax');
+            Result := True;
+          end;
+
+        if ShaderType = 'Eye Envmap' then begin
+          // add Eye_Environment_Mapping flag when shader is Eye Envmap
+          if not shader.NativeValues['Shader Flags 1\Eye_Environment_Mapping'] then begin
+            shader.NativeValues['Shader Flags 1\Eye_Environment_Mapping'] := True;
+            Log.Add(#9 + shader.Name + ': Added Eye_Environment_Mapping flag because Shader Type is Eye EnvMap');
+            Result := True;
+          end;
+        end else
+          // remove Eye_Environment_Mapping flag when shader is not Eye Envmap
+          if shader.NativeValues['Shader Flags 1\Eye_Environment_Mapping'] then begin
+            shader.NativeValues['Shader Flags 1\Eye_Environment_Mapping'] := False;
+            Log.Add(#9 + shader.Name + ': Removed Eye_Environment_Mapping flag because Shader Type is not Eye Envmap');
+            Result := True;
+          end;
+
+        // Character Lighting flag
+        if bFacegen then begin
+          if not Shader.NativeValues['Shader Flags 2\Character_Lighting'] then begin
+            Shader.NativeValues['Shader Flags 2\Character_Lighting'] := True;
+            Log.Add(#9 + Shader.Name + ': Added Character_Lighting flag because ' + Nif.Name + ' is a Facegen nif');
+            Result := True;
+          end;
+        end else begin
+          if Shader.NativeValues['Shader Flags 2\Character_Lighting'] then begin
+            Shader.NativeValues['Shader Flags 2\Character_Lighting'] := False;
+            Log.Add(#9 + Shader.Name + ': Removed Character_Lighting flag because ' + Nif.Name + ' is not a Facegen nif');
+            Result := True;
+          end;
+        end;
+
+        // EnvMap_Light_Fade flag
+        if (ShaderType = 'Environment Map') or (ShaderType = 'MultiLayer Parallax') or (ShaderType = 'Eye Envmap') then begin
+          if not Shader.NativeValues['Shader Flags 2\EnvMap_Light_Fade'] then begin
+            Shader.NativeValues['Shader Flags 2\EnvMap_Light_Fade'] := True;
+            Log.Add(#9 + Shader.Name + ': Added EnvMap_Light_Fade flag because Shader Type is Environment/MultiLayer Parallax');
+            Result := True;
+          end;
+        end else
+          if Shader.NativeValues['Shader Flags 2\EnvMap_Light_Fade'] then begin
+            Shader.NativeValues['Shader Flags 2\EnvMap_Light_Fade'] := False;
+            Log.Add(#9 + Shader.Name + ': Removed EnvMap_Light_Fade flag because Shader Type is not Environment/MultiLayer Parallax');
+            Result := True;
+          end;
+
+        // Specular Flag
+        if (Shader.NativeValues['Shader Flags 1\Specular']) and (Shader.EditValues['Specular Color'] = '#000000') then begin
+          Shader.NativeValues['Shader Flags 1\Specular'] := False;
+          Log.Add(#9 + Shader.Name + ': Removed Specular flag because Specular Color is Blank');
+          Result := True;
+        end;
+
+        // Tree_Anim flag
+        if Shader.NativeValues['Shader Flags 2\Tree_Anim'] then begin
+          if (nif.RootNode.BlockType <> 'BSLeafAnimNode') and (nif.RootNode.BlockType <> 'BSTreeNode') then begin
+            Shader.NativeValues['Shader Flags 2\Tree_Anim'] := False;
+            Log.Add(#9 + Shader.Name + ': Removed Tree_Anim flag because root node is not BSLeafAnimNode or BSTreeNode');
+            Result := True;
+          end;
+
+          if (ShaderType <> 'Default') and (ShaderType <> 'Tree Anim') then begin
+            Shader.NativeValues['Shader Flags 2\Tree_Anim'] := False;
+            Log.Add(#9 + Shader.Name + ': Removed Tree_Anim flag because of wrong Shader Type');
+            Result := True;
+          end;
+
+          if bHasVertexColors then begin
+            if not Shader.NativeValues['Shader Flags 1\Vertex_Alpha'] then begin
+              Shader.NativeValues['Shader Flags 1\Vertex_Alpha'] := True;
+              Log.Add(#9 + Shader.Name + ': Added Vertex_Alpha flag because Tree_Anim flag is set');
+              Result := True;
+            end;
+          end else begin
+            Shader.NativeValues['Shader Flags 2\Tree_Anim'] := False;
+            Log.Add(#9 + Shader.Name + ': Removed Tree_Anim flag because vertex colors are missing');
+            Result := True;
+          end;
+        end;
+
+        if Shader.NativeValues['Glossiness'] = 0 then begin
+          Shader.NativeValues['Glossiness'] := 1;
+          Log.Add(#9 + Shader.Name + ': Set Glossiness to 1, because 0 causes lighting issues');
+          Result := True;
+        end;
+      end;
+    end;
+
+    if nif.NifVersion = nfFO4 then begin
+      // external material file is used, shader settings are unused
+      if shader.EditValues['Name'] <> '' then
+        Continue;
+    end;
   end;
 end;
 
