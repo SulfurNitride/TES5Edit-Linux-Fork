@@ -10821,7 +10821,7 @@ begin
 
   wbRecord(WTHR, 'Weather', [
     wbEDID,
-    wbRStruct('Old Cloud Textures (Unused)', [
+    wbRStruct('Old Cloud Textures', [
       wbString(DNAM, 'Layer #0', 0),
       wbString(CNAM, 'Layer #1', 0),
       wbString(ANAM, 'Layer #2', 0),
