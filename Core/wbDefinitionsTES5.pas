@@ -10185,7 +10185,7 @@ begin
       ], cpNormal, True),
 
       {--- Icon ---}
-      wbICON,
+      wbICON.SetDontShow(wbREGNLandDontShow),
 
       {--- Sound ---}
       wbFormIDCk(RDMO, 'Music', [MUSC], False, cpNormal, False, wbREGNSoundDontShow),
