@@ -7676,7 +7676,7 @@ begin
     wbFromVersion(152, wbFormIDCk('Curve Table', [CURV, NULL]))
   ]));
   wbFLTR := wbString(FLTR, 'Filter');
-  wbAPPR := wbArray(APPR, 'Attach Parent Slots', wbFormIDCk('Keyword', [KYWD]));
+  wbAPPR := wbArrayS(APPR, 'Attach Parent Slots', wbFormIDCk('Keyword', [KYWD]));
   wbFTYP := wbArray(FTYP, 'Forced Loc Ref Types', wbFormIDCk('Forced Loc Ref Type', [LCRT]));
   wbATTX := wbLStringKC(ATTX, 'Activate Text Override', 0, cpTranslate);
 

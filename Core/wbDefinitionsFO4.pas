@@ -5922,7 +5922,7 @@ begin
   wbPRPS := wbArrayS(PRPS, 'Properties', wbObjectProperty);
 
   wbFLTR := wbString(FLTR, 'Filter');
-  wbAPPR := wbArray(APPR, 'Attach Parent Slots', wbFormIDCk('Keyword', [KYWD]));
+  wbAPPR := wbArrayS(APPR, 'Attach Parent Slots', wbFormIDCk('Keyword', [KYWD]));
   wbFTYP := wbFormIDCk(FTYP, 'Forced Loc Ref Type', [LCRT]);
   wbATTX := wbLStringKC(ATTX, 'Activate Text Override', 0, cpTranslate);
 

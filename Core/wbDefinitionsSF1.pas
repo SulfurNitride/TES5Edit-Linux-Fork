@@ -5903,7 +5903,7 @@ begin
   var wbCrowdPRPS := wbArrayS(PRPS, 'Proportions', wbCrowdProperty);
 
   var wbFLTR := wbString(FLTR, 'Filter');
-  var wbAPPR := wbArray(APPR, 'Attach Parent Slots', wbFormIDCk('Keyword', [KYWD]));
+  var wbAPPR := wbArrayS(APPR, 'Attach Parent Slots', wbFormIDCk('Keyword', [KYWD]));
   var wbFTYP := wbArray(FTYP, 'Forced Location Ref Types', wbFormIDCk('Forced Location Ref Type', [LCRT]));
   var wbATTX := wbLStringKC(ATTX, 'Activate Text Override', 0, cpTranslate);
 
