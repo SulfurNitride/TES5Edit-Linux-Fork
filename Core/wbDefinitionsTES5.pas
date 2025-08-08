@@ -10234,7 +10234,7 @@ begin
       {--- Grass ---}
       wbArrayS(RDGS, 'Grasses', wbStructSK([0], 'Grass', [
         wbFormIDCk('Grass', [GRAS]),
-        wbByteArray('Unknown',4)
+        wbFormIDCk('Landscape Texture', [LTEX])
       ]), 0, cpNormal, False, nil, nil, wbREGNGrassDontShow),
 
       {--- Weather ---}
