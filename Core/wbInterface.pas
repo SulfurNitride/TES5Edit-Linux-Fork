@@ -710,6 +710,7 @@ type
     dfCanContainFormID,
     dfCanContainReflection,
     dfCanContainUnmappedFormID,
+    dfIsReflection,
     dfUnmappedFormID
   );
 

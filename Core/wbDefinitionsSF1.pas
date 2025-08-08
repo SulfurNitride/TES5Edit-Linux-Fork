@@ -6106,6 +6106,7 @@ begin
       .IncludeFlag(dfCanContainReflection)
       .IncludeFlag(dfDontAssign)
       .IncludeFlag(dfInternalEditOnly)
+      .IncludeFlag(dfIsReflection)
       .IncludeFlag(dfNoReport);
 
   var wbRDIF :=
@@ -6120,6 +6121,7 @@ begin
       .IncludeFlag(dfCanContainReflection)
       .IncludeFlag(dfDontAssign)
       .IncludeFlag(dfInternalEditOnly)
+      .IncludeFlag(dfIsReflection)
       .IncludeFlag(dfNoReport);
 
   var wbBaseFormComponents: IwbRecordMemberDef;
@@ -6794,6 +6796,7 @@ begin
             .IncludeFlag(dfCanContainReflection)
             .IncludeFlag(dfDontAssign)
             .IncludeFlag(dfInternalEditOnly)
+            .IncludeFlag(dfIsReflection)
             .IncludeFlag(dfNoReport)
         ]),
         //BGSPropertySheet_Component
@@ -6812,6 +6815,7 @@ begin
             .IncludeFlag(dfCanContainReflection)
             .IncludeFlag(dfDontAssign)
             .IncludeFlag(dfInternalEditOnly)
+            .IncludeFlag(dfIsReflection)
             .IncludeFlag(dfNoReport)
         ]),
         //BGSLodOwner_Component
@@ -10360,6 +10364,7 @@ begin
       .IncludeFlag(dfCanContainReflection)
       .IncludeFlag(dfDontAssign)
       .IncludeFlag(dfInternalEditOnly)
+      .IncludeFlag(dfIsReflection)
       .IncludeFlag(dfNoReport),
     wbStruct(DNAM, 'Data', [
       wbInteger('Master Particle System Cap', itU16),
@@ -15840,6 +15845,7 @@ begin
       .IncludeFlag(dfCanContainReflection)
       .IncludeFlag(dfDontAssign)
       .IncludeFlag(dfInternalEditOnly)
+      .IncludeFlag(dfIsReflection)
       .IncludeFlag(dfNoReport),
 
     wbFormIDCk(XATR, 'Attach Ref', sigReferences),

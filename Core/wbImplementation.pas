@@ -6872,10 +6872,10 @@ begin
     Exit;
 
   var lDef := GetDef;
-  if not Assigned(lDef) then
+  if not Assigned(lDef) or not (dfCanContainReflection in lDef.DefFlags) then
     Exit;
 
-  if dfCanContainReflection in lDef.DefFlags then
+  if dfIsReflection in lDef.DefFlags then
     Exit(True);
 
   var SelfRef := Self as IwbContainerElementRef;
@@ -18872,18 +18872,14 @@ begin
   Result := False;
 
   var lDef := GetDef;
-  if not Assigned(lDef) then
+  if not Assigned(lDef) or not (dfCanContainReflection in lDef.DefFlags) then
     Exit;
-
-  if dfCanContainReflection in lDef.DefFlags then
-    Exit(True);
 
   var lValueDef := GetValueDef;
-  if not Assigned(lValueDef) then
+  if not Assigned(lValueDef) or not (dfCanContainReflection in lValueDef.DefFlags) then
     Exit;
 
-  if dfCanContainReflection in lValueDef.DefFlags then
-    Exit(True);
+  Result := True;
 end;
 
 function TwbElement.ContainsUnmappedFormID: Boolean;
