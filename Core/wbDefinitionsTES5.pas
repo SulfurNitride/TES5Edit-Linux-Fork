@@ -4591,15 +4591,18 @@ begin
     wbString(XNAM, 'Water Noise Texture'),
     wbArrayS(XCLR, 'Regions', wbFormIDCk('Region', [REGN])),
     wbFormIDCk(XLCN, 'Location', [LCTN]),
-    wbInteger(XWCN, 'Water Current Count', itU32, nil, cpBenign),
     wbInteger(XWCS, 'Water Current Count (Old)', itU32, nil, cpBenign),
-    wbArray(XWCU, 'Water Currents',
-      wbStruct('Water Velocities', [
-        wbVec3('Unknown Velocity'),
-        wbByteArray('Unknown', 4)
-      ]))
-    .IncludeFlag(dfCollapsed, wbCollapseOther)
-    .IncludeFlag(dfNotAlignable),
+    wbRStruct('Water Current Velocities', [
+      wbInteger(XWCN, 'Velocity Count', itU32, nil, cpBenign),
+      wbArray(XWCU, 'Velocities',
+        wbStruct('Current', [
+          wbVec3('Velocity'),
+          wbInteger('Unknown', itU32)
+        ])
+      ).SetCountPathOnValue(XWCN, False)
+       .IncludeFlag(dfCollapsed, wbCollapseOther)
+       .IncludeFlag(dfNotAlignable)
+    ]),
     wbFormIDCk(XCWT, 'Water', [WATR]),
     wbOwnership([XRGD]),
     wbFormIDCk(XILL, 'Lock List', [FLST, NPC_]),
@@ -10057,17 +10060,18 @@ begin
     {--- MultiBound ---}
     wbFormIDCk(XMBR, 'MultiBound Reference', [REFR]),
 
-    wbInteger(XWCN, 'Water Current Count', itU32, nil, cpBenign),
     wbInteger(XWCS, 'Water Current Count (Old)', itU32, nil, cpBenign),
-    wbStruct(XWCU, 'Water Currents', [
-      wbVec3('Linear Velocity'),
-      wbByteArray('Unknown', 4),
-      wbVec3('Angular Velocity'),
-      wbByteArray('Unknown', 4),
-      wbVec3('Unknown Velocity'),
-      wbByteArray('Unknown', 4)
-    ])
-    .IncludeFlag(dfCollapsed, wbCollapseOther),
+    wbRStruct('Water Current Velocities', [
+      wbInteger(XWCN, 'Velocity Count', itU32, nil, cpBenign),
+      wbArray(XWCU, 'Velocities',
+        wbStruct('Current', [
+          wbVec3('Velocity'),
+          wbInteger('Unknown', itU32)
+        ])
+      ).SetCountPathOnValue(XWCN, False)
+       .IncludeFlag(dfCollapsed, wbCollapseOther)
+       .IncludeFlag(dfNotAlignable)
+    ]),
     wbVec3(XCVL,'Water Current Linear Velocity'),
     wbVec3(XCVR,'Water Current Rotational Velocity'),
     wbFormIDCk(XCZC, 'Water Current Zone Cell', [CELL, NULL]),
