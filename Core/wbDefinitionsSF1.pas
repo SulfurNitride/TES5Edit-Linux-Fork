@@ -15,6 +15,9 @@ interface
 uses
   wbInterface;
 
+var
+  wbTerminalArtThemeEnum: IwbEnumDef;
+
 procedure DefineSF1;
 
 implementation
@@ -26,6 +29,7 @@ uses
   System.Math,
   System.StrUtils,
   System.Variants,
+  System.IOUtils,
   System.Generics.Defaults,
   System.Generics.Collections,
   JsonDataObjects,
@@ -48,10 +52,10 @@ const
     'FURN', 'HAZD', 'IDLM', 'INGR', 'KEYM', 'LIGH',
     'LVLI', 'LVLN', 'LVSP', 'MISC', 'MSTT', 'NOTE',
     'NPC_', 'OMOD', 'PROJ', 'SCOL', 'SCRL', 'SOUN',
-    'SPEL', 'STAT', 'TERM', 'TREE', 'TXST',
+    'SPEL', 'STAT', 'TACT', 'TERM', 'TREE', 'TXST',
     'WATR', 'WEAP', 'ENCH', 'SECH', 'LGDI', 'IRES',
     'BMMP', 'PDCL', 'PKIN', 'GBFM', 'AOPF', 'BMMO',
-    'LVLP', 'GRAS'
+    'LVLB', 'LVLP', 'GRAS'
   ];
 
 var
@@ -875,46 +879,6 @@ begin
   Result := Succ(Integer(ParamType));
 end;
 
-function wbConditionAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-var
-  Container  : IwbContainer;
-  MainRecord : IwbMainRecord;
-  GroupRecord : IwbGroupRecord;
-begin
-  Result := '';
-  case aType of
-    ctToSortKey: Result := IntToHex64(aInt, 8);
-    ctToStr, ctToSummary, ctToEditValue: Result := aInt.ToString;
-  end;
-
-  if wbResolveAlias then begin
-    if not wbTryGetContainerFromUnion(aElement, Container) then
-      Exit;
-
-    while Assigned(Container) and (Container.ElementType <> etMainRecord) do
-      Container := Container.Container;
-
-    if not Assigned(Container) then
-      Exit;
-
-    if not Supports(Container, IwbMainRecord, MainRecord) then
-      Exit;
-
-    if MainRecord.Signature = QUST then
-      Result := wbAliasToStr(aInt, Container, aType)
-    else if MainRecord.Signature = SCEN then
-      Result := wbAliasToStr(aInt, Container.ElementBySignature['PNAM'], aType)
-    else if MainRecord.Signature = PACK then
-      Result := wbAliasToStr(aInt, Container.ElementBySignature['QNAM'], aType)
-    else if MainRecord.Signature = INFO then begin
-      // get DIAL for INFO
-      if Supports(MainRecord.Container, IwbGroupRecord, GroupRecord) then
-        if Supports(GroupRecord.ChildrenOf, IwbMainRecord, MainRecord) then
-          Result := wbAliasToStr(aInt, MainRecord.ElementBySignature['QNAM'], aType);
-    end;
-  end;
-end;
-
 function wbConditionEventToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 begin
   Result := '';
@@ -1273,102 +1237,6 @@ begin
   Result := LegendaryMod.Elements[1].LinksTo;
 end;
 
-{ Alias to string conversion, requires quest reference or quest record specific to record that references alias }
-function wbAliasLinksTo(aInt: Int64; const aQuestRef: IwbElement): IwbElement;
-var
-  MainRecord : IwbMainRecord;
-  Aliases    : IwbContainerElementRef;
-  Alias      : IwbContainerElementRef;
-  i, j       : Integer;
-begin
-  Result := nil;
-
-  if aInt < 0 then
-    Exit;
-
-  if not Assigned(aQuestRef) then
-    Exit;
-
-  // aQuestRef can be a QUST record or reference to QUST record
-  if not Supports(aQuestRef, IwbMainRecord, MainRecord) then
-    if not Supports(aQuestRef.LinksTo, IwbMainRecord, MainRecord) then
-      Exit;
-
-  // get winning quest override except for partial forms
-  if MainRecord.WinningOverride.Flags._Flags and $00004000 = 0 then
-    MainRecord := MainRecord.WinningOverride
-  else if MainRecord.Flags._Flags and $00004000 <> 0 then
-    MainRecord := MainRecord.MasterOrSelf;
-
-  if MainRecord.Signature <> QUST then
-    Exit;
-
-    if Supports(MainRecord.ElementByName['Aliases'], IwbContainerElementRef, Aliases) then
-      for i := 0 to Pred(Aliases.ElementCount) do
-        if Supports(Aliases.Elements[i], IwbContainerElementRef, Alias) then begin
-          var lHasSignature: IwbHasSignature;
-          if Supports(Alias, IwbHasSignature, lHasSignature) and (lHasSignature.Signature = ALCS) then begin
-            var lALST := Alias.ElementBySignature[ALST];
-            if Assigned(lALST) then
-              if not Supports(lALST, IwbContainerElementRef, Alias) then
-                Continue;
-          end;
-          j := Alias.Elements[0].NativeValue;
-          if j = aInt then
-            Exit(Alias);
-        end;
-(* may cause issue if scripts use LinksTo and expect a valid alias element or nil * )
-    if Assigned(Aliases) then
-      Exit(Aliases);
-
-    Exit(MainRecord);
-(**)
-end;
-
-function wbStrToAlias(const aString: string; const aElement: IwbElement): Int64;
-var
-  i    : Integer;
-  s    : string;
-begin
-  Result := -1;
-
-  if aString = 'None' then
-    Exit;
-
-  if aString = 'Player' then begin
-    Result := -2;
-    Exit;
-  end;
-
-  i := 1;
-  s := Trim(aString);
-  while (i <= Length(s)) and (ANSIChar(s[i]) in ['-', '0'..'9']) do
-    Inc(i);
-  s := Copy(s, 1, Pred(i));
-
-  Result := StrToIntDef(s, -1);
-end;
-
-function wbScriptObjectAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-var
-  Container  : IwbContainerElementRef;
-begin
-  if not wbResolveAlias then begin
-    case aType of
-      ctToStr, ctToSummary, ctToEditValue: Result := aInt.ToString;
-      ctToSortKey: Result := IntToHex64(aInt, 8);
-    else
-      Result := '';
-    end;
-    Exit;
-  end;
-
-  if not wbTryGetContainerRefFromUnionOrValue(aElement, Container) then
-    Exit;
-
-  Result := wbAliasToStr(aInt, Container.ElementByName['FormID'], aType);
-end;
-
 function wbScriptObjectAliasLinksTo(const aElement: IwbElement): IwbElement;
 var
   Container  : IwbContainerElementRef;
@@ -1418,155 +1286,6 @@ begin
     Exit;
 
   Result := wbAliasLinksTo(lAlias, aElement.ContainingMainRecord);
-end;
-
-function wbPackageLocationAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-var
-  Container  : IwbContainer;
-begin
-  if not wbResolveAlias then begin
-    case aType of
-      ctToStr, ctToSummary, ctToEditValue: Result := aInt.ToString;
-      ctToSortKey: Result := IntToHex64(aInt, 8);
-    else
-      Result := '';
-    end;
-    Exit;
-  end;
-
-  if not wbTryGetContainerFromUnion(aElement, Container) then
-    Exit;
-
-  while Assigned(Container) and (Container.ElementType <> etMainRecord) do
-    Container := Container.Container;
-
-  if not Assigned(Container) then
-    Exit;
-
-  Result := wbAliasToStr(aInt, Container.ElementBySignature['QNAM'], aType);
-end;
-
-function wbQuestAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-var
-  Container  : IwbContainer;
-begin
-  if not wbResolveAlias then begin
-    case aType of
-      ctToStr, ctToSummary, ctToEditValue: Result := aInt.ToString;
-      ctToSortKey: Result := IntToHex64(aInt, 8);
-    else
-      Result := '';
-    end;
-    Exit;
-  end;
-
-  if not wbTryGetContainerFromUnion(aElement, Container) then
-    Exit;
-
-  while Assigned(Container) and (Container.ElementType <> etMainRecord) do
-    Container := Container.Container;
-
-  if not Assigned(Container) then
-    Exit;
-
-  Result := wbAliasToStr(aInt, Container, aType);
-end;
-
-function wbQuestExternalAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-var
-  Container  : IwbContainer;
-begin
-  if not wbResolveAlias then begin
-    case aType of
-      ctToStr, ctToSummary, ctToEditValue: Result := aInt.ToString;
-      ctToSortKey: Result := IntToHex64(aInt, 8);
-    else
-      Result := '';
-    end;
-    Exit;
-  end;
-
-  if not Assigned(aElement) then
-    Exit;
-
-  Container := aElement.Container;
-
-  if not Assigned(Container) then
-    Exit;
-
-  Result := wbAliasToStr(aInt, Container.ElementBySignature['ALEQ'] , aType);
-end;
-
-// takes element being processed for toStr/toLink, returns Quest record or nil
-function wbParentQuestHelper(const aElement: IwbElement): IwbElement;
-var
-  Container   : IwbContainer;
-  MainRecord  : IwbMainRecord;
-  Group       : IwbGroupRecord;
-begin
-  if not Assigned(aElement) then
-    Exit;
-
-  MainRecord := aElement.ContainingMainRecord;
-
-  while MainRecord.Signature <> QUST do begin
-    Container := MainRecord.Container;
-    if Supports(Container, IwbGroupRecord, Group) then
-      MainRecord := Group.ChildrenOf
-    else
-      Exit;
-
-    if not Assigned(MainRecord) then
-      Exit;
-  end;
-
-  Result := MainRecord;
-end;
-
-function wbSCENQuestAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-var
-  Container  : IwbContainer;
-begin
-  if not wbResolveAlias then begin
-    case aType of
-      ctToStr, ctToSummary, ctToEditValue: Result := aInt.ToString;
-      ctToSortKey: Result := IntToHex64(aInt, 8);
-    else
-      Result := '';
-    end;
-    Exit;
-  end;
-
-  if not Assigned(aElement) then
-    Exit;
-
-  Container := aElement.ContainingMainRecord;
-
-  if not Assigned(Container) then
-    Exit;
-
-  Result := wbAliasToStr(aInt, wbParentQuestHelper(aElement) , aType);
-end;
-
-function wbSCENAliasLinksTo(const aElement: IwbElement): IwbElement;
-var
-  Container  : IwbContainer;
-begin
-  Result := nil;
-
-  if not wbResolveAlias then
-    Exit;
-
-  Container := aElement.ContainingMainRecord;
-
-  if not Assigned(Container) then
-    Exit;
-
-  var lAlias := aElement.NativeValue;
-  if not VarIsOrdinal(lAlias) then
-    Exit;
-
-  Result := wbAliasLinksTo(lAlias, wbParentQuestHelper(aElement));
 end;
 
 function wbStarIDToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
@@ -1746,7 +1465,7 @@ begin
   lContainer.Assign(1, lElement, False);
 end;
 
-procedure wbSCENTimelineTypeAfterSetCallback(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+procedure wbSCENTimelineTypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 var
   lContainer: IwbContainerElementRef;
   lTemplate: TwbTemplateElements;
@@ -2206,7 +1925,6 @@ end;
 
 function wbINNRTargetDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
 var
-  Container: IwbContainerElementRef;
   MainRecord: IwbMainRecord;
   TypeElement: IwbElement;
 begin
@@ -2498,26 +2216,6 @@ begin
     Result := True;
 end;
 
-procedure wbDOBJObjectsAfterLoad(const aElement: IwbElement);
-var
-  ObjectsContainer : IwbContainerElementRef;
-  i                : Integer;
-  ObjectContainer  : IwbContainerElementRef;
-begin
-  if wbBeginInternalEdit then try
-
-    if not Supports(aElement, IwbContainerElementRef, ObjectsContainer) then
-      Exit;
-
-    for i := Pred(ObjectsContainer.ElementCount) downto 0 do
-      if Supports(ObjectsContainer.Elements[i], IwbContainerElementRef, ObjectContainer) then
-        if ObjectContainer.ElementNativeValues['Use'] = 0 then
-          ObjectsContainer.RemoveElement(i, True);
-  finally
-    wbEndInternalEdit;
-  end;
-end;
-
 function wbActorTemplatesUseTemplate0(const aElement: IwbElement): Boolean;
 var
   MainRecord : IwbMainRecord;
@@ -2801,28 +2499,6 @@ begin
     Result := Element.NativeValue
   else if wbMoreInfoForDecider then
     wbProgressCallback('"'+Container.Name+'" does not contain an element named Type');
-end;
-
-procedure wbIDLAsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-var
-  Element         : IwbElement;
-  Container       : IwbContainer;
-  SelfAsContainer : IwbContainer;
-begin
-  if wbBeginInternalEdit(True) then try
-    if wbCounterAfterSet('IDLC - Animation Count', aElement) then
-      Exit;
-
-    if not Supports(aElement.Container, IwbContainer, Container) then
-      Exit;
-
-    Element := Container.ElementByPath['IDLC'];
-    if Assigned(Element) and Supports(aElement, IwbContainer, SelfAsContainer) and
-      (Element.GetNativeValue<>SelfAsContainer.GetElementCount) then
-      Element.SetNativeValue(SelfAsContainer.GetElementCount);
-  finally
-    wbEndInternalEdit;
-  end;
 end;
 
 procedure wbPackageDataInputValueTypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -3214,7 +2890,6 @@ begin
 end;
 {==============================================================================}
 
-
 const
  csPropertyCount = 'Property Count';
  csIncludeCount  = 'Include Count';
@@ -3246,8 +2921,6 @@ begin
   var wbIdxModulation := wbNamedIndex('Modulation', True);
 
   var wbIdxAVMByType : TArray<TwbNamedIndex> := [-1, wbIdxSimpleGroup, wbIdxComplexGroup, wbIdxModulation];
-
-  var wbIdxCollisionLayer := wbNamedIndex('CollisionLayer', True);
 
   var wbIdxStarID := wbNamedIndex('StarID', True);
 
@@ -3941,27 +3614,25 @@ begin
 
   // Event member names and availability are different depending on event type
   // Using generic names for the last 3 of them: Form, Value1, Value2
-  // Event member names and availability are different depending on event type
-  // Using generic names for the last 3 of them: Form, Value1, Value2
   wbEventMemberEnum := wbEnum([], [
     $0000, 'None',
-    $3146, 'Form',          { F1: ObjectForm, SpellForm, Infection, pCrimeGroup, Weapon Aimed, Voice Power }
-    $3147, 'Global',        { G1: GlobalValue }
-    $3149, 'Identifier',    { I1: QuestID }
-    $314B, 'Keyword1',      { K1: GameModeKeyword, Keyword }
-    $324B, 'Keyword2',      { K2: (Exists but unused) }
-    $334B, 'Keyword3',      { K3: (Exists but unused) }
-    $314C, '(Old)Location',  { L1: Location, Old Location, BenchLocation }
-    $324C, '(New)Location',  { L2: New Location }
-    $314F, 'CreatedObject', { O1: CreatedObject }
-    $3150, 'Player1',       { P1: Player, Victim }
-    $3250, 'Player2',       { P2: Criminal }
-    $3251, 'Quest1',        { Q1: Quest }
-    $3152, 'Reference1',    { R1: Victim, OwnerRef, ArrestingGuard, ActorSeesObject, Actor, CastingActor, Workbench, Actor 1, Actor , Computer, Transmitting Actor, Actor in Ironsights, hGuard, hCriminal, RootObject, NPC 1, Ref 1, OwningActor }
-    $3252, 'Reference2',    { R2: Attacker, Killer, Mine, OriginalContainer, Criminal, Object, SpellTarget, Actor 2, Dead Actor, hGuard, Lock Object, NPC 2, ItemRef, Ref 2, Trespasser }
-    $3352, 'Reference3',    { R3: Workshop, Player }
-    $3156, 'Value1',        { V1: Crime, Crime Status, AquireType, iCrimeType, iCommanded, iBountyAmount, Gold Value, Success, New Level, Crime Gold, Is Crime, Connected, Old Relationship, RemoveType, Value 1 }
-    $3256, 'Value2',        { V2: Relationship Rank to Killer Before Death, ItemValue, iBountyReason, New Relationship, Value 2, Days Jail }
+    $314F, 'CreatedObject', //O1
+    $3146, 'Form',          //F1
+    $3147, 'Global',        //G1
+    $3149, 'Identifier',    //I1
+    $314B, 'Keyword1',      //K1
+    $324B, 'Keyword2',      //K2
+    $334B, 'Keyword3',      //K3
+    $314C, 'Location1',     //L1
+    $324C, 'Location2',     //L2
+    $3150, 'Player1',       //P1
+    $3250, 'Player2',       //P2
+    $3251, 'Quest',         //Q1
+    $3152, 'Reference1',    //R1
+    $3252, 'Reference2',    //R2
+    $3352, 'Reference3',    //R3
+    $3156, 'Value1',        //V1
+    $3256, 'Value2',        //V2
     $7FFFFFFF, 'All'
   ]);
 
@@ -4018,7 +3689,7 @@ begin
       ]);
 
   var wbPhotoModeEnum  := wbEnum([
-    {0} 'Texture Overlay',
+    {0} 'Texture',
     {1} 'Frame',
     {2} 'Filter'
   ]);
@@ -4305,7 +3976,7 @@ begin
   var wbScriptPropertyObject := wbUnion('Object Union', wbScriptObjFormatDecider, [
     wbStructSK([1], 'Object v2', [
       wbUnused(2),
-      wbInteger('Alias', itS16, wbScriptObjectAliasToStr, wbStrToAlias)
+      wbInteger('Alias', itS16, wbScriptObjectAliasToStr, wbAliasToInt)
         .SetDefaultEditValue('None')
         .SetLinksToCallback(wbScriptObjectAliasLinksTo),
       wbFormID('FormID').IncludeFlag(dfNoReport)
@@ -4318,7 +3989,7 @@ begin
       .IncludeFlag(dfSummaryNoSortKey),
     wbStructSK([0], 'Object v1', [
       wbFormID('FormID'),
-      wbInteger('Alias', itS16, wbScriptObjectAliasToStr, wbStrToAlias)
+      wbInteger('Alias', itS16, wbScriptObjectAliasToStr, wbAliasToInt)
         .SetLinksToCallback(wbScriptObjectAliasLinksTo),
       wbUnused(2)
     ])
@@ -4764,13 +4435,13 @@ begin
           {5} wbInteger('Object Type', itU32, wbObjectTypeEnum),
           {6} wbFormIDCk('Keyword', [NULL, KYWD]),
           {7} wbUnused(4),
-          {8} wbInteger('Ref Alias', itS32, wbPackageLocationAliasToStr, wbStrToAlias),
-          {9} wbInteger('Loc Alias', itS32, wbPackageLocationAliasToStr, wbStrToAlias),
+          {8} wbInteger('Ref Alias', itS32, wbPackageLocationAliasToStr, wbAliasToInt),
+          {9} wbInteger('Loc Alias', itS32, wbPackageLocationAliasToStr, wbAliasToInt),
          {10} wbInteger('Interrupt Data', itU32),
          {11} wbInteger('Packdata Target', itU32),
          {12} wbByteArray('Unknown', 4, cpIgnore),
          {13} wbByteArray('Unknown', 4),
-         {14} wbInteger('Ref Collection Alias', itS32, wbPackageLocationAliasToStr, wbStrToAlias),
+         {14} wbInteger('Ref Collection Alias', itS32, wbPackageLocationAliasToStr, wbAliasToInt),
          {15} wbUnknown(4),
          {16} wbFormIDCkNoReach('Keyword', [KYWD])
         ]),
@@ -4806,11 +4477,11 @@ begin
       {1} wbFormIDCkNoReach('Object ID', [NULL, ACTI, DOOR, STAT, MSTT, FURN, SPEL, NPC_, CONT, ARMO, AMMO, MISC, WEAP, OMOD, BOOK, NOTE, KEYM, ALCH, INGR, LIGH, FACT, FLST, IDLM, TXST, PROJ, PKIN]),
       {2} wbInteger('Object Type', itU32, wbObjectTypeEnum),
       {3} wbFormIDCk('Keyword', [KYWD, NULL]),
-      {4} wbInteger('Alias', itS32, wbPackageLocationAliasToStr, wbStrToAlias),
+      {4} wbInteger('Alias', itS32, wbPackageLocationAliasToStr, wbAliasToInt),
       {5} wbInteger('Interrupt Data', itU32),
       {6} wbUnused(4), // padding unused by Self reference
       {7} wbFormIDCk('Keyword', [KYWD, NULL]),
-      {8} wbInteger('Alias Collection', itS32, wbPackageLocationAliasToStr, wbStrToAlias),
+      {8} wbInteger('Alias Collection', itS32, wbPackageLocationAliasToStr, wbAliasToInt),
       {9} wbUnused(4) // padding unused by Scene Primary Actor
     ]),
     wbInteger('Count / Distance / Index', itS32)
@@ -4890,7 +4561,7 @@ begin
     wbArrayS(DAMC, 'Resistances', wbStructSK([0], 'Resistance', [
       wbFormIDCk('Damage Type', [DMGT]),
       wbInteger('Value', itU32),
-      wbUnknown(4)
+      wbFormIDCk('Curve Table', [CURV, NULL])
     ])),
     wbFormIDCk(DSDL, 'Secondary Damage List', [SDLT]),
     wbRArray('Stages',
@@ -5194,8 +4865,10 @@ begin
           wbFloat('X'),
           wbFloat('Y')
         ]),
-        wbVec3('Min'),
-        wbVec3('Max'),
+        wbStruct('Navmesh Bounds', [
+          wbVec3('Min'),
+          wbVec3('Max')
+        ]),
         IfThen(wbSimpleRecords,
           wbArray('Cells',
             wbArray('Cell',
@@ -5215,49 +4888,16 @@ begin
       wbUnknown(2)
     ]);
 
-  var wbHNAMHNAM := wbRStruct('Head Tracking', [
+  var wbHeadtracking := wbRStruct('Head Tracking', [
     wbMarker(HNAM).SetRequired,
-    wbArray(HTID, ' Aliases', wbInteger('Alias ID', itS32, wbSCENQuestAliasToStr, wbStrToAlias, cpNormal, True)
-      .SetLinksToCallback(wbSCENAliasLinksTo)),
+    wbArray(HTID, ' Actors',
+      wbInteger('Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+        .SetDefaultNativeValue(-1)
+        .SetLinksToCallback(wbSCENAliasLinksTo)),
     wbEmpty(FNAM, 'Force Rotate'),
     wbEmpty(PNAM, 'Force Rotate Must Complete'),
     wbMarker(HNAM).SetRequired
   ]).IncludeFlag(dfTemplate);
-{
-var
-  _ReflectionChunkSignatures : TArray<TwbSignature>;
-  _ReflectionChunkStructs    : TArray<IwbValueDef>;
-
-function wbReflectionChunk(const aSignature : TwbSignature;
-                           const aName      : string;
-                           const aMembers   : array of IwbValueDef)
-                                            : IwbStructDef;
-var
-  lMembers: TArray<IwbValueDef>;
-begin
-  SetLength(lMembers, Length(aMembers) + 2);
-  lMembers[0] := wbString('Signature', 4);
-  lMembers[1] := wbInteger('Size', itU32);
-  for var lIdx := Low(aMembers) to High(aMembers) do
-    lMembers[lIdx + 2] := aMembers[lIdx];
-  Result := wbStruct(aName, lMembers)
-    .SetSizeCallback(function(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal
-    begin
-      Result := 0;
-      if not Assigned(aBasePtr) then
-        Exit;
-      var lBasePtr: PCardinal := aBasePtr;
-      Inc(lBasePtr);//skip signature
-      Result := lBasePtr^ + 8;
-    end);
-  var lLength := Length(_ReflectionChunkSignatures);
-  var lNewLength := Succ(lLength);
-  SetLength(_ReflectionChunkSignatures, lNewLength);
-  SetLength(_ReflectionChunkStructs,    lNewLength);
-  _ReflectionChunkSignatures[lLength] := aSignature;
-  _ReflectionChunkStructs[lLength] := Result;
-end;
-}
 
   var wbVatsValueFunctionEnum :=
     wbEnum([
@@ -5487,7 +5127,7 @@ end;
       {07} 'Anim Archetype',
       {08} 'Function Call',
       {09} 'Recipe Filter',
-      {10} 'Attraction',
+      {10} 'Attraction Type',
       {11} 'Dialogue Subtype',
       {12} 'Quest Target',
       {13} 'Anim Flavor',
@@ -5497,41 +5137,41 @@ end;
       {17} 'Anim Injured',
       {18} 'Dispel Effect',
       {19} 'Crowd Target',
-      {20} 'Exclusive Location Encounter',
+      {20} 'Exclusive Location Encounter Type',
       {21} 'Weapon Holster',
       {22} 'HUD Marker Override',
       {23} 'Interaction Root Offset',
       {24} 'Misc Item Quality',
       {25} 'Component Quantity',
-      {26} 'Quest',
-      {27} 'Faction',
+      {26} 'Quest Type',
+      {27} 'Faction Type',
       {28} 'Traversal',
       {29} 'Inventory Category',
       {30} 'Form Link',
       {31} 'Manufacturer',
       {32} 'UI Icon Personal Effect',
       {33} 'UI Icon Environment Effect',
-      {34} 'Primitive',
-      {35} 'Planet',
-      {36} 'Planet Atmosphere',
+      {34} 'Primitive Type',
+      {35} 'Planet Type',
+      {36} 'Planet Atmosphere Type',
       {37} 'Planet Atmosphere Toxicity',
-      {38} 'Planet Gravity',
+      {38} 'Planet Gravity Type',
       {39} 'Planet Water Abundance',
       {40} 'Planet Water Quality',
       {41} 'Planet Magnetosphere',
       {42} 'Planet Flora Probability',
       {43} 'Planet Fauna Probability',
       {44} 'Planet Traits',
-      {45} 'Planet Temperature',
-      {46} 'Planet Pressure',
+      {45} 'Planet Temperature Type',
+      {46} 'Planet Pressure Type',
       {47} 'Planet Flora Abundance',
       {48} 'Planet Fauna Abundance',
-      {49} 'Biome Marker',
-      {50} 'Hand Scanner Info',
+      {49} 'Biome Marker Type',
+      {50} 'Hand Scanner Info Type',
       {51} 'Ship Module Class',
       {52} 'Layered Material Swap Key',
       {53} 'UI Icon Linkage Name',
-      {54} 'Mission',
+      {54} 'Mission Type',
       {55} 'Sound Engine',
       {56} 'Sound Engine Mod',
       {57} 'Sound Cockpit',
@@ -5553,14 +5193,15 @@ end;
       {73} 'Facial Hair Subtype',
       {74} 'Brow Subtype',
       {75} 'AVMS Condition Sequence',
-      {76} 'Biome Creature',
+      {76} 'Biome Creature Type',
       {77} 'Ship Module Upgrade',
       {78} 'Display Name',
       {79} 'AVMS Appearance Variation Mod',
       {80} 'UI Icon Treatment',
       {81} 'Form Pair',
       {82} 'Item Description',
-      {83} 'Weapon Display'
+      {83} 'Weapon Type Display',
+      {84} 'AVMS Condition Keyword'
 
     ]);
 
@@ -6002,7 +5643,7 @@ end;
     {5}  wbFormIDCkNoReach('Actor', [ACHR,PLYR,REFR,TRGT], True),
     {6}  wbFormIDCkNoReach('Actor Base', [NPC_]),
     {7}  wbActorValue(),
-    {8}  wbInteger('Alias', itS32, wbConditionAliasToStr, wbStrToAlias),
+    {8}  wbInteger('Alias', itS32, wbConditionAliasToStr, wbAliasToInt),
     {9}  wbInteger('Alignment', itU32, wbAlignmentEnum),
     {10} wbFormIDCkNoReach('Association Type', [ASTP]),
     {11} wbInteger('Axis', itU32, wbAxisEnum),
@@ -6085,7 +5726,7 @@ end;
 
   var wbConditions :=
     wbRArray('Conditions',
-      wbRStructSK([0], 'Condition', [
+      wbRStructSK([0,1,2], 'Condition', [
       {0} wbStructSK(CTDA, [3,5,6], '', [
           {0} wbInteger('Type', itU8, wbConditionTypeToStr, wbConditionTypeToInt).SetAfterSet(wbConditionTypeAfterSet),
           {1} wbUnused(3),
@@ -6093,8 +5734,7 @@ end;
               {0} wbFloat('Comparison Value - Float'),
               {1} wbFormIDCk('Comparison Value - Global', [GLOB])
               ]),
-          {3} wbInteger('Function', itU16, wbConditionFunctionToStr, wbConditionFunctionToInt)
-                .SetAfterSet(wbUpdateSameParentUnions),
+          {3} wbInteger('Function', itU16, wbConditionFunctionToStr, wbConditionFunctionToInt),
           {4} wbUnused(2),
           {5} wbUnion('Parameter #1', wbConditionParam1Decider, wbConditionParameters),
           {6} wbUnion('Parameter #2', wbConditionParam2Decider, wbConditionParameters),
@@ -6130,8 +5770,43 @@ end;
                     Exit(False);
                 end),
           {9} wbUnion('Parameter #3', wbConditionParam3Decider, [
-              {0} wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
-              {1} wbFormIDCk('Linked Keyword', [KYWD, NULL])
+              {0}  wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {1}  wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {2}  wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {3}  wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {4}  wbFormIDCk('Linked Keyword', [KYWD, NULL]),
+              {5}  wbInteger('Quest Alias', itS32, wbConditionAliasToStr, wbAliasToInt).SetDefaultNativeValue(-1),
+              {6}  wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {7}  wbInteger('Event Data', itS32,
+                     wbEnum([], [
+                       -1,    'None',
+                       $314F, 'Created Object', //O1
+                       $3146, 'Form',           //F1
+                       $3147, 'Global',         //G1
+                       $3149, 'Identifier',     //I1
+                       $314B, 'Keyword 1',      //K1
+                       $324B, 'Keyword 2',      //K2
+                       $334B, 'Keyword 3',      //K3
+                       $314C, 'Location 1',     //L1
+                       $324C, 'Location 2',     //L2
+                       $3150, 'Player 1',       //P1
+                       $3250, 'Player 2',       //P2
+                       $3251, 'Quest',          //Q1
+                       $3152, 'Reference 1',    //R1
+                       $3252, 'Reference 2',    //R2
+                       $3352, 'Reference 3',    //R3
+                       $3156, 'Value 1',        //V1
+                       $3256, 'Value 2',        //V2
+                       $7FFFFFFF, 'All'
+                     ])).SetDefaultNativeValue(-1),
+              {8}  wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {9}  wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {10} wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {11} wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {12} wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {13} wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {14} wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1),
+              {15} wbInteger('Parameter #3', itS32).SetDefaultNativeValue(-1)
               ])
           ]),
       {1} wbString(CIS1, 'Parameter #1'),
@@ -6226,7 +5901,7 @@ end;
   var wbCrowdPRPS := wbArrayS(PRPS, 'Proportions', wbCrowdProperty);
 
   var wbFLTR := wbString(FLTR, 'Filter');
-  var wbAPPR := wbArray(APPR, 'Attach Parent Slots', wbFormIDCk('Keyword', [KYWD]));
+  var wbAPPR := wbArrayS(APPR, 'Attach Parent Slots', wbFormIDCk('Keyword', [KYWD]));
   var wbFTYP := wbArray(FTYP, 'Forced Location Ref Types', wbFormIDCk('Forced Location Ref Type', [LCRT]));
   var wbATTX := wbLStringKC(ATTX, 'Activate Text Override', 0, cpTranslate);
 
@@ -6252,26 +5927,16 @@ end;
     wbMarkerReq(XNAM)                                                   //XNAM  end marker for BNAM fields
   ]);
 
-{
-  _ReflectionChunkSignatures := [NULL];
-  _ReflectionChunkStructs    := [wbEmpty('Empty')];
+  var wbREFLStringTableLookup :=
+  wbCallback(
+    function(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string
+    begin
+      if not Assigned(aElement) then
+        Exit('');
 
-  wbReflectionChunk(NULL, 'Unknown', [
-    wbUnknown
-  ]);
+      if not (aType in [ctToEditValue, ctToSortKey, ctToStr, ctToSummary]) then
+        Exit('');
 
-  wbReflectionChunk(BETH, 'Reflection Header', [
-    wbInteger('Version', itU32),
-    wbInteger('Chunk Count', itU32)
-  ]);
-
-  wbReflectionChunk(STRT, 'String Table', [
-    wbArray('Strings', wbString('String'))
-  ]);
-
-  var wbStringTableLookup :=
-    wbCallback( function(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string begin
-      Result := '';
       if aInt < 0 then
         case aInt of
           Integer($FFFFFF01): Exit('Null');
@@ -6290,94 +5955,172 @@ end;
           Integer($FFFFFF10): Exit('Bool');
           Integer($FFFFFF11): Exit('Float');
           Integer($FFFFFF12): Exit('Double');
+          Integer($FFFFFF13): Exit('Diff');
         else
-          Exit('<unknown build-in type>');
+          Exit('<Warning: Unknown Type>');
+        end else begin
+          var lSubRecord := aElement.ContainingSubRecord;
+          if not Assigned(lSubRecord) then
+            Exit('');
+
+          var lStringTable := lSubRecord.ElementByPath['String Table\Strings'] as IwbDataContainer;
+          if not Assigned(lStringTable) then
+            Exit('');
+
+          var lBasePtr : PAnsiChar := lStringTable.DataBasePtr;
+            Result := PAnsiChar(@lBasePtr[aInt]);
         end;
-      if not (aType in [ctToStr, ctToSortKey, ctToEditValue]) then
+    end,
+    function(const aString: string; const aElement: IwbElement): Int64
+    begin
+      Result := 0;
+      if aString = '' then
         Exit;
+
       if not Assigned(aElement) then
         Exit;
-      var lContainer := aElement.Container;
-      while Assigned(lContainer) do begin
-        var lValueDef := lContainer.ValueDef;
-        if not Assigned(lValueDef) then
+
+      if aString = 'Null'   then Exit($FFFFFF01) else
+      if aString = 'String' then Exit($FFFFFF02) else
+      if aString = 'List'   then Exit($FFFFFF03) else
+      if aString = 'Map'    then Exit($FFFFFF04) else
+      if aString = 'Ref'    then Exit($FFFFFF05) else
+      if aString = 'Int8'   then Exit($FFFFFF08) else
+      if aString = 'UInt8'  then Exit($FFFFFF09) else
+      if aString = 'Int16'  then Exit($FFFFFF0A) else
+      if aString = 'UInt16' then Exit($FFFFFF0B) else
+      if aString = 'Int32'  then Exit($FFFFFF0C) else
+      if aString = 'UInt32' then Exit($FFFFFF0D) else
+      if aString = 'Int64'  then Exit($FFFFFF0E) else
+      if aString = 'UInt64' then Exit($FFFFFF0F) else
+      if aString = 'Bool'   then Exit($FFFFFF10) else
+      if aString = 'Float'  then Exit($FFFFFF11) else
+      if aString = 'Double' then Exit($FFFFFF12) else
+      if aString = 'Diff'   then Exit($FFFFFF13) else
+
+      begin
+        var lSubRecord := aElement.ContainingSubRecord;
+        if not Assigned(lSubRecord) then
           Exit;
-        if (lValueDef.DefType = dtArray) and
-           (lValueDef as IwbArrayDef).Element.Root.Equals(wbReflectionChunkUnion.Root)
-        then
-          Break;
-        lContainer := lContainer.Container;
+
+        var lStringTable := lSubRecord.ElementByPath['String Table\Strings'] as IwbContainerElementRef;
+        if not Assigned(lStringTable) then
+          Exit;
+
+        var lTablePtr := (lStringTable as IwbDataContainer).DataBasePtr;
+        for var i := 0 to Pred(lStringTable.ElementCount) do begin
+          var lString := lStringTable.Elements[i];
+          if aString = lString.EditValue then begin
+            var lStringPtr := (lString as IwbDataContainer).DataBasePtr;
+            Result := Int64(lStringPtr) - Int64(lTablePtr);
+            Exit;
+          end;
+        end;
       end;
-      var lContainerElementRef: IwbContainerElementRef;
-      if not Supports(lContainer, IwbContainerElementRef, lContainerElementRef) then
-        Exit;
-      if lContainerElementRef.ElementCount < 2 then
-        Exit;
-      var lStringTableChunkUnion := lContainerElementRef.Elements[1];
-      if not Supports(lStringTableChunkUnion, IwbContainerElementRef, lContainerElementRef) then
-        Exit;
-      if lContainerElementRef.ElementCount <> 1 then
-        Exit;
-      if not Supports(lContainerElementRef.Elements[0], IwbContainerElementRef, lContainerElementRef) then
-        Exit;
-      if lContainerElementRef.ElementCount < 3 then
-        Exit;
-      if lContainerElementRef.Elements[0].EditValue <> STRT then
-        Exit;
-      var lStringTable := lContainerElementRef.Elements[2];
-      var lDataContainer: IwbDataContainer;
-      if not Supports(lStringTable, IwbDataContainer, lDataContainer) then
-        Exit;
-      var lBasePtr: PAnsiChar := lDataContainer.DataBasePtr;
-      //!!! this isn't safe access, should check against DataEndPtr and handle cases of missing terminating #0
-      Result := PAnsiChar(@lBasePtr[aInt]);
-    end, nil);
+    end);
 
-  wbReflectionChunk(&TYPE, 'Type', [
-    wbInteger('Class Count', itU32)
-  ]);
+  var wbREFLBETH :=
+    wbStruct('Reflection Header', [
+      wbString('Signature', 4),
+      wbInteger('Data Size', itU32),
+      wbInteger('Version', itU32),
+      wbInteger('Chunk Count', itU32)
+    ]);
 
-  wbReflectionChunk(CLAS, 'Class', [
-    wbInteger('Name', itS32, wbStringTableLookup),
-    wbInteger('Type', itU32, wbStringTableLookup),
-    wbInteger('Flags', itU16, wbFlags([
-      '',
-      '',
-      'User',
-      'Struct'
-    ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
-    wbArray('Fields', wbStruct('Field', [
-      wbInteger('Name', itS32, wbStringTableLookup),
-      wbInteger('Type', itS32, wbStringTableLookup),
-      wbInteger('Offset', itU16),
-      wbInteger('Size', itU16)
-    ]), -2)
-  ]);
+  var wbREFLSTRT :=
+    wbStruct('String Table', [
+      wbString('Signature', 4),
+      wbInteger('Data Size', itU32),
+      wbArray('Strings',
+        wbString('String')
+      ).SetShouldInclude(function(aBasePtr: Pointer; aEndPtr: Pointer; const aArray: IwbElement): Boolean
+       begin
+         Result := (PLongWord(aBasePtr)^ <> $45505954);
+       end)
+    ]).SetSummaryKey([2])
+      .IncludeFlag(dfCollapsed);
 
+  var wbREFLTYPE :=
+    wbStruct('Type', [
+      wbString('Signature', 4),
+      wbInteger('Data Size', itU32),
+      wbInteger('Class Count', itU32)
+    ]).SetSummaryKey([2])
+      .SetSummaryMemberPrefixSuffix(2, 'Class Cout: ', '')
+      .IncludeFlag(dfCollapsed);
 
-  wbReflectionChunk(DIFF, 'Diff', [
-    wbInteger('Type', itU32, wbStringTableLookup),
-    wbArray('Fields', wbStruct('Field', [
-      wbInteger('FieldIndex', itU16)
-    ]))
-  ]);
+  var wbREFLCLAS :=
+    wbArray('Classes',
+      wbStruct('Class', [
+        wbString('Signature', 4),
+        wbInteger('Data Size', itU32),
+        wbInteger('Class Name', itS32, wbREFLStringTableLookup),
+        wbInteger('Form', itS32, wbREFLStringTableLookup),
+        wbInteger('Flags', itU16,
+          wbFlags(wbSparseFlags([
+          2, 'User',
+          3, 'Struct'
+          ], False, 4))
+        ).IncludeFlag(dfCollapsed, wbCollapseFlags),
+        wbArray('Fields',
+          wbStruct('Field', [
+            wbInteger('Field Name', itS32, wbREFLStringTableLookup),
+            wbInteger('Field Type', itS32, wbREFLStringTableLookup),
+            wbInteger('Offset', itU16),
+            wbInteger('Size', itU16)
+          ]).SetSummaryKey([0])
+            .IncludeFlag(dfCollapsed),
+        -2).IncludeFlag(dfCollapsed)
+      ]).SetSummaryKey([2])
+        .IncludeFlag(dfCollapsed)
+    ).SetCountPath('Type\Class Count', True)
+     .IncludeFlag(dfCollapsed);
 
+  var wbREFLOBJT :=
+    wbStruct('Object Data', [
+      wbString('Signature', 4),
+      wbInteger('Data Size', itU32),
+      wbInteger('Name', itS32, wbREFLStringTableLookup),
+      wbUnknown
+    ]);
 
-  wbReflectionChunkUnion :=
-    wbUnion('', function(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer begin
-      Result := 0;
-      if not Assigned(aBasePtr) then
-        Exit;
-      if NativeInt(aEndPtr) - NativeInt(aBasePtr) < 8 then
-        Exit;
-      Result := 1;
-      for var lIdx := 2 to High(_ReflectionChunkSignatures) do
-        if _ReflectionChunkSignatures[lIdx] = PwbSignature(aBasePtr)^ then
-          Exit(lIdx);
-    end, _ReflectionChunkStructs);
-}
-  var wbREFL := wbReflection(REFL);
-  var wbRDIF := wbReflection(RDIF, 'Reflection Diff');
+  var wbREFLDIFF :=
+    wbStruct('Diff', [
+      wbString('Signature', 4),
+      wbInteger('Data Size', itU32),
+      wbInteger('Name', itS32, wbREFLStringTableLookup),
+      wbUnknown
+    ]);
+
+  var wbREFL :=
+    wbStruct(REFL, 'Reflection', [
+      wbREFLBETH,
+      wbREFLSTRT,
+      wbREFLTYPE,
+      wbREFLCLAS,
+      wbREFLOBJT,
+      wbUnknown
+    ]).IncludeFlag(dfCanContainFormID)
+      .IncludeFlag(dfCanContainReflection)
+      .IncludeFlag(dfDontAssign)
+      .IncludeFlag(dfInternalEditOnly)
+      .IncludeFlag(dfIsReflection)
+      .IncludeFlag(dfNoReport);
+
+  var wbRDIF :=
+    wbStruct(RDIF, 'Reflection Diff', [
+      wbREFLBETH,
+      wbREFLSTRT,
+      wbREFLTYPE,
+      wbREFLCLAS,
+      wbREFLDIFF,
+      wbUnknown
+    ]).IncludeFlag(dfCanContainFormID)
+      .IncludeFlag(dfCanContainReflection)
+      .IncludeFlag(dfDontAssign)
+      .IncludeFlag(dfInternalEditOnly)
+      .IncludeFlag(dfIsReflection)
+      .IncludeFlag(dfNoReport);
 
   var wbBaseFormComponents: IwbRecordMemberDef;
 
@@ -6636,12 +6379,14 @@ end;
         'BGSAddToInventoryOnDestroy_Component',
         'BGSAnimationGraph_Component',
         'BGSAttachParentArray_Component',
+        //'BGSAttackData_Component',
         'BGSBlockCellHeighGrid_Component',
         'BGSBlockEditorMetaData_Component',
         'BGSBodyPartInfo_Component',
         'BGSCityMapsUsage_Component',
         'BGSContactShadowComponent_Component',
         'BGSCrowdComponent_Component',
+        //'BGSDefaultLayer_Component',
         'BGSDestructibleObject_Component',
         'BGSDisplayCase',
         'BGSEffectSequenceComponent',
@@ -6684,18 +6429,26 @@ end;
         'LensFlareAttachmentFormComponent',
         'LightAnimFormComponent',
         'LightAttachmentFormComponent',
+        //'ObjectAttachmentFormComponent',
         'ParticleSystem_Component',
         'ReflectionProbes_Component',
         'SurfaceTreePatternSwapInfo_Component',
+        //'TESAIForm_Component',
         'TESContainer_Component',
+        //'TESDescription_Component',
         'TESFullName_Component',
+        //'TESHealth_Component',
         'TESImageSpaceModifiableForm_Component',
         'TESMagicTargetForm_Component',
         'TESModel_Component',
         'TESPlanetModel_Component',
+        //'TESTexture_Component',
+        //'TESValue_Component',
+        //'TESWeight_Component',
         'UniqueOverlayList_Component',
         'UniquePatternPlacementInfo_Component',
-        'Volumes_Component'
+        'Volumes_Component'//,
+        //'WaterHeight_Component'
       ]))
       .IncludeFlag(dfIncludeValueInDisplaySignature),
       wbRUnion('Component Data', [
@@ -6705,7 +6458,7 @@ end;
           wbString(BNAM, 'Rig File'),
           wbString(CNAM, 'Animations Path'),
           wbString(DNAM, 'Response File'),
-          wbEmpty(ENAM) // bool flag whose prescense indicates true
+          wbEmpty(ENAM, 'Controls Base Skeleton') // bool flag whose prescense indicates true
         ])
         .SetSummaryDelimiter(', ')
         .IncludeFlag(dfAllowAnyMember),
@@ -7031,7 +6784,18 @@ end;
         ]),
         //HoudiniData_Component
         wbRStruct('Component Data - Houdini Data', [
-          wbReflection(PCCC)
+          wbStruct(PCCC, 'Reflection', [
+            wbREFLBETH,
+            wbREFLSTRT,
+            wbREFLTYPE,
+            wbREFLCLAS,
+            wbUnknown
+          ]).IncludeFlag(dfCanContainFormID)
+            .IncludeFlag(dfCanContainReflection)
+            .IncludeFlag(dfDontAssign)
+            .IncludeFlag(dfInternalEditOnly)
+            .IncludeFlag(dfIsReflection)
+            .IncludeFlag(dfNoReport)
         ]),
         //BGSPropertySheet_Component
         wbRStruct('Component Data - Property Sheet', [
@@ -7039,7 +6803,18 @@ end;
         ]),
         //ParticleSystem_Component
         wbRStruct('Component Data - Particle System', [
-          wbReflection(PTCL)
+          wbStruct(PTCL, 'Reflection', [
+            wbREFLBETH,
+            wbREFLSTRT,
+            wbREFLTYPE,
+            wbREFLCLAS,
+            wbUnknown
+          ]).IncludeFlag(dfCanContainFormID)
+            .IncludeFlag(dfCanContainReflection)
+            .IncludeFlag(dfDontAssign)
+            .IncludeFlag(dfInternalEditOnly)
+            .IncludeFlag(dfIsReflection)
+            .IncludeFlag(dfNoReport)
         ]),
         //BGSLodOwner_Component
         //BGSEffectSequenceComponent
@@ -7063,7 +6838,7 @@ end;
           wbInteger(SNAM, 'Star System ID', itS32, wbStarIDToStr, wbStrToStarID)
             .SetLinksToCallbackOnValue(wbStarSystemLookupCallback()),
           wbInteger(PNAM, 'Planet ID', itS32),
-          wbFormIDCk(BNAM, 'Surface Block', [SFBK])
+          wbFormIDCk(BNAM, 'Surface Block', [SFBK, NULL])
         ]),
         //BGSSpawnOnDestroy_Component
         wbRStructSK([0],'Component Data - Spawn on destroy', [
@@ -7859,6 +7634,7 @@ end;
       15, 'Has Distant LOD',
       16, 'Random Anim Start',
       17, 'Dangerous',
+      19, 'Has Currents',
       20, 'Ignore Object Interaction',
       23, 'Is Marker',
       25, 'Obstacle',
@@ -7866,7 +7642,8 @@ end;
       27, 'Navmesh - Bounding Box',
       28, 'Navmesh - Only Cut',
       29, 'Navmesh - Ignore Erosion',
-      30, 'Navmesh - Ground'
+      30, 'Navmesh - Ground',
+      31, 'Must Be Unique'
     ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
        .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
        .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
@@ -7891,11 +7668,11 @@ end;
     wbFTYP,
     wbNTRM,
     wbByteColors(PNAM, 'Marker Color'),
-    wbString(WMAT, 'Water Material'),
     wbALSH,
     wbACSH,
-    wbATTX,
+    wbString(WMAT, 'Water Material'),
     wbFormIDCk(WTFM, 'Water', [WATR]),
+    wbATTX,
     wbInteger(FNAM, 'Flags', itU16, wbFlags([
       'No Displacement',
       'Ignored by Sandbox',
@@ -7924,10 +7701,23 @@ end;
   (* still exists in game code, but not in Starfield.esm *)
   wbRecord(TACT, 'Talking Activator',
     wbFlags(wbFlagsList([
-      {0x00000200}  9, 'Hidden From Local Map',
+                    9, 'Hidden From Local Map',
+                   11, 'Used as Platform',
       {0x00010000} 16, 'Random Anim Start',
-      {0x00020000} 17, 'Radio Station'
-    ]), [17]), [
+      {0x00020000} 17, 'Dangerous',
+      {0x00080000} 19, 'Has Currents',
+                   25, 'Obstacle',
+                   26, 'Navmesh - Filter',
+                   27, 'Navmesh - Bounding Box',
+                   28, 'Navmesh - Only Cut',
+                   29, 'Navmesh - Ignore Erosion/Child Can Use',
+                   30, 'Navmesh - Ground',
+                   31, 'Must Be Unique'
+    ]), [17]).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+       .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+       .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+       .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+       .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbVMAD,
     wbOBND(True),
@@ -7943,10 +7733,30 @@ end;
     wbGenericModel(True),
     wbDEST,
     wbKeywords,
-    wbUnknown(PNAM, cpIgnore, True),
-    wbSoundReference(ALSH, 'Looping Sound'),
-    wbUnknown(FNAM, cpIgnore, True),
-    wbUnknown(JNAM, cpNormal, True).SetDefaultEditValue('68 01'),
+    wbPRPS,
+    wbFTYP,
+    wbNTRM,
+    wbByteColors(PNAM, 'Marker Color'),
+    wbALSH,
+    wbACSH,
+    wbInteger(FNAM, 'Flags', itU16, wbFlags(wbFlagsList([
+      2, 'Is Water',
+      3, 'Non-Planar',
+      4, 'Is a Radio'
+    ]))).IncludeFlag(dfCollapsed, wbCollapseFlags),
+    wbInteger(JNAM, 'Activation Angle - For Player', itU16),
+    wbEmpty(INAM, 'Activation Angle - Invert Facing'),
+    wbStruct(RADR, 'Radio Receiver', [
+      wbFloat('Frequency'),
+      wbFloat('Volume'),
+      wbInteger('Starts Active', itU8, wbBoolEnum),
+      wbInteger('No Signal Static', itU8, wbBoolEnum)
+    ], cpNormal, False, nil),
+    wbRStruct('Conditions', [
+      wbCITCReq,
+      wbConditions.SetRequired
+    ]),
+    wbNVNM,
     wbFormIDCk(VNAM, 'Voice Type', [VTYP])
   ]);
 
@@ -7956,6 +7766,7 @@ end;
       {0x20000000} 29, 'Medicine'
     ])), [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
@@ -8007,19 +7818,39 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(AMMO, 'Ammunition',
     wbFlags(wbFlagsList([
-      {0x00000004}  2, 'Non-Playable'
-    ])), [
+        {0x00000004}  2, 'Non-Playable',
+        {0x00000010}  4, 'Ground Piece',
+        {0x00000200}  9, 'Hidden From Local Map',
+        {0x00000800} 11, 'Used As Platform',
+        {0x00080000} 19, 'Has Currents',
+        {0x04000000} 26, 'Navmesh - Filter',
+        {0x08000000} 27, 'Navmesh - Bounding Box',
+        {0x10000000} 28, 'Navmesh - Only Cut',
+        {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+        {0x40000000} 30, 'Navmesh - Ground',
+                     31, 'Must Be Unique'
+      ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
+    wbSNTP,
+    wbSNBH,
+    wbDEFL,
+    wbXALG,
+    wbBaseFormComponents,
     wbPTT2,
     wbFULL,
     wbGenericModel(True),
+    wbDEST,
     wbPUSH,
     wbPDSH,
     wbDESC().SetRequired,
     wbKeywords,
-    wbDEST,
     wbStruct(DATA, 'Data', [
       wbInteger('Value', itU32),
       wbFloat('Weight')
@@ -8051,6 +7882,7 @@ end;
       {0x00000200}  9, 'Unknown 9'
     ]), [9]), [
     wbEDID,
+    wbVMAD,
     wbXALG,
     wbBaseFormComponents,
     wbGenericModel(True)
@@ -8135,6 +7967,7 @@ end;
       {0x40000000} 30, 'Hi-Res 1st Person Only'
     ])), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbBO64,
     wbFormIDCk(RNAM, 'Race', [RACE]),
@@ -8306,7 +8139,9 @@ end;
           {0x40000000} 30, 'No Respawn'
         ], True, True)), [
         wbEDID, //not in Starfield.esm
+        wbBaseFormComponents,
         wbVMAD,
+        wbXALG,
         wbFormIDCk(NAME, 'Projectile', [PROJ, HAZD]),
 
         wbFormIDCk(XEMI, 'Emittance', [LIGH, REGN]),
@@ -8337,6 +8172,7 @@ end;
         wbFormIDCk(XLRL, 'Location Reference', [LCTN], False, cpBenignIfAdded),
         wbXSCL,
         wbDataPosRot,
+        wbUnknown(XLTW),
         wbString(MNAM, 'Comments')
       ], True).SetAddInfo(wbPlacedAddInfo);
     end;
@@ -8523,6 +8359,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(CLAS, 'Class', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbFULLReq,
     wbDESCReq(),
     wbICON,
@@ -8535,6 +8373,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(CLMT, 'Climate', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbArrayS(WLST, 'Weather Types', wbStructSK([0], 'Weather Type', [
       wbFormIDCk('Weather', [WTHR, NULL]),
       wbInteger('Chance', itS32),
@@ -8551,6 +8391,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(SPGD, 'Shader Particle Geometry', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbStruct(DATA, 'Data', [
       wbFloat('Gravity Velocity'),
       wbUnused(4),
@@ -9198,8 +9040,10 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(ENCH, 'Enchantment', [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
+    wbBaseFormComponents,
     wbFULL,
     wbStruct(ENIT, 'Effect Data', [
       wbInteger('Enchantment Cost', itS32),
@@ -9260,6 +9104,7 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(FACT, 'Faction', [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbFULL,
     wbFactionRelations,
@@ -9476,9 +9321,24 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(GLOB, 'Global',
     wbFlags(wbFlagsList([
-      {0x00000040}  6, 'Constant'
-    ])), [
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000040}  6, 'Constant',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00080000} 19, 'Has Currents',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     {
     wbInteger(FNAM, 'Type', itU8, wbEnum([], [
@@ -9513,6 +9373,7 @@ end;
       {0x00080000} {15} 15, 'Restricted'
     ])), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbCNAM.SetRequired,
     wbString(DNAM, 'Notes'),
@@ -9527,26 +9388,82 @@ end;
   ;
 
   {subrecords checked against Starfield.esm}
-  wbRecord(FFKW, 'Form Folder Keyword List', [
+  wbRecord(FFKW, 'Form Folder Keyword List',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbREFL
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(LCRT, 'Location Reference Type', [
+  wbRecord(LCRT, 'Location Reference Type',
+    wbFlags(wbFlagsList([
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00080000} 15, 'Restricted',
+      {0x00080000} 19, 'Has Currents',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground',
+                   31, 'Must Be Unique'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbCNAM,
-    wbUnknown(TNAM),
-    wbUnknown(FNAM)
-  ]);
+    wbString(DNAM, 'Notes'),
+    wbInteger(TNAM, 'Type', itU32, wbKeywordTypeEnum),
+    wbUnknown(FNAM),
+    wbFULL,
+    wbFormIDCk(DATA, 'AttractionRule', [NULL, AORU]),
+    wbString(ENAM, 'Flash Linkage Name')
+  ]).SetSummaryKey([3]);
 
   {subrecords checked against Starfield.esm}
   wbRecord(AACT, 'Action',
     wbFlags(wbFlagsList([
-      {0x00080000} {15} 15, 'Restricted'
-    ])), [
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00080000} 15, 'Restricted',
+      {0x00080000} 19, 'Has Currents',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbCNAM,
     wbString(DNAM, 'Notes'),
     wbInteger(TNAM, 'Type', itU32, wbKeywordTypeEnum),
@@ -9559,9 +9476,11 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(TXST, 'Texture Set', [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
+    wbBaseFormComponents,
     wbRStruct('Textures (RGB/A)', [
       wbString(TX00, 'Diffuse'),
       wbString(TX01, 'Normal/Gloss'),
@@ -9594,6 +9513,7 @@ end;
       {0x00000004}  2, 'Non-Playable'
     ])), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbFULL,
     wbGenericModel(True),
@@ -9658,8 +9578,10 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(ASPC, 'Acoustic Space', [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
+    wbBaseFormComponents,
     wbSoundReference(ASLS, 'Looping Sound'),
     wbSoundReference(WED0, 'Interior Sound'),
     wbSoundReference(WED1, 'Exterior Sound'),
@@ -9721,11 +9643,13 @@ end;
     wbDEST,
     wbKeywords,
     wbPRPS,
-    wbInteger(DATA, 'Mass Override Flags', itU8, wbFlags([
-      '',
-      'Use Mass Override',
-      'Scale'
-    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
+    wbInteger(DATA, 'Mass Override Flags', itU8,
+      wbFlags(wbSparseFlags([
+      1, 'Use Mass Override',
+      2, 'Scale'
+      ], False, 3))).SetDefaultNativeValue(4)
+         .SetRequired
+         .IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbSoundReference(MSLS, 'Looping Sound'),
     wbFloat(MSMO, 'Mass Override Value')
   ]);
@@ -9733,25 +9657,15 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(IDLM, 'Idle Marker',
     wbFlags(wbFlagsList([
-      {0x20000000} 29, 'Child Can Use'
+    29, 'Child Can Use'
     ])), [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
+    wbBaseFormComponents,
     wbKeywords,
-    wbInteger(IDLF, 'Flags', itU8, wbFlags([
-      'Run in Sequence',
-      'Unknown 1',
-      'Do Once',
-      'Unknown 3',
-      'Ignored by Sandbox',
-      'Ignore Conditions For Sandbox'
-    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
-    wbRStruct('Animations', [
-      wbInteger(IDLC, 'Animation Count', itU32, nil, cpBenign),
-      wbFloat(IDLT, 'Idle Timer Setting', cpNormal, True),
-      wbArray(IDLA, 'Animations', wbFormIDCk('Animation', [IDLE]), 0, nil, wbIDLAsAfterSet, cpNormal, True)
-    ]),
+    wbIdleAnimation,
     wbGenericModel(True),
     wbFormIDCk(RNAM, 'Actor Action', [AACT]),
     wbFormIDCk(QNAM, 'Animation Flavor', [KYWD]),
@@ -9764,6 +9678,7 @@ end;
       15, 'Apply Charge Multiplier'
     ])), [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
@@ -9858,10 +9773,32 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(HAZD, 'Hazard', [
+  wbRecord(HAZD, 'Hazard',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
+    wbOPDS,
+    wbPTT2,
+    wbSNTP,
+    wbSNBH,
+    wbDEFL,
     wbXALG,
     wbBaseFormComponents,
     wbFULL,
@@ -9930,13 +9867,14 @@ end;
     wbRArrayS('Navmesh Infos',
       wbStructSK(NVMI, [0], 'Navmesh Info', [
         wbFormIDCk('Navmesh', [NAVM]).IncludeFlag(dfSummaryNoName),
-        wbInteger('Category', itU32,
-          wbEnum([], [
-            0, 'Is Edited',
-           32, 'Is Island',
-           64, 'Not Edited'
-          ])),
-        wbArray('Unknown', wbFloat, 4),
+        wbInteger('Flags', itU32,
+          wbFlags(wbSparseFlags([
+          5, 'Is Island',
+          6, 'Not Edited'
+          ], False, 7))
+        ).IncludeFlag(dfCollapsed, wbCollapseFlags),
+        wbVec3('Approx Location'),
+        wbFloat('Preferred %'),
         wbArrayS('Edge Links', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
         wbArrayS('Preferred Edge Links', wbFormIDCk('Navmesh', [NAVM]), -1).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
         wbArrayS('Door Links',
@@ -9959,6 +9897,7 @@ end;
             wbFloat,
             wbInteger('Flags', itU32,
               wbFlags(wbSparseFlags([
+                1, 'Unknown 1',
                 2, 'Unknown 2'
               ]))).IncludeFlag(dfCollapsed, wbCollapseFlags),
             wbFormIDCk('From Navmesh', [NAVM]),
@@ -9978,8 +9917,10 @@ end;
           wbUnion('Island Data', wbNAVIIslandDataDecider, [
             wbStruct('Unused', [wbEmpty('Unused')]).IncludeFlag(dfCollapsed, wbCollapseOther),
             wbStruct('Island Data', [
-              wbVec3('Min'),
-              wbVec3('Max'),
+              wbStruct('Navmesh Bounds', [
+                wbVec3('Min'),
+                wbVec3('Max')
+              ]),
               wbArray('Triangles',
                 wbStruct('Triangle', [
                   wbInteger('Vertex 0', itU16),
@@ -9992,7 +9933,7 @@ end;
                 wbVec3('Vertex'),
               -1).IncludeFlag(dfCollapsed, wbCollapseVertices)
                  .IncludeFlag(dfNotAlignable)
-            ]).SetSummaryKey([2])
+            ]).SetSummaryKey([1])
               .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
               .IncludeFlag(dfSummaryMembersNoName)
           ]).IncludeFlag(dfCollapsed, wbCollapseNavmesh)
@@ -10001,7 +9942,7 @@ end;
           .IncludeFlag(dfSummaryMembersNoName),
         wbStruct('Pathing Cell', [
           wbInteger('CRC Hash', itU32, wbCRCValuesEnum).SetDefaultEditValue('PathingCell'),
-          wbFormIDCk('Parent World', [WRLD, NULL]).IncludeFlag(dfSummaryExcludeNull),
+          wbFormIDCk('Parent World', [CELL, WRLD, NULL]).IncludeFlag(dfSummaryExcludeNull),
           wbUnion('', wbNAVIParentDecider, [
             wbStruct('Coordinates', [
               wbInteger('Grid Y', itS16),
@@ -10019,11 +9960,11 @@ end;
           .IncludeFlag(dfSummaryMembersNoName, wbCollapseNavmesh),
         wbUnknown(1),
         wbArray('Unknown', wbInteger('Type', itU32, wbCRCValuesEnum), -1)
-      ]).SetSummaryKeyOnValue([0, 8, 6, 7])
+      ]).SetSummaryKeyOnValue([0, 9, 7, 8])
         .SetSummaryPrefixSuffixOnValue(0, '', '')
-        .SetSummaryPrefixSuffixOnValue(8, 'in ', '')
-        .SetSummaryPrefixSuffixOnValue(6, 'with ', '')
-        .SetSummaryPrefixSuffixOnValue(7, 'is island with ', '')
+        .SetSummaryPrefixSuffixOnValue(9, 'in ', '')
+        .SetSummaryPrefixSuffixOnValue(7, 'with ', '')
+        .SetSummaryPrefixSuffixOnValue(8, 'is island with ', '')
         .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
         .IncludeFlag(dfFastAssign)
         .IncludeFlag(dfSummaryMembersNoName)
@@ -10108,6 +10049,7 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(DEBR, 'Debris', [
     wbEDID,
+    wbBaseFormComponents,
     wbRArray('Models', wbDebrisModel(wbMODT), cpNormal, True)
   ]);
 
@@ -10126,7 +10068,23 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(FLST, 'FormID List', [
+  wbRecord(FLST, 'FormID List',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbString(EDID, 'Editor ID', 0, cpBenign, True, nil, wbFLSTEDIDAfterSet),
     wbBaseFormComponents,
     wbFULL,
@@ -10387,13 +10345,25 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(ADDN, 'Addon Node', [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbBaseFormComponents,
     wbGenericModel(True),
-    wbInteger(DATA, 'Node Index', itS32, nil, cpNormal, True),
+    wbInteger(DATA, 'Index', itU32).SetRequired,
     wbFormIDCk(LNAM, 'Light', [LIGH]),
-    wbReflection(PSDF),
+    wbStruct(PSDF, 'Reflection', [
+      wbREFLBETH,
+      wbREFLSTRT,
+      wbREFLTYPE,
+      wbREFLCLAS,
+      wbUnknown
+    ]).IncludeFlag(dfCanContainFormID)
+      .IncludeFlag(dfCanContainReflection)
+      .IncludeFlag(dfDontAssign)
+      .IncludeFlag(dfInternalEditOnly)
+      .IncludeFlag(dfIsReflection)
+      .IncludeFlag(dfNoReport),
     wbStruct(DNAM, 'Data', [
       wbInteger('Master Particle System Cap', itU16),
       wbInteger('Flags', itU16, wbEnum([
@@ -10402,12 +10372,40 @@ end;
         'Always Loaded',
         'Master Particle System and Always Loaded'
       ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
-    ], cpNormal, True)
-  ]);
+    ]).SetRequired
+  ]).SetBuildIndexKeys(procedure(const aMainRecord: IwbMainRecord; var aIndexKeys: TwbIndexKeys)
+    begin
+      if not Assigned(aMainRecord) then
+        Exit;
+
+      var lDATA := aMainRecord.ElementNativeValues[DATA];
+      if not VarIsOrdinal(lDATA) then
+        Exit;
+
+      aIndexKeys.Keys[wbIdxAddonNode] := lDATA;
+    end);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(AVIF, 'Actor Value Information', [
+  wbRecord(AVIF, 'Actor Value Information',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbFULL,
     wbNLDT,
     wbLString(ANAM, 'Abbreviation', 0, cpTranslate),
@@ -10467,6 +10465,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(CAMS, 'Camera Shot', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbGenericModel(True),
     wbKeywords,
     wbNLDT,
@@ -10544,6 +10544,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(VTYP, 'Voice Type', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbInteger(DNAM, 'Flags', itU8, wbFlags([
       'Allow Default Dialog',
       'Female'
@@ -10560,6 +10562,7 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(MATT, 'Material Type', [
     wbEDID,
+    wbBaseFormComponents,
     wbFormIDCk(PNAM, 'Material Parent', [MATT, NULL]),
     wbString(MNAM, 'Material Name'),
     wbFloatColors(CNAM, 'Havok Display Color'),
@@ -10617,6 +10620,7 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(IPDS, 'Impact Data Set', [
     wbEDID,
+    wbBaseFormComponents,
     wbRArrayS('Data', wbStructSK(PNAM, [0], '', [
       wbFormIDCk('Material Type', [MATT]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole),
       wbFormIDCk('Impact Data', [IPCT])
@@ -10624,119 +10628,175 @@ end;
     wbFormIDCk(ENAM, 'Parent Impact Data Set', [IPDS])
   ]);
 
-  var lDontShowForCellLocation: TwbDontShowCallback :=
-    function(const aElement: IwbElement): Boolean
-    begin
-      var lContainer: IwbContainer;
-      if not Supports(aElement, IwbContainer, lContainer) then
-        Exit(False);
-
-      var lLocation := lContainer.ElementByPath['..\Location'];
-      if not Assigned(lLocation) then
-        Exit(False);
-
-      var lMainRecord: IwbMainRecord;
-      if not Supports(lLocation.LinksTo, IwbMainRecord, lMainRecord) then
-        Exit(False);
-
-      Result := lMainRecord.Signature = CELL;
-    end;
-
   {subrecords checked against Starfield.esm}
   wbRecord(LCTN, 'Location',
     wbFlags(wbFlagsList([
-      {0x00000800} 11, 'Interior Cells Use Ref Location for world map player marker',
-      {0x00020000} 17, 'Off Limits',
-      {0x00080000} 19, 'Can''t Wait',
-      {0x00100000} 20, 'Public Area'
-    ])), [
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Interior Cells Use Ref Location for world map player marker',
+    14, 'Unknown 14', //Partial Form
+    17, 'Off Limits',
+    19, 'Can''t Wait',
+    20, 'Public Area',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(14, wbFlagPartialFormDontShow)
+    .SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbPRPS,
-
-    wbArrayS(ACPR, 'Added Persist Location References', wbStructSK([0], 'References', [
-      wbFormIDCk('Actor', sigReferences, False, cpBenign),
-      wbFormIDCk('Location', [WRLD, CELL], False, cpBenign),
-      wbInteger('Grid Y', itS16, nil, cpBenign, True, lDontShowForCellLocation),
-      wbInteger('Grid X', itS16, nil, cpBenign, True, lDontShowForCellLocation),
-      wbInteger('Unknown', itS32, nil, cpBenign)
-    ])),
-    wbArrayS(LCPR, 'Master Persist Location References', wbStructSK([0], 'References', [
-      wbFormIDCk('Actor', sigReferences, False, cpBenign),
-      wbFormIDCk('Location', [WRLD, CELL], False, cpBenign),
-      wbInteger('Grid Y', itS16, nil, cpBenign, True, lDontShowForCellLocation),
-      wbInteger('Grid X', itS16, nil, cpBenign, True, lDontShowForCellLocation),
-      wbInteger('Unknown', itS32, nil, cpBenign)
-    ])),
-    wbArrayS(RCPR,'Removed Persist Location References', wbFormIDCk('Reference', [ACHR, REFR], False, cpBenign), 0, cpBenign),
-
-    wbArrayS(ACUR, 'Added Unique Base Forms', wbStructSK([0], 'Base Form', [
-     wbFormIDCk('Generic Base Form', [GBFM]),
-     wbFormIDCk('Placed Object', [REFR]),
-     wbFormIDCk('Location', [LCTN])
-    ])),
-    wbArrayS(LCUR, 'Master Unique Base Forms', wbStructSK([0], 'Base Form', [
-     wbFormIDCk('Generic Base Form', [GBFM]),
-     wbFormIDCk('Placed Object', [REFR]),
-     wbFormIDCk('Location', [LCTN])
-    ])),
-    wbArrayS(RCUR, 'Removed Unique Base Forms', wbFormIDCk('Generic Base Form', [GBFM], False, cpBenign), 0, cpBenign),
-
-    wbArrayS(ACUN, 'Added Unique NPCs', wbStructSK([0], 'Actor', [
+    wbArrayS(ACPR, 'Added Persist Location References',
+      wbStructSK([0], 'Reference', [
+        wbFormIDCk('Ref', sigReferences, False, cpBenign),
+        wbFormIDCk('World/Cell', [WRLD, CELL], False, cpBenign),
+        wbInteger('Grid Y', itS16, nil, cpBenign).SetDontShow(wbLCTNCellDontShow),
+        wbInteger('Grid X', itS16, nil, cpBenign).SetDontShow(wbLCTNCellDontShow),
+        wbUnknown(4, cpBenign)
+      ], cpBenign),
+    0, cpBenign),
+    wbArrayS(LCPR, 'Master Persist Location References',
+      wbStructSK([0], 'Reference', [
+        wbFormIDCk('Ref', sigReferences, False, cpBenign),
+        wbFormIDCk('World/Cell', [WRLD, CELL], False, cpBenign),
+        wbInteger('Grid Y', itS16, nil, cpBenign).SetDontShow(wbLCTNCellDontShow),
+        wbInteger('Grid X', itS16, nil, cpBenign).SetDontShow(wbLCTNCellDontShow),
+        wbUnknown(4, cpBenign)
+      ], cpBenign),
+    0, cpBenign),
+    wbArrayS(RCPR, 'Removed Persist Location References',
+      wbFormIDCk('Reference', [ACHR, REFR], False, cpBenign),
+    0, cpBenign),
+    wbArrayS(ACUR, 'Added Unique Base Forms',
+      wbStructSK([0], 'Base Form', [
+        wbFormIDCk('Generic Base Form', [GBFM]),
+        wbFormIDCk('Placed Object', [REFR]),
+        wbFormIDCk('Location', [LCTN])
+      ], cpBenign),
+    0, cpBenign),
+    wbArrayS(LCUR, 'Master Unique Base Forms',
+      wbStructSK([0], 'Base Form', [
+        wbFormIDCk('Generic Base Form', [GBFM]),
+        wbFormIDCk('Placed Object', [REFR]),
+        wbFormIDCk('Location', [LCTN])
+      ], cpBenign),
+    0, cpBenign),
+    wbArrayS(RCUR, 'Removed Unique Base Forms',
+      wbFormIDCk('Generic Base Form', [GBFM], False, cpBenign),
+    0, cpBenign),
+    wbArrayS(ACUN, 'Added Unique NPCs',
+      wbStructSK([1], 'Actor', [
+        wbFormIDCk('NPC', [NPC_], False, cpBenign),
+        wbFormIDCk('Actor Ref', [ACHR], False, cpBenign),
+        wbFormIDCk('Location', [LCTN, NULL], False, cpBenign)
+      ], cpBenign),
+    0, cpBenign),
+    wbArrayS(LCUN, 'Master Unique NPCs',
+      wbStructSK([1], 'Actor', [
+        wbFormIDCk('NPC', [NPC_], False, cpBenign),
+        wbFormIDCk('Actor Ref', [ACHR], False, cpBenign),
+        wbFormIDCk('Location', [LCTN, NULL], False, cpBenign)
+      ], cpBenign),
+    0, cpBenign),
+    wbArrayS(RCUN, 'Removed Unique NPCs',
       wbFormIDCk('Actor', [NPC_], False, cpBenign),
-      wbFormIDCk('Ref', [ACHR], False, cpBenign),
-      wbFormIDCk('Location', [LCTN, NULL], False, cpBenign)
-    ])),
-    wbArrayS(LCUN, 'Master Unique NPCs', wbStructSK([0], 'Actor', [
-      wbFormIDCk('Actor', [NPC_], False, cpBenign),
-      wbFormIDCk('Ref', [ACHR], False, cpBenign),
-      wbFormIDCk('Location', [LCTN, NULL], False, cpBenign)
-    ])),
-    wbArrayS(RCUN, 'Removed Unique NPCs', wbFormIDCk('Actor', [NPC_], False, cpBenign), 0, cpBenign),
-
-    wbArrayS(ACSR, 'Added Special References', wbStructSK([0], 'Reference', [
-      wbFormIDCk('Loc Ref Type', [LCRT], False, cpBenign),
-      wbFormIDCk('Marker', sigReferences, False, cpBenign),
-      wbFormIDCk('Location', [WRLD, CELL], False, cpBenign),
-      wbInteger('Grid Y', itS16, nil, cpBenign, True, lDontShowForCellLocation),
-      wbInteger('Grid X', itS16, nil, cpBenign, True, lDontShowForCellLocation),
-      wbInteger('Unknown', itS32, nil, cpBenign)
-    ])),
-    wbArrayS(LCSR, 'Master Special References', wbStructSK([0], 'Reference', [
-      wbFormIDCk('Loc Ref Type', [LCRT], False, cpBenign),
-      wbFormIDCk('Marker', sigReferences, False, cpBenign),
-      wbFormIDCk('Location', [WRLD, CELL], False, cpBenign),
-      wbInteger('Grid Y', itS16, nil, cpBenign, True, lDontShowForCellLocation),
-      wbInteger('Grid X', itS16, nil, cpBenign, True, lDontShowForCellLocation),
-      wbInteger('Unknown', itS32, nil, cpBenign)
-    ])),
-    wbArrayS(RCSR,'Removed Special References', wbFormIDCk('Reference', [ACHR, REFR], False, cpBenign), 0, cpBenign),
-
-    wbRArray('Master Worldspace Cells',
-      wbStructSK(LCEC, [0], 'Unknown', [
-        wbFormIDCk('Location', [WRLD, CELL], False, cpBenign),
-        wbArray('Coordinates', wbStruct('', [
-          wbInteger('Grid Y', itS16, nil, cpBenign, True, lDontShowForCellLocation),
-          wbInteger('Grid X', itS16, nil, cpBenign, True, lDontShowForCellLocation)
-        ]))
-      ])
-    ),
-
-    wbArray(ACID, 'Master Initially Disabled References', wbFormIDCk('Ref', sigReferences, False, cpBenign)),
-    wbArray(LCID, 'Master Initially Disabled References', wbFormIDCk('Ref', sigReferences, False, cpBenign)),
-
-    wbArray(ACEP, 'Added Enable Point References', wbStruct('Reference', [
-      wbFormIDCk('Actor', sigReferences, False, cpBenign),
+    0, cpBenign),
+    wbArrayS(ACSR, 'Added Special References',
+      wbStructSK([1], 'Reference', [
+        wbFormIDCk('Loc Ref Type', [LCRT], False, cpBenign),
+        wbFormIDCk('Ref', sigReferences, False, cpBenign),
+        wbFormIDCk('World/Cell', [WRLD, CELL], False, cpBenign),
+        wbInteger('Grid Y', itS16, nil, cpBenign).SetDontShow(wbLCTNCellDontShow),
+        wbInteger('Grid X', itS16, nil, cpBenign).SetDontShow(wbLCTNCellDontShow),
+        wbUnknown(4, cpBenign)
+      ], cpBenign),
+    0, cpBenign),
+    wbArrayS(LCSR, 'Master Special References',
+      wbStructSK([1], 'Reference', [
+        wbFormIDCk('Loc Ref Type', [LCRT], False, cpBenign),
+        wbFormIDCk('Ref', sigReferences, False, cpBenign),
+        wbFormIDCk('World/Cell', [WRLD, CELL], False, cpBenign),
+        wbInteger('Grid Y', itS16, nil, cpBenign).SetDontShow(wbLCTNCellDontShow),
+        wbInteger('Grid X', itS16, nil, cpBenign).SetDontShow(wbLCTNCellDontShow),
+        wbUnknown(4, cpBenign)
+      ], cpBenign),
+    0, cpBenign),
+    wbArrayS(RCSR, 'Removed Special References',
+      wbFormIDCk('Reference', [ACHR, REFR], False, cpBenign),
+    0, cpBenign),
+    wbRArrayS('Added Worldspace Cells',
+      wbStructSK(ACEC, [0], 'Worldspace', [
+        wbFormIDCk('World', [WRLD], False, cpBenign),
+        wbArrayS('Cells',
+          wbStructSK([0,1], 'Coords', [
+            wbInteger('Grid Y', itS16, nil, cpBenign),
+            wbInteger('Grid X', itS16, nil, cpBenign)
+          ], cpBenign),
+        0, cpBenign)
+      ], cpBenign),
+    cpBenign),
+    wbRArrayS('Master Worldspace Cells',
+      wbStructSK(LCEC, [0], 'Worldspace', [
+        wbFormIDCk('World', [WRLD], False, cpBenign),
+        wbArrayS('Cells',
+          wbStructSK([0,1], 'Coords', [
+            wbInteger('Grid Y', itS16, nil, cpBenign),
+            wbInteger('Grid X', itS16, nil, cpBenign)
+          ], cpBenign),
+        0, cpBenign)
+      ], cpBenign),
+    cpBenign),
+    wbRArrayS('Removed Worldspace Cells',
+      wbStructSK(RCEC, [0], 'Worldspace', [
+        wbFormIDCk('World', [WRLD], False, cpBenign),
+        wbArrayS('Cells',
+          wbStructSK([0,1], 'Coords', [
+            wbInteger('Grid Y', itS16, nil, cpBenign),
+            wbInteger('Grid X', itS16, nil, cpBenign)
+          ], cpBenign),
+        0, cpBenign)
+      ], cpBenign),
+    cpBenign),
+    wbArrayS(ACID, 'Added Initially Disabled References',
       wbFormIDCk('Ref', sigReferences, False, cpBenign),
-      wbInteger('Set Enable State to Opposite of Parent', itU8, wbBoolEnum),
-      wbUnused(3)
-    ])),
-    wbArray(LCEP, 'Master Enable Point References', wbStruct('Reference', [
-      wbFormIDCk('Actor', sigReferences, False, cpBenign),
+    0, cpBenign),
+    wbArrayS(LCID, 'Master Initially Disabled References',
       wbFormIDCk('Ref', sigReferences, False, cpBenign),
-      wbInteger('Set Enable State to Opposite of Parent', itU8, wbBoolEnum),
-      wbUnused(3)
-    ])),
-
+    0, cpBenign),
+    wbArrayS(ACEP, 'Added Enable Parent References',
+      wbStruct('Reference', [
+        wbFormIDCk('Ref', sigReferences, False, cpBenign),
+        wbFormIDCk('Enable Parent', sigReferences, False, cpBenign),
+        wbInteger('Flags', itU8,
+          wbFlags([
+          {0} 'Set Enable State to Opposite of Parent',
+          {1} 'Pop In'
+          ]),
+        cpBenign).IncludeFlag(dfCollapsed, wbCollapseFlags),
+        wbUnused(3)
+      ], cpBenign),
+    0, cpBenign),
+    wbArrayS(LCEP, 'Master Enable Parent References',
+      wbStruct('Reference', [
+        wbFormIDCk('Ref', sigReferences, False, cpBenign),
+        wbFormIDCk('Enable Parent', sigReferences, False, cpBenign),
+        wbInteger('Flags', itU8,
+          wbFlags([
+          {0} 'Set Enable State to Opposite of Parent',
+          {1} 'Pop In'
+          ]),
+        cpBenign).IncludeFlag(dfCollapsed, wbCollapseFlags),
+        wbUnused(3)
+      ], cpBenign),
+    0, cpBenign),
     wbFULL,
     wbKeywords,
     wbPRPS,
@@ -10760,7 +10820,7 @@ end;
     wbFormIDCk(FNAM, 'Unreported Crime Faction', [FACT]),
     wbFormIDCk(MNAM, 'World Location Marker Ref', [REFR, ACHR]),
     wbFloat(RNAM, 'World Location Radius'),
-    wbFloat(ANAM, 'Actor Fade Mult'),
+    wbFloat(ANAM, 'Actor Fade Mult').SetDefaultEditValue('1.0'),
     wbFloat(TNAM, 'Random Conversation Timer'),
     wbByteArray(NAM0, 'Horse Marker (Unused', 4),
     wbCNAM,
@@ -10792,8 +10852,25 @@ end;
     ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(MESG, 'Message', [
+  wbRecord(MESG, 'Message',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbDESCReq(),
     wbFULL,
@@ -11252,6 +11329,7 @@ end;
   // Lighting Templates are no longer used and are legacy records
   wbRecord(LGTM, 'Lighting Template', [
     wbEDID,
+    wbBaseFormComponents,
     wbStruct(DATA, 'Lighting', [
       wbByteColors('Ambient Color'),
       wbByteColors('Directional Color'),
@@ -11287,12 +11365,14 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(MUSC, 'Music Type', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbInteger(FNAM, 'Flags', itU32, wbFlags([
       {0x01} 'Plays One Selection',
       {0x02} 'Abrupt Transition',
       {0x04} 'Cycle Tracks',
       {0x08} 'Maintain Track Order',
-      {0x10} '',
+      {0x10} 'Removal Queued',
       {0x20} 'Ducks Current Track',
       {0x40} 'Doesn''t Queue'
     ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
@@ -11309,6 +11389,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(FSTP, 'Footstep', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbFormIDCk(DATA, 'Impact Data Set', [IPDS, NULL], False, cpNormal, True),
     wbString(ANAM, 'Tag', 0, cpNormal, True)
   ]);
@@ -11316,6 +11398,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(FSTS, 'Footstep Set', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbStruct(XCNT, 'Count', [
       wbInteger('Walking', itU32),
       wbInteger('Running', itU32),
@@ -11408,6 +11492,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(MUST, 'Music Track', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbInteger(CNAM, 'Track Type', itU32, wbEnum([], [
       Int64($23F678C3), 'Palette',
       Int64($6ED7E048), 'Single Track',
@@ -11439,6 +11525,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(EQUP, 'Equip Type', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbArray(PNAM, 'Slot Parents', wbFormIDCk('Parent', [EQUP])),
     wbInteger(DATA, 'Flags', itU32, wbFlags([
       'Use All Parents',
@@ -11450,6 +11538,8 @@ end;
 
   wbRecord(RELA, 'Relationship', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbStruct(DATA, 'Data', [
       wbFormIDCk('Parent', [NPC_, NULL]),
       wbFormIDCk('Child', [NPC_, NULL]),
@@ -11483,404 +11573,375 @@ end;
   wbRecord(SCEN, 'Scene', [
     wbEDID,
     wbVMADFragmentedSCEN,
-    wbInteger(FNAM, 'Flags', itU32, wbFlags([
-      {0x00000001} 'Begin on Quest Start',
-      {0x00000002} 'Stop on Quest End',
-      {0x00000004} 'Top Level Topics On End',
-      {0x00000008} 'Interruptable',
-      {0x00000010} 'Player Dialogue',
-      {0x00000020} 'Prevent Player Exit Dialogue',
-      {0x00000040} 'Unknown 6',
-      {0x00000080} 'Unknown 7',
-      {0x00000100} 'Speech Challenge',
-      {0x00000200} 'Unknown 9',
-      {0x00000400} 'Allow/Disable Dialogue Camera',
-      {0x00000800} 'No Follower Idle Chatter',
-      {0x00001000} 'Greeting',
-      {0x00002000} 'Top Level',
-      {0x00004000} 'Force Primary Actor Alias',
-      {0x00008000} 'Hailing',
-      {0x00010000} 'Ship Dialogue Only',
-      {0x00020000} 'Unknown 17',
-      {0x00040000} 'Unknown 18',
-      {0x00080000} 'Unknown 19',
-      {0x00100000} 'Unknown 20',
-      {0x00200000} 'Unknown 21'
-    ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
+    wbInteger(FNAM, 'Flags', itU32,
+      wbFlags([
+      {0} 'Begin on Quest Start',
+      {1} 'Stop on Quest End',
+      {2} 'Top Level Topics On End',
+      {3} 'Interruptable',
+      {4} 'Player Dialogue',
+      {5} 'Prevent Player Exit Dialogue',
+      {6} 'Unknown 6',
+      {7} 'Unknown 7',
+      {8} 'Speech Challenge',
+      {9} 'Unknown 9',
+      {10} 'Allow/Disable Dialogue Camera',
+      {11} 'No Follower Idle Chatter',
+      {12} 'Greeting',
+      {13} 'Top Level',
+      {14} 'Force Primary Actor Alias',
+      {15} 'Hailing',
+      {16} 'Ship Dialogue Only',
+      {17} 'Unknown 17',
+      {18} 'Unknown 18',
+      {19} 'Unknown 19',
+      {20} 'Unknown 20',
+      {21} 'Unknown 21'
+      ])
+    ).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbRArray('Phases',
       wbRStruct('Phase', [
-        wbEmpty(HNAM, 'Marker Phase Start', cpNormal, True),
-        wbString(NAM0, 'Name', 0, cpNormal, True),
+        wbEmpty(HNAM, 'Marker Phase Start').SetRequired,
+        wbString(NAM0, 'Name').SetRequired,
         wbRStruct('Start Conditions', [wbConditions]),
-        wbEmpty(NEXT, 'End Marker Start Conditions', cpNormal, True),
+        wbEmpty(NEXT, 'End Marker Start Conditions').SetRequired,
         wbRStruct('Completion Conditions', [wbConditions]),
-        wbEmpty(NEXT, 'End Marker Completion Conditions', cpNormal, True),
-        wbInteger(WNAM, 'Editor Width', itU32, nil, cpNormal, True, false, nil, nil, 350),
-        wbInteger(FNAM, 'Flags', itU16, wbFlags([
-          {0x0001} 'Start - WalkAway Phase',
-          {0x0002} 'Don''t Run End Scripts on Scene Jump',
-          {0x0004} 'Start - Inherit In Templated Scenes',
-          {0x0008} 'FX Actions - Random',
-          {0x0010} 'FX Actions - Do All Once'
-        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
+        wbEmpty(NEXT, 'End Marker Completion Conditions').SetRequired,
+        wbInteger(WNAM, 'Editor Width', itU32)
+          .SetDefaultNativeValue(350)
+          .SetRequired,
+        wbInteger(FNAM, 'Flags', itU16,
+          wbFlags([
+          {0} 'Start - WalkAway Phase',
+          {1} 'Don''t Run End Scripts on Scene Jump',
+          {2} 'Start - Inherit In Templated Scenes',
+          {3} 'FX Actions - Random',
+          {4} 'FX Actions - Do All Once'
+          ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbStruct(SCQS, 'Set Parent Quest Stage', [
           wbInteger('On Start', itS16),
           wbInteger('On Completion', itS16)
         ]),
         wbEmpty(SPMV, 'Phase Visibility Marker'),
-        wbEmpty(HNAM, 'Marker Phase End', cpNormal, True)
-      ])
-    ),
-    wbRArray('Actors', wbRStruct('Actor', [
-      wbInteger(ALID, 'Alias ID', itS32, wbSCENQuestAliasToStr, wbStrToAlias, cpNormal, True)
-        .SetDefaultNativeValue(-1)
-        .SetLinksToCallbackOnValue(wbSCENAliasLinksTo),
-      wbInteger(LNAM, 'Flags', itU32, wbFlags([
-        'No Player Activation',
-        'Optional',
-        'Can Be Removed',
-        'Run Only Scene Packages',
-        'No Command State',
-        'No Player Dialogue',
-        'Timeline Headtracking',
-        'Timeline Cameras'
-      ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
-      wbInteger(DNAM, 'Behaviour Flags', itU32, wbFlags([
-        'Death Pause',
-        'Death End',
-        'Combat Pause',
-        'Combat End',
-        'Dialogue Pause',
-        'Dialogue End',
-        'Observe Combat Pause',
-        'Observe Combat End',
-        'Reaction Radius Pause',
-        'Reaction Radius End'
-      ]), cpNormal, True, false, nil, nil, 26).IncludeFlag(dfCollapsed, wbCollapseFlags)
-    ])),
-    wbRArray('Actions', wbRStructSK([0, 1, 3, 4], 'Action', [
-      wbInteger(ANAM, 'Type', itU16, wbEnum([
-        {0} 'Dialogue',
-        {1} 'Package',
-        {2} 'Timer',
-        {3} 'Player Dialogue',
-        {4} 'Start Scene',
-        {5} 'Radio',
-        {6} 'Move',
-        {7} 'Camera',
-        {8} 'FX',
-        {9} 'Animation',
-        {10}'Timeline'
-      ]), cpNormal, True)
-      .SetAfterSet(procedure(const aElement: IwbElement; const aOldValue, aNewValue: Variant)
-        begin
-          if not (VarIsOrdinal(aOldValue) and VarIsOrdinal(aNewValue)) then
-            Exit;
-          if VarSameValue(aOldValue, aNewValue) then
-            Exit;
-          if not Assigned(aElement) then
-            Exit;
-          var lContainer: IwbContainerElementRef;
-          if not Supports(aElement.Container, IwbContainerElementRef, lContainer) then
-            Exit;
-          var lDataElement := lContainer.ElementBySortOrder[8]; //'Type Specific Action' is the member with index 8 in this struct, be sure to adjust if adding more members before
-          if Assigned(lDataElement) and (lDataElement.Name <> aElement.Value) then
-            lDataElement.Remove;
-
-          {var lTemplate := aElement.Container.GetAssignTemplates(8);
-          if Length(lTemplate) > 0 then
-          Supports(IInterface(lTemplate[0]), IwbElement, lDataElement);
-          lContainer.Assign(8, lDataElement, False);}
-        end)
-      .IncludeFlag(dfIncludeValueInDisplaySignature),
-      wbString(NAM0, 'Name').SetRequired,
-      wbString(SNOT, 'Scene Notes'),
-      wbInteger(ALID, 'Alias ID', itS32, wbSCENQuestAliasToStr, wbStrToAlias, cpNormal, True)
-        .SetDefaultNativeValue(-1)
-        .SetLinksToCallbackOnValue(wbSCENAliasLinksTo),                         //ALID  uint32 // +0x08 - only used if the value is not 0xFFFFFFFB (-5)
-      wbInteger(INAM, 'Index', itU32).SetRequired,                              //INAM  uint32 // +0x10
-      wbInteger(FNAM, 'Flags', itU32, wbFlags([                                 //FNAM  uint32 // +0x0C
-        {0x00000001} 'Unknown 0',
-        {0x00000002} 'Unknown 1',
-        {0x00000004} 'Unknown 2',
-        {0x00000008} 'Unknown 3',
-        {0x00000010} 'Unknown 4',
-        {0x00000020} 'Unknown 5',
-        {0x00000040} 'Unknown 6',
-        {0x00000080} 'Player Positive Use Dialogue Subtype / Hold Into Next Scene',
-        {0x00000100} 'Player Negative Use Dialogue Subtype',
-        {0x00000200} 'Player Neutral Use Dialogue Subtype',
-        {0x00000400} 'Use Dialogue Subtype',
-        {0x00000800} 'Player Question Use Dialogue Subtype',
-        {0x00001000} 'Keep/Clear Target on Action End',
-        {0x00002000} 'Unknown 13',
-        {0x00004000} 'Run on End of Phase',
-        {0x00008000} 'Face Target',
-        {0x00010000} 'Looping',
-        {0x00020000} 'Headtrack Player',
-        {0x00040000} 'Unknown 18',
-        {0x00080000} 'Ignore For Completion',
-        {0x00100000} 'Unknown 20',
-        {0x00200000} 'Disable Camera Speaker Target',
-        {0x00400000} 'Complete Face Target',
-        {0x00800000} 'Animation Only Movement',
-        {0x01000000} 'Unknown 24',
-        {0x02000000} 'Unknown 25',
-        {0x04000000} 'Unknown 26',
-        {0x08000000} 'NPC Positive Use Dialogue Subtype',
-        {0x10000000} 'NPC Negative Use Dialogue Subtype',
-        {0x20000000} 'NPC Neutral Use Dialogue Subtype',
-        {0x40000000} 'NPC Question Use Dialogue Subtype'
-      ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
-      .SetRequired,
-      wbInteger(SNAM, 'Start Phase', itU32).SetRequired,                        //SNAM  uint32 // +0x14 - cast to uint16, ie upper two bytes are dropped
-      wbInteger(ENAM, 'End Phase', itU32).SetRequired,                          //ENAM  uint32 // +0x16 - cast to uint16, ie upper two bytes are dropped
-
-      wbRUnion('Type Specific Action', function(const aContainer: IwbContainerElementRef): Integer
-        begin
-          Result := -1;
-          if not Assigned(aContainer) then
-            Exit;
-          var lType := aContainer.ElementNativeValues[ANAM];
-          if not VarIsOrdinal(lType) then
-            Exit;
-          Result := lType;
-        end,
-      [
-        {0 Dialogue}
-        wbRStruct('Dialogue', [
-          wbFormIDCk(DATA, 'Topic', [DIAL, NULL]).SetRequired,                  //DATA  uint32 // +0x70
-          wbFloat(DMAX, 'Looping - Max').SetRequired,                           //DMAX  uint32 // +0x80
-          wbFloat(DMIN, 'Looping - Min').SetRequired,                           //DMIN  uint32 // +0x84
-          wbHNAMHNAM.SetRequired,                                               //HNAM  none   // +0x50; probably formid; kicks off component-style read (see HNAM fields)
-          wbFormIDCk(VENC, 'Dialogue Subtype', [KYWD]),                         //VENC  uint32 // +0x78
-          wbSoundReference(WED0, 'Voice Override')                              //WED0  SoundReference // +0x20
-        ]),
-        {1 Package}
-        wbRStruct('Package', [
-          wbRArray('Packages', wbFormIDCk(PNAM, 'Package', [PACK]))
-        ]),
-        {2 Timer}
-        wbRStruct('Timer', [
-          wbFloat(SNAM, 'Max Seconds'),                                         //SNAM  uint32 // +0x20, +0x24
-          wbInteger(SCQS, 'Set Parent Quest Stage', itS16),                     //SCQS  int16 // if not -1, registers the timer action in some list with the value //never seen in Starfield.esm
-          wbFloat(TNAM, 'Min Seconds'),                                         //TNAM  uint32 // +0x24
-          wbEmpty(HNAM, 'Hold For Animation Event'),                            //not documented by gibbed, always (4x) empty in Starfield.esm
-          wbInteger(INTV, 'Unknown', itS16)                                     //INTV  int16 // same as SCQS //never seen in Starfield.esm
-        ]),
-        {3 Player Dialogue}
-        wbRStruct('Player Dialogue', [
-          wbSoundReference(WED0).SetRequired(False),                            //WED0  SoundReference // +0x40
-          wbHNAMHNAM.SetRequired,                                               //HNAM  none // +0x20; probably formid; kicks off component-style read (see HNAM fields)
-          wbInteger(DTGT, 'Dialogue Target Actor', itS32, wbSCENQuestAliasToStr, wbStrToAlias, cpNormal, True)
-            .SetDefaultNativeValue(-1)
-            .SetLinksToCallbackOnValue(wbSCENAliasLinksTo),                     //DTGT  uint32 // +0x90 // as an alias ID
-          wbRStructs('Dialogue Topics', 'Choice', [
-            wbFormIDCk(ESCE, 'Player Choice', [DIAL, NULL]),                    //ESCE  uint32 // +0x88 array; repeated; appears to allocate a new item into the array, with the value set to item+0x00 and item+0x08; likely acts as start marker for an item in this array
-            wbFormIDCk(PPST, 'Player Dialogue Subtype', [KYWD]),                //PPST  uint32 // +0x88 array; repeated; stored in item+0x10, also sets item+0x24 to 1 (uint8/byte)
-            wbRStruct('NPC Dialogue Subtype', [
-              wbFormIDCk(PNST, 'Subtype', [KYWD], False, cpNormal, True),       //PNST  uint32 // +0x88 array; repeated; stored in item+0x18, also sets item+0x25 to 1 (uint8/byte)
-              wbFormIDCk(PASP, 'Start Scene', [NULL, SCEN]),                    //PASP  uint32 // +0x88 array; repeated; stored in item+0x28
-              wbInteger(PAPI, 'Phase Index', itU32),                            //PAPI  uint32 // +0x88 array; repeated; stored in item+0x20; some sort of parenting/hierarchy index with the items in the array
-              wbString(PAPN, 'Phase Name'),
-              wbUnknown(PAQO)                                                   //PAQO  uint32 // Seems to get set if a NPC dialogue subtype is present and the 'Only Parent Quest Scenes' box is unchecked. But has 4 bytes of zero.
-            ]),
-            wbFormIDCk(ESCS, 'NPC Response', [DIAL, NULL]).SetRequired          //ESCS  uint32 // +0x88 array; repeated; each item is 0x30 bytes; stored in item+0x08; increases +0x88 index *after* storing the value, likely acts as end marker for an item in this array
-          ]),
-          wbRStruct('NPC Reaction', [
-            wbInteger(ATTR, 'React to Action', itU32, nil, cpNormal, True),     //ATTR  uint32 // +0x94
-            wbEmpty(ACBS, 'NPC Reaction flag', cpNormal, True)                  //ACBS  nothing // +0x98 set to 1 (uint8/bool)
-          ]),
-          wbEmpty(JAIL, 'Unknown')                                              //JAIL  none // +0x99 set to 1 (uint8/bool) // never seen in Starfield.esm
-        ])
-        .IncludeFlag(dfAllowAnyMember)
-        .IncludeFlag(dfStructFirstNotRequired),
-        {4 Start Scene}
-        wbRStruct('Start Scene', [
-          wbRStructs('Start Scenes', 'Start Scene', [
-            wbRUnion('Scene', [
-              wbFormIDCk(LCEP, 'Scene', [SCEN]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole),  //LCEP same as STSC
-              wbFormIDCk(STSC, 'Scene', [SCEN]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole)   //STSC +0x28 array; repeated; appears to allocate a new item into the array, with the value set to item+0x18; likely acts as start marker for an item in this array
-            ]),
-            wbRUnion('Phase Index', [
-              wbInteger(INTT, 'Phase Index', itU16).SetRequired,                //INTT  uint16 // +0x28 array; repeated; sets to item+0x0E
-              wbInteger(ACTV, 'Phase Index', itU16).SetRequired                 //ACTV  same as INTT
-            ]).SetRequired,
-            wbString(SSPN, 'Start Phase for Scene'),                            //not documented by gibbed from source, occurs in Starfield.esm
-            wbCITCReq,                                                          //CITC uint32 // +0x28 array; repeated; item+0x08; count of following fields, CTDA/CNDD, others will be ignored
-            wbConditions
-          ]).SetRequired(False),
-          wbEmpty(HTID, 'End Scene Flag')
-        ], [], cpNormal, True)
-        .IncludeFlag(dfAllowAnyMember)
-        .IncludeFlag(dfStructFirstNotRequired),
-        {5 Radio}
-        wbRStruct('Radio', [
-          wbFormIDCk(DATA, 'Topic', [DIAL, NULL]).SetRequired,                  //DATA  uint32 // +0x80  probably formid
-          wbSoundReference(WED0, 'Voice Override'),                             //WED0  SoundReference // +0x20
-          wbSoundReference(WED1, 'Sound Effect'),                               //WED1  SoundReference // +0x50
-          wbFormIDCk(VENC, 'Dialogue Subtype', [KYWD])                          //uint32 // +0x88  probably formid
-        ]),
-        {6 Move}
-        wbRStruct('Move', [
-          wbEmpty(DNAM, 'Disable Character Controller'),                        //DNAM  none // sets +0x3D to 1 (uint8/bool)
-          wbEmpty(NVCI, 'Off Navmesh Flag'),                                    //NVCI  none // sets +0x3C to 0 (uint8/bool)
-          wbInteger(ALLA, 'Target Alias', itS32, wbSCENQuestAliasToStr, wbStrToAlias, cpNormal, True)
-            .SetDefaultNativeValue(-1)
-            .SetLinksToCallbackOnValue(wbSCENAliasLinksTo),                     //ALLA  uint32 // +0x34
-          wbFormIDCk(REPL, 'Target Reference', sigReferences).SetRequired,      //REPL  uint32 // +0x20  probably formid
-          wbFloat(HNAM, 'Front/Back').SetRequired,                              //HNAM  uint32 // +0x28
-          wbFloat(VCLR, 'Left/Right').SetRequired,                              //VCLR  uint32 // +0x2C
-          wbFloat(VNML, 'Up/Down').SetRequired,                                 //VNML  uint32 // +0x30
-          wbInteger(FLMV, 'Flags', itU32, wbFlags([                             //FLMV  uint32 // +0x38
-            {0x00000001} 'Front',
-            {0x00000002} 'Back',
-            {0x00000004} 'Right',
-            {0x00000008} 'Left',
-            {0x00000010} 'Target Alias',
-            {0x00000020} 'Target Reference',
-            {0x00000040} 'Up',
-            {0x00000080} 'Down',
-            {0x00000100} 'Unknown 8',
-            {0x00000200} 'Unknown 9',
-            {0x00000400} 'Unknown 10',
-            {0x00000800} 'Unknown 11',
-            {0x00001000} 'Unknown 12',
-            {0x00002000} 'Unknown 13',
-            {0x00004000} 'Unknown 14',
-            {0x00008000} 'Unknown 15',
-            {0x00010000} 'Unknown 16'
-          ])).IncludeFlag(dfCollapsed, wbCollapseFlags).SetRequired
-        ])
-        .IncludeFlag(dfAllowAnyMember)
-        .IncludeFlag(dfStructFirstNotRequired),
-        {7 Camera}
-        wbRStruct('Camera', [
-          wbRStructs('Camera Shots', 'Camera Shot', [
-            wbFormIDCk(CNAM, 'Camera Shot', [NULL, CAMS]),                      //CNAM  uint32 // +0x28 array; repeated; allocates new item for the array; value set to item+0x20 probably formid; kicks off component-style read
-            wbFormIDCk(ALLA, 'Camera Location Reference', sigReferences).SetRequired, //ALLA  formid // +0x28
-            wbFormIDCk(REPL, 'Look Target Reference', sigReferences).SetRequired,     //REPL  formid // +0x30
-            wbInteger(HNAM, 'Look Target Alias', itS32, wbSCENQuestAliasToStr, wbStrToAlias, cpNormal, True)
-              .SetDefaultNativeValue(-1)
-              .SetLinksToCallbackOnValue(wbSCENAliasLinksTo),                   //HNAM  uint32 // +0x40
-            wbInteger(VCLR, 'Camera Location Alias', itS32, wbSCENQuestAliasToStr, wbStrToAlias, cpNormal, True)
-              .SetDefaultNativeValue(-1)
-              .SetLinksToCallbackOnValue(wbSCENAliasLinksTo),                   //VCLR  uint32 // +0x3C
-            wbFloat(LVCR, 'Delay Start Time Action').SetRequired,               //LVCR  uint32 // +0x38
-            wbEmpty(BTXT, 'Use Camera Location Reference'),                     //BTXT  none // sets +0x44 to 1 (uint8/bool)
-            wbEmpty(ATXT, 'Use Look Target Reference'),                         //ATXT  none // sets +0x45 to 1 (uint8/bool)
-            wbEmpty(VTXT, 'Use Camera Location Alias'),                         //VTXT  none // sets +0x46 to 1 (uint8/bool)
-            wbEmpty(AIDT, 'Ignore Collision'),                                  //AIDT  none // sets +0x48 to 1 (uint8/bool)
-            wbEmpty(MPCD, 'Use Look Target Alias'),                             //MPCD  none // sets +0x47 to 1 (uint8/bool)
-            wbEmpty(VNAM, 'Force Look At 1st Person Camera'),                   //VNAM  none // sets +0x49 to 1 (uint8/bool)
-            wbConditions,                                                       //CTDA  standard CTDA reading // +0x10 //not found in Starfield.esm
-            wbMarkerReq(XNAM)                                                   //XNAM  end marker for CNAM fields
+        wbEmpty(HNAM, 'Marker Phase End').SetRequired
+      ])),
+    wbRArray('Actors',
+      wbRStruct('Actor', [
+        wbInteger(ALID, 'Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+          .SetDefaultNativeValue(-1)
+          .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
+          .SetRequired,
+        wbInteger(LNAM, 'Flags', itU32,
+          wbFlags([
+          {0} 'No Player Activation',
+          {1} 'Optional',
+          {2} 'Can Be Removed',
+          {3} 'Run Only Scene Packages',
+          {4} 'No Command State',
+          {5} 'No Player Dialogue',
+          {6} 'Timeline Headtracking',
+          {7} 'Timeline Cameras'
           ])
-        ]),
-        {8 FX}
-        wbRStruct('FX', [
-          wbFormIDCk(REPL, 'Image Space Mod', [NULL, IMAD]).SetRequired,        //REPL  uint32 // +0x68  probably formid
-          wbFloat(HNAM, 'Fade Out Time').SetRequired,                           //HNAM  uint32 // +0x78
-          wbFloat(VCLR, 'IS Strength/Sound Volume').SetRequired,                //VCLR  uint32 // +0x7C
-          wbFloat(BTXT, 'Start Time').SetRequired,                              //BTXT  uint32 // +0x80
-          wbInteger(FLMV, 'Flags', itU32, wbFlags([                             //FLMV  uint32 // +0x88
-            {0x00000001} 'Fade Out',
-            {0x00000002} 'Fade In',
-            {0x00000004} 'Fader - White',
-            {0x00000008} 'Fader - Black',
-            {0x00000010} 'Use Fader Opts',
-            {0x00000020} 'Use Image Space Mod',
-            {0x00000040} 'Hold Fade Out',
-            {0x00000080} 'Use Sound File',
-            {0x00000100} 'Use Reference',
-            {0x00000200} 'Use Alias',
-            {0x00000400} 'Use Disable/Enable Reference',
-            {0x00000800} 'Enable Reference',
-            {0x00001000} 'Disable Reference',
-            {0x00002000} 'Unknown 13',
-            {0x00004000} 'Unknown 14',
-            {0x00008000} 'Unknown 15',
-            {0x00010000} 'Unknown 16'
-          ])).IncludeFlag(dfCollapsed, wbCollapseFlags).SetRequired,
-          wbSoundReference(WED0),                                               //WED0  SoundReference // +0x38
-          wbConditions,                                                              //CTDA  standard CTDA reading // +0x20
-          wbFormIDCk(BIPL, 'Reference', [REFR, PLYR, NULL]).SetRequired,        //BIPL  uint32 // +0x70  probably formid
-          wbInteger(LVLO, 'Alias', itS32, wbSCENQuestAliasToStr, wbStrToAlias, cpNormal, True)
-            .SetDefaultNativeValue(-1)
-            .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)                      //LVLO  uint32 // +0x84
-        ]),
-        {9 Animation}
-        wbRStruct('Animation', [
-          wbRArray('Animations', wbBNAMAnimation)
-        ]),
-        {10 Timeline}
-        wbRStruct('Timeline', [
-          wbInteger(TNAM, 'Type', itU32, wbEnum([
-            {0} 'Headtrack',
-            {1} 'Headtrack Stop',
-            {2} 'Camera',
-            {3} 'Phase Time',
-            {4} 'Headtrack Angles',
-            {5} 'Eyetrack Angles',
-            {6} 'Headtrack Disable',
-            {7} 'Headtrack Enable'
-          ])).SetAfterSet(wbSCENTimelineTypeAfterSetCallback),
-          wbFloat(SNAM, 'Start Time', cpNormal, True),
-          wbRUnion('Data', function(const aContainer: IwbContainerElementRef): Integer
-            begin
-              Result := -1;
-              if not Assigned(aContainer) then
-                Exit;
-              var lType := aContainer.ElementNativeValues[TNAM];
-              if not VarIsOrdinal(lType) then
-                Exit;
-
-              case lType of
-                2:      // Camera
-                  Result := 1;
-                4, 5:   // Headtrack/Eyetrack Angles
-                  Result := 2;
-                0, 7:   // Headtrack/Headtrack Enable
-                  Result := 3;
-                else
-                 Result := 0;
-              end;
-            end, [
-          {0} wbRStruct('Data', [
-                wbByteArray(UNAM, 'Unused', 4, cpIgnore, True),
-                wbByteArray(LNAM, 'Unused', 4, cpIgnore, True),
-                wbByteArray(CNAM, 'Unused', 4, cpIgnore, True)
+        ).IncludeFlag(dfCollapsed, wbCollapseFlags)
+         .SetRequired,
+        wbInteger(DNAM, 'Behaviour Flags', itU32,
+          wbFlags([
+          {0} 'Death Pause',
+          {1} 'Death End',
+          {2} 'Combat Pause',
+          {3} 'Combat End',
+          {4} 'Dialogue Pause',
+          {5} 'Dialogue End',
+          {6} 'Observe Combat Pause',
+          {7} 'Observe Combat End',
+          {8} 'Reaction Radius Pause',
+          {9} 'Reaction Radius End'
+          ])
+        ).SetDefaultNativeValue(26)
+         .SetRequired
+         .IncludeFlag(dfCollapsed, wbCollapseFlags)
+      ])),
+    wbRArray('Actions',
+      wbRStructSK([0, 1, 3, 4], 'Action', [
+        wbInteger(ANAM, 'Type', itU16,
+          wbEnum([
+          {0} 'Dialogue',
+          {1} 'Package',
+          {2} 'Timer',
+          {3} 'Player Dialogue',
+          {4} 'Start Scene',
+          {5} 'Radio',
+          {6} 'Move',
+          {7} 'Camera',
+          {8} 'FX',
+          {9} 'Animation',
+          {10}'Timeline'
+          ])
+        ).SetAfterSet(wbSceneActionTypeAfterSet)
+         .SetRequired
+         .IncludeFlag(dfIncludeValueInDisplaySignature),
+        wbString(NAM0, 'Name').SetRequired,
+        wbString(SNOT, 'Scene Notes'),
+        wbInteger(ALID, 'Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)     //ALID  uint32 // +0x08 - only used if the value is not 0xFFFFFFFB (-5)
+          .SetDefaultNativeValue(-1)
+          .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
+          .SetRequired,
+        wbInteger(INAM, 'Index', itU32).SetRequired,                            //INAM  uint32 // +0x10
+        wbInteger(FNAM, 'Flags', itU32,                                         //FNAM  uint32 // +0x0C
+          wbFlags([
+          {0}  'Unknown 0',
+          {1}  'Unknown 1',
+          {2}  'Unknown 2',
+          {3}  'Unknown 3',
+          {4}  'Unknown 4',
+          {5}  'Unknown 5',
+          {6}  'Unknown 6',
+          {7}  'Player Positive Use Dialogue Subtype / Hold Into Next Scene',
+          {8}  'Player Negative Use Dialogue Subtype',
+          {9}  'Player Neutral Use Dialogue Subtype',
+          {10} 'Use Dialogue Subtype',
+          {11} 'Player Question Use Dialogue Subtype',
+          {12} 'Keep/Clear Target on Action End',
+          {13} 'Unknown 13',
+          {14} 'Run on End of Phase',
+          {15} 'Face Target',
+          {16} 'Looping',
+          {17} 'Headtrack Player',
+          {18} 'Unknown 18',
+          {19} 'Ignore For Completion',
+          {20} 'Unknown 20',
+          {21} 'Disable Camera Speaker Target',
+          {22} 'Complete Face Target',
+          {23} 'Animation Only Movement',
+          {24} 'Unknown 24',
+          {25} 'Unknown 25',
+          {26} 'Unknown 26',
+          {27} 'NPC Positive Use Dialogue Subtype',
+          {28} 'NPC Negative Use Dialogue Subtype',
+          {29} 'NPC Neutral Use Dialogue Subtype',
+          {30} 'NPC Question Use Dialogue Subtype'
+          ])
+        ).SetRequired
+         .IncludeFlag(dfCollapsed, wbCollapseFlags),
+        wbInteger(SNAM, 'Start Phase', itU32).SetRequired,                      //SNAM  uint32 // +0x14 - cast to uint16, ie upper two bytes are dropped
+        wbInteger(ENAM, 'End Phase', itU32).SetRequired,                        //ENAM  uint32 // +0x16 - cast to uint16, ie upper two bytes are dropped
+        wbRUnion('Type Specific Action', wbSceneActionTypeDecider, [
+        {0} wbRStruct('Dialogue', [
+              wbFormIDCk(DATA, 'Topic', [DIAL,NULL]).SetRequired,              //DATA  uint32 // +0x70
+              wbFloat(DMAX, 'Looping - Max').SetRequired,                       //DMAX  uint32 // +0x80
+              wbFloat(DMIN, 'Looping - Min').SetRequired,                       //DMIN  uint32 // +0x84
+              wbHeadtracking.SetRequired,                                       //HNAM  none   // +0x50; probably formid; kicks off component-style read (see HNAM fields)
+              wbFormIDCk(VENC, 'Dialogue Subtype', [KYWD]),                     //VENC  uint32 // +0x78
+              wbSoundReference(WED0, 'Voice Override')                          //WED0  SoundReference // +0x20
+            ]),
+        {1} wbRStruct('Package', [
+              wbRArray('Packages', wbFormIDCk(PNAM, 'Package', [PACK]))
+            ]),
+        {2} wbRStruct('Timer', [
+              wbFloat(SNAM, 'Max Seconds'),                                                  //SNAM  uint32 // +0x20, +0x24
+              wbInteger(SCQS, 'Set Parent Quest Stage', itS16),                              //SCQS  int16 // if not -1, registers the timer action in some list with the value //never seen in Starfield.esm
+              wbFloat(TNAM, 'Min Seconds'),                                                  //TNAM  uint32 // +0x24
+              wbEmpty(HNAM, 'Hold For Animation Event'),                                     //HNAM not documented by gibbed, always (4x) empty in Starfield.esm
+              wbInteger(INTV, 'Unknown', itS16)                                              //INTV  int16 // same as SCQS //never seen in Starfield.esm
+            ]),
+        {3} wbRStruct('Player Dialogue', [
+              wbSoundReference(WED0),                                           //WED0  SoundReference // +0x40
+              wbHeadtracking.SetRequired,                                                     //HNAM  none // +0x20; probably formid; kicks off component-style read (see HNAM fields)
+              wbInteger(DTGT, 'Dialogue Target Actor', itS32, wbSceneAliasToStr, wbAliasToInt)
+                .SetDefaultNativeValue(-1)
+                .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
+                .SetRequired,                                                   //DTGT  uint32 // +0x90 // as an alias ID
+              wbRStructs('Dialogue Topics', 'Choice', [
+                wbFormIDCk(ESCE, 'Player Choice', [DIAL,NULL]),                    //ESCE  uint32 // +0x88 array; repeated; appears to allocate a new item into the array, with the value set to item+0x00 and item+0x08; likely acts as start marker for an item in this array
+                wbFormIDCk(PPST, 'Player Dialogue Subtype', [KYWD]),                //PPST  uint32 // +0x88 array; repeated; stored in item+0x10, also sets item+0x24 to 1 (uint8/byte)
+                wbRStruct('NPC Dialogue Subtype', [
+                  wbFormIDCk(PNST, 'Subtype', [KYWD]).SetRequired,              //PNST  uint32 // +0x88 array; repeated; stored in item+0x18, also sets item+0x25 to 1 (uint8/byte)
+                  wbFormIDCk(PASP, 'Start Scene', [SCEN,NULL]),                    //PASP  uint32 // +0x88 array; repeated; stored in item+0x28
+                  wbInteger(PAPI, 'Phase Index', itU32),                            //PAPI  uint32 // +0x88 array; repeated; stored in item+0x20; some sort of parenting/hierarchy index with the items in the array
+                  wbString(PAPN, 'Phase Name'),
+                  wbUnknown(PAQO)                                                   //PAQO  uint32 // Seems to get set if a NPC dialogue subtype is present and the 'Only Parent Quest Scenes' box is unchecked. But has 4 bytes of zero.
+                ]),
+                wbFormIDCk(ESCS, 'NPC Response', [DIAL,NULL]).SetRequired          //ESCS  uint32 // +0x88 array; repeated; each item is 0x30 bytes; stored in item+0x08; increases +0x88 index *after* storing the value, likely acts as end marker for an item in this array
               ]),
-          {1} wbRStruct('Data', [  //  Camera
-                wbInteger(UNAM, 'Target Alias ID', itS32, wbSCENQuestAliasToStr, wbStrToAlias, cpNormal, True)
+              wbRStruct('NPC Reaction', [
+                wbInteger(ATTR, 'React to Action', itU32).SetRequired,          //ATTR  uint32 // +0x94
+                wbEmpty(ACBS, 'NPC Reaction flag').SetRequired                  //ACBS  nothing // +0x98 set to 1 (uint8/bool)
+              ]),
+              wbEmpty(JAIL, 'Unknown')                                              //JAIL  none // +0x99 set to 1 (uint8/bool) // never seen in Starfield.esm
+            ]).IncludeFlag(dfAllowAnyMember)
+              .IncludeFlag(dfStructFirstNotRequired),
+        {4} wbRStruct('Start Scene', [
+              wbRStructs('Start Scenes', 'Start Scene', [
+                wbRUnion('Scene', [
+                  wbFormIDCk(LCEP, 'Scene', [SCEN]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole),  //LCEP same as STSC
+                  wbFormIDCk(STSC, 'Scene', [SCEN]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole)   //STSC +0x28 array; repeated; appears to allocate a new item into the array, with the value set to item+0x18; likely acts as start marker for an item in this array
+                ]),
+                wbRUnion('Phase Index', [
+                  wbInteger(INTT, 'Phase Index', itU16).SetRequired,                //INTT  uint16 // +0x28 array; repeated; sets to item+0x0E
+                  wbInteger(ACTV, 'Phase Index', itU16).SetRequired                 //ACTV  same as INTT
+                ]).SetRequired,
+                wbString(SSPN, 'Start Phase for Scene'),                            //not documented by gibbed from source, occurs in Starfield.esm
+                wbCITCReq,                                                          //CITC uint32 // +0x28 array; repeated; item+0x08; count of following fields, CTDA/CNDD, others will be ignored
+                wbConditions
+              ]),
+              wbEmpty(HTID, 'End Scene Flag')
+            ]).SetRequired
+              .IncludeFlag(dfAllowAnyMember)
+              .IncludeFlag(dfStructFirstNotRequired),
+        {5} wbRStruct('Radio', [
+              wbFormIDCk(DATA, 'Topic', [DIAL,NULL]).SetRequired,                  //DATA  uint32 // +0x80  probably formid
+              wbSoundReference(WED0, 'Voice Override'),                             //WED0  SoundReference // +0x20
+              wbSoundReference(WED1, 'Sound Effect'),                               //WED1  SoundReference // +0x50
+              wbFormIDCk(VENC, 'Dialogue Subtype', [KYWD])                          //uint32 // +0x88  probably formid
+            ]),
+        {6} wbRStruct('Move', [
+              wbEmpty(DNAM, 'Disable Character Controller'),                        //DNAM  none // sets +0x3D to 1 (uint8/bool)
+              wbEmpty(NVCI, 'Off Navmesh Flag'),                                    //NVCI  none // sets +0x3C to 0 (uint8/bool)
+              wbInteger(ALLA, 'Target Alias', itS32, wbSceneAliasToStr, wbAliasToInt) //ALLA  uint32 // +0x34
+                .SetDefaultNativeValue(-1)
+                .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
+                .SetRequired,
+              wbFormIDCk(REPL, 'Target Reference', sigReferences).SetRequired,      //REPL  uint32 // +0x20  probably formid
+              wbFloat(HNAM, 'Front/Back').SetRequired,                              //HNAM  uint32 // +0x28
+              wbFloat(VCLR, 'Left/Right').SetRequired,                              //VCLR  uint32 // +0x2C
+              wbFloat(VNML, 'Up/Down').SetRequired,                                 //VNML  uint32 // +0x30
+              wbInteger(FLMV, 'Flags', itU32,                                       //FLMV  uint32 // +0x38
+                wbFlags([
+                {0}  'Front',
+                {1}  'Back',
+                {2}  'Right',
+                {3}  'Left',
+                {4}  'Target Alias',
+                {5}  'Target Reference',
+                {6}  'Up',
+                {7}  'Down',
+                {8}  'Unknown 8',
+                {9}  'Unknown 9',
+                {10} 'Unknown 10',
+                {11} 'Unknown 11',
+                {11} 'Unknown 12',
+                {12} 'Unknown 13',
+                {13} 'Unknown 14',
+                {14} 'Unknown 15',
+                {15} 'Unknown 16'
+                ])).IncludeFlag(dfCollapsed, wbCollapseFlags).SetRequired
+            ]).IncludeFlag(dfAllowAnyMember)
+              .IncludeFlag(dfStructFirstNotRequired),
+        {7} wbRStruct('Camera', [
+              wbRStructs('Camera Shots', 'Camera Shot', [
+                wbFormIDCk(CNAM, 'Camera Shot', [NULL, CAMS]),                      //CNAM  uint32 // +0x28 array; repeated; allocates new item for the array; value set to item+0x20 probably formid; kicks off component-style read
+                wbFormIDCk(ALLA, 'Camera Location Reference', sigReferences).SetRequired, //ALLA  formid // +0x28
+                wbFormIDCk(REPL, 'Look Target Reference', sigReferences).SetRequired,     //REPL  formid // +0x30
+                wbInteger(HNAM, 'Look Target Alias', itS32, wbSceneAliasToStr, wbAliasToInt) //HNAM  uint32 // +0x40
+                  .SetDefaultNativeValue(-1)
                   .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
-                  .SetDefaultNativeValue(-1),
-                wbInteger(LNAM, 'Location Alias ID', itS32, wbSCENQuestAliasToStr, wbStrToAlias, cpNormal, True)
+                  .SetRequired,
+                wbInteger(VCLR, 'Camera Location Alias', itS32, wbSceneAliasToStr, wbAliasToInt)  //VCLR  uint32 // +0x3C
+                  .SetDefaultNativeValue(-1)
                   .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
-                  .SetDefaultNativeValue(-1),
-                wbFormIDCk(CNAM, 'Unknown', [CAMS], False, cpNormal, True)
-              ], [], cpNormal, True),
-          {2} wbRStruct('Data', [  // Headtrack/Eyetrack Angles
-                wbInteger(UNAM, 'Track Angle X', itS32, nil, cpNormal, True),
-                wbInteger(LNAM, 'Track Angle Y', itS32, nil, cpNormal, True),
-                wbByteArray(CNAM, 'Unused', 4, cpIgnore, True)
-              ], [], cpNormal, True),
-          {3} wbRStruct('Data', [  // Headtrack/Headtrack Enable
-                wbInteger(UNAM, 'Target Alias ID', itS32, wbSCENQuestAliasToStr, wbStrToAlias, cpNormal, True)
-                  .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
-                  .SetDefaultNativeValue(-1),
-                wbByteArray(LNAM, 'Unused', 4, cpIgnore, True),
-                wbByteArray(CNAM, 'Unused', 4, cpIgnore, True)
-              ], [], cpNormal, True)
-           ], [], cpNormal, True).IncludeFlag(dfMustBeUnion)
-           {end Timeline Runion Data}
-        ])
-      {end Type Specific Union}
-      ]),
-      wbMarkerReq(ANAM)
-    ])),
-
-    wbFormIDCk(PNAM, 'Quest', [QUST], False, cpNormal, True),
+                  .SetRequired,
+                wbFloat(LVCR, 'Delay Start Time Action').SetRequired,               //LVCR  uint32 // +0x38
+                wbEmpty(BTXT, 'Use Camera Location Reference'),                     //BTXT  none // sets +0x44 to 1 (uint8/bool)
+                wbEmpty(ATXT, 'Use Look Target Reference'),                         //ATXT  none // sets +0x45 to 1 (uint8/bool)
+                wbEmpty(VTXT, 'Use Camera Location Alias'),                         //VTXT  none // sets +0x46 to 1 (uint8/bool)
+                wbEmpty(AIDT, 'Ignore Collision'),                                  //AIDT  none // sets +0x48 to 1 (uint8/bool)
+                wbEmpty(MPCD, 'Use Look Target Alias'),                             //MPCD  none // sets +0x47 to 1 (uint8/bool)
+                wbEmpty(VNAM, 'Force Look At 1st Person Camera'),                   //VNAM  none // sets +0x49 to 1 (uint8/bool)
+                wbConditions,                                                       //CTDA  standard CTDA reading // +0x10 //not found in Starfield.esm
+                wbMarkerReq(XNAM)                                                   //XNAM  end marker for CNAM fields
+              ])
+            ]),
+        {8} wbRStruct('FX', [
+              wbFormIDCk(REPL, 'Image Space Mod', [NULL, IMAD]).SetRequired,        //REPL  uint32 // +0x68  probably formid
+              wbFloat(HNAM, 'Fade Out Time').SetRequired,                           //HNAM  uint32 // +0x78
+              wbFloat(VCLR, 'IS Strength/Sound Volume').SetRequired,                //VCLR  uint32 // +0x7C
+              wbFloat(BTXT, 'Start Time').SetRequired,                              //BTXT  uint32 // +0x80
+              wbInteger(FLMV, 'Flags', itU32,                                       //FLMV  uint32 // +0x88
+                wbFlags([
+                {0}  'Fade Out',
+                {1}  'Fade In',
+                {2}  'Fader - White',
+                {3}  'Fader - Black',
+                {4}  'Use Fader Opts',
+                {5}  'Use Image Space Mod',
+                {6}  'Hold Fade Out',
+                {7}  'Use Sound File',
+                {8}  'Use Reference',
+                {9}  'Use Alias',
+                {10} 'Use Disable/Enable Reference',
+                {11} 'Enable Reference',
+                {12} 'Disable Reference',
+                {13} 'Unknown 13',
+                {14} 'Unknown 14',
+                {15} 'Unknown 15',
+                {16} 'Unknown 16'
+                ])
+              ).SetRequired
+               .IncludeFlag(dfCollapsed, wbCollapseFlags),
+              wbSoundReference(WED0),                                               //WED0  SoundReference // +0x38
+              wbConditions,                                                              //CTDA  standard CTDA reading // +0x20
+              wbFormIDCk(BIPL, 'Reference', [REFR, PLYR, NULL]).SetRequired,        //BIPL  uint32 // +0x70  probably formid
+              wbInteger(LVLO, 'Alias', itS32, wbSceneAliasToStr, wbAliasToInt)     //LVLO  uint32 // +0x84
+                .SetDefaultNativeValue(-1)
+                .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
+                .SetRequired
+            ]),
+        {9} wbRStruct('Animation', [
+              wbRArray('Animations', wbBNAMAnimation)
+            ]),
+        {10} wbRStruct('Timeline', [
+               wbInteger(TNAM, 'Type', itU32,
+                 wbEnum([
+                 {0} 'Headtrack',
+                 {1} 'Headtrack Stop',
+                 {2} 'Camera',
+                 {3} 'Phase Time',
+                 {4} 'Headtrack Angles',
+                 {5} 'Eyetrack Angles',
+                 {6} 'Headtrack Disable',
+                 {7} 'Headtrack Enable'
+                 ])
+               ).SetAfterSet(wbSCENTimelineTypeAfterSet),
+               wbFloat(SNAM, 'Start Time').SetRequired,
+               wbRUnion('Data', wbSceneTimelineTypeDecider, [
+               {0} wbRStruct('Data', [  // Default
+                     wbUnused(UNAM, 4).SetRequired,
+                     wbUnused(LNAM, 4).SetRequired,
+                     wbUnused(CNAM, 4).SetRequired
+                   ]),
+               {1} wbRStruct('Data', [  //  Camera
+                     wbInteger(UNAM, 'Target Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+                       .SetDefaultNativeValue(-1)
+                       .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
+                       .SetRequired,
+                     wbInteger(LNAM, 'Location Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+                       .SetDefaultNativeValue(-1)
+                       .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
+                       .SetRequired,
+                     wbFormIDCk(CNAM, 'Unknown', [CAMS]).SetRequired
+                   ]).SetRequired,
+               {2} wbRStruct('Data', [  // Headtrack/Eyetrack Angles
+                     wbInteger(UNAM, 'Track Angle X', itS32).SetRequired,
+                     wbInteger(LNAM, 'Track Angle Y', itS32).SetRequired,
+                     wbUnused(CNAM, 4).SetRequired
+                   ]).SetRequired,
+               {3} wbRStruct('Data', [  // Headtrack/Headtrack Enable
+                     wbInteger(UNAM, 'Target Actor ID', itS32, wbSceneAliasToStr, wbAliasToInt)
+                       .SetDefaultNativeValue(-1)
+                       .SetLinksToCallbackOnValue(wbSCENAliasLinksTo)
+                       .SetRequired,
+                     wbUnused(LNAM, 4).SetRequired,
+                     wbUnused(CNAM, 4).SetRequired
+                   ]).SetRequired
+                ]).IncludeFlag(dfMustBeUnion)
+                  .SetRequired
+                {end Timeline Runion Data}
+             ])
+        {end Type Specific Union}
+        ]),
+        wbMarkerReq(ANAM)
+      ])),
+    wbFormIDCk(PNAM, 'Parent Quest', [QUST]).SetRequired,
     wbInteger(INAM, 'Last Action Index', itU32),
     wbUnknown(VNAM),
     wbConditions,
@@ -11893,30 +11954,39 @@ end;
     wbEmpty(BOLV, 'Unknown'), // seems to always be present unless DEVT is present
     wbInteger(XNAM, 'Index', itU32),
     wbInteger(SCPI, 'Priority', itU16),
-    wbInteger(JNAM, 'Override Subtitle Priority', itU32, wbEnum([
-      'Low',
-      'Normal',
-      'High',
-      'Force'
-    ])),
-    wbFormIDCk(SCPP, 'Unknown', [NULL, SCEN]),
+    wbInteger(JNAM, 'Override Subtitle Priority', itU32,
+      wbEnum([
+      {0} 'Low',
+      {1} 'Normal',
+      {2} 'High',
+      {3} 'Force'
+      ])),
+    wbFormIDCk(SCPP, 'Unknown', [SCEN,NULL]),
     wbRStruct('Speech Challenge Data', [
       wbEmpty(SCSP, 'Marker', cpNormal, True),
       wbArray(SPMA, 'Mandatory Next Challenges', wbFormIDCk('Challenge Scene', [SCEN])),
       wbArray(SPEX, 'Excluded Challenges', wbFormIDCk('Challenge Scene', [SCEN])),
-      wbInteger(SPRK, 'Risk', itU16, wbEnum([
-        'Easy',
-        'Medium',
-        'Hard',
-        'Always'
-      ]), cpNormal, True),
-      wbInteger(SPRW, 'Reward', itU32, nil, cpNormal, True),
+      wbInteger(SPRK, 'Risk', itU16,
+        wbEnum([
+        {0} 'Easy',
+        {1} 'Medium',
+        {2} 'Hard',
+        {3} 'Always'
+        ])
+      ).SetRequired,
+      wbInteger(SPRW, 'Reward', itU32).SetRequired,
       wbEmpty(SPRP, 'Repeatable Flag'),
       wbEmpty(SPDF, 'Default Flag'),
-      wbEmpty(SPPQ, 'Unknown', cpNormal, True),
-      wbArray(SPKW, 'AND - Keywords', wbFormIDCk('Keyword',[KYWD])).IncludeFlag(dfCollapsed, wbCollapseKeywords),
-      wbArray(SPKY, 'OR - Keywords', wbFormIDCk('Keyword',[KYWD])).IncludeFlag(dfCollapsed, wbCollapseKeywords),
-      wbArray(SPPK, 'Perks', wbFormIDCk('Perk', [PERK])).IncludeFlag(dfCollapsed, wbCollapsePerk)
+      wbEmpty(SPPQ, 'Unknown').SetRequired,
+      wbArray(SPKW, 'AND - Keywords',
+        wbFormIDCk('Keyword',[KYWD])
+      ).IncludeFlag(dfCollapsed, wbCollapseKeywords),
+      wbArray(SPKY, 'OR - Keywords',
+        wbFormIDCk('Keyword',[KYWD])
+      ).IncludeFlag(dfCollapsed, wbCollapseKeywords),
+      wbArray(SPPK, 'Perks',
+        wbFormIDCk('Perk', [PERK])
+      ).IncludeFlag(dfCollapsed, wbCollapsePerk)
     ]),
     wbEmpty(DEVT, 'Show One Dialogue Track Flag')
   ]).SetAddInfo(wbSCENAddInfo);
@@ -11924,6 +11994,8 @@ end;
   (* still exists in game code, but not in Starfield.esm *)
   wbRecord(ASTP, 'Association Type', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbString(MPRT, 'Male Parent Title'),
     wbString(FPRT, 'Female Parent Title'),
     wbString(MCHT, 'Male Child Title'),
@@ -11984,12 +12056,15 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(OTFT, 'Outfit', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbArrayS(INAM, 'Items', wbFormIDCk('Item', [ARMO, LVLI]))
   ]);
 
   {subrecords checked against Starfield.esm}
   wbRecord(ARTO, 'Art Object', [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
@@ -12032,6 +12107,7 @@ end;
   (* still exists in game code, but not in Starfield.esm *)
   wbRecord(DUAL, 'Dual Cast Data', [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
@@ -12040,6 +12116,7 @@ end;
     wbSNBH,
     wbDEFL,
     wbXALG,
+    wbBaseFormComponents,
     wbStruct(DATA, 'Data', [
       wbFormIDCk('Projectile', [PROJ, NULL]),
       wbFormIDCk('Explosion', [EXPL, NULL]),
@@ -12057,6 +12134,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(COLL, 'Collision Layer', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     //wbDESCReq,
     wbNLDT,
     wbInteger(BNAM, 'Index', itU32, nil, cpNormal, True),
@@ -12069,26 +12148,40 @@ end;
     wbString(MNAM, 'Name', 0, cpNormal, True),
 //    wbInteger(INTV, 'Interactables Count', itU32, nil, cpNormal, True),
     wbArrayS(CNAM, 'Collides With', wbFormIDCk('Forms', [COLL]), 0, cpNormal, False)
-  ])
-  .SetBuildIndexKeys(procedure(const aMainRecord: IwbMainRecord; var aIndexKeys: TwbIndexKeys)
-   begin
-     if not Assigned(aMainRecord) then
-       Exit;
+  ]).SetBuildIndexKeys(procedure(const aMainRecord: IwbMainRecord; var aIndexKeys: TwbIndexKeys)
+     begin
+       if not Assigned(aMainRecord) then
+         Exit;
 
-     var lBNAM := aMainRecord.ElementNativeValues[BNAM];
-     if not VarIsOrdinal(lBNAM) then
-       Exit;
+       var lBNAM := aMainRecord.ElementNativeValues[BNAM];
+       if not VarIsOrdinal(lBNAM) then
+         Exit;
 
-     aIndexKeys.Keys[wbIdxCollisionLayer] := lBNAM;
-   end) ;
+       aIndexKeys.Keys[wbIdxCollisionLayer] := lBNAM;
+     end);
 
   {subrecords checked against Starfield.esm}
   wbRecord(CLFM, 'Color',
     wbFlags(wbFlagsList([
-      {0x00000004}  2, 'Non-Playable'
-    ])), [
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
-//    wbFULL,
+    wbVMAD,
+    wbBaseFormComponents,
+    wbFULL,
     // union decider doesn't work during copying since decision data FNAM is located after it
     // workaround using integer formatters
     wbInteger(CNAM, 'Color/Index', itU32, wbCLFMColorToStr, wbCLFMColorToInt),
@@ -12107,6 +12200,7 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(REVB, 'Reverb Parameters', [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbWwiseGUID(RABG, 'Aux Bus'),
     wbInteger(ANAM, 'Reverb Class', itU32, wbReverbClassEnum, cpNormal, True)
@@ -12233,13 +12327,22 @@ end;
         wbFormIDCk('Voice Type', [VTYP]),
         wbFloat('Emotion Out')
       ])),
+      wbFormIDCk(TROI, 'Original INFO', [INFO]),
       wbLStringKC(NAM1, 'Response Text', 0, cpTranslate, True),
       wbString(NAM2, 'Script Notes', 0, cpNormal, True),
       wbString(NAM3, 'Edits', 0, cpNormal, True),
       wbString(NAM4, 'Alternate LIP Text', 0, cpNormal, True),
       wbByteArray(NAM9, 'Text Hash'),
       wbBNAMAnimation,
-      wbHNAMHNAM,
+      wbRStruct('Head Tracking', [
+        wbMarker(HNAM).SetRequired,
+        wbArray(HTID, ' Aliases',
+          wbInteger('Actor ID', itS32, wbINFOAliasToStr, wbAliasToInt)
+            .SetDefaultNativeValue(-1)),
+        wbEmpty(FNAM, 'Force Rotate'),
+        wbEmpty(PNAM, 'Force Rotate Must Complete'),
+        wbMarker(HNAM).SetRequired
+      ]).IncludeFlag(dfTemplate),
       wbSoundReference(RVSH)
     ])),
     wbConditions,
@@ -12278,7 +12381,7 @@ end;
     wbFormIDCk(PERK, 'Skill/Perk', [PERK])
   ]).SetAddInfo(wbINFOAddInfo);
 
-  (*{still exists in game code, but not in Starfield.esm}
+  {still exists in game code, but not in Starfield.esm}
   wbRecord(INGR, 'Ingredient', [
     wbEDID,
     wbVMAD,
@@ -12312,7 +12415,7 @@ end;
       ).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ]).SetRequired,
     wbEffects
-  ]);*)
+  ]);
 
   wbRecord(KEYM, 'Key',
     wbFlags(wbFlagsList([
@@ -12462,23 +12565,22 @@ end;
       {0x00008000} 15, 'No Rotation'
     ])), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbDESCReq(),
     wbConditions,
-    wbString(ICON, 'Loadscreen')
-    {
-    wbFormIDCk(NNAM, 'Loading Screen NIF', [STAT, SCOL, NULL], False, cpNormal, True),
+    wbString(ICON, 'Loadscreen'),
+    wbFormIDCk(NNAM, 'Loading Screen NIF', [STAT, SCOL, NULL]),
     wbFormIDCk(TNAM, 'Transform', [TRNS]),
     wbStruct(ONAM, 'Rotation', [
-      wbInteger('Min', itS16),
+      wbInteger('Min', itS16).SetDefaultEditValue('-180'),
       wbInteger('Max', itS16)
     ]),
     wbStruct(ZNAM, 'Zoom', [
-      wbFloat('Min'),
-      wbFloat('Max')
+      wbFloat('Min').SetDefaultEditValue('-1.0'),
+      wbFloat('Max').SetDefaultEditValue('1.0')
     ]),
     wbString(MOD2, 'Camera Path', 0, cpNormal, False)
-    }
   ]);
 
   {subrecords checked against Starfield.esm}
@@ -12487,6 +12589,8 @@ end;
       {0x00000200}  9, 'Unknown 9'
     ])), [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbString(BNAM, 'Material File'),
     wbFormIDCk(MNAM, 'Material Type', [MATT, NULL], False, cpNormal, True),
     wbStruct(HNAM, 'Havok Data', [
@@ -12555,13 +12659,30 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(LVLI, 'Leveled Item',
     wbFlags(wbFlagsList([
-      {0x00008000}  15, 'Use All'
-    ])), [
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00008000} 15, 'Use All',
+      {0x00080000} 19, 'Has Currents',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
+    wbPTT2,
+    wbSNBH,
+    wbDEFL,
     wbXALG,
     wbBaseFormComponents,
     wbLVLDReq,
@@ -12644,13 +12765,31 @@ end;
   (* still exists in game code, but not in Starfield.esm *)
   wbRecord(LVSP, 'Leveled Spell',
     wbFlags(wbFlagsList([
-      {0x00008000}  15, 'Use All'
-    ])), [
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00008000} 15, 'Use All',
+      {0x00080000} 19, 'Has Currents',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
     wbPTT2,
+    wbSNTP,
+    wbSNBH,
+    wbDEFL,
     wbXALG,
     wbBaseFormComponents,
     wbLVLDReq,
@@ -12829,9 +12968,26 @@ end;
     .IncludeFlag(dfFastAssign);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(MGEF, 'Magic Effect', [
+  wbRecord(MGEF, 'Magic Effect',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbVMAD,
+    wbBaseFormComponents,
     wbFULL,
     wbFormIDCk(MDOB, 'Menu Display Object', [STAT]),
     wbKeywords,
@@ -12857,15 +13013,29 @@ end;
   wbRecord(MISC, 'Misc. Item',
     wbFlags(wbFlagsList([
       {0x00000004}  2, 'Non-Playable',
-      {0x00000004}  11, 'Calc From Components',
-      {0x00000004}  13, 'Pack-In Use Only'
-    ])), [
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Calc From Components/Used As Platform',
+      {0x00000004} 13, 'Pack-In Use Only',
+      {0x00080000} 19, 'Has Currents',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
     wbPTT2,
+    wbSNTP,
+    wbSNBH,
     wbXALG,
     wbBaseFormComponents,
     wbFULL,
@@ -12909,10 +13079,25 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(COBJ, 'Constructible Object',
     wbFlags(wbFlagsList([
-      {0x04000000}  26, 'List Contains Variants'
-    ])), [
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00080000} 19, 'Has Currents',
+      {0x04000000} 26, 'List Contains Variants/Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID.SetRequired,
+    wbVMAD,
     wbBaseFormComponents,
+    wbFULL,
     wbDESC().SetRequired,
     wbFormIDCkNoReach(BNAM, 'Workbench Keyword', [NULL, KYWD]).SetRequired,
     wbConditions,
@@ -14001,9 +14186,26 @@ end;
   ]));
 
   {subrecords checked against Starfield.esm}
-  wbRecord(PACK, 'Package', [
+  wbRecord(PACK, 'Package',
+    wbFlags(wbFlagsList([
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00080000} 19, 'Has Currents',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID.SetRequired,
     wbVMADFragmentedPACK,
+    wbBaseFormComponents,
 
     wbStruct(PKDT, 'Pack Data', [
       wbInteger('General Flags', itU32, wbPackageFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
@@ -14055,22 +14257,8 @@ end;
       wbUnused(3),
       wbInteger('Duration (minutes)', itS32)
     ], cpNormal, True),
-
     wbConditions,
-
-    wbRStruct('Animations', [
-      wbInteger(IDLF, 'Flags', itU8, wbEnum([], [
-         0, 'Unknown 0',
-         8, 'Random',
-         9, 'Run in Sequence',
-        12, 'Random, Do Once',
-        13, 'Run in Sequence, Do Once'
-      ]), cpNormal, True),
-      wbInteger(IDLC, 'Animation Count', itU32, nil, cpBenign),
-      wbFloat(IDLT, 'Idle Timer Setting'),
-      wbArray(IDLA, 'Animations', wbFormIDCk('Animation', [IDLE]), 0, nil, wbIDLAsAfterSet)
-    ]),
-
+    wbIdleAnimation,
     wbFormIDCk(CNAM, 'Combat Style', [CSTY]),
     wbFormIDCk(QNAM, 'Owner Quest', [QUST]),
     wbFormIDCk(FLAV, 'Anim Flavor', [KYWD]),
@@ -14339,26 +14527,26 @@ end;
       wbString(ALID, 'Alias Name', 0, cpNormal, True),
 //      wbQUSTAliasFlags,
       wbQUSTReferenceAliasFlags,
-      wbUnknown(ALFG,4).SetDefaultEditValue('00 00 00 00').SetRequired,
+      wbFloat(ALFG, 'Orbit Altitude Mult'),
 
       wbInteger(ALLR, 'Legendary Rank', itU8, wbEnum([], [
         $0001, '1',
         $0002, '2',
         $0003, '3'
       ])).SetDefaultNativeValue(1),
-      wbInteger(ALFI, 'Force Into Alias When Filled', itS32, wbQuestAliasToStr, wbStrToAlias)
+      wbInteger(ALFI, 'Force Into Alias When Filled', itS32, wbQuestAliasToStr, wbAliasToInt)
         .SetLinksToCallbackOnValue(wbSameQuestAliasLinksTo),
 
       wbRUnion('Alias Type', [
       {0} wbRStruct('Closest To Alias', [
-            wbInteger(ALCC, 'Closest To Alias', itS32, wbQuestAliasToStr, wbStrToAlias)
+            wbInteger(ALCC, 'Closest To Alias', itS32, wbQuestAliasToStr, wbAliasToInt)
               .SetLinksToCallbackOnValue(wbSameQuestAliasLinksTo)
           ]),
       {1} wbRStruct('Forced Reference', [
             wbFormIDCk(ALFR, 'Forced Reference', [REFR, ACHR, PLYR])
           ]),
       {2} wbRStruct('Location Alias Reference', [
-            wbInteger(ALFA, 'Alias', itS32, wbQuestAliasToStr, wbStrToAlias)
+            wbInteger(ALFA, 'Alias', itS32, wbQuestAliasToStr, wbAliasToInt)
               .SetLinksToCallbackOnValue(wbSameQuestAliasLinksTo),
             wbFormIDCk(KNAM, 'Keyword', [KYWD]),
             wbFormIDCk(ALRT, 'Ref Type', [LCRT]).SetRequired
@@ -14368,9 +14556,9 @@ end;
             wbInteger(ALFD, 'Event Data', itU32, wbEventMemberEnum).SetRequired
           ]),
       {4} wbRStruct('Create Reference to Object', [
-            wbFormIDCk(ALCO, 'Object', [ACTI,ARMO,BOOK,CELL,CONT,DOOR,FLOR,FURN,GBFM,IDLM,KEYM,LVLI,LVSC,MISC,NPC_,PKIN,SOUN,STAT,WEAP]), // yee haw
+            wbFormIDCk(ALCO, 'Object', [ACTI,ALCH,ARMO,BOOK,CELL,CONT,DOOR,FLOR,FURN,GBFM,IDLM,KEYM,LVLB,LVLI,LVLN,LVSC,MISC,NPC_,PKIN,PROJ,SOUN,STAT,WEAP]), // yee haw
             wbStruct(ALCA, 'Alias', [
-              wbInteger('Alias', itS16, wbQuestAliasToStr, wbStrToAlias)
+              wbInteger('Alias', itS16, wbQuestAliasToStr, wbAliasToInt)
                 .SetLinksToCallback(wbSameQuestAliasLinksTo),
               wbInteger('Create', itU16, wbEnum([] ,[
                 $0000, 'At',
@@ -14387,7 +14575,7 @@ end;
           ]),
       {5} wbRStruct('External Alias Reference', [
             wbFormIDCk(ALEQ, 'Quest', [QUST]),
-            wbInteger(ALEA, 'Alias', itS32, wbQuestExternalAliasToStr, wbStrToAlias)
+            wbInteger(ALEA, 'Alias', itS32, wbQuestExternalAliasToStr, wbAliasToInt)
               .SetLinksToCallbackOnValue(wbQuestAliasExternalAliasLinksTo)
               .SetRequired
           ]),
@@ -14398,7 +14586,7 @@ end;
             wbFormIDCk(ALUB, 'Unique Base Form', [GBFM])
           ]),
       {7} wbRStruct('Find Matching Reference Near Alias', [
-            wbInteger(ALNA, 'Alias', itS32, wbQuestAliasToStr, wbStrToAlias)
+            wbInteger(ALNA, 'Alias', itS32, wbQuestAliasToStr, wbAliasToInt)
               .SetLinksToCallbackOnValue(wbSameQuestAliasLinksTo),
             wbInteger(ALNT, 'Type', itU32, wbEnum([
               'Linked Form',
@@ -14410,12 +14598,12 @@ end;
             wbFormIDCk(ALNR, 'Ref Type', [LCRT, NULL])
           ]),
       {8} wbRStruct('Ref Collection', [
-            wbInteger(ALCS, 'Ref Collection', itS32, wbQuestAliasToStr, wbStrToAlias)
+            wbInteger(ALCS, 'Ref Collection', itS32, wbQuestAliasToStr, wbAliasToInt)
           ]),
       {9} wbRStruct('Create Object Template', [
-            wbInteger(ALCM, 'Template Alias', itS32, wbQuestAliasToStr, wbStrToAlias)
+            wbInteger(ALCM, 'Template Alias', itS32, wbQuestAliasToStr, wbAliasToInt)
               .SetLinksToCallbackOnValue(wbSameQuestAliasLinksTo),
-            wbInteger(ALCA, 'Target Override Alias', itS32, wbQuestAliasToStr, wbStrToAlias)
+            wbInteger(ALCA, 'Target Override Alias', itS32, wbQuestAliasToStr, wbAliasToInt)
               .SetLinksToCallbackOnValue(wbSameQuestAliasLinksTo)
           ])
       ]).IncludeFlag(dfMustBeUnion),
@@ -14431,7 +14619,7 @@ end;
 
       wbArray(ALLA, 'Linked Aliases', wbStruct('Linked Alias', [
         wbFormIDCk('Keyword', [KYWD, NULL]),
-        wbInteger('Alias', itS32, wbQuestAliasToStr, wbStrToAlias)
+        wbInteger('Alias', itS32, wbQuestAliasToStr, wbAliasToInt)
           .SetLinksToCallback(wbSameQuestAliasLinksTo)
       ])),
       wbFormIDCk(ALDN, 'Display Name', [MESG]),
@@ -14459,9 +14647,9 @@ end;
       wbString(ALID, 'Alias Name'),
 //      wbQUSTAliasFlags,
       wbQUSTLocationAliasFlags,
-      wbUnknown(ALFG, 4),
+      wbFloat(ALFG, 'Orbit Altitude Mult'),
 
-      wbInteger(ALFI, 'Force Into Alias When Filled', itS32, wbQuestAliasToStr, wbStrToAlias)
+      wbInteger(ALFI, 'Force Into Alias When Filled', itS32, wbQuestAliasToStr, wbAliasToInt)
         .SetLinksToCallbackOnValue(wbSameQuestAliasLinksTo),
 
       wbRUnion('Alias Type', [
@@ -14469,7 +14657,7 @@ end;
             wbFormIDCk(ALFL, 'Specific Location', [LCTN])
           ]),
       {2} wbRStruct('Reference Alias Location', [
-            wbInteger(ALFA, 'Alias', itS32, wbQuestAliasToStr, wbStrToAlias)
+            wbInteger(ALFA, 'Alias', itS32, wbQuestAliasToStr, wbAliasToInt)
               .SetLinksToCallbackOnValue(wbSameQuestAliasLinksTo),
             wbFormIDCk(KNAM, 'Keyword', [KYWD])
           ]),
@@ -14479,7 +14667,7 @@ end;
           ]),
       {5} wbRStruct('External Alias Location', [
             wbFormIDCk(ALEQ, 'Quest', [QUST]),
-            wbInteger(ALEA, 'Alias', itS32, wbQuestExternalAliasToStr, wbStrToAlias)
+            wbInteger(ALEA, 'Alias', itS32, wbQuestExternalAliasToStr, wbAliasToInt)
               .SetLinksToCallbackOnValue(wbQuestAliasExternalAliasLinksTo)
           ])
       ]).IncludeFlag(dfMustBeUnion),
@@ -14492,13 +14680,13 @@ end;
         wbFormIDCk(LNAM, 'PCM Type Keyword', [KYWD])
       ]),
 
-      wbInteger(ALCC, 'Closest To Alias', itS32, wbQuestAliasToStr, wbStrToAlias)
+      wbInteger(ALCC, 'Closest To Alias', itS32, wbQuestAliasToStr, wbAliasToInt)
         .SetLinksToCallbackOnValue(wbSameQuestAliasLinksTo),
 
-      wbInteger(ALSY, 'Current Alias System ID', itS32, wbQuestAliasToStr, wbStrToAlias)
+      wbInteger(ALSY, 'Current Alias System ID', itS32, wbQuestAliasToStr, wbAliasToInt)
               .SetLinksToCallbackOnValue(wbSameQuestAliasLinksTo),
 
-      wbInteger(ALPN, 'Current Alias Planet ID', itS32, wbQuestAliasToStr, wbStrToAlias)
+      wbInteger(ALPN, 'Current Alias Planet ID', itS32, wbQuestAliasToStr, wbAliasToInt)
               .SetLinksToCallbackOnValue(wbSameQuestAliasLinksTo),
 
       wbFormIDCk(ALKF, 'Location Type Keyword', [KYWD]),
@@ -14517,7 +14705,7 @@ end;
     wbRStructSK([0], 'Collection Alias', [
       wbInteger(ALCS, 'Collection Alias ID', itU32),
       wbInteger(ALMI, 'Max Initial Fill Count', itU8).SetRequired,
-      wbUnknown(ALAM, 4).SetDefaultEditValue('00 00 00 00').SetRequired,
+      wbUnknown(ALAM, 4),
       wbRUnion('Reference Alias or Alias End Marker', [
         wbRStruct('Alias End Marker', [
           wbEmpty(ALED, 'Alias End Marker', cpNormal, True)
@@ -14534,8 +14722,22 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(QUST, 'Quest',
     wbFlags(wbFlagsList([
-      {0x00004000} 14, 'Partial Form'
-    ]), [14]), [
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00004000} 14, 'Partial Form',
+      {0x00080000} 19, 'Has Currents',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground'
+    ]), [14]).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbVMADFragmentedQUST,
     wbFULL,
@@ -14575,7 +14777,7 @@ end;
     wbFormIDCk(LNAM, 'Location', [LCTN]),
     wbFormIDCk(QTLM, 'Quest Time Limit', [GLOB]),
     wbFormIDCk(QSRC, 'Source Quest', [QUST]),
-    wbArray(QDUP, 'Dialogue', wbFormIDCk('Unknown', [DIAL, INFO])),
+    wbArray(QDUP, 'Dialogue', wbFormIDCk('Unknown', [DIAL, INFO, GLOB, SCEN, QUST])),
     wbRArray('Text Display Globals', wbFormIDCk(QTGL, 'Global', [GLOB])),
     wbFLTR,
     wbString(NAM3, 'Summary'),
@@ -14642,7 +14844,7 @@ end;
       wbLStringKC(NNAM, 'Display Text', 0, cpTranslate, True),
       wbRArray('Targets', wbRStruct('Target', [
         wbStruct(QSTA, 'Target', [
-          wbInteger('Alias', itS32, wbQuestAliasToStr, wbStrToAlias),
+          wbInteger('Alias', itS32, wbQuestAliasToStr, wbAliasToInt),
           wbInteger('Flags', itU32, wbFlags([
             {0x01} 'Compass Marker Ignores Locks',
             {0x02} 'Hostile',
@@ -14713,6 +14915,8 @@ end;
       {0x00080000} 19, 'Unknown 19'
     ])), [
     wbEDID,
+    wbVMAD,
+    wbXALG,
     wbBaseFormComponents,
     wbFULL,
     wbDESCReq(),
@@ -15057,11 +15261,26 @@ end;
 
     wbFormIDCk(XEZN, 'Location Override', [LCTN]),
 
+    wbRStruct('Grouped Pack-In', [
+      wbMarkerReq(XWPK),
+      wbFormIDCk(GNAM, 'Unknown', [PKIN]),
+      wbFormIDCk(HNAM, 'Unknown', [REFR]),
+      wbInteger(INAM, 'Unknown', itU16, wbBoolEnum).SetRequired,
+      wbFormIDCk(JNAM, 'Unknown', [PKIN]),
+      wbUnknown(LNAM, 4).SetRequired,
+      wbEmpty(XGOM, 'Unknown'),
+      wbMarkerReq(XWPK)
+    ]),
+
+    wbInteger(XBPO, 'Blueprint Part Origin', itU32),
+
     wbFormIDCk(XLYR, 'Layer', [LAYR]),
 
     wbFloat(XHTW, 'Head-Tracking Weight'),
 
     wbFloat(XFVC, 'Favor Cost'),
+
+    wbFormIDCk(XATR, 'Attach Ref', sigReferences),
 
     wbArray(XLRT, 'Location Ref Type', wbFormIDCk('Ref', [LCRT, NULL])),
 
@@ -15253,7 +15472,7 @@ end;
         'Line',
         'Ellipsoid',
         '',
-        'Unknown 7'
+        'Cylinder'
       ]))
     ]),
 
@@ -15433,7 +15652,8 @@ end;
       wbInteger('Flicker Effect', itU8, wbEnum([
         'None',
         'Flicker',
-        'Pulse'
+        'Pulse',
+        'Unknown 3'
       ])),
       wbUnused(3)
     ]),
@@ -15550,7 +15770,7 @@ end;
       ]))
     ]),
 
-    wbInteger(XLLD, 'Light Layer Data', itU32, wbBoolEnum),
+    wbInteger(XLLD, 'Light Layer Data', itU32),
 
     wbFloat(XLVD, 'Light Volumetric Data'),
 
@@ -15610,7 +15830,7 @@ end;
     wbFloat(XFVC, 'Favor Cost'),
 
     wbInteger(BOLV, 'Water Reflection', itU16, wbEnum([
-      '',
+      'Unknown 0',
       'Unknown 1'
     ])),
 
@@ -15622,7 +15842,18 @@ end;
       wbUnused(3)
     ], cpNormal, False, nil, 5),
 
-    wbReflection(XNSE),
+    wbStruct(XNSE, 'Reflection', [
+      wbREFLBETH,
+      wbREFLSTRT,
+      wbREFLTYPE,
+      wbREFLCLAS,
+      wbUnknown
+    ]).IncludeFlag(dfCanContainFormID)
+      .IncludeFlag(dfCanContainReflection)
+      .IncludeFlag(dfDontAssign)
+      .IncludeFlag(dfInternalEditOnly)
+      .IncludeFlag(dfIsReflection)
+      .IncludeFlag(dfNoReport),
 
     wbFormIDCk(XATR, 'Attach Ref', sigReferences),
 
@@ -15692,9 +15923,11 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(SOUN, 'Sound Marker', [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbXALG,
+    wbBaseFormComponents,
     wbKeywords,
     wbSoundReference(SMLS),
     wbStruct(DEVT, 'Sound Detection', [
@@ -15746,10 +15979,10 @@ end;
            {3} 'Lesser Power',
            {4} 'Ability',
            {5} 'Poison',
-           {6} 'Unknown 6',
-           {7} 'Unknown 7',
-           {8} 'Unknown 8',
-           {9} 'Unknown 9',
+           {6} 'Enchantment',
+           {7} 'Potion',
+           {8} 'Wort Craft',
+           {9} 'Leveled Spell',
            {10} 'Addiction',
            {11} 'Voice Power'
          ])),
@@ -15764,8 +15997,10 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(SPEL, 'Spell', [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
+    wbBaseFormComponents,
     wbFULL,
     wbKeywords,
     wbMDOB,
@@ -15777,9 +16012,25 @@ end;
     wbEffects
   ], False, nil, cpNormal, False, nil, nil);
 
-  {wbRecord(SCRL, 'Scroll', [
-    wbEDID
-  ]);}
+  wbRecord(SCRL, 'Scroll', [
+    wbEDID,
+    wbOBND(True),
+    wbODTYReq,
+    wbBaseFormComponents,
+    wbFULL,
+    wbKeywords,
+    wbMDOB,
+    wbETYP,
+    wbPUSH,
+    wbPDSH,
+    wbGenericModel(false), // Will crash the game if present, but the CK adds it when saving
+    wbStruct(DATA, '', [
+      wbInteger('Value', itS32),
+      wbFloat('Weight')
+    ], cpNormal, True),
+    wbSPIT,
+    wbEffects
+  ]);
 
   {subrecords checked against Starfield.esm}
   wbRecord(STAT, 'Static',
@@ -15806,7 +16057,7 @@ end;
        .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
        .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
-//    wbVMAD,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
@@ -15900,8 +16151,9 @@ end;
     wbPRPS,
     wbByteColors(PNAM, 'Marker Color (Unused)'),
     wbATTX,
-    wbUnknown(FNAM).SetRequired,                               // FNAM/JNAM look like remnants from ACTI struct
-    wbUnknown(JNAM).SetDefaultEditValue('68 01').SetRequired,
+    wbInteger(FNAM, 'Flags', itU16, wbFlags(wbFlagsList([
+    ]))).IncludeFlag(dfCollapsed, wbCollapseFlags),
+    wbInteger(JNAM, 'Activation Angle - For Player', itU16),
     wbFormIDCk(PFIG, 'Ingredient', sigBaseObjects),
     wbSoundReference(PFHS, 'Harvest Sound'),
     wbStruct(PFPC, 'Ingredient Production', [
@@ -15967,6 +16219,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(AORU, 'Attraction Rule', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbStruct(AOR2, 'Data', [
       wbFloat('Radius'),
       wbFloat('Min Delay'),
@@ -15983,6 +16237,7 @@ end;
       {0x00800000} 23, 'Unknown 23'
     ])), [
     wbEDID,
+    wbVMAD,
     wbOBND,
     wbODTYReq,
     wbBaseFormComponents,
@@ -16001,6 +16256,7 @@ end;
   wbRecord(DFOB, 'Default Object', [
     wbEDID,
     wbXALG,
+    wbBaseFormComponents,
     wbFormID(DATA, 'Object')
   ])
   .IncludeFlag(dfIndexEditorID);
@@ -16008,6 +16264,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(DMGT, 'Damage Type', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbFULL,
     wbStruct(DNAM, 'Damage Type', [
       wbFormIDck('Resistance Actor Value', [AVIF, NULL]),
@@ -16018,6 +16276,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(INNR, 'Instance Naming Rules', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbInteger(UNAM, 'Target', itU32, wbEnum([], [
         0, 'None',
       $22, 'Armor',
@@ -16299,9 +16559,22 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(LAYR, 'Layer',
     wbFlags(wbFlagsList([
-      {0x08000000} {27} 27, 'Starts Frozen'
-    ])), [
+        {0x00000004}  2, 'Non-Playable',
+        {0x00000010}  4, 'Ground Piece',
+        {0x00000200}  9, 'Hidden From Local Map',
+        {0x00000800} 11, 'Used As Platform',
+        {0x00080000} 19, 'Has Currents',
+        {0x04000000} 26, 'Navmesh - Filter',
+        {0x08000000} 27, 'Starts Frozen/Navmesh - Bounding Box',
+        {0x10000000} 28, 'Navmesh - Only Cut',
+        {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+        {0x40000000} 30, 'Navmesh - Ground'
+      ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbFormIDCk(PNAM, 'Parent', [LAYR]),
     wbByteColors(XCLP).SetRequired,
@@ -16313,8 +16586,26 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(LENS, 'Lens Flare', [
+  wbRecord(LENS, 'Lens Flare',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbFloat(CNAM, 'Color Influence', cpNormal, True),
     wbFloat(DNAM, 'Fade Distance Radius Scale', cpNormal, True).SetDefaultEditValue('1.0'),
     wbFloat(ENAM, 'Exposure Influence', cpNormal, True),
@@ -16561,12 +16852,33 @@ end;
     end;
 
   {subrecords checked against Starfield.esm}
-  wbRecord(LGDI, 'Legendary Item', [
+  wbRecord(LGDI, 'Legendary Item',
+    wbFlags(wbFlagsList([
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00080000} 19, 'Has Currents',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground',
+                   31, 'Must Be Unique'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbOBND,
     wbODTYReq,
     wbOPDS,
     wbPTT2,
+    wbSNTP,
+    wbSNBH,
+    wbDEFL,
     wbXALG,
     wbBaseFormComponents,
     wbGenericModel(True),
@@ -16593,7 +16905,24 @@ end;
   ]);
 
   { still exists in game code, but not in Starfield.esm }
-  wbRecord(NOTE, 'Note', [
+  wbRecord(NOTE, 'Note',
+    wbFlags(wbFlagsList([
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00080000} 19, 'Has Currents',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground',
+                   31, 'Must Be Unique'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbVMAD,
     wbOBND,
@@ -16638,6 +16967,7 @@ end;
       {0x00000100} 8, 'Property Collection'
     ])), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbFULL,
     wbDESC(),
@@ -16832,6 +17162,7 @@ end;
        .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
        .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbSNTP,
@@ -16844,8 +17175,26 @@ end;
 
 
   {subrecords checked against Starfield.esm}
-  wbRecord(STAG, 'Animation Sound Tag Set', [
+  wbRecord(STAG, 'Animation Sound Tag Set',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbInteger(STMS, 'Count', itU32, nil, cpBenign).IncludeFlag(dfSkipImplicitEdit),
     wbRStructsSK('Entries', 'Entry', [0], [
       wbString(STAE, 'Tag').SetRequired,
@@ -16853,17 +17202,24 @@ end;
     ]).SetCountPath(STMS)
   ]);
 
-  var wbTerminalArtThemeEnum := wbEnum([], [
-    0, 'Constellation',
-    1, 'Freestar Collective',
-    2, 'Generic',
-    3, 'NASA',
-    4, 'Ryujin Industries',
-    5, 'Slayton Aerospace',
-    6, 'United Colonies',
-    7, 'Crimson Fleet',
-    9, 'House Varuun'
-  ]);
+  // load terminal theme list from external file if present
+  var s := ExtractFilePath(ParamStr(0)) + wbAppName + 'TerminalArtThemes.txt';
+  if FileExists(s) then try
+    wbTerminalArtThemeEnum := wbEnum(TFile.ReadAllLines(s));
+  except end;
+
+  if not Assigned(wbTerminalArtThemeEnum) then
+    wbTerminalArtThemeEnum := wbEnum([], [
+      0, 'Constellation',
+      1, 'Freestar Collective',
+      2, 'Generic',
+      3, 'NASA',
+      4, 'Ryujin Industries',
+      5, 'Slayton Aerospace',
+      6, 'United Colonies',
+      7, 'Crimson Fleet',
+      9, 'House Varuun'
+    ]);
 
   {subrecords checked against Starfield.esm}
   wbRecord(TERM, 'Terminal',
@@ -16879,7 +17235,7 @@ end;
      15, 'Has Distant LOD',
      16, 'Random Anim Start',
      17, 'Dangerous',
-     19, 'Unknown 19',
+     19, 'Has Currents',
      20, 'Ignore Object Interaction',
      23, 'Is Marker',
      25, 'Obstacle',
@@ -16951,7 +17307,12 @@ end;
     wbUnused(WBDT, 0)
       .SetRequired,
     wbFormIDCk(FTMP, 'Furniture Template', [FURN]),
-    wbUnknown(FNPR),     // only used by one official record CY_GlenHurst_CondoTerminal and unable to find corresponding data in CK
+    wbRArray('Marker Entry Points', wbStruct(FNPR, 'Marker', [
+      wbInteger('Type', itU16, wbFurnitureAnimTypeEnum),
+      wbInteger('Entry Points', itU16, wbFurnitureEntryTypeFlags).IncludeFlag(dfCollapsed, wbCollapseFlags)
+    ]).SetSummaryKeyOnValue([0,1])
+    .SetSummaryPrefixSuffixOnValue(0, '[','] ')
+    ),     // only used by one official record CY_GlenHurst_CondoTerminal and unable to find corresponding data in CK
     wbString(XMRK, 'Marker Model'),
     wbSNAMMarkerParams,
     wbRArray('Object Template Instance Data', wbString(STRV)),
@@ -16970,13 +17331,28 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(TRNS, 'Transform',
     wbFlags(wbFlagsList([
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
       {0x00008000} 16, 'Around Origin',
-      {0x00010000} 17, 'Apply Translation'
-    ])), [
+      {0x00010000} 17, 'Apply Translation',
+      {0x00080000} 19, 'Has Currents',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbStruct(DATA, 'Data', [
       wbPosRot,
-      wbFloat('Scale'),
+      wbFloat('Scale').SetDefaultEditValue('1.0'),
       wbFloat('Zoom Min'),
       wbFloat('Zoom Max')
     ], cpNormal, True, nil, 2)
@@ -16988,17 +17364,35 @@ end;
     wbInteger(BNAM, 'Basis', itU8, wbEnum([
       'World Bound',
       'Object Origin'
-    ])),
+    ])).SetRequired,
     wbInteger(ENAM, 'Color Mode Flags', itU32, wbFlags([
       'Normal',
       'Monochromatic',
       'Alpha Fill'
     ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
+    .SetRequired
   ]).SetSummaryKey([1]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(AAPD, 'Aim Assist Pose Data', [
+  wbRecord(AAPD, 'Aim Assist Pose Data',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbRStruct('Aim Assist Pill', [
       wbEmpty(AAAP, 'Aim Assist Pill Marker'),
       wbString(ANAM, 'Start Bone Name'),
@@ -17016,40 +17410,83 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(AAMD, 'Aim Assist Model Data', [
+  wbRecord(AAMD, 'Aim Assist Model Data',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbStruct(SNAM, 'Data', [
-      wbFloat('Inner Cone Angle Degrees'),
-      wbFloat('Outer Cone Angle Degrees'),
-      wbFloat('Steering Degrees Per Sec'),
-      wbFloat('Pitch Scale'),
-      wbFloat('Inner Steering Ring'),
-      wbFloat('Outer Steering Ring'),
-      wbFloat('Friction'),
-      wbFloat('Move Follow Degrees Per Sec'),
-      wbFloat('ADS Snap Steering Mult'),
-      wbFloat('ADS Snap Seconds'),
-      wbFloat('ADS Snap Cone Angle Degrees'),
-      wbFloat('No Steering'),
-      wbFloat('Bullet Bending Cone Angle Degrees'),
-      wbFloat('ADS Snap Steering Mutliplier Inner Ring'),
-      wbFloat('ADS Snap Steering Mutliplier Outer Ring'),
-      wbFloat('ADS Multiplier Inner Cone Angle Degrees'),
-      wbFloat('ADS Multiplier Outer Cone Angle Degrees'),
-      wbFloat('ADS Multiplier Inner Steering Ring'),
-      wbFloat('ADS Multiplier Outer Steering Ring'),
-      wbFloat('ADS Multiplier Friction'),
-      wbFloat('ADS Multiplier Steering Degrees Per Sec'),
-      wbInteger('Aim Assist Enabled', itU8, wbBoolEnum)
+      wbFloat('Inner Cone Angle Degrees').SetDefaultEditValue('6.0'),
+      wbFloat('Outer Cone Angle Degrees').SetDefaultEditValue('25.0'),
+      wbFloat('Steering Degrees Per Sec').SetDefaultEditValue('5.0'),
+      wbFloat('Pitch Scale').SetDefaultEditValue('0.25'),
+      wbFloat('Inner Steering Ring').SetDefaultEditValue('600.0'),
+      wbFloat('Outer Steering Ring').SetDefaultEditValue('1750.0'),
+      wbFloat('Friction').SetDefaultEditValue('0.333'),
+      wbFloat('Move Follow Degrees Per Sec').SetDefaultEditValue('10.0'),
+      wbFloat('ADS Snap Steering Mult').SetDefaultEditValue('2.5'),
+      wbFloat('ADS Snap Seconds').SetDefaultEditValue('0.25'),
+      wbFloat('ADS Snap Cone Angle Degrees').SetDefaultEditValue('5.0'),
+      wbFloat('No Steering').SetDefaultEditValue('1.0'),
+      wbFloat('Bullet Bending Cone Angle Degrees').SetDefaultEditValue('7.0'),
+      wbFloat('ADS Snap Steering Mutliplier Inner Ring').SetDefaultEditValue('600.0'),
+      wbFloat('ADS Snap Steering Mutliplier Outer Ring').SetDefaultEditValue('1750.0'),
+      wbFloat('ADS Multiplier Inner Cone Angle Degrees').SetDefaultEditValue('1.0'),
+      wbFloat('ADS Multiplier Outer Cone Angle Degrees').SetDefaultEditValue('1.0'),
+      wbFloat('ADS Multiplier Inner Steering Ring').SetDefaultEditValue('1.0'),
+      wbFloat('ADS Multiplier Outer Steering Ring').SetDefaultEditValue('1.0'),
+      wbFloat('ADS Multiplier Friction').SetDefaultEditValue('1.0'),
+      wbFloat('ADS Multiplier Steering Degrees Per Sec').SetDefaultEditValue('1.0'),
+      wbInteger('Aim Assist Enabled', itU8, wbBoolEnum).SetDefaultEditValue('True')
     ])
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(SECH, 'Sound Echo Marker', [
+  wbRecord(SECH, 'Sound Echo Marker',
+    wbFlags(wbFlagsList([
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00008000} 16, 'Random Anim Start',
+      {0x00080000} 19, 'Has Currents',
+                   25, 'Obstacle',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut/Show in world map (ref must be in sky cell)',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground',
+                   31, 'Must Be Unique'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbOBND,
     wbODTYReq,
+    wbOPDS,
+    wbPTT2,
+    wbSNTP,
+    wbSNBH,
+    wbDEFL,
     wbXALG,
+    wbBaseFormComponents,
     wbString(NNAM, 'Description'),
     wbSoundReference(ECHL, 'Looping Sound'),
     wbRArray('Echos',
@@ -17079,16 +17516,57 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(CURV, 'Curve Table', [
+  wbRecord(CURV, 'Curve Table',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbREFL
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(STND, 'Snap Template Node', [
+  wbRecord(STND, 'Snap Template Node',
+    wbFlags(wbFlagsList([
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00080000} 19, 'Has Currents',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground',
+                   31, 'Must Be Unique'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbOBND,
     wbODTYReq,
+    wbOPDS,
+    wbPTT2,
+    wbSNTP,
+    wbSNBH,
+    wbDEFL,
+    wbXALG,
     wbBaseFormComponents,
     wbGenericModel(True),
     wbKeywords,
@@ -17114,7 +17592,23 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(STMP, 'Snap Template', [
+  wbRecord(STMP, 'Snap Template',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbBaseFormComponents,
     wbPTT2,
@@ -17169,26 +17663,77 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(GCVR, 'Ground Cover', [
+  wbRecord(GCVR, 'Ground Cover',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbRArray('Grasses', wbRStruct('Grass', [
       wbFormIDCk(GNAM, 'Grass', [GRAS]).IncludeFlag(dfUnmappedFormID, wbStarfieldIsABugInfestedHellhole),
       wbInteger(DNAM, 'Override Density', itS16).SetDefaultEditValue('-1')
     ])),
     wbRArray('Landscape Textures', wbFormIDCk(LNAM, 'Landscape Texture', [LTEX])),
-    wbFloat(YNAM, 'Painted Material Threshold', cpNormal, True, 100.0, 0, nil, wbNormalizeToRange(0.1, 1.0))
+    wbFloat(YNAM, 'Painted Material Threshold', cpNormal, True, 100.0, 0, nil, wbNormalizeToRange(0.1, 1.0)).SetDefaultEditValue('28.0')
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(VOLI, 'Volumetric Lighting', [
+  wbRecord(VOLI, 'Volumetric Lighting',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbREFL
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(PMFT, 'Photo Mode Feature', [
+  wbRecord(PMFT, 'Photo Mode Feature',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbFULL,
     wbConditions,
     wbStruct(FNAM, 'Data', [
@@ -17210,13 +17755,46 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(CHAL, 'Challenge', [
+  wbRecord(CHAL, 'Challenge',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbBaseFormComponents
   ]);
 
-  wbRecord(FXPD, 'Facial Expression', [
+  wbRecord(FXPD, 'Facial Expression',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbFULL,
     wbRArray('Morphs', wbRStruct('Morph Data', [
         wbString(MNAM, 'Morph'),
@@ -17225,25 +17803,89 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(CNDF, 'Condition Form', [
+  wbRecord(CNDF, 'Condition Form',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbConditions,
     wbFormIDCk(QNAM, 'Owner Quest', [QUST]),
     wbFormIDCk(PNAM, 'Owner Package', [PACK])
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(AOPF, 'Audio Occlusion Primitive', [
+  wbRecord(AOPF, 'Audio Occlusion Primitive',
+    wbFlags(wbFlagsList([
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00008000} 16, 'Random Anim Start',
+      {0x00080000} 19, 'Has Currents',
+                   25, 'Obstacle',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut/Show in world map (ref must be in sky cell)',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground',
+                   31, 'Must Be Unique'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbOBND(True),
     wbODTYReq,
+    wbODTYReq,
+    wbOPDS,
+    wbPTT2,
+    wbSNTP,
+    wbSNBH,
+    wbDEFL,
+    wbXALG,
+    wbBaseFormComponents,
     wbFloat(OBSV, 'Obstruction'),
     wbFloat(OCCV, 'Occlusion')
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(PDCL, 'Projected Decal', [
+  wbRecord(PDCL, 'Projected Decal',
+    wbFlags(wbFlagsList([
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00008000} 16, 'Random Anim Start',
+      {0x00080000} 19, 'Has Currents',
+                   25, 'Obstacle',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut/Show in world map (ref must be in sky cell)',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground',
+                   31, 'Must Be Unique'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
@@ -17265,21 +17907,59 @@ end;
   ]).SetSummaryKey([7]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(CUR3, 'Curve 3D', [
+  wbRecord(CUR3, 'Curve 3D',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbREFL
   ]);
 
   {subrecords checked against Starfield.esm}
   wbRecord(BMMO, 'Biome Marker',
     wbFlags(wbFlagsList([
-      {0x00100000} 20, 'Calculate Once Per Location' //all occurences on prey/preditor BMMOs
-    ])), [
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00080000} 19, 'Has Currents',
+      {0x00100000} 20, 'Calculate Once Per Location', //all occurences on prey/preditor BMMOs
+                   25, 'Obstacle',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut/Show in world map (ref must be in sky cell)',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground',
+                   31, 'Must Be Unique'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
+    wbPTT2,
+    wbSNTP,
+    wbSNBH,
+    wbDEFL,
+    wbXALG,
     wbBaseFormComponents,
     wbGenericModel(True),
     wbKeywords,
@@ -17290,8 +17970,25 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(GBFT, 'Generic Base Form Template', [
+  wbRecord(GBFT, 'Generic Base Form Template',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbRArray('Components', wbString(STRV, 'Component'))
   ]);
 
@@ -17318,14 +18015,33 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(LVLB, 'Leveled Base Form',
     wbFlags(wbFlagsList([
-      {0x00008000}  15, 'Calculate All (Still picks just one)'
-    ])), [
+      {0x00000004}  2, 'Non-Playable',
+      {0x00000010}  4, 'Ground Piece',
+      {0x00000200}  9, 'Hidden From Local Map',
+      {0x00000800} 11, 'Used As Platform',
+      {0x00008000} 15, 'Calculate All (Still picks just one)',
+      {0x00080000} 19, 'Has Currents',
+                   25, 'Obstacle',
+      {0x04000000} 26, 'Navmesh - Filter',
+      {0x08000000} 27, 'Navmesh - Bounding Box',
+      {0x10000000} 28, 'Navmesh - Only Cut/Show in world map (ref must be in sky cell)',
+      {0x20000000} 29, 'Navmesh - Ignore Erosion/Child Can Use',
+      {0x40000000} 30, 'Navmesh - Ground',
+                   31, 'Must Be Unique'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+    .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+    .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+    .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+    .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbVMAD,
     wbOBND(True),
     wbODTYReq,
     wbOPDS,
     wbPTT2,
+    wbSNTP,
+    wbSNBH,
+    wbDEFL,
     wbXALG,
     wbBaseFormComponents,
     wbLVLDReq,
@@ -17358,24 +18074,57 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(MAAM, 'Melee Aim Assist Model', [
+  wbRecord(MAAM, 'Melee Aim Assist Model',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbBaseFormComponents,
     wbStruct(SNAM, 'Data', [
-      wbFloat('Inner Cone Angle Degrees'),
-      wbFloat('Outer Cone Angle Degrees'),
-      wbFloat('Steering Degrees Per Sec'),
-      wbFloat('Acelleration Deg Per Sec'),
-      wbFloat('Decelleration Deg Per Sec'),
-      wbFloat('Actor Target Finder Max Distance'),
-      wbInteger('Melee Aim Assist Enabled', itU8, wbBoolEnum),
-      wbFloat('Max Capsule Angle For Vertical Aiming Correction Deg')
+      wbFloat('Inner Cone Angle Degrees').SetDefaultEditValue('100.0'),
+      wbFloat('Outer Cone Angle Degrees').SetDefaultEditValue('120.0'),
+      wbFloat('Steering Degrees Per Sec').SetDefaultEditValue('180.0'),
+      wbFloat('Acelleration Deg Per Sec').SetDefaultEditValue('500.0'),
+      wbFloat('Decelleration Deg Per Sec').SetDefaultEditValue('-1000.0'),
+      wbFloat('Actor Target Finder Max Distance').SetDefaultEditValue('5.0'),
+      wbInteger('Melee Aim Assist Enabled', itU8, wbBoolEnum).SetDefaultEditValue('True'),
+      wbFloat('Max Capsule Angle For Vertical Aiming Correction Deg').SetDefaultEditValue('10.0')
     ])
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(IRES, 'Resource', [
+  wbRecord(IRES, 'Resource',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbFULL,
     wbKeywords,
@@ -17562,6 +18311,7 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(AMBS, 'Ambience Set', [
     wbEDID,
+    wbBaseFormComponents,
     wbRStruct('Ambient Sounds', [
       wbInteger(ASAS, 'Count', itU32, nil, cpBenign, True).IncludeFlag(dfSkipImplicitEdit), //count
       wbRArray('Sounds', wbStruct(ASAE, 'Sound Events', [ // DO NOT SORT - this array appears deliberately ordered in CK
@@ -17603,7 +18353,23 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(AOPS, 'Aim Optical Sight Marker', [
+  wbRecord(AOPS, 'Aim Optical Sight Marker',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbBaseFormComponents,
     wbStruct(ANAM, 'Data', [
@@ -17617,7 +18383,7 @@ end;
       wbFloat('Delay Between Shots'),
       wbFormIdCk('Laser Art Object', [ARTO, NULL]),
       wbFormIdCk('Laser Dot Art Object', [ARTO,  NULL]),
-      wbFloat('Max Laser Pointer Distance'),
+      wbFloat('Max Laser Pointer Distance').SetDefaultEditValue('200.0'),
       wbInteger('Sight Controls Firing Direction', itU8, wbBoolEnum),
       wbInteger('Activate Sight on Non Sighted Mode', itU8, wbBoolEnum),
       wbInteger('Activate Sight on Scoped Mode', itU8, wbBoolEnum)
@@ -17625,8 +18391,25 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(ATMO, 'Atmosphere', [
+  wbRecord(ATMO, 'Atmosphere',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbREFL,
     wbFormIDCk(RFDP, 'Reflection Parent', [ATMO]),
     wbRDIF
@@ -17804,7 +18587,23 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(BMOD, 'Bone Modifier', [
+  wbRecord(BMOD, 'Bone Modifier',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbBaseFormComponents,
     wbStruct(DATA, 'Data', [
@@ -17878,26 +18677,78 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(CLDF, 'Clouds', [
+  wbRecord(CLDF, 'Clouds',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbREFL
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(EFSQ, 'Effect Sequence', [
+  wbRecord(EFSQ, 'Effect Sequence',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbREFL
   ]);
 
   {subrecords checked against Starfield.esm}
   wbRecord(FOGV, 'Fog Volume', [
     wbEDID,
+    wbBaseFormComponents,
     wbREFL
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(FORC, 'Force Data', [
+  wbRecord(FORC, 'Force Data',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbREFL
   ]);
 
@@ -17909,8 +18760,26 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(LVSC, 'Leveled Space Cell', [
+  wbRecord(LVSC, 'Leveled Space Cell',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbLVLDReq,
     wbInteger(LVLM, 'Max Count', itU8, nil, cpNormal, True), { Always 00 } {Unavailable}
     wbInteger(LVLF, 'Flags', itU16, wbFlags([
@@ -17937,8 +18806,26 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(MRPH, 'Morphable Object', [
+  wbRecord(MRPH, 'Morphable Object',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbString(TMPP, 'Target Morph Path'),
     wbString(TCMP, 'Target Chargen Morph Path'),
     wbString(BMPP, 'Bone Morph Definition File'),
@@ -17949,14 +18836,49 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(MTPT, 'Material Path', [
+  wbRecord(MTPT, 'Material Path',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbBaseFormComponents,
     wbREFL
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(OSWP, 'Object Swap', [
+  wbRecord(OSWP, 'Object Swap',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbRArrayS('Swap Map', wbRStructSK([0,1], 'Item', [
       wbFormID(KNAM, 'Original Object'),
       wbFormID(VNAM, 'Replacement Object')
@@ -17999,8 +18921,25 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(PCMT, 'Planet Content Manager Tree', [
+  wbRecord(PCMT, 'Planet Content Manager Tree',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID.SetRequired,
+    wbBaseFormComponents,
     wbInteger(NAM1, 'Node Type', itU32, wbEnum(['Root']), cpIgnore, True),      // PCMT only has root type
     wbInteger(NAM2, 'Child Selection', itU32, wbEnum(['','Stacked']), cpNormal, True)
       .SetDefaultNativeValue(1),                                                // PCMT only allows stacked node
@@ -18031,8 +18970,8 @@ end;
           .IncludeFlag(dfCollapsed, wbCollapsePosRot),
         wbFormIDCk('Worldspace', [WRLD])
       ])
-    ).SetRequired,
-    wbArray(EOVR, 'Added Worldspaces',
+    ).IncludeFlag(dfArrayCanBeEmpty),
+    wbArray(EOVR, 'Edited Worldspaces',
       wbStruct('Worldspace', [
         wbStruct('Position', [
           wbLatitudeDouble,
@@ -18044,9 +18983,12 @@ end;
           .IncludeFlag(dfSummaryMembersNoName)
           .IncludeFlag(dfCollapsed, wbCollapsePosRot),
         wbFormIDCk('Worldspace', [WRLD]),
-        wbByteArray('Unknown', 1)
-      ]),
-    0, nil, nil, cpBenign),
+        wbInteger('Type', itU8,
+          wbEnum([
+          {0} 'Removed',
+          {1} 'Added'
+          ]))
+      ])).IncludeFlag(dfArrayCanBeEmpty),
     wbRArray('Biomes',
       wbStructSK(PPBD, [0], 'Biome', [
         wbFormIDCK('Biome', [BIOM]),
@@ -18158,7 +19100,7 @@ end;
         wbInteger('Rings', itu32, wbBoolEnum)
       ]),
       wbStruct(INAM, 'Atmosphere Data', [
-        wbFormIDCk('Atmosphere', [ATMO]),
+        wbFormIDCk('Atmosphere', [ATMO,NULL]),
         wbFloat('Avg Density Frac.'),
         wbFloat('Rayleight Scattering Coefficient'),
         wbFloat('Mie Scattering Coefficient')
@@ -18186,10 +19128,10 @@ end;
     wbFloat(DENS, 'Density'),
     wbFloat(PHLA, 'Perihelion Angle (Deg)'),
     wbInteger(RSCS, 'Resource Creation Seed', itS32)
-  ]);
+  ]).SetAfterLoad(wbPNDTAfterLoad);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(PSDC, 'Particle System Define Collision', [ //PSDC -> EDID REFL  (9)
+  wbRecord(PSDC, 'Particle System Define Collection', [ //PSDC -> EDID REFL  (9)
     wbEDID,
     wbREFL
   ]);
@@ -18250,6 +19192,7 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(RSGD, 'Resource Generation Data', [
     wbEDID,
+    wbBaseFormComponents,
     wbRArray('Resources',
       wbRStruct('Resource', [
         wbFormIDCk(RNAM, 'Resource', [IRES], False, cpNormal, True),
@@ -18309,6 +19252,7 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(SDLT, 'Secondary Damage List', [
     wbEDID,
+    wbBaseFormComponents,
     wbInteger(ITMC, 'Secondary List Count', itU32).SetRequired,
     wbRArray('Secondary Damages',
       wbRStruct('Secondary Damage', [
@@ -18514,6 +19458,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(SPCH, 'Speech Challenge', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbSPCHQuestStage(SPWI, 'Quest Stage on Win'),
     wbSPCHQuestStage(SPLO, 'Quest Stage on Loss'),
     wbEmpty(SRAN, 'Sequential Scenes'),
@@ -18585,7 +19531,23 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(TMLM, 'Terminal Menu', [
+  wbRecord(TMLM, 'Terminal Menu',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbVMADFragmentedTMLM,
     wbFULL,
@@ -18649,8 +19611,25 @@ end;
     ])
   ]);
 
-  wbRecord(GPOF, 'Gameplay Option', [
+  wbRecord(GPOF, 'Gameplay Option',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID.SetRequired,
+    wbBaseFormComponents,
     wbLStringKC(NNAM, 'Name').SetRequired,
     wbLStringKC(DNAM, 'Description').SetRequired,
     wbRStruct('Type Data', [
@@ -18696,7 +19675,23 @@ end;
     wbKWDAs
   ]);
 
-  wbRecord(GPOG, 'Gameplay Options Group', [
+  wbRecord(GPOG, 'Gameplay Options Group',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID.SetRequired,
     wbLStringKC(NNAM, 'Name').SetRequired,
     wbRStruct('Type Data', [
@@ -18728,8 +19723,25 @@ end;
   ]);
 
   {subrecords checked against Starfield.esm}
-  wbRecord(TRAV, 'Traversal', [
+  wbRecord(TRAV, 'Traversal',
+    wbFlags(wbFlagsList([
+    2, 'Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    19, 'Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ])).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbBaseFormComponents,
     wbStruct(DNAM, 'Data', [
       wbInteger('Type', itU32, wbEnum([
@@ -18851,6 +19863,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(WATR, 'Water', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbFULL,
     wbInteger(ANAM, 'Opacity (unused)', itU8),
     wbInteger(FNAM, 'Flags', itU8, wbFlags([
@@ -19271,6 +20285,7 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(WTHS, 'Weather Settings', [
     wbEDID,
+    wbBaseFormComponents,
     wbREFL,
     wbFormIDCk(RFDP, 'Reflection Parent', [WTHS]),
     wbRDIF,
@@ -19280,10 +20295,22 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(WRLD, 'Worldspace',
     wbFlags(wbFlagsList([
-       2, 'Unique',
-      14, 'Partial Form',
-      19, 'Can''t Wait'
-    ]), [14]), [
+    2, 'Unique/Non-Playable',
+    4, 'Ground Piece',
+    9, 'Hidden From Local Map',
+    11, 'Used As Platform',
+    14, 'Partial Form',
+    19, 'Can''t Wait/Has Currents',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Navmesh - Only Cut',
+    29, 'Navmesh - Ignore Erosion/Child Can Use',
+    30, 'Navmesh - Ground'
+    ]), [14]).SetFlagHasDontShow(26, wbFlagNavmeshFilterDontShow)
+      .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
+      .SetFlagHasDontShow(28, wbFlagNavmeshOnlyCutDontShow)
+      .SetFlagHasDontShow(29, wbFlagNavmeshIgnoreErosionDontShow)
+      .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
     wbBaseFormComponents,
     wbWorldLargeRefs,
@@ -19366,6 +20393,8 @@ end;
   {subrecords checked against Starfield.esm}
   wbRecord(WWED, 'Wwise Event Data', [
     wbEDID,
+    wbVMAD,
+    wbBaseFormComponents,
     wbWwiseGuid(WSED, 'Start'),
     wbFormIDCk(CNAM, 'Condition', [CNDF]),
     wbWwiseGuid(WTED, 'End')
@@ -19478,7 +20507,7 @@ end;
   wbAddGroupOrder(PDCL);
   wbAddGroupOrder(ENCH);
   wbAddGroupOrder(SPEL);
-  //wbAddGroupOrder(SCRL);
+  wbAddGroupOrder(SCRL); // doesn't exist but can be edited in CK
   wbAddGroupOrder(ACTI);
   wbAddGroupOrder(TACT); // doesn't exist but can be created in CK
   wbAddGroupOrder(CURV);
@@ -19487,7 +20516,7 @@ end;
   wbAddGroupOrder(BOOK);
   wbAddGroupOrder(CONT);
   wbAddGroupOrder(DOOR);
-  //wbAddGroupOrder(INGR);
+  wbAddGroupOrder(INGR); // doesn't exist but can be created in CK
   wbAddGroupOrder(LIGH);
   wbAddGroupOrder(MISC);
   wbAddGroupOrder(STAT);

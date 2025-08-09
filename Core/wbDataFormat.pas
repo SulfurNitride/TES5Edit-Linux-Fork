@@ -41,7 +41,7 @@ type
 const
   // embedded value size
   // values that fit don't allocate memory (for optimization)
-  dfEmbeddedValueSize = 8;
+  dfEmbeddedValueSize = 12;
 
   DefSizes: array [TdfDataType] of integer = (
     0,  // dtNone
@@ -134,7 +134,7 @@ type
   protected
     function GetDefaultDataSize: integer; virtual;
   public
-    constructor Create(const aName: string; aDataType: TdfDataType; const aDefs: array of TdfDef);
+    constructor Create(const aName: string; aDataType: TdfDataType; const aDefs: TdfDefs);
     destructor Destroy; override;
     function Clone: TdfDef; virtual; abstract;
     procedure Assign(const aDef: TdfDef); virtual;
@@ -147,6 +147,19 @@ type
     procedure SetElementEditValue(const aElement: TdfElement; aDataStart, aDataEnd: PByte; var aValue: string); virtual;
     procedure AddDef(const aDef: TdfDef);
     procedure InsertDefsFrom(const aDef: TdfDef; Index: Integer);
+    function SetOnCreate(aProc: TdfOnCreateEvent): TdfDef;
+    function SetOnDestroy(aProc: TdfOnDestroyEvent): TdfDef;
+    function SetOnEnabled(aProc: TdfOnEnabledEvent): TdfDef;
+    function SetOnDecide(aProc: TdfOnDecideEvent): TdfDef;
+    function SetOnAfterLoad(aProc: TdfOnAfterLoadEvent): TdfDef;
+    function SetOnBeforeSave(aProc: TdfOnBeforeSaveEvent): TdfDef;
+    function SetOnGetValue(aProc: TdfOnValueEvent): TdfDef;
+    function SetOnSetValue(aProc: TdfOnValueEvent): TdfDef;
+    function SetOnGetText(aProc: TdfOnTextEvent): TdfDef;
+    function SetOnSetText(aProc: TdfOnTextEvent): TdfDef;
+    function SetOnGetCount(aProc: TdfOnCountEvent): TdfDef;
+    function SetOnSetCount(aProc: TdfOnCountEvent): TdfDef;
+    function SetOnLinksTo(aProc: TdfOnLinksToEvent): TdfDef;
     property Name: string read FName;
     property NameHash: Cardinal read FNameHash;
     property DataType: TdfDataType read FDataType;
@@ -230,6 +243,8 @@ type
     procedure Delete(Index: Integer); virtual;
     procedure Remove; virtual;
     procedure Move(CurIndex, NewIndex: Integer); virtual;
+    function Sort(aCompare: TListSortCompareFunc): Boolean; virtual;
+    procedure Remap(const aMap: array of Cardinal); virtual;
     function Index: Integer; virtual;
     function IndexOf(aElement: TdfElement): Integer; virtual;
     function LinksTo: TdfElement; virtual;
@@ -301,6 +316,8 @@ type
     function DataSize: integer; override;
     procedure Delete(Index: Integer); override;
     procedure Move(CurIndex, NewIndex: Integer); override;
+    function Sort(aCompare: TListSortCompareFunc): Boolean; override;
+    procedure Remap(const aMap: array of Cardinal); override;
     function IndexOf(aElement: TdfElement): integer; override;
     function ElementByName(const aName: string; aEnabledOnly: Boolean = True): TdfElement; override;
     property Capacity: Integer read GetCapacity write SetCapacity;
@@ -355,7 +372,7 @@ type
   end;
 
 
-  { Union - several different size values but only one is active chosen by decider callack }
+  { Union - several different size values but only one is active chosen by decider callback }
   TdfUnionDef = class(TdfValueDef)
   public
     function Clone: TdfDef; override;
@@ -422,7 +439,7 @@ type
     function GetValueOffset(aIndex: Integer): Integer;
     function GetValueDataSize(aIndex: Integer): Integer;
   public
-    constructor Create(const aName: string; aDataType: TdfDataType; const aDefs: array of TdfDef);
+    constructor Create(const aName: string; aDataType: TdfDataType; const aDefs: TdfDefs);
     function Clone: TdfDef; override;
     procedure Assign(const aDef: TdfDef); override;
     function CreateElement(const aParent: TdfElement): TdfElement; override;
@@ -580,10 +597,10 @@ function dfCalcHash(const s: string): Cardinal;
 
 function dfStruct(
   const aName: string;
-  const aDefs: array of TdfDef;
+  const aDefs: TdfDefs;
   const aEvents: array of const
 ): TdfStructDef; overload;
-function dfStruct(const aName: string; const aDefs: array of TdfDef): TdfStructDef; overload;
+function dfStruct(const aName: string; const aDefs: TdfDefs): TdfStructDef; overload;
 
 function dfArray(
   const aName: string;
@@ -597,28 +614,28 @@ function dfArray(const aName: string; const aMemberDef: TdfDef; const aCounter: 
 
 function dfUnion(
   aDecider: TdfOnDecideEvent;
-  const aDefs: array of TdfDef;
+  const aDefs: TdfDefs;
   const aEvents: array of const
 ): TdfUnionDef; overload;
-function dfUnion(const aDefs: array of TdfDef; const aEvents: array of const): TdfUnionDef; overload;
-function dfUnion(aDecider: TdfOnDecideEvent; const aDefs: array of TdfDef): TdfUnionDef; overload;
+function dfUnion(const aDefs: TdfDefs; const aEvents: array of const): TdfUnionDef; overload;
+function dfUnion(aDecider: TdfOnDecideEvent; const aDefs: TdfDefs): TdfUnionDef; overload;
 
 function dfValueUnion(
   aDataType: TdfDataType;
   aDecider: TdfOnDecideEvent;
-  const aDefs: array of TdfDef;
+  const aDefs: TdfDefs;
   const aEvents: array of const
 ): TdfValueUnionDef; overload;
-function dfValueUnion(aDataType: TdfDataType; aDecider: TdfOnDecideEvent; const aDefs: array of TdfDef): TdfValueUnionDef; overload;
+function dfValueUnion(aDataType: TdfDataType; aDecider: TdfOnDecideEvent; const aDefs: TdfDefs): TdfValueUnionDef; overload;
 
 function dfMerge(
   const aName: string;
-  const aDefs: array of TdfDef;
+  const aDefs: TdfDefs;
   const aDefaultValue: string;
   const aEvents: array of const
 ): TdfMergeDef; overload;
-function dfMerge(const aName: string; const aDefs: array of TdfDef; const aEvents: array of const): TdfMergeDef; overload;
-function dfMerge(const aName: string; const aDefs: array of TdfDef): TdfMergeDef; overload;
+function dfMerge(const aName: string; const aDefs: TdfDefs; const aEvents: array of const): TdfMergeDef; overload;
+function dfMerge(const aName: string; const aDefs: TdfDefs): TdfMergeDef; overload;
 
 function dfInteger(
   const aName: string;
@@ -742,8 +759,6 @@ begin
     Result := SingleNaN
   else if SameText(aValue, 'Inf') then
     Result := SingleInf
-  else if SameText(aValue, '-Inf') then
-    Result := -SingleInf   
   else if SameText(aValue, 'Max') then
     Result := MaxSingle
   else if SameText(aValue, 'Min') then
@@ -762,12 +777,10 @@ begin
     Result := HalfToFloat(HalfNaN)
   else if SameText(aValue, 'Inf') then
     Result := HalfToFloat(HalfPosInf)
-  else if SameText(aValue, '-Inf') then
-    Result := -HalfToFloat(HalfPosInf)
   else if SameText(aValue, 'Max') then
-    Result := MaxHalf
+    Result := HalfToFloat(HalfMaxValue)
   else if SameText(aValue, 'Min') then
-    Result := -MaxHalf
+    Result := HalfToFloat(HalfMinValue)
   else if IsNegZeroString(aValue) then
     Result := -0.0
   else if aValue = '' then
@@ -784,7 +797,7 @@ end;
 
 { TdfDef }
 
-constructor TdfDef.Create(const aName: string; aDataType: TdfDataType; const aDefs: array of TdfDef);
+constructor TdfDef.Create(const aName: string; aDataType: TdfDataType; const aDefs: TdfDefs);
 var
   i: integer;
 begin
@@ -955,6 +968,84 @@ begin
   Move(FDefs[Index], FDefs[Index + Length(aDef.Defs)], SizeOf(Pointer) * (Length(FDefs) - Length(aDef.Defs) - Index));
   for i := Low(aDef.Defs) to High(aDef.Defs) do
     FDefs[Index + i] := aDef.Defs[i].Clone;
+end;
+
+function TdfDef.SetOnCreate(aProc: TdfOnCreateEvent): TdfDef;
+begin
+  Result := Self;
+  Result.FOnCreate := aProc;
+end;
+
+function TdfDef.SetOnDestroy(aProc: TdfOnDestroyEvent): TdfDef;
+begin
+  Result := Self;
+  Result.FOnDestroy := aProc;
+end;
+
+function TdfDef.SetOnEnabled(aProc: TdfOnEnabledEvent): TdfDef;
+begin
+  Result := Self;
+  Result.FOnGetEnabled := aProc;
+end;
+
+function TdfDef.SetOnDecide(aProc: TdfOnDecideEvent): TdfDef;
+begin
+  Result := Self;
+  Result.FOnDecide := aProc;
+end;
+
+function TdfDef.SetOnAfterLoad(aProc: TdfOnAfterLoadEvent): TdfDef;
+begin
+  Result := Self;
+  Result.FOnAfterLoad := aProc;
+end;
+
+function TdfDef.SetOnBeforeSave(aProc: TdfOnBeforeSaveEvent): TdfDef;
+begin
+  Result := Self;
+  Result.FOnBeforeSave := aProc;
+end;
+
+function TdfDef.SetOnGetValue(aProc: TdfOnValueEvent): TdfDef;
+begin
+  Result := Self;
+  Result.FOnGetValue := aProc;
+end;
+
+function TdfDef.SetOnSetValue(aProc: TdfOnValueEvent): TdfDef;
+begin
+  Result := Self;
+  Result.FOnSetValue := aProc;
+end;
+
+function TdfDef.SetOnGetText(aProc: TdfOnTextEvent): TdfDef;
+begin
+  Result := Self;
+  Result.FOnGetText := aProc;
+end;
+
+function TdfDef.SetOnSetText(aProc: TdfOnTextEvent): TdfDef;
+begin
+  Result := Self;
+  Result.FOnSetText := aProc;
+end;
+
+function TdfDef.SetOnGetCount(aProc: TdfOnCountEvent): TdfDef;
+begin
+  Result := Self;
+  Result.FOnGetCount := aProc;
+end;
+
+function TdfDef.SetOnSetCount(aProc: TdfOnCountEvent): TdfDef;
+begin
+  Result := Self;
+  Result.FOnSetCount := aProc;
+end;
+
+function TdfDef.SetOnLinksTo(aProc: TdfOnLinksToEvent): TdfDef;
+begin
+  Result := Self;
+  Result.FOnLinksTo := aProc;
 end;
 
 
@@ -1280,6 +1371,17 @@ begin
   DoException('Can not reorder in this element');
 end;
 
+function TdfElement.Sort(aCompare: TListSortCompareFunc): Boolean;
+begin
+  Result := False;
+  DoException('Can not sort in this element');
+end;
+
+procedure TdfElement.Remap(const aMap: array of Cardinal);
+begin
+  DoException('Can not remap in this element');
+end;
+
 function TdfElement.Index: Integer;
 begin
   if Assigned(Parent) then
@@ -1302,14 +1404,21 @@ begin
 end;
 
 function TdfElement.ElementByName(const aName: string; aEnabledOnly: Boolean = True): TdfElement;
+var
+  idx: Integer;
 begin
   if aName = '..' then
     Result := FParent
   else if aName = '.' then
     Result := Root
-  else if (Length(aName) > 2) and (aName[1] = '[') and (aName[Length(aName)] = ']') then
-    Result := Items[StrToIntDef(Copy(aName, 2, Length(aName) - 2), -1)]
-  else
+  else if (Length(aName) > 2) and (aName[1] = '[') and (aName[Length(aName)] = ']') then begin
+    idx := StrToIntDef(Copy(aName, 2, Length(aName) - 2), -1);
+    // do not raise list out of bounds exception when addressing elements by [#]
+    if (idx >= 0) and (idx < Count) then
+      Result := Items[idx]
+    else
+      Result := nil;
+  end else
     Result := nil;
 end;
 
@@ -1619,7 +1728,12 @@ begin
   if not ((aElement is TdfValue) or (aElement is TdfUnion)) then
     Exit;
 
-  EditValue := aElement.EditValue;
+  if (aElement is TdfValue) and (DataType = aElement.DataType) and (DataSize = aElement.DataSize) then begin
+    var b: TBytes;
+    aElement.SaveToData(b);
+    LoadFromData(b);
+  end else
+    EditValue := aElement.EditValue;
 end;
 
 function TdfValue.DataSize: integer;
@@ -1838,6 +1952,90 @@ begin
   else
     System.Move(FElements[Succ(CurIndex)], FElements[CurIndex], (NewIndex - CurIndex) * SizeOf(Pointer));
   FElements[NewIndex] := Element;
+end;
+
+function TdfContainer.Sort(aCompare: TListSortCompareFunc): Boolean;
+
+  function QuickSort(SortList: TdfElements; L, R: Integer): Boolean;
+  var
+    I, J: Integer;
+    P, T: Pointer;
+  begin
+    Result := False;
+    if L < R then
+    begin
+      repeat
+        if (R - L) = 1 then
+        begin
+          if aCompare(SortList[L], SortList[R]) > 0 then
+          begin
+            T := SortList[L];
+            SortList[L] := SortList[R];
+            SortList[R] := T;
+            Result := True;
+          end;
+          Break;
+        end;
+        I := L;
+        J := R;
+        P := SortList[(L + R) shr 1];
+        repeat
+          while aCompare(SortList[I], P) < 0 do
+            Inc(I);
+          while aCompare(SortList[J], P) > 0 do
+            Dec(J);
+          if I <= J then
+          begin
+            if I <> J then
+            begin
+              T := SortList[I];
+              SortList[I] := SortList[J];
+              SortList[J] := T;
+              Result := True;
+            end;
+            Inc(I);
+            Dec(J);
+          end;
+        until I > J;
+        if (J - L) > (R - I) then
+        begin
+          if I < R then
+            Result := QuickSort(SortList, I, R) or Result;
+          R := J;
+        end
+        else
+        begin
+          if L < J then
+            Result := QuickSort(SortList, L, J) or Result;
+          L := I;
+        end;
+      until L >= R;
+    end;
+  end;
+
+begin
+  if FCount > 1 then
+    Result := QuickSort(FElements, 0, FCount - 1)
+  else
+    Result := False;
+end;
+
+procedure TdfContainer.Remap(const aMap: array of Cardinal);
+begin
+  if FCount = 0 then
+    Exit;
+
+  Assert(Length(aMap) = FCount);
+
+  var NewElements: TdfElements;
+  SetLength(NewElements, FCount);
+
+  for var i := Low(NewElements) to High(NewElements) do begin
+    Assert(aMap[i] < Cardinal(FCount));
+    NewElements[aMap[i]] := fElements[i];
+  end;
+
+  System.Move(NewElements[0], fElements[0], FCount * SizeOf(Pointer));
 end;
 
 function TdfContainer.IndexOf(aElement: TdfElement): integer;
@@ -2484,7 +2682,7 @@ end;
 
 { Merge }
 
-constructor TdfMergeDef.Create(const aName: string; aDataType: TdfDataType; const aDefs: array of TdfDef);
+constructor TdfMergeDef.Create(const aName: string; aDataType: TdfDataType; const aDefs: TdfDefs);
 begin
   inherited;
   FDelimiter := ' ';
@@ -3157,20 +3355,8 @@ begin
   GetElementNativeValue(aElement, aDataStart, aDataEnd, Value);
   F := Value;
   case DataType of
+    // half floats don't need special checks
     dtFloat16: aValue := dfFloatToStr(F);
-    // half floats don't need that
-    {dtFloat16: begin
-      if IsNaN(F) then
-        aValue := 'NaN'
-      else if IsInfinite(F) then
-        aValue := 'Inf'
-      else if SameValue(F, MaxHalf) or (F > MaxHalf) then
-        aValue := 'Max'
-      else if SameValue(F, -MaxHalf) or (F < -MaxHalf) then
-        aValue := 'Min'
-      else
-        aValue := dfFloatToStr(F);
-    end;}
     dtFloat32: begin
       if IsNaN(F) then
         aValue := 'NaN'
@@ -3616,7 +3802,7 @@ end;
 
 function dfStruct(
   const aName: string;
-  const aDefs: array of TdfDef;
+  const aDefs: TdfDefs;
   const aEvents: array of const
 ): TdfStructDef;
 begin
@@ -3624,7 +3810,7 @@ begin
   Result.AssignEvents(aEvents);
 end;
 
-function dfStruct(const aName: string; const aDefs: array of TdfDef): TdfStructDef;
+function dfStruct(const aName: string; const aDefs: TdfDefs): TdfStructDef;
 begin
   Result := dfStruct(aName, aDefs, []);
 end;
@@ -3659,7 +3845,7 @@ end;
 
 function dfUnion(
   aDecider: TdfOnDecideEvent;
-  const aDefs: array of TdfDef;
+  const aDefs: TdfDefs;
   const aEvents: array of const
 ): TdfUnionDef;
 begin
@@ -3669,12 +3855,12 @@ begin
   Result.AssignEvents(aEvents);
 end;
 
-function dfUnion(const aDefs: array of TdfDef; const aEvents: array of const): TdfUnionDef;
+function dfUnion(const aDefs: TdfDefs; const aEvents: array of const): TdfUnionDef;
 begin
   Result := dfUnion(nil, aDefs, aEvents);
 end;
 
-function dfUnion(aDecider: TdfOnDecideEvent; const aDefs: array of TdfDef): TdfUnionDef;
+function dfUnion(aDecider: TdfOnDecideEvent; const aDefs: TdfDefs): TdfUnionDef;
 begin
   Result := dfUnion(aDecider, aDefs, []);
 end;
@@ -3683,7 +3869,7 @@ end;
 function dfValueUnion(
   aDataType: TdfDataType;
   aDecider: TdfOnDecideEvent;
-  const aDefs: array of TdfDef;
+  const aDefs: TdfDefs;
   const aEvents: array of const
 ): TdfValueUnionDef;
 begin
@@ -3694,7 +3880,7 @@ begin
   Result.AssignEvents(aEvents);
 end;
 
-function dfValueUnion(aDataType: TdfDataType; aDecider: TdfOnDecideEvent; const aDefs: array of TdfDef): TdfValueUnionDef;
+function dfValueUnion(aDataType: TdfDataType; aDecider: TdfOnDecideEvent; const aDefs: TdfDefs): TdfValueUnionDef;
 begin
   Result := dfValueUnion(aDataType, aDecider, aDefs, []);
 end;
@@ -3702,7 +3888,7 @@ end;
 
 function dfMerge(
   const aName: string;
-  const aDefs: array of TdfDef;
+  const aDefs: TdfDefs;
   const aDefaultValue: string;
   const aEvents: array of const
 ): TdfMergeDef;
@@ -3712,12 +3898,12 @@ begin
   Result.AssignEvents(aEvents);
 end;
 
-function dfMerge(const aName: string; const aDefs: array of TdfDef; const aEvents: array of const): TdfMergeDef;
+function dfMerge(const aName: string; const aDefs: TdfDefs; const aEvents: array of const): TdfMergeDef;
 begin
   Result := dfMerge(aName, aDefs, '', aEvents);
 end;
 
-function dfMerge(const aName: string; const aDefs: array of TdfDef): TdfMergeDef;
+function dfMerge(const aName: string; const aDefs: TdfDefs): TdfMergeDef;
 begin
   Result := dfMerge(aName, aDefs, '', []);
 end;

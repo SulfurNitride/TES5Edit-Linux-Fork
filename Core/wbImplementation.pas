@@ -2468,7 +2468,6 @@ end;
 
 procedure TwbFile.AddMasterIfMissing(const aMaster: string; aSortMasters: Boolean = True; aSilent: Boolean = False);
 var
-  i       : Integer;
   Masters : TStringList;
 begin
   if HasMaster(aMaster) then
@@ -5098,6 +5097,9 @@ begin
     if FileHeader.Signature <> wbHeaderSignature then
       raise Exception.Create('File ' + GetFileName + ' has invalid record ' + cntElements[0].Name + ' with invalid signature as file header.');
 
+    if (FileHeader.Flags._Flags and $10 <> 0) and not wbHasAddedOptimizedSupport then
+      raise Exception.Create('Modules with the "Optimized" file flag set can not be saved in ' + wbAppName + wbToolName);
+
     HEDR := FileHeader.RecordBySignature['HEDR'];
     if not Assigned(HEDR) then
       raise Exception.Create('File ' + GetFileName + ' has a file header with missing HEDR subrecord');
@@ -6872,6 +6874,9 @@ begin
   var lDef := GetDef;
   if not Assigned(lDef) or not (dfCanContainReflection in lDef.DefFlags) then
     Exit;
+
+  if dfIsReflection in lDef.DefFlags then
+    Exit(True);
 
   var SelfRef := Self as IwbContainerElementRef;
 
@@ -13202,18 +13207,18 @@ begin
                 Signature := RefRecord.Signature;
                 if Signature = 'SCEN' then begin
                   if Supports(RefRecord.ElementLinksTo['PNAM'], IwbMainRecord, MainRecord) then
-                    if MainRecord.LoadOrderFormID = GetLoadOrderFormID then
+                    if Master.IsReachable then
                       (RefRecord as IwbElementInternal).Reached;
                 end else if Signature = 'DLBR' then begin
                   if Supports(RefRecord.ElementLinksTo['QNAM'], IwbMainRecord, MainRecord) then
                     if MainRecord.LoadOrderFormID = GetLoadOrderFormID then begin
-                      if RefRecord.ElementNativeValues['DNAM'] > 0 then
+                      if Master.IsReachable then
                         (RefRecord as IwbElementInternal).Reached;
                     end;
                 end else if Signature = 'DIAL' then begin
                   if Supports(RefRecord.ElementLinksTo['QNAM'], IwbMainRecord, MainRecord) then
                     if MainRecord.LoadOrderFormID = GetLoadOrderFormID then begin
-                      if Int64(RefRecord.GetElementNativeValue('DATA\Category')) in [3, 4, 5, 7] then
+                      if Master.IsReachable then
                         (RefRecord as IwbElementInternal).Reached;
                     end;
                 end;
@@ -18874,8 +18879,7 @@ begin
   if not Assigned(lValueDef) or not (dfCanContainReflection in lValueDef.DefFlags) then
     Exit;
 
-  if lValueDef.DefType = dtReflection then
-    Exit(True);
+  Result := True;
 end;
 
 function TwbElement.ContainsUnmappedFormID: Boolean;

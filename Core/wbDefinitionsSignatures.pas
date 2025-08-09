@@ -531,6 +531,7 @@ const
   FHLS : TwbSignature = 'FHLS'; { New To Starfield }
   FIDS : TwbSignature = 'FIDS'; { New To Fallout 76 }
   FIES : TwbSignature = 'FIES'; { New To Fallout 76 }
+  FIEX : TwbSignature = 'FIEX'; { New To Fallout 76 }
   FIHA : TwbSignature = 'FIHA'; { New To Fallout 76 }
   FIHD : TwbSignature = 'FIHD'; { New To Fallout 76 }
   FIHJ : TwbSignature = 'FIHJ'; { New To Fallout 76 }
@@ -542,8 +543,10 @@ const
   FILS : TwbSignature = 'FILS'; { New To Fallout 76 }
   FIMD : TwbSignature = 'FIMD'; { New To Fallout 4 }
   FIRI : TwbSignature = 'FIRI'; { New To Fallout 76 }
+  FISD : TwbSignature = 'FISD'; { New To Fallout 76 }
   FISH : TwbSignature = 'FISH'; { New To Fallout 76 }
   FISP : TwbSignature = 'FISP'; { New To Fallout 76 }
+  FISU : TwbSignature = 'FISU'; { New To Fallout 76 }
   FLAD : TwbSignature = 'FLAD'; { New To Starfield }
   FLAG : TwbSignature = 'FLAG'; { New To Starfield }
   FLAT : TwbSignature = 'FLAT';
@@ -737,6 +740,7 @@ const
   LIMC : TwbSignature = 'LIMC'; { New To Fallout 76 }
   LINV : TwbSignature = 'LINV'; { New To Fallout 76 }
   LIPC : TwbSignature = 'LIPC'; { New To Fallout 76 }
+  LIST : TwbSignature = 'LIST';
   LKDT : TwbSignature = 'LKDT';
   LLCT : TwbSignature = 'LLCT'; { New to Skyrim, part of LVLI 'Count' }
   LLKC : TwbSignature = 'LLKC'; { New to Fallout 4 }
@@ -979,6 +983,7 @@ const
   OAAT : TwbSignature = 'OAAT';
   OBME : TwbSignature = 'OBME';
   OBND : TwbSignature = 'OBND';
+  OBJT : TwbSignature = 'OBJT';
   OBST : TwbSignature = 'OBST'; { New to Fallout 76 }
   OBSV : TwbSignature = 'OBSV'; { New To Starfield }
   OBTE : TwbSignature = 'OBTE'; { New to Fallout 4 }
@@ -1455,6 +1460,7 @@ const
   TRES : TwbSignature = 'TRES';
   TRGT : TwbSignature = 'TRGT';
   TRNS : TwbSignature = 'TRNS'; { New To Fallout 4 }
+  TROI : TwbSignature = 'TROI'; { New To Starfield }
   TROT : TwbSignature = 'TROT'; { New To Starfield }
   TSCE : TwbSignature = 'TSCE'; { New To Fallout 4 }
   TSLT : TwbSignature = 'TSLT'; { New To Fallout 76 }
@@ -1491,6 +1497,8 @@ const
   UNAM : TwbSignature = 'UNAM';
   UNES : TwbSignature = 'UNES'; { New To Skyrim }
   UNWP : TwbSignature = 'UNWP'; { New To Fallout 4 }
+  USER : TwbSignature = 'USER'; { New to Starfield }
+  USRD : TwbSignature = 'USRD'; { New to Starfield }
   UTIL : TwbSignature = 'UTIL'; { New To Fallout 76 }
   UX00 : TwbSignature = 'UX00'; { New To Starfield }
   VANM : TwbSignature = 'VANM';

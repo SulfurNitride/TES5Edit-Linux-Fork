@@ -91,8 +91,6 @@ var
   wbEmbeddedScriptReq: IwbRecordMemberDef;
   wbSCRI: IwbSubRecordDef;
   wbSCRIActor: IwbSubRecordDef;
-  wbFaceGen: IwbSubRecordStructDef;
-  wbFaceGenNPC: IwbSubRecordStructDef;
   wbENAM: IwbSubRecordDef;
 //  wbFGGS: IwbSubRecordDef;
   wbXESP: IwbSubRecordDef;
@@ -2969,45 +2967,6 @@ begin
   Result := Container.ElementByName['Type'].NativeValue + 1;
 end;
 
-procedure wbIDLAsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-var
-  Element         : IwbElement;
-  Container       : IwbContainer;
-  SelfAsContainer : IwbContainer;
-begin
-  if wbBeginInternalEdit(True) then try
-//    if not wbCounterAfterSet('IDLC - Animation Count', aElement) then
-      if Supports(aElement.Container, IwbContainer, Container) then begin
-        Element := Container.ElementByPath['IDLC\Animation Count'];
-        if Assigned(Element) and Supports(aElement, IwbContainer, SelfAsContainer) and
-          (Element.GetNativeValue<>SelfAsContainer.GetElementCount) then
-          Element.SetNativeValue(SelfAsContainer.GetElementCount);
-      end;
-  finally
-    wbEndInternalEdit;
-  end;
-end;
-
-procedure wbAnimationsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-var
-  Element         : IwbElement;
-  Elems           : IwbElement;
-  Container       : IwbContainer;
-begin
-  if wbBeginInternalEdit(True) then try
-//    if not wbCounterContainerAfterSet('IDLC - Animation Count', 'IDLA - Animations', aElement) then
-      if Supports(aElement, IwbContainer, Container) then begin
-        Element := Container.ElementByPath['IDLC\Animation Count'];
-        Elems   := Container.ElementByName['IDLA - Animations'];
-        if Assigned(Element) and not Assigned(Elems) then
-          if Element.GetNativeValue<>0 then
-            Element.SetNativeValue(0);
-      end;
-  finally
-    wbEndInternalEdit;
-  end;
-end;
-
 procedure DefineFNV;
 begin
   DefineCommon;
@@ -3955,8 +3914,7 @@ begin
           {0} wbFloat('Comparison Value - Float'),
           {1} wbFormIDCk('Comparison Value - Global', [GLOB])
           ]),
-      {3} wbInteger('Function', itU16, wbConditionFunctionToStr, wbConditionFunctionToInt)
-            .SetAfterSet(wbUpdateSameParentUnions),
+      {3} wbInteger('Function', itU16, wbConditionFunctionToStr, wbConditionFunctionToInt),
       {4} wbUnused(2),
       {5} wbUnion('Parameter #1', wbConditionParam1Decider, wbConditionParameters),
       {6} wbUnion('Parameter #2', wbConditionParam2Decider, wbConditionParameters),
@@ -4303,7 +4261,7 @@ begin
     wbString(XNAM, 'Water Noise Texture'),
     wbArrayS(XCLR, 'Regions', wbFormIDCk('Region', [REGN])),
     wbFormIDCk(XCIM, 'Image Space', [IMGS]),
-    wbByteArray(XCET, 'Unknown', 1, cpIgnore),
+    wbUnused(XCET, 1),
     wbFormIDCk(XEZN, 'Encounter Zone', [ECZN]),
     wbFormIDCk(XCCM, 'Climate', [CLMT]),
     wbFormIDCk(XCWT, 'Water', [WATR]),
@@ -5169,7 +5127,7 @@ begin
     wbFULL,
     wbGenericModel(True),
     wbDEST,
-    wbByteArray(DATA, 'Unknown', 1, cpNormal, True),
+    wbInteger(DATA, 'On Local Map', itU8, wbBoolEnum).SetRequired,
     wbFormIDCk(SNAM, 'Sound', [SOUN])
   ]);
 
@@ -5218,23 +5176,13 @@ begin
 
   wbRecord(IDLM, 'Idle Marker',
     wbFlags(wbFlagsList([
-      10, 'Quest Item',
-      29, 'Child Can Use'
+    10, 'Quest Item',
+    29, 'Child Can Use'
     ])), [
     wbEDIDReq,
     wbOBND(True),
-    wbInteger(IDLF, 'Flags', itU8, wbFlags([
-      'Run in Sequence',
-      '',
-      'Do Once'
-    ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
-    wbStruct(IDLC, '', [
-      wbInteger('Animation Count', itU8),
-      wbUnused(3)
-    ], cpNormal, True, nil, 1),
-    wbFloat(IDLT, 'Idle Timer Setting', cpNormal, True),
-    wbArray(IDLA, 'Animations', wbFormIDCk('Animation', [IDLE, NULL]), 0, nil, wbIDLAsAfterSet, cpNormal, True)  // NULL looks valid if IDLS\Animation Count is 0
-  ], False, nil, cpNormal, False, nil, wbAnimationsAfterSet);
+    wbIdleAnimation
+  ]);
 
   wbRecord(NOTE, 'Note', [
     wbEDIDReq,
@@ -5356,12 +5304,16 @@ begin
           .SetSummaryDelimiter(', ')
           .IncludeFlag(dfCollapsed, wbCollapsePlacement)
           .IncludeFlag(dfSummaryMembersNoName),
-        wbVec3,
+        wbVec3('Approx Location'),
         wbUnion('Island Data', wbNAVINVMIDecider, [
-          wbStruct('Unused', [wbEmpty('Unused')]).IncludeFlag(dfCollapsed, wbCollapseOther),
+          wbStruct('Unused', [wbEmpty('Unused')])
+            .SetDontShow(wbNeverShow)
+            .IncludeFlag(dfCollapsed, wbCollapseOther),
           wbStruct('Island Data', [
-            wbVec3('Min'),
-            wbVec3('Max'),
+            wbStruct('Navmesh Bounds', [
+              wbVec3('Min'),
+              wbVec3('Max')
+            ]),
             wbInteger('Vertex Count', itU16),
             wbInteger('Triangle Count', itU16),
             wbArray('Vertices',
@@ -5378,10 +5330,10 @@ begin
             ).SetCountPath('Triangle Count', True)
              .IncludeFlag(dfCollapsed, wbCollapseVertices)
              .IncludeFlag(dfNotAlignable)
-          ]).SetSummaryKey([5])
+          ]).SetSummaryKey([4])
             .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
         ]).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
-        wbUnknown
+        wbFloat('Preferred %')
       ]).SetSummaryKeyOnValue([1,2,5])
         .SetSummaryPrefixSuffixOnValue(1, '', '')
         .SetSummaryPrefixSuffixOnValue(2, 'in ', '')
@@ -5466,8 +5418,10 @@ begin
       wbInteger('Divisor', itU32),
       wbFloat('Max X Distance'),
       wbFloat('Max Y Distance'),
-      wbVec3('Min'),
-      wbVec3('Max'),
+      wbStruct('Navmesh Bounds', [
+        wbVec3('Min'),
+        wbVec3('Max')
+      ]),
       IfThen(wbSimpleRecords,
         wbArray('Cells',
           wbArray('Cell',
@@ -5846,93 +5800,81 @@ begin
   ]);
 
   wbRecord(IMAD, 'Image Space Adapter', [
-    wbEDID,
-    wbStruct(DNAM, 'Data Count', [
-      wbInteger('Flags', itU32, wbFlags(['Animatable'])).IncludeFlag(dfCollapsed, wbCollapseFlags),
+    wbEDID.SetRequired,
+    wbStruct(DNAM, 'Data', [
+      wbInteger('Animatable', itU32, wbBoolEnum),
       wbFloat('Duration'),
       wbStruct('HDR', [
-        wbInteger('Eye Adapt Speed Mult', itU32),
-        wbInteger('Eye Adapt Speed Add', itU32),
-        wbInteger('Bloom Blur Radius Mult', itU32),
-        wbInteger('Bloom Blur Radius Add', itU32),
-        wbInteger('Bloom Threshold Mult', itU32),
-        wbInteger('Bloom Threshold Add', itU32),
-        wbInteger('Bloom Scale Mult', itU32),
-        wbInteger('Bloom Scale Add', itU32),
-        wbInteger('Target Lum Min Mult', itU32),
-        wbInteger('Target Lum Min Add', itU32),
-        wbInteger('Target Lum Max Mult', itU32),
-        wbInteger('Target Lum Max Add', itU32),
-        wbInteger('Sunlight Scale Mult', itU32),
-        wbInteger('Sunlight Scale Add', itU32),
-        wbInteger('Sky Scale Mult', itU32),
-        wbInteger('Sky Scale Add', itU32)
+        wbIMADMultAddCount('Eye Adapt Speed'),
+        wbIMADMultAddCount('Blur Radius'),
+        wbIMADMultAddCount('Skin Dimmer'),
+        wbIMADMultAddCount('Emissive Mult'),
+        wbIMADMultAddCount('Target Lum'),
+        wbIMADMultAddCount('Upper Lum Clamp'),
+        wbIMADMultAddCount('Bright Scale'),
+        wbIMADMultAddCount('Bright Clamp'),
+        wbIMADMultAddCount('LUM Ramp No Tex'),
+        wbIMADMultAddCount('LUM Ramp Min'),
+        wbIMADMultAddCount('LUM Ramp Max'),
+        wbIMADMultAddCount('Sunlight Dimmer'),
+        wbIMADMultAddCount('Grass Dimmer'),
+        wbIMADMultAddCount('Tree Dimmer')
       ]),
-      wbInteger('Unknown08 Mult', itU32),
-      wbInteger('Unknown48 Add', itU32),
-      wbInteger('Unknown09 Mult', itU32),
-      wbInteger('Unknown49 Add', itU32),
-      wbInteger('Unknown0A Mult', itU32),
-      wbInteger('Unknown4A Add', itU32),
-      wbInteger('Unknown0B Mult', itU32),
-      wbInteger('Unknown4B Add', itU32),
-      wbInteger('Unknown0C Mult', itU32),
-      wbInteger('Unknown4C Add', itU32),
-      wbInteger('Unknown0D Mult', itU32),
-      wbInteger('Unknown4D Add', itU32),
-      wbInteger('Unknown0E Mult', itU32),
-      wbInteger('Unknown4E Add', itU32),
-      wbInteger('Unknown0F Mult', itU32),
-      wbInteger('Unknown4F Add', itU32),
-      wbInteger('Unknown10 Mult', itU32),
-      wbInteger('Unknown50 Add', itU32),
+      wbStruct('Bloom', [
+        wbIMADMultAddCount('Blur Radius'),
+        wbIMADMultAddCount('Alpha Mult Interior'),
+        wbIMADMultAddCount('Alpha Mult Exterior')
+      ]),
       wbStruct('Cinematic', [
-        wbInteger('Saturation Mult', itU32),
-        wbInteger('Saturation Add', itU32),
-        wbInteger('Brightness Mult', itU32),
-        wbInteger('Brightness Add', itU32),
-        wbInteger('Contrast Mult', itU32),
-        wbInteger('Contrast Add', itU32)
+        wbIMADMultAddCount('Saturation'),
+        wbIMADMultAddCount('Contrast'),
+        wbIMADMultAddCount('Contrast Avg Lum'),
+        wbIMADMultAddCount('Brightness')
       ]),
-      wbInteger('Unknown14 Mult', itU32),
-      wbInteger('Unknown54 Add', itU32),
       wbInteger('Tint Color', itU32),
       wbInteger('Blur Radius', itU32),
       wbInteger('Double Vision Strength', itU32),
       wbInteger('Radial Blur Strength', itU32),
       wbInteger('Radial Blur Ramp Up', itU32),
       wbInteger('Radial Blur Start', itU32),
-      wbInteger('Radial Blur Flags', itU32, wbFlags(['Use Target'])).IncludeFlag(dfCollapsed, wbCollapseFlags),
+      wbInteger('Radial Blur - Use Target', itU32, wbBoolEnum),
       wbFloat('Radial Blur Center X'),
       wbFloat('Radial Blur Center Y'),
       wbInteger('DoF Strength', itU32),
       wbInteger('DoF Distance', itU32),
       wbInteger('DoF Range', itU32),
-      wbInteger('DoF Use Target', itU8, wbBoolEnum),
-      wbInteger('Unused', itU8),
-      wbInteger('Unused', itU16),
+      wbInteger('DoF - Use Target', itU8, wbBoolEnum),
+      wbInteger('DoF Flags', itU8,
+        wbFlags([
+        {0} 'Mode - Front',
+        {1} 'Mode - Back',
+        {2} 'No Sky',
+        {3} 'Unknown 3',
+        {4} 'Unknown 4',
+        {5} 'Unknown 5'
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
+      wbUnused(2),
       wbInteger('Radial Blur Ramp Down', itU32),
       wbInteger('Radial Blur Down Start', itU32),
       wbInteger('Fade Color', itU32),
       wbInteger('Motion Blur Strength', itU32)
-    ], cpNormal, True, nil, 26),
-
+    ], cpNormal, True, nil, 8),
     wbTimeInterpolators(BNAM, 'Blur Radius'),
     wbTimeInterpolators(VNAM, 'Double Vision Strength'),
-    wbArray(TNAM, 'Tint Color', wbColorInterpolator),
-    wbArray(NAM3, 'Fade Color', wbColorInterpolator),
+    wbArray(TNAM, 'Tint Color', wbColorInterpolator).SetRequired,
+    wbArray(NAM3, 'Fade Color', wbColorInterpolator).SetRequired,
     wbRStruct('Radial Blur', [
       wbTimeInterpolators(RNAM, 'Strength'),
       wbTimeInterpolators(SNAM, 'Ramp Up'),
       wbTimeInterpolators(UNAM, 'Start'),
       wbTimeInterpolators(NAM1, 'Ramp Down'),
       wbTimeInterpolators(NAM2, 'Down Start')
-    ]),
-    wbRStruct('Depht of Field', [
+    ]).SetRequired,
+    wbRStruct('Depth of Field', [
       wbTimeInterpolators(WNAM, 'Strength'),
       wbTimeInterpolators(XNAM, 'Distance'),
       wbTimeInterpolators(YNAM, 'Range')
-    ]),
+    ]).SetRequired,
     wbTimeInterpolators(NAM4, 'Motion Blur Strength'),
     wbRStruct('HDR', [
       wbTimeInterpolatorsMultAdd(_00_IAD, _40_IAD, 'Eye Adapt Speed'),
@@ -5949,13 +5891,18 @@ begin
       wbTimeInterpolatorsMultAdd(_0B_IAD, _4B_IAD, 'Sunlight Dimmer'),
       wbTimeInterpolatorsMultAdd(_0C_IAD, _4C_IAD, 'Grass Dimmer'),
       wbTimeInterpolatorsMultAdd(_0D_IAD, _4D_IAD, 'Tree Dimmer')
-    ]),
+    ]).SetRequired,
     wbRStruct('Bloom', [
       wbTimeInterpolatorsMultAdd(_0E_IAD, _4E_IAD, 'Blur Radius'),
       wbTimeInterpolatorsMultAdd(_0F_IAD, _4F_IAD, 'Alpha Mult Interior'),
       wbTimeInterpolatorsMultAdd(_10_IAD, _50_IAD, 'Alpha Mult Exterior')
-    ]),
-    wbCinematicIMAD,
+    ]).SetRequired,
+    wbRStruct('Cinematic', [
+      wbTimeInterpolatorsMultAdd(_11_IAD, _51_IAD, 'Saturation'),
+      wbTimeInterpolatorsMultAdd(_12_IAD, _52_IAD, 'Contrast'),
+      wbTimeInterpolatorsMultAdd(_13_IAD, _53_IAD, 'Contrast Avg Lum'),
+      wbTimeInterpolatorsMultAdd(_14_IAD, _54_IAD, 'Brightness')
+    ]).SetRequired,
     wbFormIDCk(RDSD, 'Sound - Intro', [SOUN]),
     wbFormIDCk(RDSI, 'Sound - Outro', [SOUN])
   ]);
@@ -6395,43 +6342,46 @@ begin
   ]);
 
   wbRecord(DOBJ, 'Default Object Manager', [
-    wbEDIDReq,
-    wbArray(DATA, 'Default Objects', wbFormID('Default Object'), [
-      'Stimpak',
-      'SuperStimpak',
-      'RadX',
-      'RadAway',
-      'Morphine',
-      'Perk Paralysis',
-      'Player Faction',
-      'Mysterious Stranger NPC',
-      'Mysterious Stranger Faction',
-      'Default Music',
-      'Battle Music',
-      'Death Music',
-      'Success Music',
-      'Level Up Music',
-      'Player Voice (Male)',
-      'Player Voice (Male Child)',
-      'Player Voice (Female)',
-      'Player Voice (Female Child)',
-      'Eat Package Default Food',
-      'Every Actor Ability',
-      'Drug Wears Off Image Space',
-      'Doctor''s Bag',
-      'Miss Fortune NPC',
-      'Miss Fortune Faction',
-      'Meltdown Explosion',
-      'Unarmed Forward PA',
-      'Unarmed Backward PA',
-      'Unarmed Left PA',
-      'Unarmed Right PA',
-      'Unarmed Crouch PA',
-      'Unarmed Counter PA',
-      'Spotter Effect',
-      'Item Detected Effect',
-      'Cateye Mobile Effect (NYI)'
-    ], cpNormal, True)
+    wbString(EDID, 'Editor ID')
+      .SetDefaultNativeValue('DefaultObjectManager')
+      .SetRequired
+      .IncludeFlag(dfInternalEditOnly),
+    wbStruct(DATA, 'Default Objects', [
+      wbFormIDCk('Stimpak', [ALCH,NULL]),
+      wbFormIDCk('Super Stimpak', [ALCH,NULL]),
+      wbFormIDCk('Rad X', [ALCH,NULL]),
+      wbFormIDCk('Rad Away', [ALCH,NULL]),
+      wbFormIDCk('Morphine', [ALCH,NULL]),
+      wbFormIDCk('Perk Paralysis', [SPEL,NULL]),
+      wbFormIDCk('Player Faction', [FACT,NULL]),
+      wbFormIDCk('Mysterious Stranger NPC', [NPC_,NULL]),
+      wbFormIDCk('Mysterious Stranger Faction', [FACT,NULL]),
+      wbFormIDCk('Default Music', [MUSC,NULL]),
+      wbFormIDCk('Battle Music', [MUSC,NULL]),
+      wbFormIDCk('Death Music', [MUSC,NULL]),
+      wbFormIDCk('Success Music', [MUSC,NULL]),
+      wbFormIDCk('Level Up Music', [MUSC,NULL]),
+      wbFormIDCk('Player Voice (Male)', [VTYP,NULL]),
+      wbFormIDCk('Player Voice (Male Child)', [VTYP,NULL]),
+      wbFormIDCk('Player Voice (Female)', [VTYP,NULL]),
+      wbFormIDCk('Player Voice (Female Child)', [VTYP,NULL]),
+      wbFormIDCk('Eat Package Default Food', [FLST,NULL]),
+      wbFormIDCk('Every Actor Ability', [SPEL,NULL]),
+      wbFormIDCk('Drug Wears Off Image Space', [IMAD,NULL]),
+      wbFormIDCk('Doctor''s Bag', [ALCH,NULL]),
+      wbFormIDCk('Miss Fortune NPC', [NPC_,NULL]),
+      wbFormIDCk('Miss Fortune Faction', [FACT,NULL]),
+      wbFormIDCk('Meltdown Explosion', [EXPL,NULL]),
+      wbFormIDCk('Unarmed Forward PA', [SPEL,NULL]),
+      wbFormIDCk('Unarmed Backward PA', [SPEL,NULL]),
+      wbFormIDCk('Unarmed Left PA', [SPEL,NULL]),
+      wbFormIDCk('Unarmed Right PA', [SPEL,NULL]),
+      wbFormIDCk('Unarmed Crouch PA', [SPEL,NULL]),
+      wbFormIDCk('Unarmed Counter PA', [SPEL,NULL]),
+      wbFormIDCk('Spotter Effect', [EFSH,NULL]),
+      wbFormIDCk('Item  Detected Effect', [EFSH,NULL]),
+      wbFormIDCk('Cateye Mobile Effect (NYI)', [EFSH,NULL])
+    ]).SetRequired
   ]);
 
   wbRecord(LGTM, 'Lighting Template', [
@@ -6950,33 +6900,6 @@ begin
     ], cpNormal, True)
   ]);
 
-  // floats are reported to change faces after copying
-  if True {wbSimpleRecords} then begin
-    wbFaceGen := wbRStruct('FaceGen Data', [
-      wbByteArray(FGGS, 'FaceGen Geometry-Symmetric', 0, cpNormal, True),
-      wbByteArray(FGGA, 'FaceGen Geometry-Asymmetric', 0, cpNormal, True),
-      wbByteArray(FGTS, 'FaceGen Texture-Symmetric', 0, cpNormal, True)
-    ], [], cpNormal, True);
-
-    wbFaceGenNPC := wbRStruct('FaceGen Data', [  // Arrays of 4bytes elements
-      wbByteArray(FGGS, 'FaceGen Geometry-Symmetric', 0, cpNormal, True),
-      wbByteArray(FGGA, 'FaceGen Geometry-Asymmetric', 0, cpNormal, True),
-      wbByteArray(FGTS, 'FaceGen Texture-Symmetric', 0, cpNormal, True)
-    ], [], cpNormal, True, wbActorTemplateUseModelAnimation);
-  end else begin
-    wbFaceGen := wbRStruct('FaceGen Data', [
-      wbArray(FGGS, 'FaceGen Geometry-Symmetric',  wbFloat('Value'), [], cpNormal, True),
-      wbArray(FGGA, 'FaceGen Geometry-Asymmetric', wbFloat('Value'), [], cpNormal, True),
-      wbArray(FGTS, 'FaceGen Texture-Symmetric',   wbFloat('Value'), [], cpNormal, True)
-    ], [], cpNormal, True);
-
-    wbFaceGenNPC := wbRStruct('FaceGen Data', [
-      wbArray(FGGS, 'FaceGen Geometry-Symmetric',  wbFloat('Value'), [], cpNormal, True),
-      wbArray(FGGA, 'FaceGen Geometry-Asymmetric', wbFloat('Value'), [], cpNormal, True),
-      wbArray(FGTS, 'FaceGen Texture-Symmetric',   wbFloat('Value'), [], cpNormal, True)
-    ], [], cpNormal, True, wbActorTemplateUseModelAnimation);
-  end;
-
   wbRecord(NPC_, 'Non-Player Character',
     wbFlags(wbFlagsList([
       10, 'Quest Item',
@@ -7142,7 +7065,7 @@ begin
     wbByteColors(HCLR, 'Hair color').SetRequired.SetDontShow(wbActorTemplateUseModelAnimation),
     wbFormIDCk(ZNAM, 'Combat Style', [CSTY], False, cpNormal, False, wbActorTemplateUseTraits),
     wbInteger(NAM4, 'Impact Material Type', itU32, wbActorImpactMaterialEnum, cpNormal, True, False, wbActorTemplateUseModelAnimation),
-    wbFaceGenNPC,
+    wbFaceGen.SetDontShow(wbActorTemplateUseModelAnimation),
     wbInteger(NAM5, 'Unknown', itU16, nil, cpNormal, True, False, nil, nil, 255),
     wbFloat(NAM6, 'Height', cpNormal, True, 1, -1, wbActorTemplateUseTraits),
     wbFloat(NAM7, 'Weight', cpNormal, True, 1, -1, wbActorTemplateUseTraits)
@@ -7352,20 +7275,7 @@ begin
       wbFloat('Unknown')
     ], cpNormal, False, nil, 3),
     wbConditions,
-    wbRStruct('Idle Animations', [
-      wbInteger(IDLF, 'Flags', itU8, wbFlags([
-        'Run in Sequence',
-        '',
-        'Do Once'
-      ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
-      wbStruct(IDLC, '', [
-        wbInteger( 'Animation Count', itU8),
-        wbUnused(3)
-      ], cpNormal, True, nil, 1),
-      wbFloat(IDLT, 'Idle Timer Setting', cpNormal, True),
-      wbArray(IDLA, 'Animations', wbFormIDCk('Animation', [IDLE]), 0, nil, wbIDLAsAfterSet, cpNormal, True),
-      wbByteArray(IDLB, 'Unused', 4, cpIgnore)
-    ], [], cpNormal, False, nil, False, nil {cannot be totally removed , wbAnimationsAfterSet}),
+    wbIdleAnimation,
     wbFormIDCk(CNAM, 'Combat Style', [CSTY]),
     wbEmpty(PKED, 'Eat Marker'),
     wbInteger(PKE2, 'Escort Distance', itU32),
@@ -8959,9 +8869,9 @@ begin
       {15} wbInteger('Reload Animation', itU8, wbReloadAnimEnum),
       {16} wbFloat('Min Spread'),
       {20} wbFloat('Spread'),
-      {24} wbFloat('Unknown'),
+      {24} wbUnused(4),
       {28} wbFloat('Sight FOV'),
-      {32} wbFloat,
+      {32} wbUnused(4),
       {36} wbFormIDCk('Projectile', [PROJ, NULL]),
       {40} wbInteger('Base VATS To-Hit Chance', itU8),
       {41} wbInteger('Attack Animation', itU8, wbEnum([

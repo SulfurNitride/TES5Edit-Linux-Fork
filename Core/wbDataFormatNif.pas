@@ -1,7 +1,7 @@
 {******************************************************************************
 
-  This Source Code Form is subject to the terms of the Mozilla Public License, 
-  v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain 
+  This Source Code Form is subject to the terms of the Mozilla Public License,
+  v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain
   one at https://mozilla.org/MPL/2.0/.
 
 *******************************************************************************}
@@ -12,12 +12,23 @@ interface
 
 uses
   Types, SysUtils, StrUtils, Classes, Variants, wbDataFormat, JsonDataObjects,
-  wbNifMath;
+  wbNifMath, wbMeshOptimize;
+
+const
+  sTES4TangentsExtraDataName = 'Tangent space (binormal & tangent vectors)';
 
 type
   TwbNifVersion = (nfUnknown, nfTES3, nfTES4, nfFO3, nfTES5, nfSSE, nfFO4);
+
   TwbNifOption = (nfoCollapseLinkArrays, nfoRemoveUnusedStrings);
   TwbNifOptions = set of TwbNifOption;
+
+  TwbApplyTransformOption = (atrSkinned, atrAnimated, atrCollision, atrRoot, atrCtrlManager);
+  TwbApplyTransformOptions = set of TwbApplyTransformOption;
+
+  TwbMeshOptimizeOption = (moVertexCache, moOverdraw, moVertexFetch, moTriangulate, moStripify);
+  TwbMeshOptimizeOptions = set of TwbMeshOptimizeOption;
+
 
   TwbNiRefDef = class(TdfIntegerDef)
   private
@@ -64,6 +75,10 @@ type
     function GetRefsCount: Integer;
     function GetString(Index: Integer): TdfElement;
     function GetStringsCount: Integer;
+    function GetIsHidden: Boolean;
+    function GetIsBone: Boolean;
+    function GetIsDynamicRigidBody: Boolean;
+    function GetIsEditorMarker: Boolean;
   public
     constructor Create(const aDef: TdfDef; const aParent: TdfElement); override;
     destructor Destroy; override;
@@ -74,6 +89,7 @@ type
     procedure RemoveString(const aElement: TdfElement);
     function IsNiObject(const aTemplate: string; aInherited: Boolean = True): Boolean;
     function IsReferenced: Boolean;
+    function ReferencedBy: TdfElements;
     function AddChild(const aBlockType: string): TwbNifBlock;
     function AddExtraData(const aBlockType: string): TwbNifBlock;
     function AddProperty(const aBlockType: string): TwbNifBlock;
@@ -90,18 +106,33 @@ type
     function GetNormals(aElement: TdfElement = nil): TVector3Array;
     function GetTexCoord(aElement: TdfElement = nil): TVector2Array;
     function GetTriangles(aElement: TdfElement = nil): TTriangleArray;
+    function SetTriangles(const aTris: TTriangleArray; aElement: TdfElement = nil): Boolean;
     function GetStrips(aElement: TdfElement = nil): TStripArray;
+    function SetStrips(const aStrips: TStripArray; aElement: TdfElement = nil): Boolean;
+    function GetTransform(var aTransform: TTransform): Boolean;
+    function SetTransform(aTransform: TTransform): Boolean;
+    function GetBoundSphere(var aSphere: TBoundSphere): Boolean;
+    function SetBoundSphere(aSphere: TBoundSphere): Boolean;
+    function GetSkin: TwbNifBlock;
+    function GetCollision: TwbNifBlock;
+    function GetController: TwbNifBlock;
+    function GetAssetsList: TStringDynArray; // deprecated, use TwbNifFile.GetAssetsList
+    function GetStringPaletteString(aIndex: Integer): string;
+    function ApplyTransform(aRecursive: Boolean = False; aOptions: TwbApplyTransformOptions = []): Boolean;
     function UpdateBounds: Boolean;
     function UpdateNormals(aAddIfMissing: Boolean = True): Boolean;
     function UpdateTangents(aAddIfMissing: Boolean = True): Boolean;
-    function GetAssetsList: TStringDynArray;
-    procedure RemoveBranch;
+    procedure RemoveBranch(aEvenIfUsed: Boolean = False);
     property BlockType: string read GetBlockType;
     property NifFile: TwbNifFile read GetNifFile;
     property RefsCount: Integer read GetRefsCount;
     property StringsCount: Integer read GetStringsCount;
     property Refs[Index: Integer]: TwbNiRef read GetRef;
     property Strings[Index: Integer]: TdfElement read GetString;
+    property Hidden: Boolean read GetIsHidden;
+    property IsBone: Boolean read GetIsBone;
+    property IsDynamicRigidBody: Boolean read GetIsDynamicRigidBody;
+    property IsEditorMarker: Boolean read GetIsEditorMarker;
   end;
 
   TwbNifFile = class(TdfContainer)
@@ -114,6 +145,8 @@ type
   protected
     function GetHeader: TwbNifBlock;
     function GetFooter: TwbNifBlock;
+    function GetRootNodes: TwbNifBlocks;
+    function GetRootNode: TwbNifBlock;
     function GetBlocksCount: Integer;
     function GetBlock(Index: Integer): TwbNifBlock;
     procedure SetNifVersion(aVersion: TwbNifVersion);
@@ -136,17 +169,25 @@ type
     function CopyBlock(Index: Integer): TwbNifBlock;
     function BlocksByType(const aBlockType: string; aInherited: Boolean = False): TwbNifBlocks;
     function BlockByType(const aBlockType: string; aInherited: Boolean = False): TwbNifBlock;
-    function BlockByName(const aBlockName: string): TwbNifBlock;
+    function BlockByName(const aBlockName: string; const aBlockType: string = ''): TwbNifBlock;
     function BlockByPath(const aBlockPath: string): TwbNifBlock;
+    function GetAssets: TdfElements;
+    function GetAssetsList: TStringDynArray;
+    function GetLinkArrays: TdfElements;
+    function GetUniqueName(const aName: string): string;
+    function DetectBSXFlags: Cardinal;
+    function SpellOptimize(aOptions: TwbMeshOptimizeOptions = [moVertexCache, moOverdraw]): Boolean;
+    function SpellStripify: Boolean;
     function SpellTriangulate: Boolean;
     function SpellFaceNormals: Boolean;
     function SpellUpdateTangents: Boolean;
     function SpellAddUpdateTangents: Boolean;
-    function GetAssetsList: TStringDynArray;
     property NifVersion: TwbNifVersion read FNifVersion write SetNifVersion;
     property Options: TwbNifOptions read FOptions write FOptions;
     property Header: TwbNifBlock read GetHeader;
     property Footer: TwbNifBlock read GetFooter;
+    property RootNodes: TwbNifBlocks read GetRootNodes;
+    property RootNode: TwbNifBlock read GetRootNode;
     property BlocksCount: Integer read GetBlocksCount;
     property Blocks[Index: Integer]: TwbNifBlock read GetBlock;
     property InternalUpdates: Boolean read FInternalUpdates write FInternalUpdates;
@@ -158,6 +199,8 @@ type
 function wbNiObjectExists(const aNiObject: string): Boolean;
 procedure wbNiObjectCheckDups;
 }
+function wbNiObjectList: TArray<string>;
+function nifblk(const e: TdfElement): TwbNifBlock;
 
 implementation
 
@@ -438,6 +481,19 @@ begin
 end;
 }
 
+function wbNiObjectList: TArray<string>;
+begin
+  if not NifDefsInitialized then begin
+    wbDefineNif;
+    NifDefsInitialized := True;
+  end;
+
+  SetLength(Result, Length(NiObjectInfos.NiObjects));
+  for var i := Low(NiObjectInfos.NiObjects) to High(NiObjectInfos.NiObjects) do
+    Result[i] := NiObjectInfos.NiObjects[i].Def.Name;
+end;
+
+
 function wbNiObjectDef(const aNiObject: string): TdfDef;
 var
   i: integer;
@@ -500,7 +556,7 @@ end;
 
 function wbNifBlock(
   const aName: string;
-  const aDefs: array of TdfDef;
+  const aDefs: TdfDefs;
   const aEvents: array of const
 ): TwbNifBlockDef; overload;
 begin
@@ -508,7 +564,7 @@ begin
   Result.AssignEvents(aEvents);
 end;
 
-function wbNifBlock(const aName: string; const aDefs: array of TdfDef): TwbNifBlockDef; overload;
+function wbNifBlock(const aName: string; const aDefs: TdfDefs): TwbNifBlockDef; overload;
 begin
   Result := wbNifBlock(aName, aDefs, []);
 end;
@@ -610,12 +666,11 @@ begin
   Result := (not aInherited and (BlockType = aTemplate)) or (aInherited and wbIsNiObject(BlockType, aTemplate));
 end;
 
-function TwbNifBlock.IsReferenced: Boolean;
+function TwbNifBlock.ReferencedBy: TdfElements;
 var
   i, j: Integer;
   b: TwbNifBlock;
 begin
-  Result := False;
   for i := 0 to Pred(Self.NifFile.BlocksCount) do begin
     b := Self.NifFile.Blocks[i];
     // skip checking for self referencing
@@ -624,10 +679,64 @@ begin
 
     for j := 0 to Pred(b.RefsCount) do
       if TwbNifBlock(b.Refs[j].LinksTo) = Self then begin
-        Result := True;
-        Exit;
+        SetLength(Result, Succ(Length(Result)));
+        Result[Pred(Length(Result))] := b.Refs[j];
       end;
   end;
+end;
+
+function TwbNifBlock.IsReferenced: Boolean;
+begin
+  Result := Length(ReferencedBy) <> 0;
+end;
+
+function TwbNifBlock.GetIsHidden: Boolean;
+begin
+  if IsNiObject('NiAVObject', True) then
+    Result := (NativeValues['Flags'] and 1) <> 0
+  else
+    Result := False;
+end;
+
+function TwbNifBlock.GetIsBone: Boolean;
+begin
+  Result := False;
+
+  if not IsNiObject('NiNode', True) then
+    Exit;
+
+  for var r in ReferencedBy do
+    if r.Def.Name.StartsWith('Bones', True) then begin
+      Result := True;
+      Exit;
+    end;
+end;
+
+function TwbNifBlock.GetIsDynamicRigidBody: Boolean;
+begin
+  Result := False;
+
+  if not IsNiObject('bhkRigidBody', True) then
+    Exit;
+
+  var layer := NativeValues['Havok Filter\Layer'];
+  var ms := EditValues['Motion System'];
+  var mq := EditValues['Motion Quality'];
+
+  Result :=
+    // not undefined, static or animstatic layer
+    (layer > 2) and
+    (ms <> 'MO_SYS_INVALID') and
+    (ms <> 'MO_SYS_FIXED') and
+    (mq <> 'MO_QUAL_INVALID') and
+    (mq <> 'MO_QUAL_FIXED') and
+    // keyframed biped layer is dynamic
+    ( (ms <> 'MO_SYS_KEYFRAMED') or (layer = 8) );
+end;
+
+function TwbNifBlock.GetIsEditorMarker: Boolean;
+begin
+  Result := IsNiObject('NiObjectNET', True) and ContainsText(EditValues['Name'], 'EditorMarker');
 end;
 
 function TwbNifBlock.AddChild(const aBlockType: string): TwbNifBlock;
@@ -990,7 +1099,7 @@ begin
   if not Assigned(aElement) then
     aElement := Self;
 
-  if IsNiObject('BSTriShape') then begin
+  if IsNiObject('BSTriShape') or (BlockType = 'NiSkinPartition') then begin
     if not aElement.NativeValues['VertexDesc\VF\VF_NORMAL'] then
       Exit;
 
@@ -1000,7 +1109,7 @@ begin
 
     SetLength(Result, Entries.Count);
     for i := 0 to Pred(Entries.Count) do
-      wbGetVector3(Result[i], Entries[i][4], True); // Elements['Normal'];
+      wbGetVector3(Result[i], Entries[i].Elements['Normal'], True);
   end
 
   else if IsNiObject('NiTriBasedGeomData') then begin
@@ -1024,7 +1133,7 @@ begin
   if not Assigned(aElement) then
     aElement := Self;
 
-  if IsNiObject('BSTriShape') then begin
+  if IsNiObject('BSTriShape') or (BlockType = 'NiSkinPartition') then begin
     if not aElement.NativeValues['VertexDesc\VF\VF_UV'] then
       Exit;
 
@@ -1034,7 +1143,7 @@ begin
 
     SetLength(Result, Entries.Count);
     for i := 0 to Pred(Entries.Count) do
-      wbGetVector2(Result[i], Entries[i][3], True); // Elements['UV'];
+      wbGetVector2(Result[i], Entries[i].Elements['UV'], True);
   end
 
   else if IsNiObject('NiTriBasedGeomData') then begin
@@ -1055,8 +1164,18 @@ var
 begin
   Result := nil;
 
-  if not Assigned(aElement) then
+  if not Assigned(aElement) then begin
     aElement := Self;
+
+    // get tris from partitions, only if aElement = nil to avoid recursion
+    if BlockType = 'NiSkinPartition' then begin
+      Entries := Elements['Partitions'];
+      if Assigned(Entries) then
+        for i := 0 to Pred(Entries.Count) do
+          Result := Result + GetTriangles(Entries[i]);
+      Exit;
+    end;
+  end;
 
   Entries := aElement.Elements['Triangles'];
   if Assigned(Entries) then begin
@@ -1065,7 +1184,48 @@ begin
       wbGetTriangle(Result[i], Entries[i]);
   end
   else
-    Result := TriangulateStrips(GetStrips);
+    Result := TriangulateStrips(GetStrips(aElement));
+end;
+
+function TwbNifBlock.SetTriangles(const aTris: TTriangleArray; aElement: TdfElement = nil): Boolean;
+var
+  i: integer;
+  Entries: TdfElement;
+begin
+  Result := False;
+
+  if not Assigned(aElement) then
+    aElement := Self;
+
+  var NumTriangles := aElement.Elements['Num Triangles'];
+  if not Assigned(NumTriangles) then
+    Exit;
+
+  var MaxTris: Cardinal := High(Word);
+  if NumTriangles.DataSize = SizeOf(Cardinal) then
+    MaxTris := High(Cardinal);
+
+  if Length(aTris) > MaxTris then
+    raise Exception.Create(Self.Name + ': Num Triangles ' + Length(aTris).ToString + ' > ' + MaxTris.ToString);
+
+  Entries := aElement.Elements['Triangles'];
+  if not Assigned(Entries) then
+    Exit;
+
+  Entries.Count := Length(aTris);
+  NumTriangles.NativeValue := Entries.Count;
+  for i := 0 to Pred(Entries.Count) do
+    wbSetTriangle(aTris[i], Entries[i]);
+
+  Entries := aElement.Elements['Triangles Copy'];
+  if not Assigned(Entries) then
+    Exit;
+
+  Entries.Count := Length(aTris);
+  for i := 0 to Pred(Entries.Count) do
+    wbSetTriangle(aTris[i], Entries[i]);
+
+  Result := True;
 end;
 
 function TwbNifBlock.GetStrips(aElement: TdfElement = nil): TStripArray;
@@ -1090,79 +1250,517 @@ begin
   end;
 end;
 
-function TwbNifBlock.UpdateBounds: Boolean;
+function TwbNifBlock.SetStrips(const aStrips: TStripArray; aElement: TdfElement = nil): Boolean;
 var
-  skin, skinpart: TwbNifBlock;
-  verts: TVector3Array;
-  center: TVector3;
-  r: Extended;
+  i, j: integer;
+  Entries, e: TdfElement;
+begin
+  Result := False;
+
+  if not Assigned(aElement) then
+    aElement := Self;
+
+  aElement.NativeValues['Num Strips'] := Length(aStrips);
+
+  if Length(aStrips) <> 0 then begin
+    aElement.NativeValues['Has Points'] := 1;
+
+    var tris := 0;
+    for var s in aStrips do Inc(tris, Length(s) - 2);
+    if tris > High(Word) then
+      raise Exception.Create(Self.Name + ': Num Triangles ' + IntToStr(tris) + ' > 65535');
+
+    aElement.NativeValues['Num Triangles'] := tris;
+  end else
+    Exit;
+
+  Entries := aElement.Elements['Strips'];
+  if not Assigned(Entries) then
+    Exit;
+
+  Entries.Count := Length(aStrips);
+  for i := 0 to Pred(Entries.Count) do begin
+    e := Entries[i];
+    e.Count := Length(aStrips[i]);
+    for j := 0 to Pred(e.Count) do
+      e[j].NativeValue := aStrips[i][j];
+  end;
+
+  Entries := aElement.Elements['Strip Lengths'];
+  if not Assigned(Entries) then
+    Exit;
+
+  Entries.Count := Length(aStrips);
+  for i := 0 to Pred(Entries.Count) do
+    Entries[i].NativeValue := Length(aStrips[i]);
+
+  Result := True;
+end;
+
+function TwbNifBlock.GetTransform(var aTransform: TTransform): Boolean;
+var
+  i, j: integer;
+  t, r: TdfElement;
+  m: TMatrix33;
+begin
+  Result := False;
+
+  if not IsNiObject('NiAVObject') then
+    Exit;
+
+  t := Elements['Transform'];
+  if not Assigned(t) then
+    Exit;
+
+  aTransform.Scale := t.NativeValues['Scale'];
+  aTransform.Translation.X := t.NativeValues['Translation\X'];
+  aTransform.Translation.Y := t.NativeValues['Translation\Y'];
+  aTransform.Translation.Z := t.NativeValues['Translation\Z'];
+
+  r := t.Elements['Rotation'];
+  for i := 0 to 2 do
+    for j := 0 to 2 do
+      m[j, i] := r.NativeValues['m' + IntToStr(i+1) + IntToStr(j+1)];
+
+  M33ToQuaternion(m, aTransform.Rotation);
+
+  Result := True;
+end;
+
+function TwbNifBlock.SetTransform(aTransform: TTransform): Boolean;
+var
+  i, j: integer;
+  t, r: TdfElement;
+  m: TMatrix33;
+begin
+  Result := False;
+
+  if not IsNiObject('NiAVObject') then
+    Exit;
+
+  t := Elements['Transform'];
+  if not Assigned(t) then
+    Exit;
+
+  t.NativeValues['Scale'] := aTransform.Scale;
+  t.NativeValues['Translation\X'] := aTransform.Translation.X;
+  t.NativeValues['Translation\Y'] := aTransform.Translation.Y;
+  t.NativeValues['Translation\Z'] := aTransform.Translation.Z;
+
+  QuaternionToM33(aTransform.Rotation, m);
+
+  r := t.Elements['Rotation'];
+  for i := 0 to 2 do
+    for j := 0 to 2 do
+      r.NativeValues['m' + IntToStr(i+1) + IntToStr(j+1)] := m[j, i];
+
+  Result := True;
+end;
+
+function TwbNifBlock.GetBoundSphere(var aSphere: TBoundSphere): Boolean;
+var
   e: TdfElement;
 begin
   Result := False;
 
+  if not IsNiObject('NiGeometryData') and not IsNiObject('BSTriShape') then
+    Exit;
+
+  e := Elements['Bounding Sphere'];
+  if not Assigned(e) then
+    Exit;
+
+  wbGetVector3(aSphere.Center, e.Elements['Center']);
+  aSphere.Radius := e.NativeValues['Radius'];
+  Result := True;
+end;
+
+function TwbNifBlock.SetBoundSphere(aSphere: TBoundSphere): Boolean;
+var
+  e: TdfElement;
+begin
+  Result := False;
+
+  if not IsNiObject('NiGeometryData') and not IsNiObject('BSTriShape') then
+    Exit;
+
+  e := Elements['Bounding Sphere'];
+  if not Assigned(e) then
+    Exit;
+
+  wbSetVector3(aSphere.Center, e.Elements['Center']);
+  e.NativeValues['Radius'] := aSphere.Radius;
+  Result := True;
+end;
+
+function TwbNifBlock.GetSkin: TwbNifBlock;
+var
+  e: TdfElement;
+begin
+  e := Elements['Skin'];
+  if not Assigned(e) then
+    e := Elements['Skin Instance'];
+
+  if Assigned(e) then
+    Result := TwbNifBlock(e.LinksTo)
+  else
+    Result := nil;
+end;
+
+function TwbNifBlock.GetCollision: TwbNifBlock;
+var
+  e: TdfElement;
+begin
+  Result := nil;
+
+  if not IsNiObject('NiAVObject') then
+    Exit;
+
+  e := Elements['Collision Object'];
+  if Assigned(e) then
+    Result := TwbNifBlock(e.LinksTo);
+end;
+
+function TwbNifBlock.GetController: TwbNifBlock;
+var
+  e: TdfElement;
+begin
+  Result := nil;
+
+  if not IsNiObject('NiObjectNET') then
+    Exit;
+
+  e := Elements['Controller'];
+  if Assigned(e) then
+    Result := TwbNifBlock(e.LinksTo);
+end;
+
+function TwbNifBlock.GetAssetsList: TStringDynArray;
+begin
+  { Deprecated }
+  Result := nil;
+end;
+
+function TwbNifBlock.GetStringPaletteString(aIndex: Integer): string;
+begin
+  Result := '';
+
+  if BlockType <> 'NiStringPalette' then
+    Exit;
+
+  var p: string := NativeValues['Palette'];
+  if (aIndex < 0) or (aIndex > Length(p)) then
+    Exit;
+
+  var palette := p.Split([#0]);
+  // index is an offset into palette string ending with #0 terminator
+  var idx := 0;
+  for var s in palette do begin
+    if aIndex = idx then begin
+      Result := s;
+      Break;
+    end;
+    idx := idx + Length(s) + 1;
+  end;
+
+end;
+
+function TwbNifBlock.ApplyTransform(aRecursive: Boolean = False; aOptions: TwbApplyTransformOptions = []): Boolean;
+
+  function CanTransform(aBlock: TwbNifBlock): Boolean;
+  begin
+    // skip skinned, animated and nodes with collision
+    // also BSFurnitureMarker in extradata because it contains positions
+    Result :=
+      ( (atrSkinned in aOptions) or ((aBlock.GetSkin = nil) and not aBlock.IsBone) ) and
+      ( (atrAnimated in aOptions) or (aBlock.GetController = nil) ) and
+      ( (atrCollision in aOptions) or (aBlock.GetCollision = nil) ) and
+      ( (atrCtrlManager in aOptions) or (aBlock.NifFile.BlockByType('NiControllerManager') = nil ) );
+      //(aBlock.ExtraDataByType('BSFurnitureMarker') = nil)
+
+    // root node has children bone nodes (checking just the presence of skin instances)
+    if Result and not (atrRoot in aOptions) and (aBlock.Index = 0) then
+      Result :=
+        (aBlock.NifFile.BlockByType('NiSkinInstance', True) = nil) and
+        (aBlock.NifFile.BlockByType('BSSkin::Instance', True) = nil);
+  end;
+
+  procedure UpdateRotation(entries: TdfElement; var t: TTransform);
+  begin
+    if not Assigned(entries) then
+      Exit;
+
+    for var i := 0 to Pred(Entries.Count) do begin
+      var v: TVector3;
+      wbGetVector3(v, entries[i]);
+      v := v * t.Rotation;
+      wbSetVector3(v, entries[i]);
+    end;
+  end;
+
+var
+  v: TVector3;
+  t: TTransform;
+  s: TBoundSphere;
+  tanbin: TBytes;
+begin
+  Result := False;
+
+  // NiTriShape, NiTriStrips
+  if IsNiObject('NiTriBasedGeom') then begin
+
+    if not CanTransform(Self) then
+      Exit;
+
+    var data := TwbNifBlock(Elements['Data'].LinksTo);
+    if not Assigned(data) then
+      Exit;
+
+    if not GetTransform(t) or t.IsNone then
+      Exit;
+
+    var verts := data.Elements['Vertices'];
+    if Assigned(verts) then
+      for var i := 0 to Pred(verts.Count) do begin
+        wbGetVector3(v, verts[i]);
+        v := v * t;
+        wbSetVector3(v, verts[i]);
+      end;
+
+    if not t.Rotation.IsIdentity then begin
+      UpdateRotation(data.Elements['Normals'], t);
+      UpdateRotation(data.Elements['Tangents'], t);
+      UpdateRotation(data.Elements['Bitangents'], t);
+      // Oblivion tangents and binormals in extradata
+      var exdata := ExtraDataByName(sTES4TangentsExtraDataName);
+      if Assigned(exdata) then begin
+        tanbin := exdata.NativeValues['Data'];
+        for var j := 0 to Pred(Length(tanbin) div SizeOf(TSingleVector3)) do begin
+          var sv := PSingleVector3(@tanbin[SizeOf(TSingleVector3) * j]);
+          v.x := sv.x; v.y := sv.y; v.z := sv.z;
+          v := v * t.Rotation;
+          sv.x := v.x; sv.y := v.y; sv.z := v.z;
+        end;
+        exdata.NativeValues['Data'] := tanbin;
+      end;
+    end;
+
+    if data.GetBoundSphere(s) then begin
+      s := s * t;
+      data.SetBoundSphere(s);
+    end;
+
+    t.SetNone;
+    SetTransform(t);
+    Result := True;
+  end
+
+  // BSTriShape
+  else if IsNiObject('BSTriShape') then begin
+
+    if (NativeValues['Num Vertices'] = 0) and (GetSkin <> nil) then begin
+      t.SetNone;
+      SetTransform(t);
+      Result := True;
+      Exit;
+    end;
+
+    if not CanTransform(Self) then
+      Exit;
+
+    if not GetTransform(t) or t.IsNone then
+      Exit;
+
+    var verts := Elements['Vertex Data'];
+    if not Assigned(verts) then
+      Exit;
+
+    var HasVertex := NativeValues['VertexDesc\VF\VF_NORMAL'];
+    var HasNormal := NativeValues['VertexDesc\VF\VF_NORMAL'];
+    var HasTangent := NativeValues['VertexDesc\VF\VF_TANGENT'];
+    for var i := 0 to Pred(verts.Count) do begin
+      var e := verts[i];
+      if HasVertex then begin
+        wbGetVector3(v, e.Elements['Vertex'], True);
+        v := v * t;
+        wbSetVector3(v, e.Elements['Vertex'], True);
+      end;
+
+      if HasNormal then begin
+        wbGetVector3(v, e.Elements['Normal'], True);
+        v := v * t.Rotation;
+        wbSetVector3(v, e.Elements['Normal'], True);
+      end;
+
+      if HasTangent then begin
+        wbGetVector3(v, e.Elements['Tangent'], True);
+        v := v * t.Rotation;
+        wbSetVector3(v, e.Elements['Tangent'], True);
+
+        v.x := dfStrToFloat(e.Elements['Bitangent X'].EditValue);
+        v.y := dfStrToFloat(e.Elements['Bitangent Y'].EditValue);
+        v.z := dfStrToFloat(e.Elements['Bitangent Z'].EditValue);
+        v := v * t.Rotation;
+        e.Elements['Bitangent X'].EditValue := dfFloatToStr(v.x);
+        e.Elements['Bitangent Y'].EditValue := dfFloatToStr(v.y);
+        e.Elements['Bitangent Z'].EditValue := dfFloatToStr(v.z);
+      end;
+
+    end;
+
+    if GetBoundSphere(s) then begin
+      s := s * t;
+      SetBoundSphere(s);
+    end;
+
+    t.SetNone;
+    SetTransform(t);
+    Result := True;
+  end
+
+  // NiNode and descendants
+  else if IsNiObject('NiNode') then begin
+
+    // skip billboards
+    if BlockType = 'NiBillboardNode' then
+      Exit;
+
+    if not GetTransform(t) then
+      Exit;
+
+    var bCanApplyTransform := CanTransform(Self);
+    var bChildTransformed := False;
+    var children := Elements['Children'];
+
+    // check if any child node is animated, can't apply transform on such parent node
+    if bCanApplyTransform and not (atrAnimated in aOptions) then
+      for var i := 0 to Pred(children.Count) do begin
+        var child := TwbNifBlock(children[i].LinksTo);
+        if not Assigned(child) then
+          Continue;
+
+        bCanApplyTransform := child.GetController = nil;
+        if not bCanApplyTransform then
+          Break;
+      end;
+
+    // iterating children
+    for var i := 0 to Pred(children.Count) do begin
+      var child := TwbNifBlock(children[i].LinksTo);
+      if not Assigned(child) then
+        Continue;
+
+      // allowed to transform and there is non-zero transform to apply
+      if bCanApplyTransform and not t.IsNone then begin
+        var childt: TTransform;
+        if child.GetTransform(childt) then begin
+          childt := t * childt;
+          child.SetTransform(childt);
+          bChildTransformed := True;
+          Result := True;
+        end;
+      end;
+
+      if aRecursive then
+        Result := child.ApplyTransform(aRecursive, aOptions) or Result;
+    end;
+
+    // reset our transform only if we managed to apply it to at least one child
+    if bChildTransformed and not t.IsNone then begin
+      t.SetNone;
+      SetTransform(t);
+      Result := True;
+    end;
+  end;
+end;
+
+
+function TwbNifBlock.UpdateBounds: Boolean;
+var
+  verts: TVector3Array;
+  center: TVector3;
+  r: Double;
+begin
   verts := GetVertices;
 
+  {
   if Length(verts) = 0 then
     // skinned BSTriShapes have vertices in NiSkinPartition
     if IsNiObject('BSTriShape') then begin
-      skin := TwbNifBlock(Elements['Skin'].LinksTo);
-      e := skin.Elements['Skin Partition'];
-      if Assigned(e) then begin
-        skinpart := TwbNifBlock(e.LinksTo);
-        if Assigned(skinpart) then
-          verts := skinpart.GetVertices;
+      ver skin := GetSkin;
+      if Assigned(skin) then begin
+        ver e := skin.Elements['Skin Partition'];
+        if Assigned(e) then begin
+          ver skinpart := TwbNifBlock(e.LinksTo);
+          if Assigned(skinpart) then
+            verts := skinpart.GetVertices;
+        end;
       end;
     end;
 
   if Length(verts) = 0 then
     Exit;
+  }
 
   CalculateCenterRadius(verts, center, r,
     // Oblivion and volatile meshes require a different center algorithm
     (NifFile.NifVersion = nfTES4) or (EditValues['Consistency Flags'] = 'CT_VOLATILE')
   );
 
-  e := Elements['Bounding Sphere'];
-  if Assigned(e) then begin
-    wbSetVector3(center, e.Elements['Center']);
-    e.NativeValues['Radius'] := r;
-    Result := True;
-  end;
-
-  e := Elements['Center'];
-  if Assigned(e) then begin
-    wbSetVector3(center, e);
-    NativeValues['Radius'] := r;
-    Result := True;
-  end;
+  var s: TBoundSphere;
+  s.Center := center;
+  s.Radius := r;
+  Result := SetBoundSphere(s);
 end;
 
 function TwbNifBlock.UpdateNormals(aAddIfMissing: Boolean = True): Boolean;
 var
   verts, norms: TVector3Array;
   triangles: TTriangleArray;
-  IsBSTriShape, IsGeomData: Boolean;
-  Entries: TdfElement;
+  IsBSTriShape, IsTriGeom: Boolean;
+  block, shader: TwbNifBlock;
+  Entries, e: TdfElement;
   i: integer;
 begin
   Result := False;
-  IsBSTriShape := IsNiObject('BSTriShape');
-  IsGeomData := IsNiObject('NiTriBasedGeomData');
 
-  if not (IsBSTriShape or IsGeomData) then
+  IsBSTriShape := IsNiObject('BSTriShape');
+  IsTriGeom := IsNiObject('NiTriBasedGeom');
+
+  block := nil;
+  if IsBSTriShape then begin
+    shader := PropertyByType('BSShaderProperty', True);
+    if Assigned(shader) then
+      if shader.NativeValues['Shader Flags 1\Model_Space_Normals'] then
+        Exit;
+
+    block := Self;
+    if (NifFile.NifVersion = nfSSE) and (GetSkin <> nil) then begin
+      e := GetSkin.Elements['Skin Partition'];
+      if Assigned(e) then
+        block := TwbNifBlock(e.LinksTo);
+    end;
+  end
+  else if IsTriGeom then begin
+    e := Elements['Data'];
+    if Assigned(e) then
+      block := TwbNifBlock(e.LinksTo);
+  end;
+
+  if not Assigned(block) then
     Exit;
 
   if not aAddIfMissing then
-    if (IsBSTriShape and not NativeValues['VertexDesc\VF\VF_NORMAL']) or
-       (IsGeomData and (NativeValues['Has Normals'] = 0))
+    if (IsBSTriShape and not block.NativeValues['VertexDesc\VF\VF_NORMAL']) or
+       (IsTriGeom and (block.NativeValues['Has Normals'] = 0))
     then
       Exit;
 
-  verts := GetVertices;
+  verts := block.GetVertices;
   if Length(verts) = 0 then
     Exit;
 
-  triangles := GetTriangles;
+  triangles := block.GetTriangles;
   if Length(triangles) = 0 then
     Exit;
 
@@ -1172,14 +1770,14 @@ begin
     Exit;
 
   if IsBSTriShape then begin
-    NativeValues['VertexDesc\VF\VF_NORMAL'] := 1;
-    Entries := Elements['Vertex Data'];
+    block.NativeValues['VertexDesc\VF\VF_NORMAL'] := 1;
+    Entries := block.Elements['Vertex Data'];
     for i := 0 to Pred(Entries.Count) do
-      wbSetVector3(norms[i], Entries[i][4], True); // Elements['Normal'];
+      wbSetVector3(norms[i], Entries[i].Elements['Normal'], True);
   end
-  else if IsGeomData then begin
-    NativeValues['Has Normals'] := 1;
-    Entries := Elements['Normals'];
+  else if IsTriGeom then begin
+    block.NativeValues['Has Normals'] := 1;
+    Entries := block.Elements['Normals'];
     Entries.Count := Length(norms);
     for i := Low(norms) to High(norms) do
       wbSetVector3(norms[i], Entries[i]);
@@ -1189,8 +1787,6 @@ begin
 end;
 
 function TwbNifBlock.UpdateTangents(aAddIfMissing: Boolean = True): Boolean;
-const
-  sTES4ExtraDataName = 'Tangent space (binormal & tangent vectors)';
 var
   verts, norms: TVector3Array;
   texco: TVector2Array;
@@ -1198,8 +1794,8 @@ var
   tan, bin: TVector3Array;
   Entries, e: TdfElement;
   i: integer;
-  IsBSTriShape, IsGeomData: Boolean;
-  b, exdata: TwbNifBlock;
+  IsBSTriShape, IsTriGeom: Boolean;
+  block, exdata, shader: TwbNifBlock;
   Bytes: TBytes;
 begin
   Result := False;
@@ -1208,31 +1804,51 @@ begin
     Exit;
 
   IsBSTriShape := IsNiObject('BSTriShape');
-  IsGeomData := IsNiObject('NiTriBasedGeomData');
+  IsTriGeom := IsNiObject('NiTriBasedGeom');
 
-  if not (IsBSTriShape or IsGeomData) then
+  block := nil;
+  if IsBSTriShape then begin
+    shader := PropertyByType('BSShaderProperty', True);
+    if Assigned(shader) then
+      if shader.NativeValues['Shader Flags 1\Model_Space_Normals'] then
+        Exit;
+
+    block := Self;
+    if (NifFile.NifVersion = nfSSE) and (GetSkin <> nil) then begin
+      e := GetSkin.Elements['Skin Partition'];
+      if Assigned(e) then
+        block := TwbNifBlock(e.LinksTo);
+    end;
+  end
+  else if IsTriGeom then begin
+    e := Elements['Data'];
+    if Assigned(e) then
+      block := TwbNifBlock(e.LinksTo);
+  end;
+
+  if not Assigned(block) then
     Exit;
 
   if not aAddIfMissing then
-    if (IsBSTriShape and not NativeValues['VertexDesc\VF\VF_TANGENT']) or
-       (IsGeomData and not (NativeValues['Vector Flags\Has_Tangents'] or (NifFile.NifVersion = nfTES4)))
+    if (IsBSTriShape and not block.NativeValues['VertexDesc\VF\VF_TANGENT']) or
+       (IsTriGeom and not (block.NativeValues['Vector Flags\Has_Tangents'] or (NifFile.NifVersion = nfTES4)))
        // Oblivion meshes don't use tangents flag
     then
       Exit;
 
-  verts := GetVertices;
+  verts := block.GetVertices;
   if Length(verts) = 0 then
     Exit;
 
-  norms := GetNormals;
+  norms := block.GetNormals;
   if Length(norms) = 0 then
     Exit;
 
-  texco := GetTexCoord;
+  texco := block.GetTexCoord;
   if Length(texco) = 0 then
     Exit;
 
-  triangles := GetTriangles;
+  triangles := block.GetTriangles;
   if Length(triangles) = 0 then
     Exit;
 
@@ -1243,10 +1859,11 @@ begin
     Exit;
 
   if IsBSTriShape then begin
-    NativeValues['VertexDesc\VF\VF_TANGENT'] := 1;
-    Entries := Elements['Vertex Data'];
+    block.NativeValues['VertexDesc\VF\VF_TANGENT'] := 1;
+    Entries := block.Elements['Vertex Data'];
     for i := Low(tan) to High(tan) do begin
       e := Entries[i];
+      // verts, normals, uvs and tangents exist if we are here, so can access by index instead of name to speed up
       e[1].EditValue := dfFloatToStr(bin[i].x); // Bitangent X
       e[5].EditValue := dfFloatToStr(bin[i].y); // Bitangent Y
       e[7].EditValue := dfFloatToStr(bin[i].z); // Bitangent Z
@@ -1254,41 +1871,33 @@ begin
     end;
   end
 
-  else if IsGeomData then begin
+  else if IsTriGeom then begin
 
     if NifFile.NifVersion <> nfTES4 then begin
-      NativeValues['Vector Flags\Has_Tangents'] := 1;
+      block.NativeValues['Vector Flags\Has_Tangents'] := 1;
 
-      Entries := Elements['Tangents'];
+      Entries := block.Elements['Tangents'];
       Entries.Count := Length(tan);
       for i := 0 to Pred(Entries.Count) do
         wbSetVector3(tan[i], Entries[i]);
 
-      Entries := Elements['Bitangents'];
+      Entries := block.Elements['Bitangents'];
       Entries.Count := Length(bin);
       for i := 0 to Pred(Entries.Count) do
         wbSetVector3(bin[i], Entries[i]);
     end
 
-    // in Oblivion tangents are stored in NiBinaryExtraData of the parent Shape/Strips block
+    // in Oblivion tangents are stored in NiBinaryExtraData
     else begin
-      // find which blocks link us as Data
-      for b in NifFile.BlocksByType('NiTriBasedGeom', True) do begin
-        if b.NativeValues['Data'] <> Index then
-          Continue;
+      exdata := ExtraDataByName(sTES4TangentsExtraDataName);
+      if not Assigned(exdata) and aAddIfMissing then begin
+        exdata := AddExtraData('NiBinaryExtraData');
+        exdata.EditValues['Name'] := sTES4TangentsExtraDataName;
+      end;
 
-        exdata := b.ExtraDataByName(sTES4ExtraDataName);
-
-        if not Assigned(exdata) and aAddIfMissing then begin
-          exdata := b.AddExtraData('NiBinaryExtraData');
-          exdata.EditValues['Name'] := sTES4ExtraDataName;
-        end;
-
-        if not Assigned(exdata) then
-          Continue;
-
+      if Assigned(exdata) then begin
         SetLength(Bytes, SizeOf(TSingleVector3) * (Length(tan) + Length(bin)));
-        // can't Move because need to convert from Extended to Single
+        // can't Move because need to convert from Double to Single
         for i := Low(tan) to High(tan) do
           with PSingleVector3(@Bytes[SizeOf(TSingleVector3) * i])^ do begin x := tan[i].x; y := tan[i].y; z := tan[i].z; end;
         for i := Low(bin) to High(bin) do
@@ -1297,104 +1906,66 @@ begin
         exdata.NativeValues['Data'] := Bytes;
       end;
     end;
+
   end;
+
   Result := True;
 end;
 
-function TwbNifBlock.GetAssetsList: TStringDynArray;
-
-  procedure AddAsset(const aFileName: string);
-  var
-    i: integer;
-  begin
-    if aFileName = '' then
-      Exit;
-
-    for i := Low(Result) to High(Result) do
-      if SameText(Result[i], aFileName) then
-        Exit;
-
-    SetLength(Result, Succ(Length(Result)));
-    Result[Pred(Length(Result))] := aFileName;
-  end;
-
-var
-  i: integer;
-  e: TdfElement;
-begin
-  Result := nil;
-
-  // check for material file in the Name field of FO4 meshes
-  if (NifFile.NifVersion = nfFO4) and (BlockType = 'BSLightingShaderProperty') then
-    AddAsset(EditValues['Name'])
-
-  else if BlockType = 'BSEffectShaderProperty' then begin
-    if NifFile.NifVersion = nfFO4 then
-      AddAsset(EditValues['Name'])
-    else begin
-      AddAsset(EditValues['Source Texture']);
-      AddAsset(EditValues['Grayscale Texture']);
-      AddAsset(EditValues['Env Map Texture']);
-      AddAsset(EditValues['Normal Texture']);
-      AddAsset(EditValues['Env Mask Texture']);
-    end;
-  end
-
-  else if BlockType = 'BSShaderTextureSet' then begin
-    e := Elements['Textures'];
-    for i := 0 to Pred(e.Count) do
-      AddAsset(e[i].EditValue);
-  end
-
-  else if (BlockType = 'BSShaderNoLightingProperty') or
-          (BlockType = 'TallGrassShaderProperty') or
-          (BlockType = 'TileShaderProperty') or
-          IsNiObject('NiTexture', True)
-  then
-    AddAsset(EditValues['File Name'])
-
-  else if BlockType = 'BSSkyShaderProperty' then
-    AddAsset(EditValues['Source Name'])
-
-  else if BlockType = 'BSBehaviorGraphExtraData' then
-    AddAsset(EditValues['Behavior Graph File'])
-
-  else if BlockType = 'BSSubIndexTriShape' then
-    AddAsset(EditValues['Segment Data\SSF File']);
-end;
-
-procedure TwbNifBlock.RemoveBranch;
+procedure TwbNifBlock.RemoveBranch(aEvenIfUsed: Boolean = False);
 
   function Exists(var blocks: TwbNifBlocks; block: TwbNifBlock): Boolean;
   begin
     Result := False;
-    for var b: TwbNifBlock in blocks do
+    for var b in blocks do
       if b = block then begin
         Result := True;
         Break;
       end;
   end;
 
-var
-  LinkedBlocks: TwbNifBlocks;
-  b: TwbNifBlock;
-begin
-  if IsReferenced then
-    Exit;
+  procedure GatherBranchBlocks(var blocks: TwbNifBlocks; block: TwbNifBlock);
+  var
+    refs: TwbNifBlocks;
+    b: TwbNifBlock;
+  begin
+    // block is used by other blocks, can't remove
+    if block.IsReferenced then
+      Exit;
 
-  // list of used blocks
-  SetLength(LinkedBlocks, 0);
-  for var i: Integer := 0 to Pred(Self.RefsCount) do begin
-    b := TwbNifBlock(Self.Refs[i].LinksTo);
-    if Assigned(b) and not Exists(LinkedBlocks, b) then
-      LinkedBlocks := LinkedBlocks + [b];
+    // we are already in the list from traversing other branches
+    if Exists(blocks, block) then
+      Exit;
+
+    // add ourselves to the list
+    blocks := blocks + [block];
+
+    // collecting referenced blocks
+    for var i: Integer := 0 to Pred(block.RefsCount) do begin
+      b := TwbNifBlock(block.Refs[i].LinksTo);
+      // never delete the root node
+      if Assigned(b) and (b.Index <> 0) then
+        refs := refs + [b];
+      // unlinking all refs from us for IsRefenced calls
+      block.Refs[i].NativeValue := -1;
+    end;
+
+    // traverse our refs
+    for b in refs do
+      GatherBranchBlocks(blocks, b);
   end;
 
-  NifFile.Delete(Index);
+begin
+  // unlinking ourselves from everywhere
+  if aEvenIfUsed then
+    for var ref in Self.ReferencedBy do ref.NativeValue := -1;
 
-  // remove linked blocks
-  for b in LinkedBlocks do
-    b.RemoveBranch;
+  var Branch: TwbNifBlocks;
+  GatherBranchBlocks(Branch, Self);
+
+  // remove the whole branch
+  for var b in Branch do
+    NifFile.Delete(b.Index);
 end;
 
 
@@ -1708,8 +2279,8 @@ begin
   Put(Count-1, Result);
   // append NiFooter back at the end
   Put(Count, f);
-  // if it is the first NiNode type block, add it as a root by default
-  if (BlocksCount = 1) and wbIsNiObject(aBlockType, 'NiNode') then
+  // if it is the first root allowed type block, add it as a root by default
+  if (BlocksCount = 1) and (wbIsNiObject(aBlockType, 'NiNode') or wbIsNiObject(aBlockType, 'NiSequence') or wbIsNiObject(aBlockType, 'NiSequenceStreamHelper')) then
     f.Elements['Roots'].Add.NativeValue := 0;
 end;
 
@@ -1793,20 +2364,22 @@ begin
     end;
 end;
 
-function TwbNifFile.BlockByName(const aBlockName: string): TwbNifBlock;
+function TwbNifFile.BlockByName(const aBlockName: string; const aBlockType: string = ''): TwbNifBlock;
 var
   i, cnt: Integer;
 begin
   if aBlockName = '' then
     raise Exception.Create('Can not find block by an empty name');
 
+  Result := nil;
+
   cnt := Pred(BlocksCount);
   for i := 0 to cnt do
-    if Blocks[i].EditValues['Name'] = aBlockName then begin
-      Result := Blocks[i];
-      Exit;
-    end;
-  Result := nil;
+    if (aBlockType = '') or Blocks[i].IsNiObject(aBlockType) then
+      if Blocks[i].EditValues['Name'] = aBlockName then begin
+        Result := Blocks[i];
+        Exit;
+      end;
 end;
 
 function TwbNifFile.BlockByPath(const aBlockPath: string): TwbNifBlock;
@@ -1845,40 +2418,592 @@ begin
     end;
 end;
 
-function TwbNifFile.SpellTriangulate: Boolean;
+function TwbNifFile.GetAssets: TdfElements;
+
+  procedure AddAsset(el: TdfElement);
+  begin
+    if not Assigned(el) then Exit;
+    SetLength(Result, Succ(Length(Result)));
+    Result[Pred(Length(Result))] := el;
+  end;
+
 var
-  i, j, p: integer;
-  Parts, Part, Entries: TdfElement;
-  tris: TTriangleArray;
+  i, j: Integer;
+  el: TdfElement;
+  Block: TwbNifBlock;
 begin
-  Result := False;
-  for i := 0 to Pred(BlocksCount) do
-    if Blocks[i].BlockType = 'NiTriStrips' then begin
-      ConvertBlock(i, 'NiTriShape');
-      Result := True;
+  for i := 0 to Pred(BlocksCount) do begin
+    Block := Blocks[i];
+
+    if Block.BlockType = 'BSShaderTextureSet' then begin
+      el := Block.Elements['Textures'];
+      for j := 0 to Pred(el.Count) do
+        AddAsset(el[j]);
     end
 
-    else if Blocks[i].BlockType = 'NiTriStripsData' then begin
-      ConvertBlock(i, 'NiTriShapeData');
-      Result := True;
+    // BGSM/BGEM file in the Name field of FO4 meshes
+    else if (NifVersion = nfFO4) and (Block.BlockType = 'BSLightingShaderProperty') then
+      AddAsset(Block.Elements['Name'])
+
+    else if Block.BlockType = 'BSEffectShaderProperty' then begin
+      AddAsset(Block.Elements['Source Texture']);
+      AddAsset(Block.Elements['Grayscale Texture']);
+      AddAsset(Block.Elements['Env Map Texture']);
+      AddAsset(Block.Elements['Normal Texture']);
+      AddAsset(Block.Elements['Env Mask Texture']);
+      // BGSM/BGEM file in the Name field of FO4 meshes
+      if NifVersion = nfFO4 then
+        AddAsset(Block.Elements['Name']);
     end
 
-    else if Blocks[i].BlockType = 'NiSkinPartition' then begin
-      Parts := Blocks[i].Elements['Partitions'];
-      for p := 0 to Pred(Parts.Count) do begin
-        Part := Parts[p];
-        if Part.NativeValues['Num Strips'] = 0 then
-          Continue;
-        tris := TriangulateStrips(Blocks[i].GetStrips(Part));
-        Part.NativeValues['Num Strips'] := 0;
-        Part.NativeValues['Num Triangles'] := Length(tris);
-        Entries := Part.Elements['Triangles'];
-        Entries.Count := Length(tris);
-        for j := 0 to Pred(Entries.Count) do
-          wbSetTriangle(tris[j], Entries[j]);
+    else if (Block.BlockType = 'BSShaderNoLightingProperty') or
+            (Block.BlockType = 'TallGrassShaderProperty') or
+            (Block.BlockType = 'TileShaderProperty') or
+            Block.IsNiObject('NiTexture', True)
+    then
+      AddAsset(Block.Elements['File Name'])
+
+    else if Block.BlockType = 'BSSkyShaderProperty' then
+      AddAsset(Block.Elements['Source Texture'])
+
+    else if Block.BlockType = 'BSBehaviorGraphExtraData' then
+      AddAsset(Block.Elements['Behavior Graph File'])
+
+    else if Block.BlockType = 'BSSubIndexTriShape' then
+      AddAsset(Block.Elements['Segment Data\SSF File']);
+  end;
+end;
+
+function TwbNifFile.GetAssetsList: TStringDynArray;
+
+  procedure AddAsset(const aFileName: string);
+  var
+    i: integer;
+  begin
+    if aFileName = '' then
+      Exit;
+
+    for i := Low(Result) to High(Result) do
+      if SameText(Result[i], aFileName) then
+        Exit;
+
+    SetLength(Result, Succ(Length(Result)));
+    Result[Pred(Length(Result))] := aFileName;
+  end;
+
+begin
+  Result := nil;
+
+  for var Asset in GetAssets do
+    AddAsset(Asset.EditValue);
+end;
+
+function TwbNifFile.GetLinkArrays: TdfElements;
+
+  procedure AddArray(el: TdfElement);
+  begin
+    if Assigned(el) then
+      Result := Result + [el];
+  end;
+
+begin
+  AddArray(Self.Footer.Elements['Roots']);
+  for var i := 0 to Pred(Self.BlocksCount) do begin
+    var block := Self.Blocks[i];
+
+    if block.IsNiObject('NiObjectNET', True) then
+      AddArray(block.Elements['Extra Data List']);
+
+    if block.IsNiObject('NiAVObject', True) then
+      AddArray(block.Elements['Properties']);
+
+    if block.IsNiObject('NiNode', True) then begin
+      AddArray(block.Elements['Children']);
+      AddArray(block.Elements['Effects']);
+    end;
+
+    if block.IsNiObject('BSTreeNode', True) then begin
+      AddArray(block.Elements['Bones 1']);
+      AddArray(block.Elements['Bones']);
+    end;
+
+    if block.IsNiObject('BSAnimNotes', True) then
+      AddArray(block.Elements['Anim Notes']);
+
+    if block.IsNiObject('NiSkinInstance', True) then
+      AddArray(block.Elements['Bones']);
+
+    if block.IsNiObject('bhkRigidBody', True) then
+      AddArray(block.Elements['Constraints']);
+
+    //if block.IsNiObject('bhkConstraint', True) then
+    //  AddArray(block.Elements['Entities']);
+
+    //if block.IsNiObject('bhkBallSocketConstraintChain', True) then
+    //  AddArray(block.Elements['Entities A']);
+
+    if block.IsNiObject('bhkConvexListShape', True) then
+      AddArray(block.Elements['Sub Shapes']);
+
+    if block.IsNiObject('bhkListShape', True) then
+      AddArray(block.Elements['Sub Shapes']);
+
+    if block.IsNiObject('bhkMeshShape', True) then
+      AddArray(block.Elements['Strips Data']);
+
+    if block.IsNiObject('bhkNiTriStripsShape', True) then
+      AddArray(block.Elements['Strips Data']);
+
+    if block.IsNiObject('bhkRagdollTemplate', True) then
+      AddArray(block.Elements['Bones']);
+
+    if block.IsNiObject('NiDynamicEffect', True) then
+      AddArray(block.Elements['Affected Nodes']);
+
+    if block.IsNiObject('NiBoneLODController', True) then begin
+      var el := block.Elements['Node Groups'];
+      if Assigned(el) then
+        for var j: Integer := 0 to Pred(el.Count) do
+          AddArray(el[j]);
+
+      el := block.Elements['Shade Groups 2'];
+      if Assigned(el) then
+        for var j: Integer := 0 to Pred(el.Count) do
+          AddArray(el[j]);
+    end;
+
+    if block.IsNiObject('NiFlipController', True) then
+      AddArray(block.Elements['Sources']);
+
+    if block.IsNiObject('NiControllerManager', True) then
+      AddArray(block.Elements['Controller Sequences']);
+
+    if block.IsNiObject('NiControllerSequence', True) then
+      AddArray(block.Elements['Anim Notes Array']);
+
+    if block.IsNiObject('NiParticleSystem', True) then
+      AddArray(block.Elements['Modifiers']);
+
+    if block.IsNiObject('NiParticleMeshModifier', True) then
+      AddArray(block.Elements['Particle Meshes']);
+
+    if block.IsNiObject('NiPSysMeshUpdateModifier', True) then
+      AddArray(block.Elements['Meshes']);
+
+    if block.IsNiObject('BSPSysHavokUpdateModifier', True) then
+      AddArray(block.Elements['Nodes']);
+
+    if block.IsNiObject('NiPSysMeshEmitter', True) then
+      AddArray(block.Elements['Emitter Meshes']);
+
+    if block.IsNiObject('BSMasterParticleSystem', True) then
+      AddArray(block.Elements['Particle Systems']);
+
+    if block.IsNiObject('BSSkin::Instance', True) then
+      AddArray(block.Elements['Bones']);
+  end;
+end;
+
+function TwbNifFile.GetUniqueName(const aName: string): string;
+begin
+  Result := aName;
+  var i := 0;
+  while Assigned(BlockByName(Result)) do begin
+    Result := Result + ':' + IntToStr(i);
+    Inc(i);
+  end;
+end;
+
+function TwbNifFile.DetectBSXFlags: Cardinal;
+begin
+  Result := 0;
+
+  if NifVersion < nfFO3 then
+    Exit;
+
+  var cols := 0;
+  var constraints := 0;
+  var controllers := 0;
+  var bounds := 0;
+  var addons := 0;
+  var dynbodies := 0;
+  var markers := 0;
+  var emitters := 0;
+
+  for var i := 0 to Pred(BlocksCount) do begin
+    var b := Blocks[i];
+    if b.IsNiObject('NiCollisionObject') then Inc(cols) else
+    if b.IsNiObject('bhkConstraint') then Inc(constraints) else
+    if b.IsNiObject('bhkBallSocketConstraintChain') then Inc(constraints) else
+    if b.IsNiObject('NiTimeController') then Inc(controllers) else
+    if b.IsNiObject('BSBound') then Inc(bounds) else
+    if b.IsNiObject('BSValueNode') then Inc(addons) else
+    if b.IsNiObject('BSShaderProperty') and b.NativeValues['Shader Flags 1\External_Emittance'] then Inc(emitters) else
+    if (NifVersion < nfTES5) and b.IsNiObject('NiNode', False) then begin
+      // older games use NiNode with special names
+      var name := b.EditValues['Name'];
+      if name.StartsWith('FlameNode') or name.StartsWith('AttachLight') then
+        Inc(addons);
+    end;
+
+    if b.IsDynamicRigidBody then Inc(dynbodies);
+    if b.IsEditorMarker then Inc(markers);
+  end;
+
+  // Animated, except skeleton nifs which have bounds.  Cells only run updates on refs marked as animated
+  if ( (controllers > 0) or (addons > 0) ) and (bounds = 0) then Result := Result or (1 shl 0);
+
+  // Havok
+  if (cols > 0) then Result := Result or (1 shl 1);
+
+  // Ragdoll
+  if (constraints > 0) then Result := Result or (1 shl 2);
+
+  // Complex, used by grabbing, except skeleton nifs which have bounds
+  // If set alongside Dynamic, game uses Actor's custom ragdoll data for initial bone positions when loaded, even if Actor is not dead or unconscious.
+  if (dynbodies > 1) and (bounds = 0) then Result := Result or (1 shl 3);
+
+  // Addon
+  if (addons > 0) then Result := Result or (1 shl 4);
+
+  // Editor Marker. Tells the marker remover that the scenegraph contains markers and should be processed to detach them from parent.
+  if (markers > 0) then Result := Result or (1 shl 5);
+
+  // Dynamic
+  if (dynbodies > 0) then Result := Result or (1 shl 6);
+
+  // Articulated. Applies velocity equally to all bones of a grabbed object. Makes objects like armor ground models move cleanly.
+  if (dynbodies > 0) then Result := Result or (1 shl 7);
+
+  // Transform updates, runtime only
+  // 1 shl 8
+
+  // Emitters
+  if (emitters > 0) then Result := Result or (1 shl 9);
+end;
+
+function TwbNifFile.SpellOptimize(aOptions: TwbMeshOptimizeOptions = [moVertexCache, moOverdraw]): Boolean;
+var
+  indices: TTriIndices;
+  bStripify, bTriangulate: Boolean;
+  opt: TwbMeshOptimizeOptions;
+  map: TTriIndices;
+
+  function MeshOptimize(var aIndices: TTriIndices; const aVertices: TVector3Array;
+    aOpt: TwbMeshOptimizeOptions; aForStrip: Boolean = False): Boolean;
+  var
+    newindices: TTriIndices;
+  begin
+    Result := False;
+
+    if Length(aIndices) = 0 then
+      Exit;
+
+    if moVertexCache in aOpt then begin
+      newindices := meshopt_optimizeVertexCache(aIndices, aForStrip);
+      // indices <> newindices
+      if not CompareMem(@aIndices[0], @newindices[0], SizeOf(aIndices[0]) * Length(aIndices)) then begin
+        System.Move(newindices[0], aIndices[0], SizeOf(aIndices[0]) * Length(aIndices));
         Result := True;
       end;
     end;
+
+    if moOverdraw in aOpt then begin
+      newindices := meshopt_optimizeOverdraw(aIndices, aVertices);
+      if not CompareMem(@aIndices[0], @newindices[0], SizeOf(aIndices[0]) * Length(aIndices)) then begin
+        System.Move(newindices[0], aIndices[0], SizeOf(aIndices[0]) * Length(aIndices));
+        Result := True;
+      end;
+    end;
+
+    if moVertexFetch in aOpt then begin
+      map := meshopt_optimizeVertexFetchRemap(aIndices);
+      newindices := meshopt_remapIndices(aIndices, map);
+      if not CompareMem(@aIndices[0], @newindices[0], SizeOf(aIndices[0]) * Length(aIndices)) then begin
+        System.Move(newindices[0], aIndices[0], SizeOf(aIndices[0]) * Length(aIndices));
+        Result := True;
+      end;
+    end;
+
+  end;
+
+  procedure Remap(const aElement: TdfElement);
+  begin
+    if Assigned(aElement) then try
+      aElement.Remap(map);
+    except
+      raise Exception.Create('Vertex fetch optimization error (probably unused vertices in geometry). Use "Check for errors" or disable Vertex fetch optimization.');
+    end;
+  end;
+
+  procedure RemapTES4Tangents(const aShape: TwbNifBlock);
+  var
+    tanbin, newtanbin: TBytes;
+  begin
+    var exdata := aShape.ExtraDataByName(sTES4TangentsExtraDataName);
+    if not Assigned(exdata) then
+      Exit;
+
+    tanbin := exdata.NativeValues['Data'];
+    // if tangents length <> map length (original tangents and binormals are invalid) then just create new ones
+    if Length(tanbin) div SizeOf(TSingleVector3) <> 2 * Length(map) then begin
+      aShape.UpdateTangents;
+      Exit;
+    end;
+
+    SetLength(newtanbin, Length(tanbin));
+    for var i := 0 to Pred(Length(map)) do begin
+      System.Move(tanbin[i * SizeOf(TSingleVector3)], newtanbin[map[i] * SizeOf(TSingleVector3)], SizeOf(TSingleVector3));
+      System.Move(tanbin[(Length(map) + i) * SizeOf(TSingleVector3)], newtanbin[(Length(map) + map[i]) * SizeOf(TSingleVector3)], SizeOf(TSingleVector3));
+    end;
+
+    exdata.NativeValues['Data'] := newtanbin;
+  end;
+
+begin
+  Result := False;
+
+  if moStripify in aOptions then begin
+    if not (NifVersion in [nfTES4, nfFO3, nfTES5]) then
+      aOptions := aOptions - [moStripify]
+    else
+      aOptions := aOptions - [moTriangulate];
+  end;
+
+  if aOptions = [] then
+    Exit;
+
+  bTriangulate := moTriangulate in aOptions;
+  bStripify := moStripify in aOptions;
+
+  for var i := 0 to Pred(BlocksCount) do begin
+
+    // BSTriShape
+    // don't process descendants like BSSubIndexTriShape because reordering tris breaks them
+    if Blocks[i].BlockType = 'BSTriShape' then begin
+      // skip unrendered shapes
+      if not Assigned(Blocks[i].PropertyByType('BSShaderProperty', True)) then
+        Continue;
+
+      opt := aOptions;
+      if opt * [moVertexCache, moOverdraw, moVertexFetch] = [] then
+        Continue;
+
+      // don't reorder vertices in skinned shapes
+      if (moVertexFetch in opt) and (Blocks[i].GetSkin <> nil) then
+        Exclude(opt, moVertexFetch);
+
+      var tris := Blocks[i].GetTriangles;
+      if Length(tris) = 0 then
+        Continue;
+
+      indices := Tris2Indices(tris);
+      var vertices: TVector3Array;
+      if opt * [moOverdraw, moVertexFetch] <> [] then
+        vertices := Blocks[i].GetVertices;
+
+      if MeshOptimize(indices, vertices, opt) then begin
+        if moVertexFetch in opt then
+          Remap(Blocks[i].Elements['Vertex Data']);
+
+        Blocks[i].SetTriangles(Indices2Tris(indices));
+        Result := True;
+      end;
+    end
+
+    // NiTriShape
+    else if Blocks[i].BlockType = 'NiTriShape' then begin
+      // skip unrendered shapes
+      if ( (NifVersion <= nfTES4) and not Assigned(Blocks[i].PropertyByType('NiMaterialProperty')) ) or
+         ( (NifVersion >= nfFO3) and not Assigned(Blocks[i].PropertyByType('BSShaderProperty', True)) )
+      then
+        Continue;
+
+      opt := aOptions;
+      // don't reorder vertices in skinned shapes
+      if (moVertexFetch in opt) and (Blocks[i].GetSkin <> nil) then
+        Exclude(opt, moVertexFetch);
+
+      if bStripify then begin
+        ConvertBlock(i, 'NiTriStrips');
+        Result := True;
+      end;
+
+      if not Assigned(Blocks[i].Elements['Data']) then
+        Continue;
+
+      var data := TwbNifBlock(Blocks[i].Elements['Data'].LinksTo);
+      if not Assigned(data) or (data.BlockType <> 'NiTriShapeData') then
+        Continue;
+
+      var tris := data.GetTriangles;
+
+      if bStripify then begin
+        var dataindex := data.Index;
+        ConvertBlock(data.Index, 'NiTriStripsData');
+        data := Blocks[dataindex];
+        Result := True;
+      end;
+
+      if Length(tris) = 0 then
+        Continue;
+
+      indices := Tris2Indices(tris);
+      var vertices: TVector3Array;
+      if opt * [moOverdraw, moVertexFetch] <> [] then
+        vertices := data.GetVertices;
+
+      var bOptimized := MeshOptimize(indices, vertices, opt, bStripify);
+
+      if bOptimized and (moVertexFetch in opt) then begin
+        Remap(data.Elements['Vertices']);
+        Remap(data.Elements['Normals']);
+        Remap(data.Elements['Tangents']);
+        Remap(data.Elements['Bitangents']);
+        Remap(data.Elements['Vertex Colors']);
+        if NifVersion = nfTES4 then RemapTES4Tangents(Blocks[i]);
+        var entries := data.Elements['UV Sets'];
+        if Assigned(entries) then
+          for var j := 0 to Pred(entries.Count) do
+            Remap(entries[j]);
+      end;
+
+      if bOptimized and not bStripify then begin
+        data.SetTriangles(Indices2Tris(indices));
+        Result := True;
+      end;
+
+      if bStripify then begin
+        data.SetStrips(Indices2Strips(meshopt_stripify(indices)));
+        Result := True;
+      end;
+    end
+
+    // NiTriStrips
+    else if Blocks[i].BlockType = 'NiTriStrips' then begin
+      // skip unrendered shapes
+      if ( (NifVersion <= nfTES4) and not Assigned(Blocks[i].PropertyByType('NiMaterialProperty')) ) or
+         ( (NifVersion >= nfFO3) and not Assigned(Blocks[i].PropertyByType('BSShaderProperty', True)) )
+      then
+        Continue;
+
+      opt := aOptions;
+      // don't reorder vertices in skinned shapes
+      if (moVertexFetch in opt) and (Blocks[i].GetSkin <> nil) then
+        Exclude(opt, moVertexFetch);
+
+      if bTriangulate then begin
+        ConvertBlock(i, 'NiTriShape');
+        Result := True;
+      end;
+
+      if not Assigned(Blocks[i].Elements['Data']) then
+        Continue;
+
+      var data := TwbNifBlock(Blocks[i].Elements['Data'].LinksTo);
+      if not Assigned(data) or (data.BlockType <> 'NiTriStripsData') then
+        Continue;
+
+      var tris := data.GetTriangles;
+
+      if bTriangulate then begin
+        var dataindex := data.Index;
+        ConvertBlock(data.Index, 'NiTriShapeData');
+        data := Blocks[dataindex];
+        Result := True;
+      end;
+
+      if Length(tris) = 0 then
+        Continue;
+
+      indices := Tris2Indices(tris);
+      var vertices: TVector3Array;
+      if opt * [moOverdraw, moVertexFetch] <> [] then
+        vertices := data.GetVertices;
+
+      var NumStrips: Integer := data.NativeValues['Num Strips'];
+      var bOptimized := MeshOptimize(indices, vertices, opt, bStripify or ( (NumStrips <> 0) and not bTriangulate) );
+
+      if bOptimized and (moVertexFetch in opt) then begin
+        Remap(data.Elements['Vertices']);
+        Remap(data.Elements['Normals']);
+        Remap(data.Elements['Tangents']);
+        Remap(data.Elements['Bitangents']);
+        Remap(data.Elements['Vertex Colors']);
+        if NifVersion = nfTES4 then RemapTES4Tangents(Blocks[i]);
+        var entries := data.Elements['UV Sets'];
+        if Assigned(entries) then
+          for var j := 0 to Pred(entries.Count) do
+            Remap(entries[j]);
+      end;
+
+      // restripify only if are not triangulating, and indices have been optimized or existing strips > 1
+      if not bTriangulate and (bOptimized or (NumStrips > 1)) then begin
+        data.SetStrips(Indices2Strips(meshopt_stripify(indices)));
+        Result := True;
+      end;
+
+      if bTriangulate then begin
+        data.SetTriangles(Indices2Tris(indices));
+        Result := True;
+      end;
+    end
+
+    // NiSkinPartition
+    else if Blocks[i].BlockType = 'NiSkinPartition' then begin
+      opt := aOptions;
+      Exclude(opt, moOverdraw);
+      Exclude(opt, moVertexFetch);
+
+      var Parts := Blocks[i].Elements['Partitions'];
+      for var p := 0 to Pred(Parts.Count) do begin
+        var Part := Parts[p];
+        var tris := Blocks[i].GetTriangles(Part);
+        if Length(tris) = 0 then
+          Continue;
+
+        indices := Tris2Indices(tris);
+
+        var NumStrips: Integer := Part.NativeValues['Num Strips'];
+        var bOptimized := MeshOptimize(indices, nil, opt, bStripify or ( (NumStrips <> 0) and not bTriangulate) );
+
+        // updating strips only if not triangulating
+        if not bTriangulate then
+        // stripifying mode and the current partition is a shape
+        // or indices have been optimized and partition is a strip
+        // or existing strips > 1
+        if (bStripify and (NumStrips = 0)) or (bOptimized and (NumStrips <> 0)) or (NumStrips > 1) then begin
+          var strips := Indices2Strips(meshopt_stripify(indices));
+          Blocks[i].SetStrips(strips, Part);
+          Result := True;
+          Continue;
+        end;
+
+        // triangulating stripified partition
+        if bTriangulate and (NumStrips <> 0) then begin
+          Part.NativeValues['Num Strips'] := 0;
+          bOptimized := True; // force update triangles below
+        end;
+
+        if bOptimized then begin
+          Blocks[i].SetTriangles(Indices2Tris(indices), Part);
+          Result := True;
+        end;
+      end;
+    end;
+
+  end;
+end;
+
+
+function TwbNifFile.SpellStripify: Boolean;
+begin
+  Result := SpellOptimize([moStripify, moVertexCache]);
+end;
+
+function TwbNifFile.SpellTriangulate: Boolean;
+begin
+  Result := SpellOptimize([moTriangulate]);
 end;
 
 function TwbNifFile.SpellFaceNormals: Boolean;
@@ -1887,8 +3012,7 @@ var
 begin
   Result := False;
   for i := 0 to Pred(BlocksCount) do
-    if Blocks[i].UpdateNormals(True) then
-      Result := True;
+    Result := Blocks[i].UpdateNormals(True) or Result;
 end;
 
 function TwbNifFile.SpellUpdateTangents: Boolean;
@@ -1897,8 +3021,7 @@ var
 begin
   Result := False;
   for i := 0 to Pred(BlocksCount) do
-    if Blocks[i].UpdateTangents(False) then
-      Result := True;
+    Result := Blocks[i].UpdateTangents(False) or Result;
 end;
 
 function TwbNifFile.SpellAddUpdateTangents: Boolean;
@@ -1907,34 +3030,7 @@ var
 begin
   Result := False;
   for i := 0 to Pred(BlocksCount) do
-    if Blocks[i].UpdateTangents(True) then
-      Result := True;
-end;
-
-function TwbNifFile.GetAssetsList: TStringDynArray;
-var
-  i, j, k: integer;
-  a: TStringDynArray;
-  b: Boolean;
-begin
-  for i := 0 to Pred(BlocksCount) do begin
-    a := Blocks[i].GetAssetsList;
-
-    for j := Low(a) to High(a) do begin
-      b := False;
-      for k := Low(Result) to High(Result) do
-        if SameText(Result[k], a[j]) then begin
-          b := True;
-          Break;
-        end;
-
-      if not b then begin
-        SetLength(Result, Succ(Length(Result)));
-        Result[Pred(Length(Result))] := a[j];
-      end;
-    end;
-
-  end;
+    Result := Blocks[i].UpdateTangents(True) or Result;
 end;
 
 function TwbNifFile.GetHeader: TwbNifBlock;
@@ -1951,6 +3047,25 @@ begin
     SetToDefault;
 
   Result := TwbNifBlock(Items[Pred(Count)]);
+end;
+
+function TwbNifFile.GetRootNodes: TwbNifBlocks;
+begin
+  var roots := Footer.Elements['Roots'];
+  for var i := 0 to Pred(roots.Count) do begin
+    var r := TwbNifBlock(roots[i].LinksTo);
+    if Assigned(r) then
+      Result := Result + [r];
+  end;
+
+  // if no root nodes defined then use the first block
+  if (Length(Result) = 0) and (BlocksCount <> 0) then
+    Result := [Blocks[0]];
+end;
+
+function TwbNifFile.GetRootNode: TwbNifBlock;
+begin
+  Result := RootNodes[0];
 end;
 
 function TwbNifFile.GetBlocksCount: Integer;
@@ -2083,18 +3198,16 @@ begin
   if Version = v4002 then
     FNifVersion := nfTES3
   // some 3rd party Oblivion meshes have user version 0
-  else if (Version = v10010) and (UserVersion = 0) and (UserVersion2 = 0) then
+  else if (Version = v20005) and (UserVersion in [0, 11]) and (UserVersion2 in [0, 11]) then
     FNifVersion := nfTES4
-  else if (Version = v1010101) and (UserVersion = 10) and (UserVersion2 = 4) then
+  else if (Version = v20004) and (UserVersion in [10, 11]) and (UserVersion2 = 11) then
     FNifVersion := nfTES4
   else if (Version = v1010106) and (UserVersion = 10) and (UserVersion2 = 5) then
     FNifVersion := nfTES4
   else if (Version = v10200) and (UserVersion = 10) and (UserVersion2 in [6, 7, 8, 9, 11]) then
     FNifVersion := nfTES4
-  else if (Version = v20004) and (UserVersion in [10, 11]) and (UserVersion2 = 11) then
-    FNifVersion := nfTES4
-  else if (Version = v20005) and (UserVersion in [0, 11]) and (UserVersion2 in [0, 11]) then
-    FNifVersion := nfTES4
+  //else if (Version = v10010) then
+  //  FNifVersion := nfTES4
   else if (Version = v20207) and (UserVersion = 11) then
     FNifVersion := nfFO3
   else if (Version = v20207) and (UserVersion = 12) and (UserVersion2 = 83) then
@@ -2746,10 +3859,10 @@ begin
     // From 10.2 to 20.1
     wbNiRef('String Palette', 'NiStringPalette', [DF_OnGetEnabled, @wbControlledBlock_EnStringPalette]),
     dfInteger('Node Name Offset', dtU32, [DF_OnGetEnabled, @wbControlledBlock_EnStringPalette]),
-    dfInteger('Property Type Offset', dtU32, [DF_OnGetEnabled, @wbControlledBlock_EnStringPalette]),
-    dfInteger('Controller Type Offset', dtU32, [DF_OnGetEnabled, @wbControlledBlock_EnStringPalette]),
-    dfInteger('Controller ID Offset', dtU32, [DF_OnGetEnabled, @wbControlledBlock_EnStringPalette]),
-    dfInteger('Interpolator ID Offset', dtU32, [DF_OnGetEnabled, @wbControlledBlock_EnStringPalette]),
+    dfInteger('Property Type Offset', dtS32, [DF_OnGetEnabled, @wbControlledBlock_EnStringPalette]),
+    dfInteger('Controller Type Offset', dtS32, [DF_OnGetEnabled, @wbControlledBlock_EnStringPalette]),
+    dfInteger('Controller ID Offset', dtS32, [DF_OnGetEnabled, @wbControlledBlock_EnStringPalette]),
+    dfInteger('Interpolator ID Offset', dtS32, [DF_OnGetEnabled, @wbControlledBlock_EnStringPalette]),
     // After 20.1 (and 10.0.1.106)
     wbString('Node Name', [DF_OnGetEnabled, @wbControlledBlock_EnNodeName]),
     wbString('Property Type', [DF_OnGetEnabled, @wbControlledBlock_EnNodeName]),
@@ -2987,7 +4100,7 @@ function wbMalleableDescriptor(const aName: string; const aEvents: array of cons
 begin
   Result := dfStruct(aName, [
     wbhkConstraintType('Type', '', []),
-    dfArray('Entities', wbNiPtr('Entities', 'bhkEntity'), -4, '', [DF_OnBeforeSave, @RemoveNoneLinks]),
+    dfArray('Entities', wbNiPtr('Entities', 'bhkEntity'), -4, '', [{DF_OnBeforeSave, @RemoveNoneLinks}]),
     dfInteger('Priority', dtU32, '1'),
     wbBallAndSocketDescriptor('Ball and Socket', [DF_OnGetEnabled, @wbMalleableDescriptor_EnType0]),
     wbHingeDescriptor('Hinge', [DF_OnGetEnabled, @wbMalleableDescriptor_EnType1]),
@@ -3013,7 +4126,7 @@ function wbConstraintData(const aName: string; const aEvents: array of const): T
 begin
   Result := dfStruct(aName, [
     wbhkConstraintType('Type', '', []),
-    dfArray('Entities', wbNiPtr('Entities', 'bhkEntity'), -4, '', [DF_OnBeforeSave, @RemoveNoneLinks]),
+    dfArray('Entities', wbNiPtr('Entities', 'bhkEntity'), -4, '', [{DF_OnBeforeSave, @RemoveNoneLinks}]),
     dfInteger('Priority', dtU32, '1'),
     wbBallAndSocketDescriptor('Ball and Socket', [DF_OnGetEnabled, @wbConstraintData_EnType0]),
     wbHingeDescriptor('Hinge', [DF_OnGetEnabled, @wbConstraintData_EnType1]),
@@ -3041,6 +4154,7 @@ begin
   Version := e.NativeValues['..\Version'];
   UserVersion := e.NativeValues['..\User Version'];
   Result := (Version >= v10010) and ((UserVersion >= 10) or ((UserVersion = 1) and (Version <> v10200)));
+  //Result := (Version = v10012) or ((Version = v20207) or (Version = v20005) or ((Version >= v10100) and (Version <= v20004) and (UserVersion <= 11))) and (UserVersion >= 3);
 end;
 
 function NiHeader_EnExportInfo(const e: TdfElement): Boolean; begin Result := (e.NativeValues['..\Version'] >= v10010) and (e.NativeValues['..\User Version'] >= 3); end;
@@ -3097,7 +4211,7 @@ begin
       0, 'ENDIAN_BIG',
       1, 'ENDIAN_LITTLE'
     ], 'ENDIAN_LITTLE', [DF_OnGetEnabled, @NiHeader_EnSince20004]),
-    dfInteger('User Version', dtU32, '12', [DF_OnGetEnabled, @NiHeader_EnSince10018]),
+    dfInteger('User Version', dtU32, '12').SetOnEnabled(NiHeader_EnSince10018),
     dfInteger('Num Blocks', dtU32),
     // BSStreamHeader
     dfInteger('User Version 2', dtU32, '83', [DF_OnGetEnabled, @NiHeader_EnUserVersion2]),
@@ -3266,10 +4380,31 @@ begin
 end;
 
 //===========================================================================
+{ NiCollisionSwitch * }
+procedure wbDefineNiCollisionSwitch;
+begin
+  wbNiObject(wbNifBlock('NiCollisionSwitch'), 'NiNode', False);
+end;
+
+//===========================================================================
 { NiAccumulator * }
 procedure wbDefineNiAccumulator;
 begin
   wbNiObject(wbNifBlock('NiAccumulator'), 'NiObject', True);
+end;
+
+//===========================================================================
+{ NiAlphaAccumulator * }
+procedure wbDefineNiAlphaAccumulator;
+begin
+  wbNiObject(wbNifBlock('NiAlphaAccumulator'), 'NiAccumulator', False);
+end;
+
+//===========================================================================
+{ NiClusterAccumulator * }
+procedure wbDefineNiClusterAccumulator;
+begin
+  wbNiObject(wbNifBlock('NiClusterAccumulator'), 'NiAccumulator', False);
 end;
 
 //===========================================================================
@@ -3296,7 +4431,7 @@ end;
 { NiBSParticleNode }
 procedure wbDefineNiBSParticleNode;
 begin
-  wbNiObject(wbNifBlock('NiBSParticleNode'), 'NiNode', False);
+  wbNiObject(wbNifBlock('NiBSParticleNode'), 'NiBSAnimationNode', False);
 end;
 
 //===========================================================================
@@ -3456,9 +4591,18 @@ end;
 procedure wbDefineNiSwitchNode;
 begin
   wbNiObject(wbNifBlock('NiSwitchNode', [
-    wbNiSwitchFlags('Flags', '', [DF_OnGetEnabled, @EnSince10100]),
+    wbNiSwitchFlags('Switch Node Flags', '', [DF_OnGetEnabled, @EnSince10100]),
     dfInteger('Index', dtU32)
   ]), 'NiNode', False);
+end;
+
+//===========================================================================
+{ NiFltAnimationNode * }
+procedure wbDefineNiFltAnimationNode;
+begin
+  wbNiObject(wbNifBlock('NiFltAnimationNode', [
+    dfFloat('Period')
+  ]), 'NiSwitchNode', False);
 end;
 
 //===========================================================================
@@ -4575,8 +5719,7 @@ begin
     dfArray('Normals', wbVector3('Tangents'), 0, 'Num Vertices', [DF_OnGetEnabled, @NiGeometryData_EnNormals]),
     dfArray('Tangents', wbVector3('Tangents'), 0, 'Num Vertices', [DF_OnGetEnabled, @NiGeometryData_EnTangents]),
     dfArray('Bitangents', wbVector3('Bitangents'), 0, 'Num Vertices', [DF_OnGetEnabled, @NiGeometryData_EnTangents]),
-    wbVector3('Center'),
-    dfFloat('Radius'),
+    wbNiBound('Bounding Sphere'),
     wbBool('Has Vertex Colors', '', []),
     dfArray('Vertex Colors', wbColor4('Vertex Colors'), 0, 'Num Vertices', [DF_OnGetEnabled, @NiGeometryData_EnVertexColors]),
     dfInteger('Num UV Sets', dtU16, [DF_OnGetEnabled, @EnBefore4220]),
@@ -4639,6 +5782,16 @@ begin
     dfInteger('Num Match Groups', dtU16),
     dfArray('Match Groups', wbMatchGroup('Match Groups'), 0, 'Num Match Groups', [])
   ]), 'NiTriBasedGeomData', False);
+end;
+
+//===========================================================================
+{ NiTriShapeDynamicData * }
+procedure wbDefineNiTriShapeDynamicData;
+begin
+  wbNiObject(wbNifBlock('NiTriShapeDynamicData', [
+    dfInteger('Active Vertices', dtU16),
+    dfInteger('Active Triangles', dtU16)
+  ]), 'NiTriShapeData', False);
 end;
 
 //===========================================================================
@@ -4742,7 +5895,7 @@ end;
 
 function BSTriShape_EnTriangles(const e: TdfElement): Boolean; begin Result := e.NativeValues['..\Data Size'] > 0; end;
 function BSTriShape_EnParticleDataSize(const e: TdfElement): Boolean; begin Result := nif(e).UserVersion2 = 100; end;
-function BSTriShape_EnVertices(const e: TdfElement): Boolean; begin Result := (nif(e).UserVersion2 = 100) and (e.NativeValues['..\Particle Data Size'] > 0); end;
+function BSTriShape_EnParticleData(const e: TdfElement): Boolean; begin Result := (nif(e).UserVersion2 = 100) and (e.NativeValues['..\Particle Data Size'] > 0); end;
 
 procedure BSTriShape_BeforeSaveDataSize(const e: TdfElement);
 var
@@ -4759,28 +5912,8 @@ end;
 
 procedure BSTriShape_BeforeSaveParticleDataSize(const e: TdfElement);
 begin
-  // code to update particle data
-
-//  // Find NiOptimizeKeep string
-//  for (auto& extraData : bsOptShape->extraDataRefs) {
-//    auto stringData = hdr.GetBlock<NiStringExtraData>(extraData);
-//    if (stringData) {
-//      if (stringData->stringData.get().find("NiOptimizeKeep") != std::string::npos) {
-//        bsOptShape->particleDataSize = bsOptShape->GetNumVertices() * 6
-//                         + static_cast<uint32_t>(triangles.size()) * 3;
-//        bsOptShape->particleVerts = *vertices;
-//
-//        bsOptShape->particleNorms.resize(vertices->size(), Vector3(1.0f, 0.0f, 0.0f));
-//        if (normals && normals->size() == vertices->size())
-//          bsOptShape->particleNorms = *normals;
-//
-//        bsOptShape->particleTris = triangles;
-//      }
-//    }
-//  }
-
   // we are just updating the data size if it was already set
-  // updating relevant vertices and triangles copy arrays is up to the user
+  // updating relevant particle vertices, normals and triangles is up to the user
   if e.NativeValue > 0 then
     e.NativeValue := e.NativeValues['..\Num Vertices'] * 6 + e.NativeValues['..\Num Triangles'] * 3;
 end;
@@ -4806,8 +5939,9 @@ begin
       DF_OnGetEnabled, @BSTriShape_EnParticleDataSize,
       DF_OnBeforeSave, @BSTriShape_BeforeSaveParticleDataSize
     ]),
-    dfArray('Vertices', wbVector3('Vertices'), 0, 'Num Vertices', [DF_OnGetEnabled, @BSTriShape_EnVertices]),
-    dfArray('Triangles Copy', wbTriangle('Triangles'), 0, 'Num Triangles', [DF_OnGetEnabled, @BSTriShape_EnVertices])
+    dfArray('Particle Vertices', wbHalfVector3('Vertices'), 0, 'Num Vertices', [DF_OnGetEnabled, @BSTriShape_EnParticleData]),
+    dfArray('Particle Normals', wbHalfVector3('Normals'), 0, 'Num Vertices', [DF_OnGetEnabled, @BSTriShape_EnParticleData]),
+    dfArray('Particle Triangles', wbTriangle('Triangles'), 0, 'Num Triangles', [DF_OnGetEnabled, @BSTriShape_EnParticleData])
   ]), 'NiAVObject', False);
 end;
 
@@ -5024,7 +6158,7 @@ procedure wbDefinebhkNiCollisionObject;
 begin
   wbNiObject(wbNifBlock('bhkNiCollisionObject', [
     wbbhkCOFlags('Flags', 'ACTIVE', []),
-    wbNiPtr('Body', 'bhkWorldObject')
+    wbNiRef('Body', 'bhkWorldObject')
   ]), 'NiCollisionObject', True);
 end;
 
@@ -5144,6 +6278,7 @@ begin
   wbNiObject(wbNifBlock('bhkRigidBody', [
     wbhkResponseType('Collision Response', 'RESPONSE_SIMPLE_CONTACT', []),
     dfInteger('Unused Byte 1', dtU8),
+    { lowers the frequency for processContactCallbacks. A value of 5 means that a callback is raised every 5th frame. }
     dfInteger('Process Contact Callback Delay', dtU16, '65535'),
     dfInteger('Unknown Int 1', dtU32),
     wbHavokFilter('Havok Filter Copy', []),
@@ -5153,27 +6288,105 @@ begin
     dfInteger('Unused Byte 2', dtU8),
     dfInteger('Process Contact Callback Delay 2', dtU16, '65535'),
     dfInteger('Unknown Int 2', dtU32, [DF_OnGetEnabled, @bhkRigidBody_EnUserVersion2lte34]),
+    {
+    The position and rotation are simply the initial position and rotation of the body.
+    Similarly, its linear velocity is its initial velocity and angular velocity
+    is its initial angular velocity (or how fast it initially rotates).
+    }
     wbVector4('Translation'),
     wbhkQuaternion('Rotation'),
     wbVector4('Linear Velocity'),
     wbVector4('Angular Velocity'),
+    {
+    A body’s inertia determines how difficult it is to rotate around a given axis.
+    Basically, a body with low inertia will spin faster than one with higher inertia.
+    }
     wbhkMatrix3('Inertia Tensor'),
     wbVector4('Center'),
     dfFloat('Mass', '1.0'),
+    {
+    Linear and angular damping reduce the linear velocity and angular velocity (or rotation) of a body over time.
+    Its velocities are slowed down in proportion to how fast the body is currently moving.
+    For example, if the damping is 0.1 then every second it will lose 10% of its velocity.
+    The higher the damping, the more quickly the body will slow down and come to a halt.
+    }
     dfFloat('Linear Damping', '0.1'),
     dfFloat('Angular Damping', '0.05'),
     dfFloat('Time Factor', '1.0', [DF_OnGetEnabled, @bhkRigidBody_EnUserVersion2gt34]),
     dfFloat('Gravity Factor', '1.0', [DF_OnGetEnabled, @bhkRigidBody_EnUserVersion2gt34]),
+    {
+    A body’s friction determines how smooth its surface is and thus how resistant it is to sliding along the surface of other bodies.
+    Friction values usually range from 0 to 1, but can go as high as 255 (a value of 1 is enough to make it essentially not move).
+    The higher the friction value, the more resistant it is to sliding. The actual behaviour depends on the friction values
+    of the two bodies that are colliding.
+    }
     dfFloat('Friction', '0.5'),
     dfFloat('Rolling Friction Multiplier', '', [DF_OnGetEnabled, @bhkRigidBody_EnUserVersion2gt34]),
+    {
+    A body’s restitution determines how much energy is lost after colliding with another body.
+    To put it simply, it determines how bouncy a body is.
+    Restitution values range from 1, where all energy is kept, to 0, where all energy is lost and the body completely stops.
+    Like friction, the behaviour depends on both values of the bodies that are colliding.
+    If the restitution is not 0.0 the object will need extra CPU for all new collisions.
+    Try to set restitution to 0 for maximum performance (e.g. collapsing buildings)
+    }
     dfFloat('Restitution', '0.4'),
+    { The maximum linear velocity of the body (in m/s). }
     dfFloat('Max Linear Velocity', '104.4'),
+    { The maximum angular velocity of the body (in rad/s). }
     dfFloat('Max Angular Velocity', '31.57'),
+    {
+    The maximum allowed penetration for this object. The default is -1.
+    This is a hint to the engine to see how much CPU the engine should
+	  invest to keep this object from penetrating. A good choice is 5% - 20% of the
+	  smallest diameter of the object.  Setting the initial value less than zero
+	  allows the penetration depth to be estimated by the RigidBody upon creation.
+		This estimated value is 1/5th of the smallest dimension of the object's radius.
+    }
     dfFloat('Penetration Depth', '0.15'),
+    {
+    The motion type of a hkpRigidBody determines what happens when the rigid body is simulated.
+
+    DYNAMIC - fully-simulated, movable rigid body. At construction time the engine checks
+		the input inertia and selects MOTION_SPHERE_INERTIA or MOTION_BOX_INERTIA as appropriate.
+
+    SPHERE_INERTIA - simulation is performed using a sphere inertia tensor. (A multiple of the
+		Identity matrix). The highest value of the diagonal of the rigid body's inertia tensor is used as the spherical inertia.
+
+    STABILIZED_SPHERE_INERTIA - this is the same as MOTION_SPHERE_INERTIA, except that simulation of the rigid
+		body is "softened", which produces more stable results in large constrained systems.
+
+    BOX_INERTIA - simulation is performed using a box inertia tensor. The non-diagonal elements
+    of the inertia tensor are set to zero. This is slower than the SPHERE_INERTIA motions
+    however it can produce more accurate results, especially for long thin objects.
+
+    STABILIZED_BOX_INERTIA - this is the same as VOX_INERTIA, except that simulation of the rigid
+    body is "softened", which produces more stable results in large constrained systems.
+
+    KEYFRAMED - simulation is not performed as a normal rigid body. During a simulation step,
+    the velocity of the rigid body is used to calculate the new position of the
+		rigid body, however the velocity is NOT updated. The velocity of a keyframed rigid body is NOT changed by the
+		application of impulses or forces. The keyframed rigid body has an infinite
+		mass when viewed by the rest of the system.
+
+    FIXED - this motion type is used for the static elements of a game scene, e.g. the
+		landscape. Fixed rigid bodies are treated in a special way by the system. They
+		have the same effect as a rigid body with a motion of type MOTION_KEYFRAMED
+		and velocity 0, however they are much faster to use, incurring no simulation
+		overhead, except in collision with moving bodies.
+
+    THIN_BOX_INERTIA - A box inertia motion which is optimized for thin boxes and has less stability problems
+    }
     wbhkMotionType('Motion System', 'MO_SYS_DYNAMIC', []),
+    {
+    Determines which mechanism Havok will use to classify the body as deactivated.
+    NEVER - This will force the rigid body to never deactivate.
+    SPATIAL - This makes use of high and low frequencies of positional motion to determine when deactivation should occur.
+    }
     wbhkDeactivatorType('Deactivator Type', 'DEACTIVATOR_NEVER', [DF_OnGetEnabled, @bhkRigidBody_EnUserVersion2lte34]),
     wbBool('Enable Deactivation', [DF_OnGetEnabled, @bhkRigidBody_EnUserVersion2gt34]),
     wbhkSolverDeactivation('Solver Deactivation', 'SOLVER_DEACTIVATION_OFF', []),
+    { The quality type, used to specify when to use continuous physics }
     wbhkQualityType('Motion Quality', 'MO_QUAL_FIXED', []),
     dfBytes('Unknown Bytes 1', 12),
     dfBytes('Unknown Bytes 2', 4, [DF_OnGetEnabled, @bhkRigidBody_EnUserVersion2gt34]),
@@ -5197,7 +6410,7 @@ end;
 procedure wbDefinebhkConstraint;
 begin
   wbNiObject(wbNifBlock('bhkConstraint', [
-    dfArray('Entities', wbNiPtr('Entities', 'bhkEntity'), -4, '', [DF_OnBeforeSave, @RemoveNoneLinks]),
+    dfArray('Entities', wbNiPtr('Entities', 'bhkEntity'), -4, '', [{DF_OnBeforeSave, @RemoveNoneLinks}]),
     dfInteger('Priority', dtU32, '1')
   ]), 'bhkSerializable', True);
 end;
@@ -5232,7 +6445,7 @@ begin
     dfFloat('Damping', '0.6'),
     dfFloat('Constraint Force Mixing', '0.0001'),
     dfFloat('Max Error Distance', '0.1'),
-    dfArray('Entities A', wbNiPtr('Entities A', 'bhkRigidBody'), -4, '', [DF_OnBeforeSave, @RemoveNoneLinks]),
+    dfArray('Entities A', wbNiPtr('Entities A', 'bhkRigidBody'), -4, '', [{DF_OnBeforeSave, @RemoveNoneLinks}]),
     dfInteger('Num Entities', dtU32, '2'),
     wbNiPtr('Entity A', 'bhkRigidBody'),
     wbNiPtr('Entity B', 'bhkRigidBody'),
@@ -5411,6 +6624,19 @@ begin
 end;
 
 //===========================================================================
+{ bhkCylinderShape }
+procedure wbDefinebhkCylinderShape;
+begin
+  wbNiObject(wbNifBlock('bhkCylinderShape', [
+    dfBytes('Unused 01', 8),
+    wbVector4('Vertex A'),
+    wbVector4('Vertex B'),
+    dfFloat('Cylinder Radius'),
+    dfBytes('Unused 02', 12)
+  ]), 'bhkConvexShape', False);
+end;
+
+//===========================================================================
 { bhkConvexVerticesShape }
 procedure wbDefinebhkConvexVerticesShape;
 begin
@@ -5419,19 +6645,6 @@ begin
     wbhkWorldObjCinfoProperty('Normals Property', []),
     dfArray('Vertices', wbVector4('Vertices'), -4),
     dfArray('Normals', wbVector4('Normals'), -4)
-  ]), 'bhkConvexShape', False);
-end;
-
-//===========================================================================
-{ bhkCylinderShape }
-procedure wbDefinebhkCylinderShape;
-begin
-  wbNiObject(wbNifBlock('bhkCylinderShape', [
-    dfBytes('Unused', 8),
-    wbVector4('Vertex A'),
-    wbVector4('Vertex B'),
-    dfFloat('Cylinder Radius'),
-    dfBytes('Unused', 12)
   ]), 'bhkConvexShape', False);
 end;
 
@@ -5534,7 +6747,7 @@ begin
     wbHavokMaterial('Material', '', []),
     wbhkWorldObjCinfoProperty('Child Shape Property', []),
     wbhkWorldObjCinfoProperty('Child Filter Property', []),
-    dfArray('Unknown Ints', dfInteger('Unknown Ints', dtU32), -4)
+    dfArray('Filters', wbHavokFilter('Filter', []), -4)
   ]), 'bhkShapeCollection', False);
 end;
 
@@ -5564,7 +6777,7 @@ begin
     dfInteger('Grow By', dtU32, '1'),
     wbVector4('Scale'),
     dfArray('Strips Data', wbNiRef('Strips Data', 'NiTriStripsData'), -4, '', [DF_OnBeforeSave, @RemoveNoneLinks]),
-    dfArray('Data Layers', wbHavokFilter('Data Layers', []), -4)
+    dfArray('Filters', wbHavokFilter('Filter', []), -4)
   ]), 'bhkShapeCollection', False);
 end;
 
@@ -5603,18 +6816,43 @@ begin
 end;
 
 //===========================================================================
+{ bhkAction }
+procedure wbDefinebhkAction;
+begin
+  wbNiObject(wbNifBlock('bhkAction'), 'bhkSerializable', True);
+end;
+
+//===========================================================================
+{ bhkUnaryAction }
+procedure wbDefinebhkUnaryAction;
+begin
+  wbNiObject(wbNifBlock('bhkUnaryAction', [
+    wbNiPtr('Entity', 'bhkRigidBody'),
+    dfBytes('Unused 01', 8)
+  ]), 'bhkAction', True);
+end;
+
+//===========================================================================
+{ bhkBinaryAction }
+procedure wbDefinebhkBinaryAction;
+begin
+  wbNiObject(wbNifBlock('bhkBinaryAction', [
+    wbNiPtr('Entity A', 'bhkRigidBody'),
+    wbNiPtr('Entity B', 'bhkRigidBody'),
+    dfBytes('Unused 01', 8)
+  ]), 'bhkAction', True);
+end;
+
+//===========================================================================
 { bhkLiquidAction }
 procedure wbDefinebhkLiquidAction;
 begin
   wbNiObject(wbNifBlock('bhkLiquidAction', [
-    dfInteger('User Data', dtU32),
-    dfInteger('Unknown Int 2', dtU32),
-    dfInteger('Unknown Int 3', dtU32),
     dfFloat('Initial Stick Force'),
     dfFloat('Stick Strength'),
     dfFloat('Neighbor Distance'),
     dfFloat('Neighbor Strength')
-  ]), 'bhkSerializable', False);
+  ]), 'bhkUnaryAction', False);
 end;
 
 //===========================================================================
@@ -5622,16 +6860,13 @@ end;
 procedure wbDefinebhkOrientHingedBodyAction;
 begin
   wbNiObject(wbNifBlock('bhkOrientHingedBodyAction', [
-    wbNiPtr('Body', 'bhkRigidBody'),
-    dfInteger('Unknown Int 1', dtU32),
-    dfInteger('Unknown Int 2', dtU32),
     dfBytes('Unused 1', 8),
     wbVector4('Hinge Axis LS'),
     wbVector4('Forward LS'),
     dfFloat('Strength'),
     dfFloat('Damping'),
     dfBytes('Unused 2', 8)
-  ]), 'bhkSerializable', False);
+  ]), 'bhkUnaryAction', False);
 end;
 
 //===========================================================================
@@ -5883,10 +7118,10 @@ end;
 
 
 //===========================================================================
-{ NiVISData }
-procedure wbDefineNiVISData;
+{ NiVisData }
+procedure wbDefineNiVisData;
 begin
-  wbNiObject(wbNifBlock('NiVISData', [
+  wbNiObject(wbNifBlock('NiVisData', [
     dfArray('Keys', dfStruct('Keys', [
       dfFloat('Time'),
       dfInteger('Value', dtU8)
@@ -6183,7 +7418,7 @@ procedure wbDefineNiBSplineData;
 begin
   wbNiObject(wbNifBlock('NiBSplineData', [
     dfArray('Float Control Points', dfFloat('Float Control Points'), -4),
-    dfArray('Compact Control Points', dfInteger('Compact Control Points', dtU16), -4)
+    dfArray('Compact Control Points', dfInteger('Compact Control Points', dtS16), -4)
   ]), 'NiObject', False);
 end;
 
@@ -6246,7 +7481,7 @@ end;
 procedure wbDefineNiLookAtController;
 begin
   wbNiObject(wbNifBlock('NiLookAtController', [
-    wbLookAtFlags('Flags', '', [DF_OnGetEnabled, @EnSince10100]),
+    wbLookAtFlags('Look Flags', '', [DF_OnGetEnabled, @EnSince10100]),
     wbNiPtr('Look At Node', 'NiNode')
   ]), 'NiTimeController', False);
 end;
@@ -7791,7 +9026,7 @@ procedure wbDefineBSMasterParticleSystem;
 begin
   wbNiObject(wbNifBlock('BSMasterParticleSystem', [
     dfInteger('Max Emitter Objects', dtU16),
-    dfArray('Particle Systems', wbNiPtr('Particle Systems', 'NiAVObject'), -4, '', [DF_OnBeforeSave, @RemoveNoneLinks])
+    dfArray('Particle Systems', wbNiRef('Particle Systems', 'NiAVObject'), -4, '', [DF_OnBeforeSave, @RemoveNoneLinks])
   ]), 'NiNode', False);
 end;
 
@@ -7885,7 +9120,10 @@ begin
   wbDefineNiNode;
   wbDefineNiBillboardNode;
   wbDefineNiBone; // *
+  wbDefineNiCollisionSwitch; // *
   wbDefineNiAccumulator; // *
+  wbDefineNiAlphaAccumulator; // *
+  wbDefineNiClusterAccumulator; // *
   wbDefineNiSortAdjustNode; // *
   wbDefineNiBSAnimationNode;
   wbDefineNiBSParticleNode;
@@ -7907,6 +9145,7 @@ begin
   wbDefineBSMultiBoundOBB;
   wbDefineBSMultiBoundSphere;
   wbDefineNiSwitchNode;
+  wbDefineNiFltAnimationNode; // *
   wbDefineNiLODNode; // *
   wbDefineNiLODData; // *
   wbDefineNiRangeLODData; // *
@@ -7985,6 +9224,7 @@ begin
   wbDefineNiLinesData; // *
   wbDefineNiTriShape;
   wbDefineNiTriShapeData;
+  wbDefineNiTriShapeDynamicData; // *
   wbDefineNiTriStrips;
   wbDefineNiTriStripsData;
   wbDefineNiScreenElements; // *
@@ -8040,8 +9280,8 @@ begin
   wbDefinebhkMultiSphereShape;
   wbDefinebhkBoxShape;
   wbDefinebhkCapsuleShape;
-  wbDefinebhkConvexVerticesShape;
   wbDefinebhkCylinderShape;
+  wbDefinebhkConvexVerticesShape;
   wbDefinebhkCompressedMeshShape;
   wbDefinebhkCompressedMeshShapeData;
   wbDefinebhkBvTreeShape;
@@ -8052,6 +9292,9 @@ begin
   wbDefinebhkNiTriStripsShape;
   wbDefinehkPackedNiTriStripsData;
   wbDefinebhkPackedNiTriStripsShape;
+  wbDefinebhkAction;
+  wbDefinebhkUnaryAction;
+  wbDefinebhkBinaryAction;
   wbDefinebhkLiquidAction;
   wbDefinebhkOrientHingedBodyAction;
   wbDefinebhkPoseArray;
@@ -8074,7 +9317,7 @@ begin
   wbDefineNiMorphData;
   wbDefineNiPosData;
   wbDefineNiUVData;
-  wbDefineNiVISData;
+  wbDefineNiVisData;
   wbDefineATextureRenderData;
   wbDefineNiPixelData;
   wbDefineNiInterpolator;

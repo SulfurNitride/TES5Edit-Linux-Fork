@@ -50,7 +50,6 @@ var
   wbDESC: IwbRecordMemberDef;
   wbEDID: IwbRecordMemberDef;
   wbEffects: IwbRecordMemberDef;
-  wbFaceGen: IwbRecordMemberDef;
   wbFULL: IwbRecordMemberDef;
   wbFULLReq: IwbRecordMemberDef;
   wbICON: IwbRecordMemberDef;
@@ -1418,8 +1417,7 @@ begin
       {0} wbFloat('Comparison Value - Float'),
       {1} wbFormIDCk('Comparison Value - Global', [GLOB])
       ]),
-  {3} wbInteger('Function', itU16, wbConditionFunctionToStr, wbConditionFunctionToInt)
-        .SetAfterSet(wbUpdateSameParentUnions),
+  {3} wbInteger('Function', itU16, wbConditionFunctionToStr, wbConditionFunctionToInt),
   {4} wbUnused(2),
   {5} wbUnion('Parameter #1', wbConditionParam1Decider, wbConditionParameters),
   {6} wbUnion('Parameter #2', wbConditionParam2Decider, wbConditionParameters),
@@ -1482,13 +1480,6 @@ begin
             .SetToStr(wbConditionToStr)
             .IncludeFlag(dfCollapsed, wbCollapseConditions)
       ]));
-
-  wbFaceGen :=
-    wbRStruct('FaceGen Data', [
-      wbByteArray(FGGS, 'FaceGen Geometry-Symmetric', 200).SetRequired,
-      wbByteArray(FGGA, 'FaceGen Geometry-Asymmetric', 120).SetRequired,
-      wbByteArray(FGTS, 'FaceGen Texture-Symmetric', 200).SetRequired
-    ]).SetRequired;
 
   {wbOBMEVersion :=
     wbStruct('OBME Version', [
@@ -1960,14 +1951,18 @@ begin
         3, 'Hard'
         ])).SetDefaultNativeValue(2),
       nil),
-    IsTES4R(wbArray(XLRL, 'Unknown',
-      wbStruct('Unknown', [
-        wbInteger('Unknown', itu32),
-        wbInteger('Unknown', itu32),
-        wbUnknown(4),
-        wbUnknown(4),
-        wbInteger('Unknown', itu32)
-      ])), nil),
+    IsTES4R(
+      IfThen(wbSimpleRecords,
+        wbUnknown(XLRL),
+        wbArray(XLRL, 'Unknown',
+          wbStruct('Unknown', [
+            wbInteger('Unknown', itu32),
+            wbInteger('Unknown', itu32),
+            wbUnknown(4),
+            wbUnknown(4),
+            wbInteger('Unknown', itu32)
+          ]))),
+      nil),
     wbStruct(XCLC, 'Grid', [
       wbInteger('X', itS32),
       wbInteger('Y', itS32)
@@ -2398,7 +2393,7 @@ begin
       wbFloat('Color Key 1 - Color Key Time'),
       wbFloat('Color Key 2 - Color Key Time').SetDefaultNativeValue(0.5),
       wbFloat('Color Key 3 - Color Key Time').SetDefaultNativeValue(1)
-    ], cpNormal, True, nil, 25)
+    ], cpNormal, True, nil, 8)
   ]);
 
   wbRecord(ENCH, 'Enchantment', [
@@ -2916,7 +2911,7 @@ begin
     wbArrayS(ESCE, 'Counter Effects', wbInteger('Counter Effect Code', itU32, wbChar4))
       .SetCountPathOnValue('DATA\Counter Effect Count', False)
   ]).SetAfterLoad(wbMGEFAfterLoad)
-    .IncludeFlag(dfIndexEditorID);;
+    .IncludeFlag(dfIndexEditorID);
 
   wbRecord(MISC, 'Misc. Item',
     wbFlags(wbFlagsList([
@@ -3101,10 +3096,10 @@ begin
           {9}  'October',
           {10} 'November',
           {11} 'December',
-          {12} 'Spring',
-          {13} 'Summer',
-          {14} 'Autumn',
-          {15} 'Winter'
+          {12} 'Spring (MAM)',
+          {13} 'Summer (JJA)',
+          {14} 'Autumn (SON)',
+          {15} 'Winter (DJF)'
         ], [
           255, 'Any'
         ])).SetDefaultNativeValue(255),
@@ -3607,11 +3602,10 @@ begin
   wbRecord(SOUN, 'Sound', [
     wbEDID,
     wbString(FNAM, 'Sound Filename'),
-    wbRUnion('Sound Data', [
-      wbStruct(SNDX, 'Sound Data', wbSoundDataMembers, cpNormal, True, nil, 6),
-      wbStruct(SNDD, 'Sound Data', wbSoundDataMembers, cpNormal, True, nil, 6)
-    ]).SetRequired
-  ]).SetSummaryKey([1]);
+    wbStruct(SNDX, 'Sound Data', wbSoundDataMembers).SetRequired,
+    wbStruct(SNDD, 'Sound Data', wbSoundDataMembers, cpNormal, False, nil, 6).SetDontShow(wbAlwaysDontShow)
+  ]).SetSummaryKey([1])
+    .SetAfterLoad(wbSOUNAfterLoad);
 
   wbRecord(SPEL, 'Spell', [
     wbEDID,
@@ -3622,7 +3616,7 @@ begin
     ]).SetDontShow(wbOBMEDontShow),}
     wbFULL,
     wbStruct(SPIT, 'Data', [
-      wbInteger('Type', itU32,
+      wbInteger('Type', itU8,
         wbEnum([
           {0} 'Spell',
           {1} 'Disease',
@@ -3631,6 +3625,7 @@ begin
           {4} 'Ability',
           {5} 'Poison'
         ])),
+      wbUnused(3),
       wbInteger('Cost', itU32),
       wbInteger('Level', itU8,
         wbEnum([
@@ -3671,10 +3666,13 @@ begin
       ]))
   ]).SetSummaryKey([1]);
 
-  wbRecord(TREE, 'Tree', [
+  wbRecord(TREE, 'Tree',
+    wbFlags(wbFlagsList([
+      10, 'Quest Item'
+    ])), [
     wbEDID,
-    wbTexturedModel('Model', [MODL, MODB, MODT], []),
-    wbICON,
+    wbTexturedModel('SPT File', [MODL, MODB, MODT], []),
+    wbString(ICON, 'Leaf Texture'),
     wbArrayS(SNAM, 'SpeedTree Seeds', wbInteger('SpeedTree Seed', itU32)),
     wbStruct(CNAM, 'Tree Data', [
       wbFloat('Leaf Curvature').SetDefaultNativeValue(2.5),
@@ -3692,7 +3690,10 @@ begin
     ]).SetRequired
   ]).SetSummaryKey([1]);
 
-  wbRecord(WATR, 'Water', [
+  wbRecord(WATR, 'Water',
+    wbFlags(wbFlagsList([
+      10, 'Quest Item'
+    ])), [
     wbEDID,
     wbString(TNAM, 'Texture').SetRequired,
     wbInteger(ANAM, 'Opacity', itU8)
@@ -3720,9 +3721,9 @@ begin
         wbFloat('Near').SetDefaultNativeValue(27852.800782),
         wbFloat('Far').SetDefaultNativeValue(163840)
       ]),
-      wbByteColors('Shallow Color'),
-      wbByteColors('Deep Color'),
-      wbByteColors('Reflection Color'),
+      wbByteColors('Shallow Color', '0', '128', '128'),
+      wbByteColors('Deep Color', '0', '0', '25'),
+      wbByteColors('Reflection Color', '255', '255', '255'),
       wbInteger('Texture Blend', itU8).SetDefaultNativeValue(50),
       wbUnused(3),
       wbStruct('Rain Simulator', [
@@ -3759,7 +3760,7 @@ begin
     wbSCRI,
     wbEnchantment(True),
     wbStruct(DATA, 'Data', [
-      wbInteger('Type', itU32,
+      wbInteger('Type', itU8,
         wbEnum([
           {0} 'Blade One Hand',
           {1} 'Blade Two Hand',
@@ -3768,6 +3769,7 @@ begin
           {4} 'Staff',
           {5} 'Bow'
         ])),
+      wbUnused(3),
       wbFloat('Speed'),
       wbFloat('Reach'),
       wbInteger('Ignores Normal Weapon Resistance', itU32, wbBoolEnum),

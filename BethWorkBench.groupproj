@@ -15,6 +15,9 @@
         <Projects Include="BSArchPro.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="Sniff.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -59,14 +62,23 @@
     <Target Name="BSArchPro:Make">
         <MSBuild Projects="BSArchPro.dproj" Targets="Make"/>
     </Target>
+    <Target Name="Sniff">
+        <MSBuild Projects="Sniff.dproj"/>
+    </Target>
+    <Target Name="Sniff:Clean">
+        <MSBuild Projects="Sniff.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Sniff:Make">
+        <MSBuild Projects="Sniff.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="xEdit;xDump;BSArch;BSArchPro"/>
+        <CallTarget Targets="xEdit;xDump;BSArch;BSArchPro;Sniff"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="xEdit:Clean;xDump:Clean;BSArch:Clean;BSArchPro:Clean"/>
+        <CallTarget Targets="xEdit:Clean;xDump:Clean;BSArch:Clean;BSArchPro:Clean;Sniff:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="xEdit:Make;xDump:Make;BSArch:Make;BSArchPro:Make"/>
+        <CallTarget Targets="xEdit:Make;xDump:Make;BSArch:Make;BSArchPro:Make;Sniff:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

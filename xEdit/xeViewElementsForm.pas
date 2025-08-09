@@ -163,12 +163,18 @@ begin
 
   try
     TabSheet2 := pcView.Pages[idx];
-    aFile2 := Path + TabSheet2.Caption + '.txt';
+    if TabSheet2.Caption[Length(TabSheet2.Caption)] = '*' then
+      aFile2 := Path + Copy(TabSheet2.Caption, 1, Length(TabSheet2.Caption) - 1) + '.txt'
+    else
+      aFile2 := Path + TabSheet2.Caption + '.txt';
     TMemo(TabSheet2.Controls[0]).Lines.SaveToFile(aFile2);
     aParams := StringReplace(aParams, '%2', '"'+aFile2+'"', []);
 
     TabSheet1 := pcView.Pages[Pred(idx)];
-    aFile1 := Path + TabSheet1.Caption + '.txt';
+    if TabSheet1.Caption[Length(TabSheet1.Caption)] = '*' then
+      aFile1 := Path + Copy(TabSheet1.Caption, 1, Length(TabSheet1.Caption) - 1) + '.txt'
+    else
+      aFile1 := Path + TabSheet1.Caption + '.txt';
     TMemo(TabSheet1.Controls[0]).Lines.SaveToFile(aFile1);
     aParams := StringReplace(aParams, '%1', '"'+aFile1+'"', []);
 

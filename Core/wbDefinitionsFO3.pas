@@ -64,7 +64,6 @@ var
   wbEmbeddedScriptReq: IwbRecordMemberDef;
   wbETYP: IwbRecordMemberDef;
   wbETYPReq: IwbRecordMemberDef;
-  wbFaceGen: IwbRecordMemberDef;
   wbFULL: IwbRecordMemberDef;
   wbFULLReq: IwbRecordMemberDef;
   wbICON: IwbRecordMemberDef;
@@ -2393,40 +2392,34 @@ begin
 end;
 
 procedure wbWATRAfterLoad(const aElement: IwbElement);
-var
-  Container: IwbContainerElementRef;
-  MainRecord   : IwbMainRecord;
-//  AnimationMultiplier : Extended;
-//  AnimationAttackMultiplier : Extended;
-  OldCntr: IwbContainerElementRef;
-  NewCntr: IwbContainerElementRef;
-  i: Integer;
 begin
   if wbBeginInternalEdit then try
-    if not wbTryGetContainerWithValidMainRecord(aElement, Container, MainRecord) then
+    if not Assigned(aElement) then
       Exit;
 
-    if Container.ElementExists['DNAM'] then
+    var lMainRecord : IwbMainRecord;
+    if not Supports(aElement, IwbMainRecord, lMainRecord) then
       Exit;
 
-    if not Supports(Container.RemoveElement('DATA - Visual Data'), IwbContainerElementRef, OldCntr) then
-      Exit;
-    if not Supports(Container.Add('DNAM', True), IwbContainerElementRef, NewCntr) then
-      Exit;
-    for i := 0 to Pred(Min(OldCntr.ElementCount, NewCntr.ElementCount)) do
-      if OldCntr.Elements[i].Name = 'Damage (Old Format)' then
-        Container.ElementNativeValues['DATA - Damage'] := OldCntr.Elements[i].NativeValue
-      else
-        NewCntr.Elements[i].Assign(Low(Integer), OldCntr.Elements[i], False);
+    if lMainRecord.ElementExists['DATA - Visual Data'] then begin
 
-    NewCntr.ElementNativeValues['Noise Properties - Noise Layer One - Amplitude Scale'] := 1.0;
-    NewCntr.ElementNativeValues['Noise Properties - Noise Layer Two - Amplitude Scale'] := 0.5;
-    NewCntr.ElementNativeValues['Noise Properties - Noise Layer Three - Amplitude Scale'] := 0.25;
+      If not Assigned(lMainRecord.ElementByName['DNAM - Visual Data']) then
+        lMainRecord.Add('DNAM', True);
+
+      var lDNAM := lMainRecord.ElementByName['DNAM - Visual Data'] as IwbContainerElementRef;
+
+      var lDATA := lMainRecord.ElementByName['DATA - Visual Data'] as IwbContainerElementRef;
+
+      for var i := 0 to Pred(lDATA.ElementCount - 1) do begin
+        lDNAM.Elements[i].Assign(Low(Integer), lDATA.Elements[i], False);
+      end;
+
+      lMainRecord.RemoveElement('DATA - Visual Data');
+    end;
   finally
-    wbEndInternalEdit;
+    wbEndInternalEdit
   end;
 end;
-
 
 procedure wbWEAPAfterLoad(const aElement: IwbElement);
 var
@@ -3146,8 +3139,7 @@ begin
           {0} wbFloat('Comparison Value - Float'),
           {1} wbFormIDCk('Comparison Value - Global', [GLOB])
           ]),
-      {3} wbInteger('Function', itU16, wbConditionFunctionToStr, wbConditionFunctionToInt)
-            .SetAfterSet(wbUpdateSameParentUnions),
+      {3} wbInteger('Function', itU16, wbConditionFunctionToStr, wbConditionFunctionToInt),
       {4} wbUnused(2),
       {5} wbUnion('Parameter #1', wbConditionParam1Decider, wbConditionParameters),
       {6} wbUnion('Parameter #2', wbConditionParam2Decider, wbConditionParameters),
@@ -3256,12 +3248,6 @@ begin
 
   wbEffectsReq :=
     wbRArray('Effects', wbEffect).SetRequired;
-
-  wbFaceGen := wbRStruct('FaceGen Data', [
-    wbByteArray(FGGS, 'FaceGen Geometry-Symmetric').SetRequired,
-    wbByteArray(FGGA, 'FaceGen Geometry-Asymmetric').SetRequired,
-    wbByteArray(FGTS, 'FaceGen Texture-Symmetric').SetRequired
-  ]).SetRequired;
 
   var wbHeadParts :=
     wbRArrayS('Parts',
@@ -3792,7 +3778,7 @@ begin
     wbString(XNAM, 'Water Noise Texture'),
     wbArrayS(XCLR, 'Regions', wbFormIDCk('Region', [REGN])),
     wbFormIDCk(XCIM, 'Image Space', [IMGS]),
-    wbByteArray(XCET, 'Unknown', 1, cpIgnore),
+    wbUnused(XCET, 1),
     wbFormIDCk(XEZN, 'Encounter Zone', [ECZN]),
     wbFormIDCk(XCCM, 'Climate', [CLMT]),
     wbFormIDCk(XCWT, 'Water', [WATR]),
@@ -4591,7 +4577,7 @@ begin
     wbFULL,
     wbGenericModel(True),
     wbDEST,
-    wbByteArray(DATA, 'Unknown', 1).SetRequired,
+    wbInteger(DATA, 'On Local Map', itU8, wbBoolEnum).SetRequired,
     wbFormIDCk(SNAM, 'Sound', [SOUN])
   ]);
 
@@ -4627,27 +4613,12 @@ begin
 
   wbRecord(IDLM, 'Idle Marker',
     wbFlags(wbFlagsList([
-      10, 'Quest Item',
-      29, 'Child Can Use'
+    10, 'Quest Item',
+    29, 'Child Can Use'
     ])), [
     wbEDIDReq,
     wbOBND(True),
-    wbInteger(IDLF, 'Flags', itU8,
-      wbFlags(wbSparseFlags([
-        0, 'Run in Sequence',
-        2, 'Do Once'
-      ], False, 3))
-    ).SetRequired
-     .IncludeFlag(dfCollapsed, wbCollapseFlags),
-    wbStruct(IDLC, '', [
-      wbInteger('Animation Count', itU8),
-      wbUnused(3)
-    ], cpNormal, True, nil, 1),
-    wbFloat(IDLT, 'Idle Timer Setting').SetRequired,
-    wbArray(IDLA, 'Animations',
-      wbFormIDCk('Animation', [IDLE, NULL])
-    ).SetCountPathOnValue('IDLC\Animation Count', False)
-     .SetRequired  // NULL looks valid if IDLS\Animation Count is 0
+    wbIdleAnimation
   ]);
 
   wbRecord(NOTE, 'Note', [
@@ -4754,12 +4725,16 @@ begin
           .SetSummaryDelimiter(', ')
           .IncludeFlag(dfCollapsed, wbCollapsePlacement)
           .IncludeFlag(dfSummaryMembersNoName),
-        wbVec3,
+        wbVec3('Approx Location'),
         wbUnion('Island Data', wbNAVINVMIDecider, [
-          wbStruct('Unused', [wbEmpty('Unused')]).IncludeFlag(dfCollapsed, wbCollapseOther),
+          wbStruct('Unused', [wbEmpty('Unused')])
+            .SetDontShow(wbNeverShow)
+            .IncludeFlag(dfCollapsed, wbCollapseOther),
           wbStruct('Island Data', [
-            wbVec3('Min'),
-            wbVec3('Max'),
+            wbStruct('Navmesh Bounds', [
+              wbVec3('Min'),
+              wbVec3('Max')
+            ]),
             wbInteger('Vertex Count', itU16),
             wbInteger('Triangle Count', itU16),
             wbArray('Vertices',
@@ -4776,10 +4751,10 @@ begin
             ).SetCountPath('Triangle Count', True)
              .IncludeFlag(dfCollapsed, wbCollapseVertices)
              .IncludeFlag(dfNotAlignable)
-          ]).SetSummaryKey([5])
+          ]).SetSummaryKey([4])
             .IncludeFlag(dfCollapsed, wbCollapseNavmesh)
         ]).IncludeFlag(dfCollapsed, wbCollapseNavmesh),
-        wbUnknown
+        wbFloat('Preferred %')
       ]).SetSummaryKeyOnValue([1,2,5])
         .SetSummaryPrefixSuffixOnValue(1, '', '')
         .SetSummaryPrefixSuffixOnValue(2, 'in ', '')
@@ -4864,8 +4839,10 @@ begin
       wbInteger('Divisor', itU32),
       wbFloat('Max X Distance'),
       wbFloat('Max Y Distance'),
-      wbVec3('Min'),
-      wbVec3('Max'),
+      wbStruct('Navmesh Bounds', [
+        wbVec3('Min'),
+        wbVec3('Max')
+      ]),
       IfThen(wbSimpleRecords,
         wbArray('Cells',
           wbArray('Cell',
@@ -5233,56 +5210,37 @@ begin
   ]);
 
   wbRecord(IMAD, 'Image Space Adapter', [
-    wbEDID,
-    wbStruct(DNAM, 'Data Count', [
+    wbEDID.SetRequired,
+    wbStruct(DNAM, 'Data', [
       wbInteger('Animatable', itU32, wbBoolEnum),
       wbFloat('Duration'),
       wbStruct('HDR', [
-        wbInteger('Eye Adapt Speed Mult', itU32),
-        wbInteger('Eye Adapt Speed Add', itU32),
-        wbInteger('Bloom Blur Radius Mult', itU32),
-        wbInteger('Bloom Blur Radius Add', itU32),
-        wbInteger('Bloom Threshold Mult', itU32),
-        wbInteger('Bloom Threshold Add', itU32),
-        wbInteger('Bloom Scale Mult', itU32),
-        wbInteger('Bloom Scale Add', itU32),
-        wbInteger('Target Lum Min Mult', itU32),
-        wbInteger('Target Lum Min Add', itU32),
-        wbInteger('Target Lum Max Mult', itU32),
-        wbInteger('Target Lum Max Add', itU32),
-        wbInteger('Sunlight Scale Mult', itU32),
-        wbInteger('Sunlight Scale Add', itU32),
-        wbInteger('Sky Scale Mult', itU32),
-        wbInteger('Sky Scale Add', itU32)
+        wbIMADMultAddCount('Eye Adapt Speed'),
+        wbIMADMultAddCount('Blur Radius'),
+        wbIMADMultAddCount('Skin Dimmer'),
+        wbIMADMultAddCount('Emissive Mult'),
+        wbIMADMultAddCount('Target Lum'),
+        wbIMADMultAddCount('Upper Lum Clamp'),
+        wbIMADMultAddCount('Bright Scale'),
+        wbIMADMultAddCount('Bright Clamp'),
+        wbIMADMultAddCount('LUM Ramp No Tex'),
+        wbIMADMultAddCount('LUM Ramp Min'),
+        wbIMADMultAddCount('LUM Ramp Max'),
+        wbIMADMultAddCount('Sunlight Dimmer'),
+        wbIMADMultAddCount('Grass Dimmer'),
+        wbIMADMultAddCount('Tree Dimmer')
       ]),
-      wbInteger('Unknown08 Mult', itU32),
-      wbInteger('Unknown48 Add', itU32),
-      wbInteger('Unknown09 Mult', itU32),
-      wbInteger('Unknown49 Add', itU32),
-      wbInteger('Unknown0A Mult', itU32),
-      wbInteger('Unknown4A Add', itU32),
-      wbInteger('Unknown0B Mult', itU32),
-      wbInteger('Unknown4B Add', itU32),
-      wbInteger('Unknown0C Mult', itU32),
-      wbInteger('Unknown4C Add', itU32),
-      wbInteger('Unknown0D Mult', itU32),
-      wbInteger('Unknown4D Add', itU32),
-      wbInteger('Unknown0E Mult', itU32),
-      wbInteger('Unknown4E Add', itU32),
-      wbInteger('Unknown0F Mult', itU32),
-      wbInteger('Unknown4F Add', itU32),
-      wbInteger('Unknown10 Mult', itU32),
-      wbInteger('Unknown50 Add', itU32),
+      wbStruct('Bloom', [
+        wbIMADMultAddCount('Blur Radius'),
+        wbIMADMultAddCount('Alpha Mult Interior'),
+        wbIMADMultAddCount('Alpha Mult Exterior')
+      ]),
       wbStruct('Cinematic', [
-        wbInteger('Saturation Mult', itU32),
-        wbInteger('Saturation Add', itU32),
-        wbInteger('Brightness Mult', itU32),
-        wbInteger('Brightness Add', itU32),
-        wbInteger('Contrast Mult', itU32),
-        wbInteger('Contrast Add', itU32)
+        wbIMADMultAddCount('Saturation'),
+        wbIMADMultAddCount('Contrast'),
+        wbIMADMultAddCount('Contrast Avg Lum'),
+        wbIMADMultAddCount('Brightness')
       ]),
-      wbInteger('Unknown14 Mult', itU32),
-      wbInteger('Unknown54 Add', itU32),
       wbInteger('Tint Color', itU32),
       wbInteger('Blur Radius', itU32),
       wbInteger('Double Vision Strength', itU32),
@@ -5295,30 +5253,38 @@ begin
       wbInteger('DoF Strength', itU32),
       wbInteger('DoF Distance', itU32),
       wbInteger('DoF Range', itU32),
-      wbInteger('DoF Use Target', itU8, wbBoolEnum),
-      wbInteger('Unused', itU8),
-      wbInteger('Unused', itU16),
+      wbInteger('DoF - Use Target', itU8, wbBoolEnum),
+      wbInteger('DoF Flags', itU8,
+        wbFlags([
+        {0} 'Mode - Front',
+        {1} 'Mode - Back',
+        {2} 'No Sky',
+        {3} 'Unknown 3',
+        {4} 'Unknown 4',
+        {5} 'Unknown 5'
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
+      wbUnused(2),
       wbInteger('Radial Blur Ramp Down', itU32),
       wbInteger('Radial Blur Down Start', itU32),
       wbInteger('Fade Color', itU32),
       wbInteger('Motion Blur Strength', itU32)
-    ], cpNormal, True, nil, 26),
+    ], cpNormal, True, nil, 8),
     wbTimeInterpolators(BNAM, 'Blur Radius'),
     wbTimeInterpolators(VNAM, 'Double Vision Strength'),
-    wbArray(TNAM, 'Tint Color', wbColorInterpolator),
-    wbArray(NAM3, 'Fade Color', wbColorInterpolator),
+    wbArray(TNAM, 'Tint Color', wbColorInterpolator).SetRequired,
+    wbArray(NAM3, 'Fade Color', wbColorInterpolator).SetRequired,
     wbRStruct('Radial Blur', [
       wbTimeInterpolators(RNAM, 'Strength'),
       wbTimeInterpolators(SNAM, 'Ramp Up'),
       wbTimeInterpolators(UNAM, 'Start'),
       wbTimeInterpolators(NAM1, 'Ramp Down'),
       wbTimeInterpolators(NAM2, 'Down Start')
-    ]),
+    ]).SetRequired,
     wbRStruct('Depth of Field', [
       wbTimeInterpolators(WNAM, 'Strength'),
       wbTimeInterpolators(XNAM, 'Distance'),
       wbTimeInterpolators(YNAM, 'Range')
-    ]),
+    ]).SetRequired,
     wbTimeInterpolators(NAM4, 'Motion Blur Strength'),
     wbRStruct('HDR', [
       wbTimeInterpolatorsMultAdd(_00_IAD, _40_IAD, 'Eye Adapt Speed'),
@@ -5335,13 +5301,18 @@ begin
       wbTimeInterpolatorsMultAdd(_0B_IAD, _4B_IAD, 'Sunlight Dimmer'),
       wbTimeInterpolatorsMultAdd(_0C_IAD, _4C_IAD, 'Grass Dimmer'),
       wbTimeInterpolatorsMultAdd(_0D_IAD, _4D_IAD, 'Tree Dimmer')
-    ]),
+    ]).SetRequired,
     wbRStruct('Bloom', [
       wbTimeInterpolatorsMultAdd(_0E_IAD, _4E_IAD, 'Blur Radius'),
       wbTimeInterpolatorsMultAdd(_0F_IAD, _4F_IAD, 'Alpha Mult Interior'),
       wbTimeInterpolatorsMultAdd(_10_IAD, _50_IAD, 'Alpha Mult Exterior')
-    ]),
-    wbCinematicIMAD
+    ]).SetRequired,
+    wbRStruct('Cinematic', [
+      wbTimeInterpolatorsMultAdd(_11_IAD, _51_IAD, 'Saturation'),
+      wbTimeInterpolatorsMultAdd(_12_IAD, _52_IAD, 'Contrast'),
+      wbTimeInterpolatorsMultAdd(_13_IAD, _53_IAD, 'Contrast Avg Lum'),
+      wbTimeInterpolatorsMultAdd(_14_IAD, _54_IAD, 'Brightness')
+    ]).SetRequired
   ]);
 
   wbRecord(FLST, 'FormID List', [
@@ -5745,29 +5716,32 @@ begin
   ]);
 
   wbRecord(DOBJ, 'Default Object Manager', [
-    wbEDIDReq,
-    wbArray(DATA, 'Default Objects', wbFormID('Default Object'), [
-      'Stimpak',
-      'SuperStimpak',
-      'RadX',
-      'RadAway',
-      'Morphine',
-      'Perk Paralysis',
-      'Player Faction',
-      'Mysterious Stranger NPC',
-      'Mysterious Stranger Faction',
-      'Default Music',
-      'Battle Music',
-      'Death Music',
-      'Success Music',
-      'Level Up Music',
-      'Player Voice (Male)',
-      'Player Voice (Male Child)',
-      'Player Voice (Female)',
-      'Player Voice (Female Child)',
-      'Eat Package Default Food',
-      'Every Actor Ability',
-      'Drug Wears Off Image Space'
+    wbString(EDID, 'Editor ID')
+      .SetDefaultNativeValue('DefaultObjectManager')
+      .SetRequired
+      .IncludeFlag(dfInternalEditOnly),
+    wbStruct(DATA, 'Default Objects', [
+      wbFormIDCk('Stimpak', [ALCH,NULL]),
+      wbFormIDCk('Super Stimpak', [ALCH,NULL]),
+      wbFormIDCk('Rad X', [ALCH,NULL]),
+      wbFormIDCk('Rad Away', [ALCH,NULL]),
+      wbFormIDCk('Morphine', [ALCH,NULL]),
+      wbFormIDCk('Perk Paralysis', [SPEL,NULL]),
+      wbFormIDCk('Player Faction', [FACT,NULL]),
+      wbFormIDCk('Mysterious Stranger NPC', [NPC_,NULL]),
+      wbFormIDCk('Mysterious Stranger Faction', [FACT,NULL]),
+      wbFormIDCk('Default Music', [MUSC,NULL]),
+      wbFormIDCk('Battle Music', [MUSC,NULL]),
+      wbFormIDCk('Death Music', [MUSC,NULL]),
+      wbFormIDCk('Success Music', [MUSC,NULL]),
+      wbFormIDCk('Level Up Music', [MUSC,NULL]),
+      wbFormIDCk('Player Voice (Male)', [VTYP,NULL]),
+      wbFormIDCk('Player Voice (Male Child)', [VTYP,NULL]),
+      wbFormIDCk('Player Voice (Female)', [VTYP,NULL]),
+      wbFormIDCk('Player Voice (Female Child)', [VTYP,NULL]),
+      wbFormIDCk('Eat Package Default Food', [FLST,NULL]),
+      wbFormIDCk('Every Actor Ability', [SPEL,NULL]),
+      wbFormIDCk('Drug Wears Off Image Space', [IMAD,NULL])
     ]).SetRequired
   ]);
 
@@ -6609,25 +6583,7 @@ begin
       wbFloat('Unknown')
     ], cpNormal, False, nil, 3),
     wbConditions,
-    wbRStruct('Idle Animations', [
-      wbInteger(IDLF, 'Flags', itU8,
-        wbFlags(wbSparseFlags([
-          0, 'Run in Sequence',
-          2, 'Do Once'
-        ], False, 3))
-      ).SetRequired
-       .IncludeFlag(dfCollapsed, wbCollapseFlags),
-      wbStruct(IDLC, '', [
-        wbInteger( 'Animation Count', itU8),
-        wbUnused(3)
-      ], cpNormal, True, nil, 1),
-      wbFloat(IDLT, 'Idle Timer Setting').SetRequired,
-      wbArray(IDLA, 'Animations',
-        wbFormIDCk('Animation', [IDLE])
-      ).SetCountPathOnValue('IDLC\Animation Count', False)
-       .SetRequired,
-      wbByteArray(IDLB, 'Unused', 4, cpIgnore)
-    ]),
+    wbIdleAnimation,
     wbFormIDCk(CNAM, 'Combat Style', [CSTY]),
     wbEmpty(PKED, 'Eat Marker'),
     wbInteger(PKE2, 'Escort Distance', itU32),
@@ -7467,7 +7423,9 @@ begin
     wbEDIDReq,
     wbFULL,
     wbString(NNAM, 'Noise Map').SetRequired,
-    wbInteger(ANAM, 'Opacity', itU8).SetRequired,
+    wbInteger(ANAM, 'Opacity', itU8)
+      .SetDefaultNativeValue(75)
+      .SetRequired,
     wbInteger(FNAM, 'Flags', itU8,
       wbFlags([
         {0}'Causes Damage',
@@ -7478,116 +7436,101 @@ begin
     wbFormIDCk(SNAM, 'Sound', [SOUN]),
     wbFormIDCk(XNAM, 'Actor Effect', [SPEL]),
     wbInteger(DATA, 'Damage', itU16, nil, cpNormal, True, True),
-    wbRUnion('Visual Data', [
-      wbStruct(DNAM, 'Visual Data', [
-        wbFloat('Unknown'),
-        wbFloat('Unknown'),
-        wbFloat('Unknown'),
-        wbFloat('Unknown'),
-        wbFloat('Water Properties - Sun Power'),
-        wbFloat('Water Properties - Reflectivity Amount'),
-        wbFloat('Water Properties - Fresnel Amount'),
-        wbUnused(4),
-        wbFloat('Fog Properties - Above Water - Fog Distance - Near Plane'),
-        wbFloat('Fog Properties - Above Water - Fog Distance - Far Plane'),
-        wbByteColors('Shallow Color'),
-        wbByteColors('Deep Color'),
-        wbByteColors('Reflection Color'),
-        wbUnused(4),
-        wbFloat('Rain Simulator - Force'),
-        wbFloat('Rain Simulator - Velocity'),
-        wbFloat('Rain Simulator - Falloff'),
-        wbFloat('Rain Simulator - Dampner'),
-        wbFloat('Displacement Simulator - Starting Size'),
-        wbFloat('Displacement Simulator - Force'),
-        wbFloat('Displacement Simulator - Velocity'),
-        wbFloat('Displacement Simulator - Falloff'),
-        wbFloat('Displacement Simulator - Dampner'),
-        wbFloat('Rain Simulator - Starting Size'),
-        wbFloat('Noise Properties - Normals - Noise Scale'),
-        wbFloat('Noise Properties - Noise Layer One - Wind Direction'),
-        wbFloat('Noise Properties - Noise Layer Two - Wind Direction'),
-        wbFloat('Noise Properties - Noise Layer Three - Wind Direction'),
-        wbFloat('Noise Properties - Noise Layer One - Wind Speed'),
-        wbFloat('Noise Properties - Noise Layer Two - Wind Speed'),
-        wbFloat('Noise Properties - Noise Layer Three - Wind Speed'),
-        wbFloat('Noise Properties - Normals - Depth Falloff Start'),
-        wbFloat('Noise Properties - Normals - Depth Falloff End'),
-        wbFloat('Fog Properties - Above Water - Fog Amount'),
-        wbFloat('Noise Properties - Normals - UV Scale'),
-        wbFloat('Fog Properties - Under Water - Fog Amount'),
-        wbFloat('Fog Properties - Under Water - Fog Distance - Near Plane'),
-        wbFloat('Fog Properties - Under Water - Fog Distance - Far Plane'),
-        wbFloat('Water Properties - Distortion Amount'),
-        wbFloat('Water Properties - Shininess'),
-        wbFloat('Water Properties - Reflection HDR Multiplier'),
-        wbFloat('Water Properties - Light Radius'),
-        wbFloat('Water Properties - Light Brightness'),
-        wbFloat('Noise Properties - Noise Layer One - UV Scale'),
-        wbFloat('Noise Properties - Noise Layer Two - UV Scale'),
-        wbFloat('Noise Properties - Noise Layer Three - UV Scale'),
-        wbFloat('Noise Properties - Noise Layer One - Amplitude Scale'),
-        wbFloat('Noise Properties - Noise Layer Two - Amplitude Scale'),
-        wbFloat('Noise Properties - Noise Layer Three - Amplitude Scale')
-      ], cpNormal, True, nil, 46),
-      wbStruct(DATA, 'Visual Data', [
-        wbFloat('Unknown'),
-        wbFloat('Unknown'),
-        wbFloat('Unknown'),
-        wbFloat('Unknown'),
-        wbFloat('Water Properties - Sun Power'),
-        wbFloat('Water Properties - Reflectivity Amount'),
-        wbFloat('Water Properties - Fresnel Amount'),
-        wbUnused(4),
-        wbFloat('Fog Properties - Above Water - Fog Distance - Near Plane'),
-        wbFloat('Fog Properties - Above Water - Fog Distance - Far Plane'),
-        wbByteColors('Shallow Color'),
-        wbByteColors('Deep Color'),
-        wbByteColors('Reflection Color'),
-        wbUnused(4),
-        wbFloat('Rain Simulator - Force'),
-        wbFloat('Rain Simulator - Velocity'),
-        wbFloat('Rain Simulator - Falloff'),
-        wbFloat('Rain Simulator - Dampner'),
-        wbFloat('Displacement Simulator - Starting Size'),
-        wbFloat('Displacement Simulator - Force'),
-        wbFloat('Displacement Simulator - Velocity'),
-        wbFloat('Displacement Simulator - Falloff'),
-        wbFloat('Displacement Simulator - Dampner'),
-        wbFloat('Rain Simulator - Starting Size'),
-        wbFloat('Noise Properties - Normals - Noise Scale'),
-        wbFloat('Noise Properties - Noise Layer One - Wind Direction'),
-        wbFloat('Noise Properties - Noise Layer Two - Wind Direction'),
-        wbFloat('Noise Properties - Noise Layer Three - Wind Direction'),
-        wbFloat('Noise Properties - Noise Layer One - Wind Speed'),
-        wbFloat('Noise Properties - Noise Layer Two - Wind Speed'),
-        wbFloat('Noise Properties - Noise Layer Three - Wind Speed'),
-        wbFloat('Noise Properties - Normals - Depth Falloff Start'),
-        wbFloat('Noise Properties - Normals - Depth Falloff End'),
-        wbFloat('Fog Properties - Above Water - Fog Amount'),
-        wbFloat('Noise Properties - Normals - UV Scale'),
-        wbFloat('Fog Properties - Under Water - Fog Amount'),
-        wbFloat('Fog Properties - Under Water - Fog Distance - Near Plane'),
-        wbFloat('Fog Properties - Under Water - Fog Distance - Far Plane'),
-        wbFloat('Water Properties - Distortion Amount'),
-        wbFloat('Water Properties - Shininess'),
-        wbFloat('Water Properties - Reflection HDR Multiplier'),
-        wbFloat('Water Properties - Light Radius'),
-        wbFloat('Water Properties - Light Brightness'),
-        wbFloat('Noise Properties - Noise Layer One - UV Scale'),
-        wbFloat('Noise Properties - Noise Layer Two - UV Scale'),
-        wbFloat('Noise Properties - Noise Layer Three - UV Scale'),
-        wbEmpty('Noise Properties - Noise Layer One - Amplitude Scale'),
-        wbEmpty('Noise Properties - Noise Layer Two - Amplitude Scale'),
-        wbEmpty('Noise Properties - Noise Layer Three - Amplitude Scale'),
-        wbInteger('Damage (Old Format)', itU16)
-      ]).SetRequired
-    ]).SetRequired,
-    wbStruct(GNAM, 'Related Waters (Unused)', [
-      wbFormIDCk('Daytime', [WATR, NULL]),
-      wbFormIDCk('Nighttime', [WATR, NULL]),
-      wbFormIDCk('Underwater', [WATR, NULL])
-    ]).SetRequired
+    wbStruct(DNAM, 'Visual Data', [
+      wbUnused(16),
+      wbFloat('Water Properties - Sun Power').SetDefaultNativeValue(50),
+      wbFloat('Water Properties - Reflectivity Amount').SetDefaultNativeValue(0.5),
+      wbFloat('Water Properties - Fresnel Amount').SetDefaultNativeValue(0.025),
+      wbUnused(4),
+      wbFloat('Fog Properties - Above Water - Fog Distance - Near Plane'),
+      wbFloat('Fog Properties - Above Water - Fog Distance - Far Plane'),
+      wbByteColors('Shallow Color', '0', '128', '128'),
+      wbByteColors('Deep Color', '0', '0', '25'),
+      wbByteColors('Reflection Color', '255', '255', '255'),
+      wbUnused(4),
+      wbFloat('Rain Simulator - Force').SetDefaultNativeValue(0.1),
+      wbFloat('Rain Simulator - Velocity').SetDefaultNativeValue(0.6),
+      wbFloat('Rain Simulator - Falloff').SetDefaultNativeValue(0.985),
+      wbFloat('Rain Simulator - Dampner').SetDefaultNativeValue(2),
+      wbFloat('Displacement Simulator - Starting Size').SetDefaultNativeValue(0.01),
+      wbFloat('Displacement Simulator - Force').SetDefaultNativeValue(0.4),
+      wbFloat('Displacement Simulator - Velocity').SetDefaultNativeValue(0.6),
+      wbFloat('Displacement Simulator - Falloff').SetDefaultNativeValue(0.985),
+      wbFloat('Displacement Simulator - Dampner').SetDefaultNativeValue(10),
+      wbFloat('Rain Simulator - Starting Size').SetDefaultNativeValue(0.05),
+      wbFloat('Noise Properties - Normals - Noise Scale').SetDefaultNativeValue(1),
+      wbFloat('Noise Properties - Noise Layer One - Wind Direction'),
+      wbFloat('Noise Properties - Noise Layer Two - Wind Direction'),
+      wbFloat('Noise Properties - Noise Layer Three - Wind Direction'),
+      wbFloat('Noise Properties - Noise Layer One - Wind Speed'),
+      wbFloat('Noise Properties - Noise Layer Two - Wind Speed'),
+      wbFloat('Noise Properties - Noise Layer Three - Wind Speed'),
+      wbFloat('Noise Properties - Normals - Depth Falloff Start'),
+      wbFloat('Noise Properties - Normals - Depth Falloff End'),
+      wbFloat('Fog Properties - Above Water - Fog Amount').SetDefaultNativeValue(1),
+      wbFloat('Noise Properties - Normals - UV Scale').SetDefaultNativeValue(500),
+      wbFloat('Fog Properties - Under Water - Fog Amount').SetDefaultNativeValue(1),
+      wbFloat('Fog Properties - Under Water - Fog Distance - Near Plane'),
+      wbFloat('Fog Properties - Under Water - Fog Distance - Far Plane').SetDefaultNativeValue(1000),
+      wbFloat('Water Properties - Distortion Amount').SetDefaultNativeValue(250),
+      wbFloat('Water Properties - Shininess').SetDefaultNativeValue(100),
+      wbFloat('Water Properties - Reflection HDR Multiplier').SetDefaultNativeValue(1),
+      wbFloat('Water Properties - Light Radius').SetDefaultNativeValue(10000),
+      wbFloat('Water Properties - Light Brightness').SetDefaultNativeValue(1),
+      wbFloat('Noise Properties - Noise Layer One - UV Scale').SetDefaultNativeValue(100),
+      wbFloat('Noise Properties - Noise Layer Two - UV Scale').SetDefaultNativeValue(100),
+      wbFloat('Noise Properties - Noise Layer Three - UV Scale').SetDefaultNativeValue(100),
+      wbFloat('Noise Properties - Noise Layer One - Amplitude Scale'),
+      wbFloat('Noise Properties - Noise Layer Two - Amplitude Scale'),
+      wbFloat('Noise Properties - Noise Layer Three - Amplitude Scale')
+    ], cpNormal, True, nil, 43),
+    wbStruct(DATA, 'Visual Data', [
+      wbUnused(16),
+      wbFloat('Water Properties - Sun Power'),
+      wbFloat('Water Properties - Reflectivity Amount'),
+      wbFloat('Water Properties - Fresnel Amount'),
+      wbUnused(4),
+      wbFloat('Fog Properties - Above Water - Fog Distance - Near Plane'),
+      wbFloat('Fog Properties - Above Water - Fog Distance - Far Plane'),
+      wbByteColors('Shallow Color'),
+      wbByteColors('Deep Color'),
+      wbByteColors('Reflection Color'),
+      wbUnused(4),
+      wbFloat('Rain Simulator - Force'),
+      wbFloat('Rain Simulator - Velocity'),
+      wbFloat('Rain Simulator - Falloff'),
+      wbFloat('Rain Simulator - Dampner'),
+      wbFloat('Displacement Simulator - Starting Size'),
+      wbFloat('Displacement Simulator - Force'),
+      wbFloat('Displacement Simulator - Velocity'),
+      wbFloat('Displacement Simulator - Falloff'),
+      wbFloat('Displacement Simulator - Dampner'),
+      wbFloat('Rain Simulator - Starting Size'),
+      wbFloat('Noise Properties - Normals - Noise Scale'),
+      wbFloat('Noise Properties - Noise Layer One - Wind Direction'),
+      wbFloat('Noise Properties - Noise Layer Two - Wind Direction'),
+      wbFloat('Noise Properties - Noise Layer Three - Wind Direction'),
+      wbFloat('Noise Properties - Noise Layer One - Wind Speed'),
+      wbFloat('Noise Properties - Noise Layer Two - Wind Speed'),
+      wbFloat('Noise Properties - Noise Layer Three - Wind Speed'),
+      wbFloat('Noise Properties - Normals - Depth Falloff Start'),
+      wbFloat('Noise Properties - Normals - Depth Falloff End'),
+      wbFloat('Fog Properties - Above Water - Fog Amount'),
+      wbFloat('Noise Properties - Normals - UV Scale'),
+      wbFloat('Fog Properties - Under Water - Fog Amount'),
+      wbFloat('Fog Properties - Under Water - Fog Distance - Near Plane'),
+      wbFloat('Fog Properties - Under Water - Fog Distance - Far Plane'),
+      wbFloat('Water Properties - Distortion Amount'),
+      wbFloat('Water Properties - Shininess'),
+      wbFloat('Water Properties - Reflection HDR Multiplier'),
+      wbFloat('Water Properties - Light Radius'),
+      wbFloat('Water Properties - Light Brightness'),
+      wbFloat('Noise Properties - Noise Layer One - UV Scale'),
+      wbFloat('Noise Properties - Noise Layer Two - UV Scale'),
+      wbFloat('Noise Properties - Noise Layer Three - UV Scale'),
+      wbInteger('Damage (Old Format)', itU16)
+    ]).SetDontShow(wbAlwaysDontShow),
+    wbUnused(GNAM, 12).SetRequired
   ]).SetAfterLoad(wbWATRAfterLoad);
 
   wbRecord(WEAP, 'Weapon',
@@ -7691,7 +7634,7 @@ begin
              ])),
       {16} wbFloat('Min Spread'),
       {20} wbFloat('Spread'),
-      {24} wbFloat('Unknown'),
+      {24} wbUnused(4),
       {28} wbFloat('Sight FOV'),
       {32} wbUnused(4),
       {36} wbFormIDCk('Projectile', [PROJ, NULL]),

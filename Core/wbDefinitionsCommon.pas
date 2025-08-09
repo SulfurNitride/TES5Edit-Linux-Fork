@@ -24,6 +24,9 @@ var
   _FormVersionDeciders : array of TwbUnionDecider;
   _RecordSizeDeciders : array of TwbUnionDecider;
 
+  wbIdxAddonNode: TwbNamedIndex;
+  wbIdxCollisionLayer: TwbNamedIndex;
+
   wbActorImpactMaterialEnum: IwbEnumDef;
   wbAggressionEnum: IwbEnumDef;
   wbAlignmentEnum: IwbEnumDef;
@@ -63,12 +66,13 @@ var
   wbActionFlag: IwbRecordMemberDef;
   wbActorSounds: IwbRecordMemberDef;
   wbCellGrid: IwbRecordMemberDef;
-  wbCinematicIMAD: IwbRecordMemberDef;
   wbDATAPosRot: IwbRecordMemberDef;
   wbDMDT: IwbRecordMemberDef;
+  wbFaceGen: IwbRecordMemberDef;
   wbFaction: IwbRecordMemberDef;
   wbFactionRelations: IwbRecordMemberDef;
   wbHEDR: IwbRecordMemberDef;
+  wbIdleAnimation: IwbRecordMemberDef;
   wbINOA: IwbRecordMemberDef;
   wbINOM: IwbRecordMemberDef;
   wbKWDAs: IwbRecordMemberDef;
@@ -149,13 +153,21 @@ function wbPlacedAddInfo(const aMainRecord: IwbMainRecord): string;
 function wbROADAddInfo(const aMainRecord: IwbMainRecord): string;
 function wbSCENAddInfo(const aMainRecord: IwbMainRecord): string;
 
-{>>> After Load Callbacks <<<} //4
+{>>> After Load Callbacks <<<} //12
 procedure wbACBSLevelMultAfterLoad(const aElement: IwbElement);
 procedure wbAVIFSkillAfterLoad(const aElement: IwbElement);
+procedure wbDOBJObjectsAfterLoad(const aElement: IwbElement);
+procedure wbPACKDateAfterLoad(const aElement: IwbElement);
+procedure wbPACKHourAfterLoad(const aElement: IwbElement);
+procedure wbPNDTAfterLoad(const aElement: IwbElement);
 procedure wbRPLDAfterLoad(const aElement: IwbElement);
+procedure wbScrollCastAfterLoad(const aElement: IwbElement);
+procedure wbScrollTypeAfterLoad(const aElement: IwbElement);
+procedure wbSOUNAfterLoad(const aElement: IwbElement);
+procedure wbSTATAfterLoad(const aElement: IwbElement);
 procedure wbWorldAfterLoad(const aElement: IwbElement);
 
-{>>> After Set Callbacks <<<} //31
+{>>> After Set Callbacks <<<} //34
 procedure wbACBSLevelMultAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbATANsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbBODCsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -175,12 +187,16 @@ procedure wbModelInfoAfterSet(const aElement: IwbElement; const aOldValue, aNewV
 procedure wbMorphPresetsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbNPCAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbNPCActorSoundsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+procedure wbPACKDateAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+procedure wbPACKHourAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbPERKPRKETypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbPRKRsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbRaceAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+procedure wbSceneActionTypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbSDLTListAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbSNDRRatesOfFireAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbSPLOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+procedure wbSTATAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbTERMCNTOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbTERMDisplayItemsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbTERMMenuItemsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -206,12 +222,14 @@ function wbFlagNavmeshIgnoreErosionDontSHow(const aElement: IwbElement): Boolean
 function wbFlagNavmeshGroundDontSHow(const aElement: IwbElement): Boolean;
 function wbFlagPartialFormDontShow(const aElement: IwbElement): Boolean;
 
-{>>> Don't Show Callbacks <<<} //12
+{>>> Don't Show Callbacks <<<} //19
+function wbAlwaysDontShow(const aElement: IwbElement): Boolean;
 function wbCellInteriorDontShow(const aElement: IwbElement): Boolean;
 function wbCellExteriorDontShow(const aElement: IwbElement): Boolean;
 function wbIdleMarkerPNAMDontShow(const aElement: IwbElement): Boolean;
 function wbIdleMarkerQNAMDontShow(const aElement: IwbElement): Boolean;
 function wbModelInfoDontShow(const aElement: IwbElement): Boolean;
+function wbLCTNCellDontShow(const aElement: IwbElement): Boolean;
 function wbREGNGrassDontShow(const aElement: IwbElement): Boolean;
 function wbREGNImposterDontShow(const aElement: IwbElement): Boolean;
 function wbREGNLandDontShow(const aElement: IwbElement): Boolean;
@@ -219,6 +237,11 @@ function wbREGNMapDontShow(const aElement: IwbElement): Boolean;
 function wbREGNObjectsDontShow(const aElement: IwbElement): Boolean;
 function wbREGNSoundDontShow(const aElement: IwbElement): Boolean;
 function wbREGNWeatherDontShow(const aElement: IwbElement): Boolean;
+function wbSTATLODDontShow(const aElement: IwbElement): Boolean;
+function wbSTATLOD1DontShow(const aElement: IwbElement): Boolean;
+function wbSTATLOD2DontShow(const aElement: IwbElement): Boolean;
+function wbSTATLOD3DontShow(const aElement: IwbElement): Boolean;
+function wbWorldXWEMDontShow(const aElement: IwbElement): Boolean;
 
 {>>> Float Normalizers <<<} //1
 function wbNormalizeToRange(aMin, aMax: Extended): TwbFloatNormalizer;
@@ -248,13 +271,15 @@ function wbWorldWaterIsRemovable(const aElement: IwbElement): Boolean;
 function wbWorldClimateIsRemovable(const aElement: IwbElement): Boolean;
 function wbWorldImageSpaceIsRemovable(const aElement: IwbElement): Boolean;
 
-{>>> Links To Callbacks <<<} //8
+{>>> Links To Callbacks <<<} //10
+function wbAliasLinksTo(aInt: Int64; const aQuestRef: IwbElement): IwbElement;
 function wbConditionSummaryLinksTo(const aElement: IwbElement): IwbElement;
 function wbCoverLinksTo(const aElement: IwbElement): IwbElement;
 function wbEdgeLinksTo(aEdge: Integer; const aElement: IwbElement): IwbElement;
 function wbEdgeLinksTo0(const aElement: IwbElement): IwbElement;
 function wbEdgeLinksTo1(const aElement: IwbElement): IwbElement;
 function wbEdgeLinksTo2(const aElement: IwbElement): IwbElement;
+function wbSCENAliasLinksTo(const aElement: IwbElement): IwbElement;
 function wbTriangleLinksTo(const aElement: IwbElement): IwbElement;
 function wbVertexLinksTo(const aElement: IwbElement): IwbElement;
 
@@ -266,8 +291,9 @@ function wbTryGetContainingMainRecord(const aElement: IwbElement; out aMainRecor
 function wbTryGetMainRecord(const aElement: IwbElement; out aMainRecord: IwbMainRecord; aSignature: string = ''): Boolean;
 function wbTrySetContainer(const aElement: IwbElement; aType: TwbCallbackType; out aContainer: IwbContainerElementRef): Boolean;
 
-{>>> To Integer Callbacks <<<} //17
+{>>> To Integer Callbacks <<<} //18
 function Sig2Int(aSignature: TwbSignature): Cardinal; inline;
+function wbAliasToInt(const aString: string; const aElement: IwbElement): Int64;
 function wbConditionStringToInt(const aString: string; const aElement: IwbElement): Int64;
 function wbConditionTypeToInt(const aString: string; const aElement: IwbElement): Int64;
 function wbQuestStageToInt(const aString: string; const aElement: IwbElement): Int64;
@@ -284,30 +310,45 @@ function wbVertexToInt1(const aString: string; const aElement: IwbElement): Int6
 function wbVertexToInt2(const aString: string; const aElement: IwbElement): Int64;
 function wbWeatherCloudSpeedToInt(const aString: string; const aElement: IwbElement): Int64;
 
-{>>> To String Callbacks <<<} //36
-procedure wbABGRToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+{>>> To String Callback Functions <<<} //27
 function wbAliasToStr(aInt: Int64; const aQuestRef: IwbElement; aType: TwbCallbackType): string;
-procedure wbBGRAToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 function wbClmtMoonsPhaseLength(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbClmtTime(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-procedure wbConditionToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+function wbConditionAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbConditionStringToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbConditionTypeToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-procedure wbCrowdPropertyToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 function wbEdgeToStr(aEdge: Integer; aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbEdgeToStr0(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbEdgeToStr1(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbEdgeToStr2(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-procedure wbFactionRelationToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 function wbFileHashCallback(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbFolderHashCallback(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbHideFFFF(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-procedure wbItemToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+function wbINFOAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbNVTREdgeToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-procedure wbObjectPropertyToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+function wbPackageLocationAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+function wbQuestAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+function wbQuestExternalAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbREFRNavmeshTriangleToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-procedure wbRGBAToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 function wbScaledInt4ToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+function wbSceneAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+function wbScriptObjectAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+function wbVertexToStr(aVertex: Integer; aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+function wbVertexToStr0(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+function wbVertexToStr1(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+function wbVertexToStr2(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+function wbVTXTPosition(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+function wbWeatherCloudSpeedToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+
+{>>> To String Callback Procedures <<<} //15
+procedure wbABGRToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+procedure wbBGRAToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+procedure wbConditionToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+procedure wbCrowdPropertyToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+procedure wbFactionRelationToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+procedure wbItemToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+procedure wbObjectPropertyToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+procedure wbRGBAToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbScriptToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbScriptPropertyToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbScriptPropertyArrayToStr(const aContainer: IwbContainerElementRef; var PropertyType: string; var PropertyValue: string);
@@ -315,12 +356,11 @@ procedure wbScriptPropertyObjectToStr(const aContainer: IwbContainerElementRef; 
 procedure wbToStringFromLinksToSummary(var aValue:string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbToStringFromLinksToMainRecordName(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbVec3ToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
-function wbVertexToStr(aVertex: Integer; aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-function wbVertexToStr0(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-function wbVertexToStr1(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-function wbVertexToStr2(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-function wbVTXTPosition(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-function wbWeatherCloudSpeedToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+
+{>>> RUnion Deciders <<<} //2
+
+function wbSceneActionTypeDecider(const aContainer: IwbContainerElementRef): Integer;
+function wbSceneTimelineTypeDecider(const aContainer: IwbContainerElementRef): Integer;
 
 {>>> Union Deciders <<<} //23
 function wbACBSLevelDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
@@ -367,7 +407,11 @@ function wbIsFlag(aFlag: Integer; const aValue: IwbValueDef; aIsUnused: Boolean 
 function wbIsNotFlag(aFlag: Integer; const aSignature: TwbSignature; const aValue: IwbValueDef; aIsUnused: Boolean = True): IwbRecordMemberDef; overload;
 function wbIsNotFlag(aFlag: Integer; const aValue: IwbValueDef; aIsUnused: Boolean = True): IwbValueDef; overload;
 
-{>>> Game Mode IfThen Defs <<<} //34
+{>>> DLL Mode IfThen Defs <<<} //1
+function IsCS(const aDef1, aDef2: string): string;
+function IsOBME(const aDef1, aDef2: string): string;
+
+{>>> Game Mode IfThen Defs <<<} //35
 function IsTES3(const aDef1, aDef2: String): string; overload;
 function IsTES3(const aDef1, aDef2: TwbSignature): TwbSignature; overload;
 function IsTES4(const aDef1, aDef2: Integer): Integer; overload;
@@ -380,6 +424,7 @@ function IsTES4R(const aDef1, aDef2: IwbRecordMemberDef): IwbRecordMemberDef; ov
 function IsTES4FO3(const aDef1, aDef2: IwbValueDef): IwbValueDef; overload;
 function IsTES4FO3(const aDef1, aDef2: String): string; overload;
 function IsFO3(const aDef1, aDef2: Integer): Integer; overload;
+function IsFO3(const aDef1, aDef2: IwbRecordMemberDef): IwbRecordMemberDef; overload;
 function IsFO3(const aDef1, aDef2: IwbValueDef): IwbValueDef; overload;
 function IsFO3(const aDef1, aDef2: string): string; overload;
 function IsFNV(const aDef1, aDef2: string): string; overload;
@@ -431,8 +476,17 @@ function wbSizePosRot(aSignature: TwbSignature; aName: string; aPriority: TwbCon
 {>>> Color Defs <<<} //16
 function wbAmbientColors(const aSignature: TwbSignature; const aName: string = 'Directional Ambient Lighting Colors'): IwbSubRecordDef; overload;
 function wbAmbientColors(const aName: string = 'Directional Ambient Lighting Colors'): IwbStructDef; overload;
-function wbByteColors(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef; overload;
-function wbByteColors(const aName: string = 'Color'): IwbValueDef; overload;
+function wbByteColors(const aSignature : TwbSignature;
+                      const aName      : string = 'Color';
+                            aDefault1  : string = '0';
+                            aDefault2  : string = '0';
+                            aDefault3  : string = '0')
+                                       : IwbRecordMemberDef; overload
+function wbByteColors(const aName     : string = 'Color';
+                            aDefault1 : string = '0';
+                            aDefault2 : string = '0';
+                            aDefault3 : string = '0')
+                                      : IwbValueDef; overload;
 function wbByteABGR(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef; overload;
 function wbByteABGR(const aName: string = 'Color'): IwbValueDef; overload;
 function wbByteRGBA(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef; overload;
@@ -471,7 +525,8 @@ function wbModelInfos(aSignature: TwbSignature; aName: string = ''; aDontShow  :
 {>>> Debris Function Defs <<<} //1
 function wbDebrisModel(aTextureFileHashes: IwbRecordMemberDef): IwbRecordMemberDef;
 
-{>>> Image Space Adapater Defs <<<} //1
+{>>> Image Space Adapater Defs <<<} //3
+function wbIMADMultAddCount(const aName: string): IwbValueDef;
 function wbTimeInterpolators(const aSignature: TwbSignature; const aName: string): IwbRecordMemberDef;
 function wbTimeInterpolatorsMultAdd(const aSignatureMult, aSignatureAdd: TwbSignature; const aName: string): IwbRecordMemberDef;
 
@@ -634,7 +689,7 @@ begin
     Exit;
 
   if wbIsSkyrim then
-    Result := aMainRecord.ElementEditValues['QNAM']
+    Result := aMainRecord.ElementEditValues['PNAM']
   else
     Result := aMainRecord.ElementEditValues['Quest'];
 
@@ -643,7 +698,7 @@ begin
   end;
 end;
 
-{>>> After Load Callbacks <<<} //4
+{>>> After Load Callbacks <<<} //12
 
 procedure wbACBSLevelMultAfterLoad(const aElement: IwbElement);
 begin
@@ -668,6 +723,108 @@ begin
   if wbBeginInternalEdit then try
     if aElement.NativeValue > 3 then
       aElement.NativeValue := 0;
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
+procedure wbDOBJObjectsAfterLoad(const aElement: IwbElement);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    var lArray : IwbContainerElementRef;
+    if not Supports(aElement, IwbContainerElementRef, lArray) then
+      Exit;
+
+    var lEntry : IwbContainerElementRef;
+    for var i := Pred(lArray.ElementCount) downto 0 do
+      if Supports(lArray.Elements[i], IwbContainerElementRef, lEntry) then
+        if lEntry.ElementNativeValues['Use'] = 0 then
+          lArray.RemoveElement(i, True);
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
+procedure wbPACKDateAfterLoad(const aElement: IwbElement);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    var lMonth := aElement.Container.ElementByName['Month'];
+    var lMaxDate : Cardinal;
+    case lMonth.NativeValue of
+      1: lMaxDate := 28;
+      3,5,8,10: lMaxDate := 30;
+      else
+      lMaxDate := 31;
+    end;
+
+    if aElement.NativeValue > lMaxDate then
+      aElement.NativeValue := lMaxDate;
+    if aElement.NativeValue < -1 then
+      aElement.NativeValue := -1;
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
+procedure wbPACKHourAfterLoad(const aElement: IwbElement);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    if aElement.NativeValue > 23 then
+      aElement.NativeValue := 23;
+    if aElement.NativeValue < -1 then
+      aElement.NativeValue := -1;
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
+procedure wbPNDTAfterLoad(const aElement: IwbElement);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    var lMainRecord : IwbMainRecord;
+    if not Supports(aElement, IwbMainRecord, lMainRecord) then
+      Exit;
+
+    var lCNAM := lMainRecord.ElementBySignature['CNAM'] as IwbContainerElementRef;
+    var lEOVR := lMainRecord.ElementBySignature['EOVR'] as IwbContainerElementRef;
+
+    if lMainRecord.IsMaster then begin
+      if not Assigned(lCNAM) then
+        lCNAM := lMainRecord.Add('CNAM', True) as IwbContainerElementRef;
+
+      for var i := Pred(lCNAM.ElementCount) downto 0 do begin
+        var lWorldspace := lCNAM.Elements[i] as IwbContainerElementRef;
+        if lWorldspace.Elements[1].NativeValue = 0 then
+          lCNAM.Elements[i].Remove
+      end;
+
+      if Assigned(lEOVR) then
+        lEOVR.Remove;
+    end else begin
+      if not Assigned(lEOVR) then
+        lEOVR := lMainRecord.Add('EOVR', True) as IwbContainerElementRef;
+
+      for var i := Pred(lEOVR.ElementCount) downto 0 do begin
+        var lWorldspace := lEOVR.Elements[i] as IwbContainerElementRef;
+        if lWorldspace.Elements[1].NativeValue = 0 then
+          lEOVR.Elements[i].Remove;
+      end;
+
+      if Assigned(lCNAM) then
+        lCNAM.Remove;
+    end;
   finally
     wbEndInternalEdit;
   end;
@@ -705,6 +862,79 @@ begin
   end;
 end;
 
+procedure wbScrollCastAfterLoad(const aElement: IwbElement);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    if aElement.NativeValue <> 3 then
+      aElement.NativeValue := 3;
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
+procedure wbScrollTypeAfterLoad(const aElement: IwbElement);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    if aElement.NativeValue <> 0 then
+      aElement.NativeValue := 0;
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
+procedure wbSOUNAfterLoad(const aElement: IwbElement);
+begin
+  if wbBeginInternalEdit then try
+    if not Assigned(aElement) then
+      Exit;
+
+    var lMainRecord : IwbMainRecord;
+    if not Supports(aElement, IwbMainRecord, lMainRecord) then
+      Exit;
+
+    if lMainRecord.ElementExists['SNDD'] then begin
+
+      If not Assigned(lMainRecord.ElementBySignature['SNDX']) then
+        lMainRecord.Add('SNDX', True);
+
+      var lSNDX := lMainRecord.ElementBySignature['SNDX'] as IwbContainerElementRef;
+      var lSNDD := lMainRecord.ElementBySignature['SNDD'] as IwbContainerElementRef;
+
+      for var i := 0 to Pred(lSNDD.ElementCount) do begin
+        lSNDX.Elements[i].Assign(Low(Integer), lSNDD.Elements[i], False);
+      end;
+
+      lMainRecord.RemoveElement('SNDD');
+    end;
+  finally
+    wbEndInternalEdit
+  end;
+end;
+
+procedure wbSTATAfterLoad(const aElement: IwbElement);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    if (lMainRecord.Flags._Flags and $8000) = 0 then
+      if Assigned(lMainRecord.ElementBySignature['MNAM']) then
+        lMainRecord.RemoveElement(MNAM);
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
 procedure wbWorldAfterLoad(const aElement: IwbElement);
 
   function OutOfRange(aValue: Integer; aRange: Integer = 256): Boolean;
@@ -723,8 +953,12 @@ begin
     if not Supports(aElement, IwbMainRecord, lMainRecord) then
       Exit;
 
+    if Assigned(lMainRecord.ElementBySignature['XWEM']) then
+      if (lMainRecord.ElementNativeValues['Flags'] and $0) = 0 then
+        lMainRecord.RemoveElement(XWEM);
+
     if wbRemoveOffsetData then begin
-      if wbIsSkyrim or wbIsFallout4 or wbIsFallout76 and (lMainRecord._File.LoadOrder = 0) then
+      if (wbIsSkyrim or wbIsFallout4 or wbIsFallout76) and (lMainRecord._File.LoadOrder = 0) then
 	        lMainRecord.RemoveElement('Large References');
       if wbIsFallout4 or wbIsFallout76 or wbIsStarfield then
         lMainRecord.RemoveElement(CLSZ);
@@ -747,7 +981,7 @@ begin
   end;
 end;
 
-{>>> After Set Callbacks <<<} //31
+{>>> After Set Callbacks <<<} //33
 
 procedure wbACBSLevelMultAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
@@ -979,6 +1213,52 @@ begin
   wbCounterAfterSet('CS2H - Count', aElement);
 end;
 
+procedure wbPACKDateAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if VarSameValue(aOldValue, aNewValue) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    var lMonth := aElement.Container.ElementByName['Month'];
+    var lMaxDate : Cardinal;
+    case lMonth.NativeValue of
+      1: lMaxDate := 28;
+      3,5,8,10: lMaxDate := 30;
+      else
+      lMaxDate := 31;
+    end;
+
+    if aElement.NativeValue > lMaxDate then
+      aElement.NativeValue := lMaxDate;
+    if aElement.NativeValue < -1 then
+      aElement.NativeValue := -1;
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
+procedure wbPACKHourAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if VarSameValue(aOldValue, aNewValue) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    if aNewValue > 23 then
+      aElement.NativeValue := 23;
+
+    if aNewValue < -1 then
+      aElement.NativeValue := -1;
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
 procedure wbPERKPRKETypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
   if not Assigned(aElement) then
@@ -1020,6 +1300,26 @@ begin
   wbCounterContainerAfterSet('SPCT - Count', 'Actor Effects', aElement);
 end;
 
+procedure wbSceneActionTypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if not (VarIsOrdinal(aOldValue) and VarIsOrdinal(aNewValue)) then
+    Exit;
+
+  if VarSameValue(aOldValue, aNewValue) then
+    Exit;
+
+  var lContainer: IwbContainerElementRef;
+  if not Supports(aElement.Container, IwbContainerElementRef, lContainer) then
+    Exit;
+
+  var lDataElement := lContainer.ElementBySortOrder[8]; //'Type Specific Action'
+  if Assigned(lDataElement) and (lDataElement.Name <> aElement.Value) then
+    lDataElement.Remove;
+end;
+
 procedure wbSDLTListAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
   wbCounterAfterSet('ITMC - Secondary List Count', aElement);
@@ -1033,6 +1333,27 @@ end;
 procedure wbSPLOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
   wbCounterAfterSet('SPCT - Count', aElement);
+end;
+
+procedure wbSTATAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if VarSameValue(aOldValue, aNewValue) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    var lMainRecord := aElement.ContainingMainRecord;
+    if not Assigned(lMainRecord) then
+      Exit;
+
+    if (lMainRecord.Flags._Flags and $8000) = 0 then
+      if Assigned(lMainRecord.ElementBySignature['MNAM']) then
+        lMainRecord.RemoveElement(MNAM);
+  finally
+    wbEndInternalEdit;
+  end;
 end;
 
 procedure wbTERMCNTOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -1423,7 +1744,12 @@ begin
   Result := not lMainRecord.CanBePartial;
 end;
 
-{>>> Don't Show Callbacks <<<} //12
+{>>> Don't Show Callbacks <<<} //19
+
+function wbAlwaysDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := True;
+end;
 
 function wbCellInteriorDontShow(const aElement: IwbElement): Boolean;
 begin
@@ -1463,6 +1789,27 @@ begin
   Result := MainRecord.Version < 38;
 end;
 
+function wbLCTNCellDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := False;
+  if not Assigned(aElement) then
+    Exit;
+
+  var lContainer := aElement.Container;
+  if not Assigned(lContainer) then
+    Exit;
+
+  var lLocation := lContainer.ElementByName['World/Cell'];
+  if not Assigned(lLocation) then
+    Exit;
+
+  var lMainRecord := lLocation.LinksTo as IwbMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  Result := lMainRecord.Signature = CELL;
+end;
+
 function wbREGNGrassDontShow(const aElement: IwbElement): Boolean;
 begin
   Result := wbGetREGNType(aElement) <> 6;
@@ -1496,6 +1843,31 @@ end;
 function wbREGNWeatherDontShow(const aElement: IwbElement): Boolean;
 begin
   Result := wbGetREGNType(aElement) <> 3;
+end;
+
+function wbSTATLODDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := aElement.ContainingMainRecord.Flags._Flags and $8000 = 0;
+end;
+
+function wbSTATLOD1DontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := aElement.Container.Elements[0].EditValue = '';
+end;
+
+function wbSTATLOD2DontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := aElement.Container.Elements[1].EditValue = '';
+end;
+
+function wbSTATLOD3DontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := aElement.Container.Elements[2].EditValue = '';
+end;
+
+function wbWorldXWEMDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := (aElement.ContainingMainRecord.ElementNativeValues['DATA'] and 1 = 0);
 end;
 
 {>>> Float Normalizers <<<} //1
@@ -1729,7 +2101,54 @@ begin
     (aElement.ContainingMainRecord.ElementNativeValues['Parent Worldspace\PNAM'] and $20 = 32);
 end;
 
-{>>> Links To Callbacks <<<} //8
+{>>> Links To Callbacks <<<} //10
+
+function wbAliasLinksTo(aInt: Int64; const aQuestRef: IwbElement): IwbElement;
+begin
+  Result := nil;
+
+  if aInt < 0 then
+    Exit;
+
+  if not Assigned(aQuestRef) then
+    Exit;
+
+  // aQuestRef can be a QUST record or reference to QUST record
+  var lMainRecord : IwbMainRecord;
+  if not Supports(aQuestRef, IwbMainRecord, lMainRecord) then
+    if not Supports(aQuestRef.LinksTo, IwbMainRecord, lMainRecord) then
+      Exit;
+
+  if wbIsSkyrim then
+    lMainRecord := lMainRecord.WinningOverride
+  else
+    // get winning quest override except for partial forms
+    if lMainRecord.WinningOverride.Flags._Flags and $00004000 = 0 then
+      lMainRecord := lMainRecord.WinningOverride
+    else if lMainRecord.Flags._Flags and $00004000 <> 0 then
+      lMainRecord := lMainRecord.MasterOrSelf;
+
+  if lMainRecord.Signature <> QUST then
+    Exit;
+
+  var lAliases : IwbContainerElementRef;
+  if Supports(lMainRecord.ElementByName['Aliases'], IwbContainerElementRef, lAliases) then
+    for var i := 0 to Pred(lAliases.ElementCount) do begin
+      var lAlias : IwbContainerElementRef;
+      if Supports(lAliases.Elements[i], IwbContainerElementRef, lAlias) then begin
+        var lHasSignature: IwbHasSignature;
+        if Supports(lAlias, IwbHasSignature, lHasSignature) and (lHasSignature.Signature = ALCS) then begin
+          var lALST := lAlias.ElementBySignature[ALST];
+          if Assigned(lALST) then
+            if not Supports(lALST, IwbContainerElementRef, lAlias) then
+              Continue;
+        end;
+        var j := lAlias.Elements[0].NativeValue;
+        if j = aInt then
+          Exit(lAlias);
+      end;
+    end;
+end;
 
 function wbConditionSummaryLinksTo(const aElement: IwbElement): IwbElement;
 var
@@ -1862,6 +2281,23 @@ end;
 function wbEdgeLinksTo2(const aElement: IwbElement): IwbElement;
 begin
   Result := wbEdgeLinksTo(2, aElement);
+end;
+
+function wbSCENAliasLinksTo(const aElement: IwbElement): IwbElement;
+begin
+  Result := nil;
+  if not wbResolveAlias then
+    Exit;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  var lAlias := aElement.NativeValue;
+  if not VarIsOrdinal(lAlias) then
+    Exit;
+
+  Result := wbAliasLinksTo(lAlias, lMainRecord.ElementBySignature['PNAM']);
 end;
 
 function wbTriangleLinksTo(const aElement: IwbElement): IwbElement;
@@ -2017,11 +2453,47 @@ begin
   Result := (aType = ctToSummary) and Supports(aElement, IwbContainerElementRef, aContainer);
 end;
 
-{>>> To Integer Callbacks <<<} //17
+{>>> To Integer Callbacks <<<} //18
 
 function Sig2Int(aSignature: TwbSignature): Cardinal; inline;
 begin
   Result := PCardinal(@aSignature)^;
+end;
+
+function wbAliasToInt(const aString: string; const aElement: IwbElement): Int64;
+begin
+  Result := -1;
+
+  if aString = 'None' then
+    Exit;
+
+  if (aString = 'Player') and not wbIsSkyrim then begin
+    Result := -2;
+    Exit;
+  end;
+
+  if (aString = 'Non-Actor Track') and wbIsStarfield then begin
+    Result := -3;
+    Exit;
+  end;
+
+  if (aString = 'Play Audio At Player(Voice Note)') and wbIsStarfield then begin
+    Result := -4;
+    Exit;
+  end;
+
+  if (aString = 'Dialogue For Scene') and wbIsStarfield then begin
+    Result := -5;
+    Exit;
+  end;
+
+  var i := 1;
+  var s := Trim(aString);
+  while (i <= Length(s)) and (ANSIChar(s[i]) in ['-', '0'..'9']) do
+    Inc(i);
+  s := Copy(s, 1, Pred(i));
+
+  Result := StrToIntDef(s, -1);
 end;
 
 function wbConditionStringToInt(const aString: string; const aElement: IwbElement): Int64;
@@ -2195,31 +2667,7 @@ begin
   Result := Min(Round(f), 254);
 end;
 
-{>>> To String Callbacks <<<} //36
-
-procedure wbABGRToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
-var
-  Container : IwbContainerElementRef;
-  A         : IwbElement;
-  R, G, B   : string;
-begin
-  if not wbTrySetContainer(aElement, aType, Container) then
-    Exit;
-
-    A := Container.Elements[0];
-    B := Container.Elements[1].Summary;
-    G := Container.Elements[2].Summary;
-    R := Container.Elements[3].Summary;
-
-  if Assigned(A) then
-    if (A.ConflictPriority <= cpIgnore) or (A.Def.DefType = dtByteArray) then
-      A := nil;
-
-  if Assigned(A) then
-    aValue := 'RGBA(' + R + ', ' + G + ', ' + B + ', ' + A.Summary + ')'
-  else
-    aValue := 'RGB(' + R + ', ' + G + ', ' + B + ')';
-end;
+{>>> To String Callback Functions <<<} //27
 
 function wbAliasToStr(aInt: Int64; const aQuestRef: IwbElement; aType: TwbCallbackType): string;
 var
@@ -2230,7 +2678,7 @@ var
 begin
   Result := '';
   case aType of
-    ctToStr, ctToSummary:
+    ctToEditValue, ctToStr, ctToSummary:
       if aInt = -1 then
         Result := 'None'
       else if (aInt = -2) and not wbIsSkyrim then
@@ -2246,12 +2694,6 @@ begin
         if aType = ctToStr then
           Result := Result + ' <Warning: Could not resolve alias>';
       end;
-           
-    ctToEditValue:
-      if aInt = -1 then
-        Result := 'None'
-      else
-        Result := aInt.ToString;
 
     ctToSortKey: Exit(IntToHex64(aInt, 8));
 
@@ -2264,7 +2706,7 @@ begin
         Result := ''
       else
         Result := '<Warning: Could not resolve alias [' + aInt.ToString + ']>';
-           
+
     ctEditInfo, ctEditType: Result := '';
   end;
 
@@ -2366,37 +2808,6 @@ begin
   end;
 end;
 
-procedure wbBGRAToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
-var
-  Container  : IwbContainerElementRef;
-  A          : IwbElement;
-  R, G, B    : string;
-begin
-  if not wbTrySetContainer(aElement, aType, Container) then
-    Exit;
-
-  if Container.ElementCount >= 3 then begin
-    B := Container.Elements[0].Summary;
-    G := Container.Elements[1].Summary;
-    R := Container.Elements[2].Summary;
-  end else
-    Exit;
-
-  if Container.ElementCount >= 4 then
-    A := Container.Elements[3]
-  else
-    A := nil;
-
-  if Assigned(A) then
-    if (A.ConflictPriority <= cpIgnore) or (A.Def.DefType = dtByteArray) then
-      A := nil;
-
-  if Assigned(A) then
-    aValue := 'RGBA(' + R + ', ' + G + ', ' + B + ', ' + A.Summary + ')'
-  else
-    aValue := 'RGB(' + R + ', ' + G + ', ' + B + ')';
-end;
-
 function wbClmtMoonsPhaseLength(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 var
   PhaseLength : Byte;
@@ -2436,83 +2847,34 @@ begin
     Result := TimeToStr( EncodeTime(aInt div 6, (aInt mod 6) * 10, 0, 0) );
 end;
 
-procedure wbConditionToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
-var
-  Container : IwbContainerElementRef;
-  cerCTDA   : IwbContainerElementRef;
+function wbConditionAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 begin
-  if not wbTrySetContainer(aElement, aType, Container) then
+  Result := '';
+  if not Assigned(aElement) then
     Exit;
-
-  if wbGameMode > gmFNV then begin
-    if not Supports(Container.RecordBySignature[CTDA], IwbContainerElementRef, cerCTDA) then
+  if wbResolveAlias then begin
+    var lMainRecord := aElement.ContainingMainRecord;
+    if not Assigned(lMainRecord) then
       Exit;
-  end else
-    cerCTDA := Container;
 
-  var Typ : Byte := cerCTDA.Elements[0].NativeValue;
-  var Func := cerCTDA.Elements[3];
-
-  if (cerCTDA.ElementCount >= 9)
-  and (cerCTDA.Elements[7].Def.DefType <> dtEmpty)
-  and (cerCTDA.Elements[8].Def.DefType <> dtEmpty) then begin
-    var RunOn := cerCTDA.Elements[7];
-
-    var RunOnInt: Integer := RunOn.NativeValue;
-
-    if wbIsFalloutNV then begin
-      var FuncInt: Integer := Func.NativeValue;
-      if (FuncInt = 106) or (FuncInt = 285) then
-        RunOnInt := 0;
+    var lSig := lMainRecord.Signature;
+    if lSig = QUST then
+      Result := wbAliasToStr(aInt, lMainRecord, aType)
+    else if lSig = SCEN then
+      Result := wbAliasToStr(aInt, lMainRecord.ElementBySignature['PNAM'], aType)
+    else if (lSig = PACK) or (wbIsFallout76 and (lSig = TERM)) then
+      Result := wbAliasToStr(aInt, lMainRecord.ElementBySignature['QNAM'], aType)
+    else if lSig = INFO then begin
+      // get DIAL for INFO
+      var lTopic := (lMainRecord.ElementByName['Topic'].LinksTo as IwbMainRecord).HighestOverrideVisibleForFile[aElement._File];
+      Result := wbAliasToStr(aInt, lTopic.ElementBySignature['QNAM'], aType);
     end;
-
-    if RunOnInt = 2 then
-      aValue := '(' + cerCTDA.Elements[8].Summary + ')'
-    else
-      aValue := RunOn.Summary.Replace(' ', '', [rfReplaceAll]);
-  end
-  else
-    if (Typ and $02) = 0 then
-      aValue := 'Subject'
-    else
-      aValue := 'Target';
-
-  aValue := aValue + '.' + Func.Summary;
-
-  var Param1 := cerCTDA.Elements[5];
-  if Param1.ConflictPriority <> cpIgnore then begin
-    aValue := aValue + '(' {+ Param1.Name + ': '} + Param1.Summary;
-
-    var Param2 := cerCTDA.Elements[6];
-    if Param2.ConflictPriority <> cpIgnore then
-      aValue := aValue + ', ' {+ Param2.Name + ': '} + Param2.Summary;
-
-    aValue := aValue + ')';
+  end else begin
+    case aType of
+      ctToSortKey: Result := IntToHex64(aInt, 8);
+      ctToStr, ctToSummary, ctToEditValue: Result := aInt.ToString;
+    end;
   end;
-
-  case Typ and $E0 of
-    $00: aValue := aValue + ' = ';
-    $20: aValue := aValue + ' <> ';
-    $40: aValue := aValue + ' > ';
-    $60: aValue := aValue + ' >= ';
-    $80: aValue := aValue + ' < ';
-    $A0: aValue := aValue + ' <= ';
-  end;
-
-  aValue := aValue + cerCTDA.Elements[2].Summary;
-
-  var Conditions: IwbContainerElementRef;
-  if Supports(Container.Container, IwbContainerElementRef, Conditions) then
-  begin
-    var l := Conditions.ElementCount;
-    if (l < 2) or Container.Equals(Conditions.Elements[Pred(l)]) then
-      Exit;
-  end;
-
-  if (Typ and $01) = 0 then
-    aValue := aValue + ' AND'
-  else
-    aValue := aValue + ' OR';
 end;
 
 function wbConditionStringToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
@@ -2622,36 +2984,6 @@ begin
         Result := Result + ' / ' + S;
     end;
   end;
-end;
-
-procedure wbCrowdPropertyToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
-var
-  Container: IwbContainerElementRef;
-  MainRecord: IwbMainRecord;
-begin
-  if not wbTrySetContainer(aElement, aType, Container) then
-    Exit;
-
-  var ActorForm := Container.ElementByName['Actor'];
-  if not wbTryGetMainRecord(ActorForm, MainRecord) then
-    Exit;
-
-  var ActorValueData := Container.ElementByName['Value'];
-
-  aValue := MainRecord.EditorID + ' = ' + Format('%.*g', [5, StrToFloat(ActorValueData.Value)]);
-
-  if not (wbGameMode in [gmFO76, gmSF1]) then
-    Exit;
-
-  var CurveTable := Container.ElementByName['Curve Table'] as IwbContainerElementRef;
-  if not Assigned(CurveTable) then
-    Exit;
-
-  var CurveTableForm := CurveTable.ElementByName['Curve Table'];
-  if not wbTryGetMainRecord(CurveTableForm, MainRecord) then
-    Exit;
-
-  aValue := aValue + ' {Curve Table: ' + MainRecord.ShortName + '}';
 end;
 
 function wbEdgeToStr(aEdge: Integer; aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
@@ -2771,35 +3103,6 @@ begin
   Result := wbEdgeToStr(2, aInt, aElement, aType);
 end;
 
-procedure wbFactionRelationToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
-var
-  Container: IwbContainerElementRef;
-begin
-  if not wbTrySetContainer(aElement, aType, Container) then
-    Exit;
-
-  var Faction := Container.Elements[0];
-  if not Assigned(Faction.LinksTo) then
-    Exit;
-
-  var Reaction := Container.Elements[1];
-
-  aValue := Faction.Value;
-
-  if wbIsOblivion then begin
-    var NativeReaction := Reaction.NativeValue;
-
-    aValue := IntToStr(NativeReaction) + ' ' + aValue;
-
-    if NativeReaction >= 0 then
-      aValue := '+' + aValue;
-
-    Exit;
-  end;
-
-  aValue := Container.Elements[2].Value + ' ' + aValue;
-end;
-
 function wbFileHashCallback(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 begin
   Result := '';
@@ -2852,24 +3155,28 @@ begin
       Result := aInt.ToString;
 end;
 
-procedure wbItemToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
-var
-  Container  : IwbContainerElementRef;
-  ItemString : string;
+function wbINFOAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 begin
-  if not wbTrySetContainer(aElement, aType, Container) then
+  Result := '';
+  if not Assigned(aElement) then
     Exit;
 
-  // check for second struct
-  if Container.Elements[0].ElementType = etSubRecord then
-    Container := Container.Elements[0] as IwbContainerElementRef;
+  if wbResolveAlias then begin
+    var lMainRecord := aElement.ContainingMainRecord;
+    if not Assigned(lMainRecord) then
+      Exit;
 
-  ItemString := wbGetItemStr(Container);
+    var lTopic := lMainRecord.ElementByName['Topic'].LinksTo as IwbMainRecord;
+    if not Assigned(lTopic) then
+      Exit;
 
-  if Length(ItemString) = 0 then
-    Exit;
-
-  aValue := ItemString;
+    Result := wbAliasToStr(aInt, lTopic.ElementBySignature['QNAM'] , aType);
+  end else begin
+    case aType of
+      ctToSortKey: Result := IntToHex64(aInt, 8);
+      ctToStr, ctToSummary, ctToEditValue: Result := aInt.ToString;
+    end;
+  end;
 end;
 
 function wbNVTREdgeToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
@@ -2918,34 +3225,64 @@ begin
     end;
 end;
 
-procedure wbObjectPropertyToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
-var
-  Container  : IwbContainerElementRef;
-  MainRecord : IwbMainRecord;
+function wbPackageLocationAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 begin
-  if not wbTrySetContainer(aElement, aType, Container) then
+  Result := '';
+  if not Assigned(aElement) then
     Exit;
 
-  var ActorValueForm := Container.ElementByName['Actor Value'];
-  if not wbTryGetMainRecord(ActorValueForm, MainRecord) then
+  if wbResolveAlias then begin
+    var lMainRecord := aElement.ContainingMainRecord;
+    if not Assigned(lMainRecord) then
+      Exit;
+
+    Result := wbAliasToStr(aInt, lMainRecord.ElementBySignature['QNAM'], aType);
+  end else begin
+    case aType of
+      ctToStr, ctToSummary, ctToEditValue: Result := aInt.ToString;
+      ctToSortKey: Result := IntToHex64(aInt, 8);
+    end;
+  end;
+end;
+
+function wbQuestAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+begin
+  Result := '';
+  if not Assigned(aElement) then
     Exit;
 
-  var ActorValueData := Container.ElementByName['Value'];
+  if wbResolveAlias then begin
+    var lMainRecord := aElement.ContainingMainRecord;
+    if not Assigned(lMainRecord) then
+      Exit;
 
-  aValue := MainRecord.EditorID + ' = ' + Format('%.*g', [5, StrToFloat(ActorValueData.Value)]);
+    Result := wbAliasToStr(aInt, lMainRecord, aType);
+  end else begin
+    case aType of
+      ctToStr, ctToSummary, ctToEditValue: Result := aInt.ToString;
+      ctToSortKey: Result := IntToHex64(aInt, 8);
+    end;
+  end;
+end;
 
-  if not (wbGameMode in [gmFO76, gmSF1]) then
+function wbQuestExternalAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+begin
+  Result := '';
+  if not Assigned(aElement) then
     Exit;
 
-  var CurveTable := Container.ElementByName['Curve Table'] as IwbContainerElementRef;
-  if not Assigned(CurveTable) then
-    Exit;
+  if wbResolveAlias then begin
+    var lCER : IwbContainerElementRef;
+    if not Assigned(lCER) then
+      Exit;
 
-  var CurveTableForm := CurveTable.ElementByName['Curve Table'];
-  if not wbTryGetMainRecord(CurveTableForm, MainRecord) then
-    Exit;
-
-  aValue := aValue + ' {Curve Table: ' + MainRecord.ShortName + '}';
+    Result := wbAliasToStr(aInt, lCER.ElementBySignature['ALEQ'] , aType);
+  end else begin
+    case aType of
+      ctToSortKey: Result := IntToHex64(aInt, 8);
+      ctToStr, ctToSummary, ctToEditValue: Result := aInt.ToString;
+    end;
+  end;
 end;
 
 function wbREFRNavmeshTriangleToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
@@ -2997,6 +3334,427 @@ begin
       Result := '<Warning: Navmesh triangle [' + aInt.ToString + '] not found in "' + MainRecord.Name + '">';
 end;
 
+function wbScaledInt4ToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+const
+  PlusMinus : array[Boolean] of string = ('+', '-');
+begin
+  Result := '';
+  case aType of
+    ctToStr, ctToSummary, ctToEditValue: Result := FloatToStrF(aInt / 10000, ffFixed, 99, 4);
+    ctToSortKey: begin
+      Result := FloatToStrF(aInt / 10000, ffFixed, 99, 4);
+      if Length(Result) < 22 then
+        Result := StringOfChar('0', 22 - Length(Result)) + Result;
+      Result := PlusMinus[aInt < 0] + Result;
+    end;
+    ctCheck: Result := '';
+  end;
+end;
+
+function wbSceneAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+begin
+  Result := '';
+  if not Assigned(aElement) then
+    Exit;
+
+  if wbResolveAlias then begin
+    var lMainRecord := aElement.ContainingMainRecord;
+    if not Assigned(lMainRecord) then
+      Exit;
+
+    Result := wbAliasToStr(aInt, lMainRecord.ElementBySignature['PNAM'] , aType);
+  end else begin
+    case aType of
+      ctToSortKey: Result := IntToHex64(aInt, 8);
+      ctToStr, ctToSummary, ctToEditValue: Result := aInt.ToString;
+    end;
+  end;
+end;
+
+function wbScriptObjectAliasToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+begin
+  Result := '';
+  if not Assigned(aElement) then
+    Exit;
+
+  if wbResolveAlias then begin
+    var lCER := aElement.Container as IwbContainerElementRef;
+    if not Assigned(lCER) then
+      Exit;
+
+    Result := wbAliasToStr(aInt, lCER.ElementByName['FormID'], aType);
+  end else begin
+    case aType of
+      ctToStr, ctToSummary, ctToEditValue: Result := aInt.ToString;
+      ctToSortKey: Result := IntToHex64(aInt, 8);
+    end;
+  end;
+end;
+
+function wbVertexToStr(aVertex: Integer; aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+var
+  Triangle   : IwbContainerElementRef;
+  MainRecord : IwbMainRecord;
+  Vertices   : IwbContainerElementRef;
+  Vertex     : IwbContainerElementRef;
+begin
+  case aType of
+    ctToStr, ctToSummary: begin
+      Result := aInt.ToString;
+      if not Assigned(aElement) then
+        Exit;
+
+      Triangle := aElement.Container as IwbContainerElementRef;
+      if not Assigned(Triangle) then
+        Exit;
+
+      MainRecord := aElement.ContainingMainRecord;
+      if not Assigned(MainRecord) then
+        Exit;
+
+      if not Supports(MainRecord.ElementByPath['NVNM\Vertices'], IwbContainerElementRef, Vertices) then
+        Exit;
+
+      if aInt >= Vertices.ElementCount then
+        Exit;
+
+      if aInt < 0 then
+        Exit;
+
+      Vertex := Vertices.Elements[aInt] as IwbContainerElementRef;
+
+      with Vertex do try
+        Result := Result + Format(' (%s, %s, %s)', [ElementEditValues['X'], ElementEditValues['Y'], ElementEditValues['Z']]);
+      except
+        // TODO: yikes, suppressing exceptions?
+      end;
+    end;
+    ctToSortKey: begin
+      Result := IntToHex(aInt, 4);
+      if not Assigned(aElement) then
+        Exit;
+
+      Triangle := aElement.Container as IwbContainerElementRef;
+      if not Assigned(Triangle) then
+        Exit;
+
+      MainRecord := aElement.ContainingMainRecord;
+      if not Assigned(MainRecord) then
+        Exit;
+
+      if not Supports(MainRecord.ElementByPath['NVNM\Vertices'], IwbContainerElementRef, Vertices) then
+        Exit;
+
+      if aInt >= Vertices.ElementCount then
+        Exit;
+
+      if aInt < 0 then
+        Exit;
+
+      Vertex := Vertices.Elements[aInt] as IwbContainerElementRef;
+
+      with Vertex do try
+        Result := SortKey[False];
+      except
+        // TODO: yikes, suppressing exceptions?
+      end;
+    end;
+    ctCheck: Result := '';
+    ctToEditValue: Result := aInt.ToString;
+    ctEditType: Result := '';
+    ctEditInfo: Result := '';
+  end;
+end;
+
+function wbVertexToStr0(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+begin
+  Result := wbVertexToStr(0, aInt, aElement, aType);
+end;
+
+function wbVertexToStr1(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+begin
+  Result := wbVertexToStr(1, aInt, aElement, aType);
+end;
+
+function wbVertexToStr2(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+begin
+  Result := wbVertexToStr(2, aInt, aElement, aType);
+end;
+
+function wbVTXTPosition(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+begin
+  Result := '';
+
+  if aType = ctToSortKey then begin
+    Result := IntToHex64(aInt div 17, 2) + IntToHex64(aInt mod 17, 2);
+    Exit;
+  end;
+
+  if aType = ctCheck then begin
+    if (aInt < 0) or (aInt > 288) then
+      Result := '<Out of range: '+aInt.ToString+'>'
+    else
+      Exit;
+  end;
+
+  if aType in [ctToStr, ctToSummary] then
+    Result := aInt.ToString + ' -> ' + IntToStr(aInt div 17) + ':' + IntToStr(aInt mod 17);
+end;
+
+function wbWeatherCloudSpeedToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+begin
+  Result := '';
+  case aType of
+    ctToStr, ctToSummary, ctToEditValue: Result := FloatToStrF((aInt - 127)/127/10, ffFixed, 99, 4);
+    ctCheck: Result := '';
+  end;
+end;
+
+{>>> To String Callback Procedures <<<} //15
+
+procedure wbABGRToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+var
+  Container : IwbContainerElementRef;
+  A         : IwbElement;
+  R, G, B   : string;
+begin
+  if not wbTrySetContainer(aElement, aType, Container) then
+    Exit;
+
+    A := Container.Elements[0];
+    B := Container.Elements[1].Summary;
+    G := Container.Elements[2].Summary;
+    R := Container.Elements[3].Summary;
+
+  if Assigned(A) then
+    if (A.ConflictPriority <= cpIgnore) or (A.Def.DefType = dtByteArray) then
+      A := nil;
+
+  if Assigned(A) then
+    aValue := 'RGBA(' + R + ', ' + G + ', ' + B + ', ' + A.Summary + ')'
+  else
+    aValue := 'RGB(' + R + ', ' + G + ', ' + B + ')';
+end;
+
+procedure wbBGRAToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+var
+  Container  : IwbContainerElementRef;
+  A          : IwbElement;
+  R, G, B    : string;
+begin
+  if not wbTrySetContainer(aElement, aType, Container) then
+    Exit;
+
+  if Container.ElementCount >= 3 then begin
+    B := Container.Elements[0].Summary;
+    G := Container.Elements[1].Summary;
+    R := Container.Elements[2].Summary;
+  end else
+    Exit;
+
+  if Container.ElementCount >= 4 then
+    A := Container.Elements[3]
+  else
+    A := nil;
+
+  if Assigned(A) then
+    if (A.ConflictPriority <= cpIgnore) or (A.Def.DefType = dtByteArray) then
+      A := nil;
+
+  if Assigned(A) then
+    aValue := 'RGBA(' + R + ', ' + G + ', ' + B + ', ' + A.Summary + ')'
+  else
+    aValue := 'RGB(' + R + ', ' + G + ', ' + B + ')';
+end;
+
+procedure wbConditionToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+var
+  Container : IwbContainerElementRef;
+  cerCTDA   : IwbContainerElementRef;
+begin
+  if not wbTrySetContainer(aElement, aType, Container) then
+    Exit;
+
+  if wbGameMode > gmFNV then begin
+    if not Supports(Container.RecordBySignature[CTDA], IwbContainerElementRef, cerCTDA) then
+      Exit;
+  end else
+    cerCTDA := Container;
+
+  var Typ : Byte := cerCTDA.Elements[0].NativeValue;
+  var Func := cerCTDA.Elements[3];
+
+  if (cerCTDA.ElementCount >= 9)
+  and (cerCTDA.Elements[7].Def.DefType <> dtEmpty)
+  and (cerCTDA.Elements[8].Def.DefType <> dtEmpty) then begin
+    var RunOn := cerCTDA.Elements[7];
+
+    var RunOnInt: Integer := RunOn.NativeValue;
+
+    if wbIsFalloutNV then begin
+      var FuncInt: Integer := Func.NativeValue;
+      if (FuncInt = 106) or (FuncInt = 285) then
+        RunOnInt := 0;
+    end;
+
+    if RunOnInt = 2 then
+      aValue := '(' + cerCTDA.Elements[8].Summary + ')'
+    else
+      aValue := RunOn.Summary.Replace(' ', '', [rfReplaceAll]);
+  end
+  else
+    if (Typ and $02) = 0 then
+      aValue := 'Subject'
+    else
+      aValue := 'Target';
+
+  aValue := aValue + '.' + Func.Summary;
+
+  var Param1 := cerCTDA.Elements[5];
+  if Param1.ConflictPriority <> cpIgnore then begin
+    aValue := aValue + '(' {+ Param1.Name + ': '} + Param1.Summary;
+
+    var Param2 := cerCTDA.Elements[6];
+    if Param2.ConflictPriority <> cpIgnore then
+      aValue := aValue + ', ' {+ Param2.Name + ': '} + Param2.Summary;
+
+    aValue := aValue + ')';
+  end;
+
+  case Typ and $E0 of
+    $00: aValue := aValue + ' = ';
+    $20: aValue := aValue + ' <> ';
+    $40: aValue := aValue + ' > ';
+    $60: aValue := aValue + ' >= ';
+    $80: aValue := aValue + ' < ';
+    $A0: aValue := aValue + ' <= ';
+  end;
+
+  aValue := aValue + cerCTDA.Elements[2].Summary;
+
+  var Conditions: IwbContainerElementRef;
+  if Supports(Container.Container, IwbContainerElementRef, Conditions) then
+  begin
+    var l := Conditions.ElementCount;
+    if (l < 2) or Container.Equals(Conditions.Elements[Pred(l)]) then
+      Exit;
+  end;
+
+  if (Typ and $01) = 0 then
+    aValue := aValue + ' AND'
+  else
+    aValue := aValue + ' OR';
+end;
+
+procedure wbCrowdPropertyToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+var
+  Container: IwbContainerElementRef;
+  MainRecord: IwbMainRecord;
+begin
+  if not wbTrySetContainer(aElement, aType, Container) then
+    Exit;
+
+  var ActorForm := Container.ElementByName['Actor'];
+  if not wbTryGetMainRecord(ActorForm, MainRecord) then
+    Exit;
+
+  var ActorValueData := Container.ElementByName['Value'];
+
+  aValue := MainRecord.EditorID + ' = ' + Format('%.*g', [5, StrToFloat(ActorValueData.Value)]);
+
+  if not (wbGameMode in [gmFO76, gmSF1]) then
+    Exit;
+
+  var CurveTable := Container.ElementByName['Curve Table'] as IwbContainerElementRef;
+  if not Assigned(CurveTable) then
+    Exit;
+
+  var CurveTableForm := CurveTable.ElementByName['Curve Table'];
+  if not wbTryGetMainRecord(CurveTableForm, MainRecord) then
+    Exit;
+
+  aValue := aValue + ' {Curve Table: ' + MainRecord.ShortName + '}';
+end;
+
+procedure wbFactionRelationToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+var
+  Container: IwbContainerElementRef;
+begin
+  if not wbTrySetContainer(aElement, aType, Container) then
+    Exit;
+
+  var Faction := Container.Elements[0];
+  if not Assigned(Faction.LinksTo) then
+    Exit;
+
+  var Reaction := Container.Elements[1];
+
+  aValue := Faction.Value;
+
+  if wbIsOblivion then begin
+    var NativeReaction := Reaction.NativeValue;
+
+    aValue := IntToStr(NativeReaction) + ' ' + aValue;
+
+    if NativeReaction >= 0 then
+      aValue := '+' + aValue;
+
+    Exit;
+  end;
+
+  aValue := Container.Elements[2].Value + ' ' + aValue;
+end;
+
+procedure wbItemToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+var
+  Container  : IwbContainerElementRef;
+  ItemString : string;
+begin
+  if not wbTrySetContainer(aElement, aType, Container) then
+    Exit;
+
+  // check for second struct
+  if Container.Elements[0].ElementType = etSubRecord then
+    Container := Container.Elements[0] as IwbContainerElementRef;
+
+  ItemString := wbGetItemStr(Container);
+
+  if Length(ItemString) = 0 then
+    Exit;
+
+  aValue := ItemString;
+end;
+
+procedure wbObjectPropertyToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+var
+  Container  : IwbContainerElementRef;
+  MainRecord : IwbMainRecord;
+begin
+  if not wbTrySetContainer(aElement, aType, Container) then
+    Exit;
+
+  var ActorValueForm := Container.ElementByName['Actor Value'];
+  if not wbTryGetMainRecord(ActorValueForm, MainRecord) then
+    Exit;
+
+  var ActorValueData := Container.ElementByName['Value'];
+
+  aValue := MainRecord.EditorID + ' = ' + Format('%.*g', [5, StrToFloat(ActorValueData.Value)]);
+
+  if not (wbGameMode in [gmFO76, gmSF1]) then
+    Exit;
+
+  var CurveTable := Container.ElementByName['Curve Table'] as IwbContainerElementRef;
+  if not Assigned(CurveTable) then
+    Exit;
+
+  var CurveTableForm := CurveTable.ElementByName['Curve Table'];
+  if not wbTryGetMainRecord(CurveTableForm, MainRecord) then
+    Exit;
+
+  aValue := aValue + ' {Curve Table: ' + MainRecord.ShortName + '}';
+end;
+
 procedure wbRGBAToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 var
   Container : IwbContainerElementRef;
@@ -3026,23 +3784,6 @@ begin
     aValue := 'RGBA(' + R + ', ' + G + ', ' + B + ', ' + A.Summary + ')'
   else
     aValue := 'RGB(' + R + ', ' + G + ', ' + B + ')';
-end;
-
-function wbScaledInt4ToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-const
-  PlusMinus : array[Boolean] of string = ('+', '-');
-begin
-  Result := '';
-  case aType of
-    ctToStr, ctToSummary, ctToEditValue: Result := FloatToStrF(aInt / 10000, ffFixed, 99, 4);
-    ctToSortKey: begin
-      Result := FloatToStrF(aInt / 10000, ffFixed, 99, 4);
-      if Length(Result) < 22 then
-        Result := StringOfChar('0', 22 - Length(Result)) + Result;
-      Result := PlusMinus[aInt < 0] + Result;
-    end;
-    ctCheck: Result := '';
-  end;
 end;
 
 procedure wbScriptToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
@@ -3252,122 +3993,37 @@ begin
   aValue := '' + '(' + X + ', ' + Y + ', ' + Z + ')';
 end;
 
-function wbVertexToStr(aVertex: Integer; aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-var
-  Triangle   : IwbContainerElementRef;
-  MainRecord : IwbMainRecord;
-  Vertices   : IwbContainerElementRef;
-  Vertex     : IwbContainerElementRef;
+{>>> RUnion Deciders <<<} //2
+
+function wbSceneActionTypeDecider(const aContainer: IwbContainerElementRef): Integer;
 begin
-  case aType of
-    ctToStr, ctToSummary: begin
-      Result := aInt.ToString;
-      if not Assigned(aElement) then
-        Exit;
-
-      Triangle := aElement.Container as IwbContainerElementRef;
-      if not Assigned(Triangle) then
-        Exit;
-
-      MainRecord := aElement.ContainingMainRecord;
-      if not Assigned(MainRecord) then
-        Exit;
-
-      if not Supports(MainRecord.ElementByPath['NVNM\Vertices'], IwbContainerElementRef, Vertices) then
-        Exit;
-
-      if aInt >= Vertices.ElementCount then
-        Exit;
-
-      if aInt < 0 then
-        Exit;
-
-      Vertex := Vertices.Elements[aInt] as IwbContainerElementRef;
-
-      with Vertex do try
-        Result := Result + Format(' (%s, %s, %s)', [ElementEditValues['X'], ElementEditValues['Y'], ElementEditValues['Z']]);
-      except
-        // TODO: yikes, suppressing exceptions?
-      end;
-    end;
-    ctToSortKey: begin
-      Result := IntToHex(aInt, 4);
-      if not Assigned(aElement) then
-        Exit;
-
-      Triangle := aElement.Container as IwbContainerElementRef;
-      if not Assigned(Triangle) then
-        Exit;
-
-      MainRecord := aElement.ContainingMainRecord;
-      if not Assigned(MainRecord) then
-        Exit;
-
-      if not Supports(MainRecord.ElementByPath['NVNM\Vertices'], IwbContainerElementRef, Vertices) then
-        Exit;
-
-      if aInt >= Vertices.ElementCount then
-        Exit;
-
-      if aInt < 0 then
-        Exit;
-
-      Vertex := Vertices.Elements[aInt] as IwbContainerElementRef;
-
-      with Vertex do try
-        Result := SortKey[False];
-      except
-        // TODO: yikes, suppressing exceptions?
-      end;
-    end;
-    ctCheck: Result := '';
-    ctToEditValue: Result := aInt.ToString;
-    ctEditType: Result := '';
-    ctEditInfo: Result := '';
-  end;
-end;
-
-function wbVertexToStr0(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-begin
-  Result := wbVertexToStr(0, aInt, aElement, aType);
-end;
-
-function wbVertexToStr1(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-begin
-  Result := wbVertexToStr(1, aInt, aElement, aType);
-end;
-
-function wbVertexToStr2(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-begin
-  Result := wbVertexToStr(2, aInt, aElement, aType);
-end;
-
-function wbVTXTPosition(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
-begin
-  Result := '';
-
-  if aType = ctToSortKey then begin
-    Result := IntToHex64(aInt div 17, 2) + IntToHex64(aInt mod 17, 2);
+  Result := -1;
+  if not Assigned(aContainer) then
     Exit;
-  end;
 
-  if aType = ctCheck then begin
-    if (aInt < 0) or (aInt > 288) then
-      Result := '<Out of range: '+aInt.ToString+'>'
-    else
-      Exit;
-  end;
+  var lType := aContainer.ElementNativeValues[ANAM];
+  if not VarIsOrdinal(lType) then
+    Exit;
 
-  if aType in [ctToStr, ctToSummary] then
-    Result := aInt.ToString + ' -> ' + IntToStr(aInt div 17) + ':' + IntToStr(aInt mod 17);
+  Result := lType;
 end;
 
-function wbWeatherCloudSpeedToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
+function wbSceneTimelineTypeDecider(const aContainer: IwbContainerElementRef): Integer;
 begin
-  Result := '';
-  case aType of
-    ctToStr, ctToSummary, ctToEditValue: Result := FloatToStrF((aInt - 127)/127/10, ffFixed, 99, 4);
-    ctCheck: Result := '';
+  Result := -1;
+  if not Assigned(aContainer) then
+    Exit;
+
+  var lType := aContainer.ElementNativeValues[TNAM];
+  if not VarIsOrdinal(lType) then
+    Exit;
+
+  case lType of
+    2:    Result := 1; // Camera
+    4, 5: Result := 2; // Headtrack/Eyetrack Angles
+    0, 7: Result := 3; // Headtrack/Headtrack Enable
+  else
+    Result := 0;
   end;
 end;
 
@@ -3421,15 +4077,14 @@ begin
 end;
 
 function wbConditionParam3Decider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
-var
-  Container: IwbContainer;
 begin
-  Result := 0;
-  if not wbTryGetContainerFromUnion(aElement, Container) then
-    Exit;
+   Result := 0;
+   var lContainer : IwbContainer;
+   if not wbTryGetContainerFromUnion(aElement, lContainer) then
+     Exit;
 
-  if Integer(Container.ElementNativeValues['Run On']) = 4 then
-    Result := 1;
+   var lRunOn := lContainer.ElementByName['Run On'].NativeValue;
+   Result := lRunOn;
 end;
 
 function wbConditionReferenceDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
@@ -3977,7 +4632,23 @@ begin
       ]).IncludeFlag(dfMustBeUnion);
 end;
 
-{>>> wbGameMode IfThen Defs <<<} //34
+{>>> DLL Mod IfThen Defs <<<} //1
+
+function IsCS(const aDef1, aDef2: string): string;
+begin
+  Result := aDef2;
+  if wbCS then
+    Result := aDef1
+end;
+
+function IsOBME(const aDef1, aDef2: string): string;
+begin
+  Result := aDef2;
+  if wbOBME then
+    Result := aDef1
+end;
+
+{>>> wbGameMode IfThen Defs <<<} //35
 
 function IsTES3(const aDef1, aDef2: string): string;
 begin
@@ -4057,6 +4728,13 @@ begin
 end;
 
 function IsFO3(const aDef1, aDef2: Integer): Integer;
+begin
+  Result := aDef2;
+  if wbIsFallout3 then
+    Result := aDef1
+end;
+
+function IsFO3(const aDef1, aDef2: IwbRecordMemberDef): IwbRecordMemberDef;
 begin
   Result := aDef2;
   if wbIsFallout3 then
@@ -4486,23 +5164,32 @@ begin
   ]);
 end;
 
-function wbByteColors(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef;
+function wbByteColors(const aSignature : TwbSignature;
+                      const aName      : string = 'Color';
+                            aDefault1  : string = '0';
+                            aDefault2  : string = '0';
+                            aDefault3  : string = '0')
+                                       : IwbRecordMemberDef;
 begin
   Result := wbStruct(aSignature, aName, [
-    wbInteger('Red', itU8),
-    wbInteger('Green', itU8),
-    wbInteger('Blue', itU8),
+    wbInteger('Red', itU8).SetDefaultEditValue(aDefault1),
+    wbInteger('Green', itU8).SetDefaultEditValue(aDefault2),
+    wbInteger('Blue', itU8).SetDefaultEditValue(aDefault3),
     wbUnused(1)
   ]).SetToStr(wbRGBAToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbByteColors(const aName: string = 'Color'): IwbValueDef;
+function wbByteColors(const aName     : string = 'Color';
+                            aDefault1 : string = '0';
+                            aDefault2 : string = '0';
+                            aDefault3 : string = '0')
+                                      : IwbValueDef;
 begin
   Result := wbStruct(aName, [
-    wbInteger('Red', itU8),
-    wbInteger('Green', itU8),
-    wbInteger('Blue', itU8),
+    wbInteger('Red', itU8).SetDefaultEditValue(aDefault1),
+    wbInteger('Green', itU8).SetDefaultEditValue(aDefault2),
+    wbInteger('Blue', itU8).SetDefaultEditValue(aDefault3),
     wbUnused(1)
   ]).SetToStr(wbRGBAToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
@@ -4700,7 +5387,26 @@ begin
         .SetSummaryPassthroughMaxDepth(1)
         .IncludeFlag(dfCollapsed, wbCollapseModelInfoTextures),
 
-      wbArray('Addons', wbInteger('Addon', itU32), wbModelInfoAddonCounter)
+      wbArray('Addons',
+        wbInteger('Addon', itU32)
+          .SetLinksToCallback(function(const aElement: IwbElement): IwbElement
+          begin
+            Result := nil;
+            if not Assigned(aElement) then
+              Exit;
+
+            var lAddonNodeIndex := aElement.NativeValue;
+            if not VarIsOrdinal(lAddonNodeIndex) then
+              Exit;
+
+            var lFile := aElement._File;
+            if not Assigned(lFile) then
+              Exit;
+
+            Result := lFile.RecordFromIndexByKey[wbIdxAddonNode, lAddonNodeIndex];
+          end)
+         .SetToStr(wbToStringFromLinksToMainRecordName),
+      wbModelInfoAddonCounter)
         .SetSummaryPassthroughMaxLength(80)
         .SetSummaryPassthroughMaxDepth(1)
         .IncludeFlag(dfCollapsed, wbCollapseModelInfoAddons),
@@ -4969,7 +5675,26 @@ begin
       .IncludeFlag(dfCollapsed, wbCollapseModels);
 end;
 
-{>>> Image Space Adapter Defs <<<} //2
+{>>> Image Space Adapter Defs <<<} //3
+
+function wbIMADMultAddCount(const aName: string): IwbValueDef;
+begin
+  var lPriority : TwbConflictPriority;
+  if aName = 'Unused' then
+    lPriority := cpIgnore
+  else
+    lPriority := cpNormal;
+
+  Result :=
+    wbStruct(aName, [
+      wbInteger('Mult Count', itU32),
+      wbIntegeR('Add Count', itU32)
+    ], lPriority)
+      .SetSummaryKey([0, 1])
+      .SetSummaryMemberPrefixSuffix(0, 'Mult: ', ',')
+      .SetSummaryMemberPrefixSuffix(1, 'Add: ', '')
+      .IncludeFlag(dfCollapsed);
+end;
 
 function wbTimeInterpolators(const aSignature: TwbSignature; const aName: string): IwbRecordMemberDef;
 begin
@@ -4978,7 +5703,8 @@ begin
       wbArray('', wbTimeInterpolator)
         .SetSummaryPassthroughMaxCount(10)
         .SetSummaryPassthroughMaxLength(100)
-    ).IncludeFlag(dfCollapsed, wbCollapseTimeInterpolators);
+    ).SetRequired
+     .IncludeFlag(dfCollapsed, wbCollapseTimeInterpolators);
 end;
 
 function wbTimeInterpolatorsMultAdd(const aSignatureMult, aSignatureAdd: TwbSignature; const aName: string): IwbRecordMemberDef;
@@ -4995,6 +5721,7 @@ begin
       wbTimeInterpolators(aSignatureMult, sMult),
       wbTimeInterpolators(aSignatureAdd, sAdd)
     ]).SetSummaryKey([0, 1])
+      .SetRequired
       .IncludeFlag(dfCollapsed, wbCollapseTimeInterpolatorsMultAdd);
 end;
 
@@ -5102,6 +5829,9 @@ end;
 {>>> Common Definitions <<<}
 procedure DefineCommon;
 begin
+  wbIdxAddonNode := wbNamedIndex('AddonNode', True);
+  wbIdxCollisionLayer := wbNamedIndex('CollisionLayer', True);
+
   wbActorImpactMaterialEnum :=
     wbEnum([
       {0}  'Stone',
@@ -6104,14 +6834,6 @@ begin
     .SetIsRemovable(wbCellGridIsRemovable)
     .IncludeFlag(dfCollapsed, wbCollapseOther);
 
-  wbCinematicIMAD :=
-    wbRStruct('Cinematic', [
-      wbTimeInterpolatorsMultAdd(_11_IAD, _51_IAD,           'Saturation'),
-      wbTimeInterpolatorsMultAdd(_12_IAD, _52_IAD, IsTES4FO3('Contrast',         'Brightness')),
-      wbTimeInterpolatorsMultAdd(_13_IAD, _53_IAD, IsTES4FO3('Contrast Avg Lum', 'Contrast')),
-      wbTimeInterpolatorsMultAdd(_14_IAD, _54_IAD, IsTES4FO3('Brightness',       'Unused'))
-    ]);
-
   wbDATAPosRot := wbVec3PosRot(DATA).SetRequired;
 
   wbFaction :=
@@ -6176,8 +6898,8 @@ begin
       ).SetAfterSet(wbNPCActorSoundsAfterSet);
 
   wbMagicEffectSounds :=
-    wbArray(SNDD, 'Sounds',
-      wbStruct('Sound', [
+    wbArrayS(SNDD, 'Sounds',
+      wbStructSK([0], 'Sound', [
         wbInteger('Type', itU32,
           wbEnum([
             {0} 'Sheathe/Draw',
@@ -6281,6 +7003,62 @@ begin
   wbQSTR :=
     wbRArrayS('Removed Quests',
       wbFormIDCkNoReach(QSTR, 'Removed Quest', [QUST], False, cpBenign));
+
+{>>>Multiple Record Defs<<<}
+  //TES4,FO3,FNV
+  wbFaceGen :=
+    IfThen(wbSimpleRecords,
+      wbRStruct('Facegen Data', [
+        wbByteArray(FGGS, 'Facegen Symmetric Geometry', 200).SetRequired,
+        wbByteArray(FGGA, 'Facegen Asymmetric Geometry', 120).SetRequired,
+        wbByteArray(FGTS, 'Facegen Symmetric Texture', 200).SetRequired
+      ]).SetRequired,
+      wbRStruct('Facegen Data', [
+        wbArray(FGGS, 'Facegen Symmetric Geometry',
+          wbFloat('Bone Morph Key'),
+        50).SetRequired
+           .IncludeFlag(dfCollapsed, wbCollapseOther),
+        wbArray(FGGA, 'Facegen Asymmetric Geometry',
+          wbFloat('Bone Morph Key'),
+        30).SetRequired
+           .IncludeFlag(dfCollapsed, wbCollapseOther),
+        wbArray(FGTS, 'Facegen Symmetric Texture',
+          wbFloat('Color Morph Key'),
+        50).SetRequired
+           .IncludeFlag(dfCollapsed, wbCollapseOther)
+      ]).SetRequired);
+
+  wbIdleAnimation :=
+    wbRStruct('Idle Animations', [
+      wbInteger(IDLF, 'Flags', itU8,
+        wbFlags([
+        {0} 'Run In Sequence',
+        {1} IsFO76('Old Pick Conditions',''),
+        {2} 'Do Once',
+        {3} IsFO76('Loose Only','Unknown 3'),
+        {4} IsFO3('','Ignored By Sandbox'),
+        {5} IsSF1('Ignore Conditions For Sandbox','Unknown 5')
+        ])
+      ).IncludeFlag(dfCollapsed, wbCollapseFlags),
+      IsFO3(
+        wbStruct(IDLC, '', [
+          wbInteger('Animation Count', itU8, nil, cpBenign).IncludeFlag(dfSkipImplicitEdit),
+          wbBelowVersion(14, wbUnused(3))
+        ]),
+        IsSF1(
+          wbInteger(IDLC, 'Animation Count', itU32, nil, cpBenign).IncludeFlag(dfSkipImplicitEdit),
+          wbInteger(IDLC, 'Animation Count', itU8,  nil, cpBenign).IncludeFlag(dfSkipImplicitEdit)
+        )
+      ),
+      wbFloat(IDLT, 'Idle Timer Setting'),
+      wbArray(IDLA, 'Animations',
+        wbFormIDCk('Animation', [IDLE,NULL])
+      ).SetCountPathOnValue(IsFO3('IDLC\Animation Count', 'IDLC'), False),
+      IsSF1(
+        nil,
+        wbUnknown(IDLB)
+      )
+    ]);
 
 {>>>Landscape Common Defs<<<}
   //TES4,FO3,FNV,TES5,FO4,FO76,SF1
@@ -6437,8 +7215,9 @@ Can't properly represent that with current record definition methods.
       9, 'Edge 1-2 Cover Value 4/4',
      10, 'Edge 1-2 Left',
      11, 'Edge 1-2 Right',
-     14, 'Autogen Cover'
-    ], False, 15));
+     14, 'Autogen Cover',
+     15, IsSF1('Unknown 15', '')
+    ], False, IsSF1(16, 15)));
 
   //FO3,FNV,TES5,FO4,FO76,SF1
   wbNavmeshEdgeLinkEnum :=
@@ -6473,7 +7252,7 @@ Can't properly represent that with current record definition methods.
         wbString(DNAM, 'Layer #0'),
         wbString(CNAM, 'Layer #1'),
         wbString(ANAM, 'Layer #2'),
-        IsFNV(
+        IsFO3(
           wbString(BNAM, 'Layer #3').SetDefaultEditValue('Sky\WastelandCloudCloudyLower01.dds'),
           wbString(BNAM, 'Layer #3').SetDefaultEditValue('Sky\Alpha.dds')
         ).SetRequired

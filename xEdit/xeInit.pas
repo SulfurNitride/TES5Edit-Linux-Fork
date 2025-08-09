@@ -1042,6 +1042,7 @@ begin
       wbLoadBSAs            := True;
       wbAllowInternalEdit   := false;
       wbCanSortINFO         := True;
+      wbOBME                := FileExists(wbDataPath + 'OBSE\Plugins\OBME.dll');
     end;
     gmTES4R: begin
       wbLoadBSAs            := False;
@@ -1054,6 +1055,7 @@ begin
       wbHideIgnored         := False; // to show Form Version
       wbCanSortINFO         := True;
       wbHasAddedLightSupport := (wbGameMode = gmTES5VR) and FileExists(wbDataPath + 'SKSE\Plugins\skyrimvresl.dll');
+      wbCS                  := wbIsSkyrimSE and FileExists(wbDataPath + 'SKSE\Plugins\CommunityShaders.dll');
     end;
     gmFO4, gmFO4VR: begin
       wbVWDInTemporary      := True;
@@ -1254,9 +1256,6 @@ begin
     wbShowInternalEdit := True
   else if FindCmdLineSwitch('hidefixup') then
     wbShowInternalEdit := False;
-
-  if FindCmdLineSwitch('IgnoreWorldMHDT') then
-    wbIgnoreWorldMHDT := True;
 
   if FindCmdLineSwitch('AllowEditHEDRVersion') then
     wbAllowEditHEDRVersion := True;

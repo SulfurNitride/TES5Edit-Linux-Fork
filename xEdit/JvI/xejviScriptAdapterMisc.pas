@@ -1138,6 +1138,27 @@ begin
   Value := O2V(TRegistryIniFile.Create(String(Args.Values[0])));
 end;
 
+{ TControl }
+
+procedure TControl_ScaleValue(var Value: Variant; Args: TJvInterpreterArgs);
+begin
+  case VarType(Args.Values[0]) of
+    varInteger: Value := Args.Values[0] * (Screen.PixelsPerInch / Screen.DefaultPixelsPerInch);
+  else
+    JvInterpreterError(ieTypeMistmatch, -1);
+  end;
+end;
+
+procedure TControl_Read_StyleElements(var Value: Variant; Args: TJvInterpreterArgs);
+begin
+  Value := S2V(Byte(TControl(Args.Obj).StyleElements));
+end;
+
+procedure TControl_Write_StyleElements(const Value: Variant; Args: TJvInterpreterArgs);
+begin
+  TControl(Args.Obj).StyleElements := TStyleElements(Byte(V2S(Value)));
+end;
+
 { TDirectory }
 
 procedure TDirectory_GetDirectories(var Value: Variant; Args: TJvInterpreterArgs);
@@ -2176,6 +2197,14 @@ begin
     AddClass('Registry', TRegistryIniFile, 'TRegistryIniFile');
     AddGet(TRegistryIniFile, 'Create', TRegistryIniFile_Create, 1, [varEmpty], varEmpty);
 
+    { TControl }
+    AddConst('Controls', 'seFont', Ord(seFont));
+    AddConst('Controls', 'seClient', Ord(seClient));
+    AddConst('Controls', 'seBorder', Ord(seBorder));
+    AddGet(TControl, 'ScaleValue', TControl_ScaleValue, 1, [varEmpty], varEmpty);
+    AddGet(TControl, 'StyleElements', TControl_Read_StyleElements, 0, [varEmpty], varEmpty);
+    AddSet(TControl, 'StyleElements', TControl_Write_StyleElements, 0, [varEmpty]);
+
     { TDirectory }
     AddConst('IOUtils', 'soTopDirectoryOnly', Ord(TSearchOption.soTopDirectoryOnly));
     AddConst('IOUtils', 'soAllDirectories', Ord(TSearchOption.soAllDirectories));
@@ -2351,7 +2380,6 @@ begin
     AddISet(TJsonObject, 'O', TJsonObject_Write_O, 1, [varEmpty]);
     AddIDGet(TJsonObject, TJsonObject_Read_V, 1, [varEmpty], varEmpty);
     AddIDSet(TJsonObject, TJsonObject_Write_V, 1, [varEmpty]);
-
   end;
 end;
 
