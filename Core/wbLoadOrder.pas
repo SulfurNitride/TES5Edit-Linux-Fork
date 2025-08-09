@@ -197,7 +197,7 @@ begin
   if Result = 0 then begin
     Result := CmpI32(a.miCCIndex, b.miCCIndex);
     if Result = 0 then begin
-      if (mfIsESM in a.miFlags) = (mfIsESM in b.miFlags) then begin
+      if (mfIsESM in a.miFlags) = (mfIsESM in b.miFlags) or (wbGameMode in [gmTES4, gmTES4R]) then begin
         Result := CmpI32(a.miPluginsTxtIndex, b.miPluginsTxtIndex);
         if Result = 0 then begin
           Result := CmpDouble(a.miDateTime, b.miDateTime);
@@ -229,7 +229,7 @@ begin
   if Result = 0 then begin
     Result := CmpI32(a.miCCIndex, b.miCCIndex);
     if Result = 0 then begin
-      if (mfIsESM in a.miFlags) = (mfIsESM in b.miFlags) then begin
+      if ((mfIsESM in a.miFlags) = (mfIsESM in b.miFlags)) or (wbGameMode in [gmTES4, gmTES4R]) then begin
         Result := CmpI32(a.miCombinedIndex, b.miCombinedIndex);
         if Result = 0 then begin
           Result := CmpI32(a.miPluginsTxtIndex, b.miPluginsTxtIndex);
@@ -487,7 +487,7 @@ begin
   if i > 1 then
     wbMergeSortPtr(@_ModulesLoadOrder[0], i, _ModulesLoadOrderCompare);
 
-  if (wbGameMode in [gmTES5, gmEnderal]) then begin
+  if (wbGameMode in [gmTES4R, gmTES5, gmEnderal]) then begin
     s := ExtractFilePath(wbPluginsFileName) + 'loadorder.txt';
     if FileExists(s) then begin
       sl := TStringList.Create;
@@ -805,7 +805,7 @@ begin
   if miCCIndex < High(Integer) then
     Result := Result + '[CC:'+miCCIndex.ToString+']';
   if Result = '' then begin
-    if mfIsESM in miFlags then
+    if (mfIsESM in miFlags) and not (wbGameMode in [gmTES4, gmTES4R]) then
       Result := Result + '[ESM]';
 
     if miPluginsTxtIndex < High(Integer) then

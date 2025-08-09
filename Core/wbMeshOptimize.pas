@@ -161,7 +161,7 @@ end;
 // https://github.com/zeux/meshoptimizer/blob/master/src/meshoptimizer.h
 function meshopt_quantizeUnorm(v: Double; N: Integer): Integer;
 begin
-	var scale: Single := (1 shl N) - 1;
+  var scale: Single := (1 shl N) - 1;
 
   if v < 0 then v := 0 else if v > 0 then v := 1;
 
@@ -172,23 +172,23 @@ end;
 // https://github.com/zeux/meshoptimizer/blob/master/src/meshoptimizer.h
 function meshopt_quantizeSnorm(v: Double; N: Integer): Integer;
 begin
-	var scale: Single := (1 shl (N - 1)) - 1;
+  var scale: Single := (1 shl (N - 1)) - 1;
 
   var r: Single;
   if v >= 0 then r := 0.5 else r := -0.5;
 
   if v < -1 then v := -1 else if v > 1 then v := 1;
 
-	Result := Trunc(v * scale + r);
+  Result := Trunc(v * scale + r);
 end;
 
 
 // https://github.com/zeux/meshoptimizer/blob/master/src/vcacheanalyzer.cpp
 function meshopt_analyzeVertexCache(const indices: TTriIndices; cache_size: Cardinal = 16; warp_size: Cardinal = 0; primgroup_size: Cardinal = 0): TVertexCacheStatistics;
 begin
-	Assert(Length(indices) mod 3 = 0);
-	Assert(cache_size >= 3);
-	Assert( (warp_size = 0) or (warp_size >= 3) );
+  Assert(Length(indices) mod 3 = 0);
+  Assert(cache_size >= 3);
+  Assert( (warp_size = 0) or (warp_size >= 3) );
 
   Result.vertices_transformed := 0;
   Result.warps_executed := 0;
@@ -196,8 +196,8 @@ begin
   var index_count := Length(indices);
   var vertex_count := GetVertexCount(indices);
 
-	var warp_offset: Cardinal := 0;
-	var primgroup_offset: Cardinal := 0;
+  var warp_offset: Cardinal := 0;
+  var primgroup_offset: Cardinal := 0;
 
   var cache_timestamps: array of Cardinal;
   SetLength(cache_timestamps, vertex_count);
@@ -206,56 +206,55 @@ begin
 
   var i := 0;
   while i < index_count do begin
-		var a := indices[i + 0]; var b := indices[i + 1]; var c := indices[i + 2];
+    var a := indices[i + 0]; var b := indices[i + 1]; var c := indices[i + 2];
 
-		var ac := (timestamp - cache_timestamps[a]) > cache_size;
-		var bc := (timestamp - cache_timestamps[b]) > cache_size;
-		var cc := (timestamp - cache_timestamps[c]) > cache_size;
+    var ac := (timestamp - cache_timestamps[a]) > cache_size;
+    var bc := (timestamp - cache_timestamps[b]) > cache_size;
+    var cc := (timestamp - cache_timestamps[c]) > cache_size;
 
-		// flush cache if triangle doesn't fit into warp or into the primitive buffer
-		if (( (primgroup_size <> 0) and (primgroup_offset = primgroup_size) ) or ( (warp_size <> 0) and (warp_offset + Cardinal(ac) + Cardinal(bc) + Cardinal(cc) > warp_size) )) then begin
-      if warp_offset > 0 then
-  			Inc(Result.warps_executed);
+    // flush cache if triangle doesn't fit into warp or into the primitive buffer
+    if (( (primgroup_size <> 0) and (primgroup_offset = primgroup_size) ) or ( (warp_size <> 0) and (warp_offset + Cardinal(ac) + Cardinal(bc) + Cardinal(cc) > warp_size) )) then begin
+    if warp_offset > 0 then
+      Inc(Result.warps_executed);
 
-			warp_offset := 0;
-			primgroup_offset := 0;
+      warp_offset := 0;
+      primgroup_offset := 0;
 
-			// reset cache
-			Inc(timestamp, cache_size + 1);
-		end;
+      // reset cache
+      Inc(timestamp, cache_size + 1);
+    end;
 
-		// update cache and add vertices to warp
-		for var j := 0 to 2 do begin
-		  var index := indices[i + j];
+    // update cache and add vertices to warp
+    for var j := 0 to 2 do begin
+      var index := indices[i + j];
 
-			if timestamp - cache_timestamps[index] > cache_size then begin
-				cache_timestamps[index] := timestamp;
+      if timestamp - cache_timestamps[index] > cache_size then begin
+        cache_timestamps[index] := timestamp;
         Inc(timestamp);
-				Inc(Result.vertices_transformed);
-				Inc(warp_offset);
-			end;
-		end;
-
-		Inc(primgroup_offset);
+        Inc(Result.vertices_transformed);
+        Inc(warp_offset);
+      end;
+    end;
+    Inc(primgroup_offset);
     Inc(i, 3);
   end;
 
-	var unique_vertex_count := 0;
+  var unique_vertex_count := 0;
 
-	for i := 0 to Pred(vertex_count) do
+  for i := 0 to Pred(vertex_count) do
     if cache_timestamps[i] > 0 then
-  		Inc(unique_vertex_count);
+      Inc(unique_vertex_count);
 
   if warp_offset > 0 then
     Inc(Result.warps_executed);
 
   if index_count <> 0 then
-  	Result.acmr := Result.vertices_transformed / (index_count / 3)
+    Result.acmr := Result.vertices_transformed / (index_count / 3)
   else
     Result.acmr := 0.0;
 
   if unique_vertex_count <> 0 then
-	  Result.atvr := Result.vertices_transformed / unique_vertex_count
+    Result.atvr := Result.vertices_transformed / unique_vertex_count
   else
     Result.atvr := 0.0;
 end;
@@ -267,8 +266,8 @@ const
   kCacheLine = 64;
   kCacheSize = 128 * 1024;
 begin
-	Assert(Length(indices) mod 3 = 0);
-	Assert( (vertex_size > 0) and (vertex_size <= 256) );
+  Assert(Length(indices) mod 3 = 0);
+  Assert( (vertex_size > 0) and (vertex_size <= 256) );
 
   Result.bytes_fetched := 0;
 
@@ -283,37 +282,37 @@ begin
   SetLength(cache, kCacheSize div kCacheLine);
 
   for var i := 0 to Pred(index_count) do begin
-		var index := indices[i];
-		Assert(index < vertex_count);
+    var index := indices[i];
+    Assert(index < vertex_count);
 
-		vertex_visited[index] := 1;
+    vertex_visited[index] := 1;
 
-		var start_address := index * vertex_size;
-	  var end_address := start_address + vertex_size;
+    var start_address := index * vertex_size;
+    var end_address := start_address + vertex_size;
 
-		var start_tag := start_address div kCacheLine;
-	  var end_tag := (end_address + kCacheLine - 1) div kCacheLine;
+    var start_tag := start_address div kCacheLine;
+    var end_tag := (end_address + kCacheLine - 1) div kCacheLine;
 
-		Assert(start_tag < end_tag);
+    Assert(start_tag < end_tag);
 
-		for var tag := start_tag to Pred(end_tag) do begin
-			var line := tag mod Length(cache);
+    for var tag := start_tag to Pred(end_tag) do begin
+      var line := tag mod Length(cache);
 
-			// we store +1 since cache is filled with 0 by default
+      // we store +1 since cache is filled with 0 by default
       if cache[line] <> tag + 1 then
-  			Inc(Result.bytes_fetched, kCacheLine);
+        Inc(Result.bytes_fetched, kCacheLine);
 
-			cache[line] := tag + 1;
-		end;
-	end;
+      cache[line] := tag + 1;
+    end;
+  end;
 
-	var unique_vertex_count: Cardinal := 0;
+  var unique_vertex_count: Cardinal := 0;
 
-	for var i := 0 to Pred(vertex_count) do
-		Inc(unique_vertex_count, vertex_visited[i]);
+  for var i := 0 to Pred(vertex_count) do
+    Inc(unique_vertex_count, vertex_visited[i]);
 
   if unique_vertex_count <> 0 then
-  	Result.overfetch := Result.bytes_fetched / (unique_vertex_count * vertex_size)
+    Result.overfetch := Result.bytes_fetched / (unique_vertex_count * vertex_size)
   else
     Result.overfetch := 0.0;
 end;
@@ -622,19 +621,19 @@ var
 
   function getNextTriangleDeadEnd(var input_cursor: Cardinal): Cardinal;
   begin
-	  // input order
-	  while input_cursor < face_count do begin
-  		if not emitted_flags[input_cursor] then
-			  Exit(input_cursor);
+    // input order
+    while input_cursor < face_count do begin
+      if not emitted_flags[input_cursor] then
+        Exit(input_cursor);
 
-		  Inc(input_cursor);
+      Inc(input_cursor);
     end;
 
     Result := High(Cardinal);
   end;
 
 begin
-	Assert(Length(indices) mod 3 = 0);
+  Assert(Length(indices) mod 3 = 0);
 
   index_count := Length(indices);
   if index_count = 0 then
@@ -817,7 +816,7 @@ var
 
   function updateCache(a, b, c, cache_size: Cardinal; var cache_timestamps: array of Cardinal; var timestamp: Cardinal): Cardinal;
   begin
-	  Result := 0;
+    Result := 0;
 
     // if vertex is not in cache, put it in cache
     if timestamp - cache_timestamps[a] > cache_size then begin
@@ -843,11 +842,11 @@ var
   begin
     FillChar(cache_timestamps, Length(cache_timestamps) * SizeOf(cache_timestamps[0]), 0);
 
-  	var timestamp := cache_size + 1;
+    var timestamp := cache_size + 1;
 
-	  var face_count := index_count div 3;
+    var face_count := index_count div 3;
 
-	  Result := 0;
+    Result := 0;
 
     for var i := 0 to Pred(face_count) do begin
       var m := updateCache(indices[i * 3 + 0], indices[i * 3 + 1], indices[i * 3 + 2], cache_size, cache_timestamps, timestamp);
@@ -863,7 +862,7 @@ var
 
     end;
 
-  	Assert(Cardinal(Result) <= index_count div 3);
+    Assert(Cardinal(Result) <= index_count div 3);
   end;
 
   function generateSoftBoundaries(var destination: array of Cardinal;
@@ -914,7 +913,7 @@ var
           // we have reached the target ACMR with the current triangle so we need to start a new cluster on the next one
           // note that this may mean that we add 'end` to destination for the last triangle, which will imply that the last
           // cluster is empty; however, the 'pop_back' after the loop will clean it up
-  				destination[Result] := Cardinal(i + 1);
+          destination[Result] := Cardinal(i + 1);
           Inc(Result);
 
           // reset cache
@@ -938,7 +937,7 @@ var
     end;
 
     Assert(Result >= cluster_count);
-	  Assert(Result <= index_count / 3);
+    Assert(Result <= index_count / 3);
 
   end;
 
@@ -1000,23 +999,23 @@ var
     sort_bits = 11;
   begin
     // compute sort data bounds and renormalize, using fixed point snorm
- 	  var sort_data_max: Double := 1e-3;
+    var sort_data_max: Double := 1e-3;
 
     for var i := 0 to Pred(cluster_count) do begin
-  	  var dpa := Abs(sort_data[i]);
+      var dpa := Abs(sort_data[i]);
 
-   	  sort_data_max := IfThen(sort_data_max < dpa, dpa, sort_data_max);
+      sort_data_max := IfThen(sort_data_max < dpa, dpa, sort_data_max);
     end;
 
     for var i := 0 to Pred(cluster_count) do begin
       // note that we flip distribution since high dot product should come first
-  	  var sort_key := 0.5 - 0.5 * (sort_data[i] / sort_data_max);
+      var sort_key := 0.5 - 0.5 * (sort_data[i] / sort_data_max);
 
       sort_keys[i] := meshopt_quantizeUnorm(sort_key, sort_bits) and ((1 shl sort_bits) - 1);
     end;
 
     // fill histogram for counting sort
-  	var histogram: array of Cardinal;
+    var histogram: array of Cardinal;
     SetLength(histogram, 1 shl sort_bits);
 
     for var i := 0 to Pred(cluster_count) do
@@ -1028,7 +1027,7 @@ var
     for var i := 0 to Pred(1 shl sort_bits) do begin
       var count := histogram[i];
       histogram[i] := histogram_sum;
-  		Inc(histogram_sum, count);
+      Inc(histogram_sum, count);
     end;
 
     Assert(histogram_sum = cluster_count);
@@ -1042,7 +1041,7 @@ var
   end;
 
 begin
-	Assert(Length(indices) mod 3 = 0);
+  Assert(Length(indices) mod 3 = 0);
 
   index_count := Length(indices);
   vertex_count := Length(vertices);
@@ -1056,54 +1055,54 @@ begin
   SetLength(cache_timestamps, vertex_count);
 
   // generate hard boundaries from full-triangle cache misses
-	var hard_clusters: array of Cardinal;
+  var hard_clusters: array of Cardinal;
   SetLength(hard_clusters, index_count div 3);
 
-	var hard_cluster_count := generateHardBoundaries(hard_clusters, cache_size, cache_timestamps);
+  var hard_cluster_count := generateHardBoundaries(hard_clusters, cache_size, cache_timestamps);
 
-	// generate soft boundaries
-	var clusters: array of Cardinal;
+  // generate soft boundaries
+  var clusters: array of Cardinal;
   SetLength(clusters, index_count div 3 + 1);
 
-	var cluster_count := generateSoftBoundaries(clusters, hard_clusters, hard_cluster_count, cache_size, cache_timestamps);
+  var cluster_count := generateSoftBoundaries(clusters, hard_clusters, hard_cluster_count, cache_size, cache_timestamps);
 
   // fill sort data
-	var sort_data: array of Double;
+  var sort_data: array of Double;
   SetLength(sort_data, cluster_count);
-	calculateSortData(sort_data, clusters, cluster_count);
+  calculateSortData(sort_data, clusters, cluster_count);
 
   // sort clusters using sort data
-	var sort_keys: array of Word;
+  var sort_keys: array of Word;
   SetLength(sort_keys, cluster_count);
-	var sort_order: array of Cardinal;
+  var sort_order: array of Cardinal;
   SetLength(sort_order, cluster_count);
 
-	calculateSortOrderRadix(sort_order, sort_data, sort_keys, cluster_count);
+  calculateSortOrderRadix(sort_order, sort_data, sort_keys, cluster_count);
 
   // fill output buffer
-	var offset := 0;
+  var offset := 0;
   SetLength(Result, index_count);
 
-	for var it := 0 to Pred(cluster_count) do begin
-		var cluster := sort_order[it];
-		Assert(cluster < Cardinal(cluster_count));
+  for var it := 0 to Pred(cluster_count) do begin
+    var cluster := sort_order[it];
+    Assert(cluster < Cardinal(cluster_count));
 
-		var cluster_begin := clusters[cluster] * 3;
-		var cluster_end := IfThen(cluster + 1 < Cardinal(cluster_count), clusters[cluster + 1] * 3, index_count);
-		Assert(cluster_begin < cluster_end);
+    var cluster_begin := clusters[cluster] * 3;
+    var cluster_end := IfThen(cluster + 1 < Cardinal(cluster_count), clusters[cluster + 1] * 3, index_count);
+    Assert(cluster_begin < cluster_end);
 
     System.Move(indices[cluster_begin], Result[offset], (cluster_end - cluster_begin) * SizeOf(indices[0]));
-		Inc(offset, cluster_end - cluster_begin);
-	end;
+    Inc(offset, cluster_end - cluster_begin);
+  end;
 
-	Assert(Cardinal(offset) = index_count);
+  Assert(Cardinal(offset) = index_count);
 end;
 
 
 
 function meshopt_optimizeVertexFetchRemap(const indices: TTriIndices): TTriIndices;
 begin
-	Assert(Length(indices) mod 3 = 0);
+  Assert(Length(indices) mod 3 = 0);
 
   var index_count := Length(indices);
   if index_count = 0 then
@@ -1127,16 +1126,15 @@ end;
 
 function meshopt_remapIndices(const indices: TTriIndices; const remap: TTriIndices): TTriIndices;
 begin
-	Assert(Length(indices) mod 3 = 0);
+  Assert(Length(indices) mod 3 = 0);
   SetLength(Result, Length(indices));
 
-	for var i := Low(indices) to High(indices) do begin
-	  var index := indices[i];
-		Assert(remap[index] <> High(Cardinal));
+  for var i := Low(indices) to High(indices) do begin
+    var index := indices[i];
+    Assert(remap[index] <> High(Cardinal));
 
-		Result[i] := remap[index];
-	end;
+    Result[i] := remap[index];
+  end;
 end;
-
 
 end.
