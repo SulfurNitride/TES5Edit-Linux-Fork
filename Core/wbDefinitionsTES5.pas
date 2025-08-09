@@ -4591,16 +4591,15 @@ begin
     wbString(XNAM, 'Water Noise Texture'),
     wbArrayS(XCLR, 'Regions', wbFormIDCk('Region', [REGN])),
     wbFormIDCk(XLCN, 'Location', [LCTN]),
-    wbInteger(XWCS, 'Water Current Count (Old)', itU32, nil, cpBenign),
     wbRStruct('Water Current Velocities', [
+      wbInteger(XWCS, 'Velocity Count (Old)', itU32, nil, cpBenign),
       wbInteger(XWCN, 'Velocity Count', itU32, nil, cpBenign),
       wbArray(XWCU, 'Velocities',
         wbStruct('Current', [
           wbVec3('Velocity'),
           wbInteger('Unknown', itU32)
         ])
-      ).SetCountPathOnValue(XWCN, False)
-       .IncludeFlag(dfCollapsed, wbCollapseOther)
+      ).IncludeFlag(dfCollapsed, wbCollapseOther)
        .IncludeFlag(dfNotAlignable)
     ]),
     wbFormIDCk(XCWT, 'Water', [WATR]),
@@ -10060,16 +10059,15 @@ begin
     {--- MultiBound ---}
     wbFormIDCk(XMBR, 'MultiBound Reference', [REFR]),
 
-    wbInteger(XWCS, 'Water Current Count (Old)', itU32, nil, cpBenign),
     wbRStruct('Water Current Velocities', [
+      wbInteger(XWCS, 'Velocity Count (Old)', itU32, nil, cpBenign),
       wbInteger(XWCN, 'Velocity Count', itU32, nil, cpBenign),
       wbArray(XWCU, 'Velocities',
         wbStruct('Current', [
           wbVec3('Velocity'),
           wbInteger('Unknown', itU32)
         ])
-      ).SetCountPathOnValue(XWCN, False)
-       .IncludeFlag(dfCollapsed, wbCollapseOther)
+      ).IncludeFlag(dfCollapsed, wbCollapseOther)
        .IncludeFlag(dfNotAlignable)
     ]),
     wbVec3(XCVL,'Water Current Linear Velocity'),
