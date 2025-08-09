@@ -15472,7 +15472,7 @@ begin
         'Line',
         'Ellipsoid',
         '',
-        'Unknown 7'
+        'Cylinder'
       ]))
     ]),
 

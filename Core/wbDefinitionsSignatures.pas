@@ -531,6 +531,7 @@ const
   FHLS : TwbSignature = 'FHLS'; { New To Starfield }
   FIDS : TwbSignature = 'FIDS'; { New To Fallout 76 }
   FIES : TwbSignature = 'FIES'; { New To Fallout 76 }
+  FIEX : TwbSignature = 'FIEX'; { New To Fallout 76 }
   FIHA : TwbSignature = 'FIHA'; { New To Fallout 76 }
   FIHD : TwbSignature = 'FIHD'; { New To Fallout 76 }
   FIHJ : TwbSignature = 'FIHJ'; { New To Fallout 76 }
@@ -542,8 +543,10 @@ const
   FILS : TwbSignature = 'FILS'; { New To Fallout 76 }
   FIMD : TwbSignature = 'FIMD'; { New To Fallout 4 }
   FIRI : TwbSignature = 'FIRI'; { New To Fallout 76 }
+  FISD : TwbSignature = 'FISD'; { New To Fallout 76 }
   FISH : TwbSignature = 'FISH'; { New To Fallout 76 }
   FISP : TwbSignature = 'FISP'; { New To Fallout 76 }
+  FISU : TwbSignature = 'FISU'; { New To Fallout 76 }
   FLAD : TwbSignature = 'FLAD'; { New To Starfield }
   FLAG : TwbSignature = 'FLAG'; { New To Starfield }
   FLAT : TwbSignature = 'FLAT';

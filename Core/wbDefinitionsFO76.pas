@@ -97,7 +97,7 @@ const
     'MSTT', 'NOTE', 'NPC_', 'OMOD', 'PACH', 'PKIN',
     'PPAK', 'PROJ', 'SCOL', 'SCRL', 'SECH', 'SOUN',
     'SPEL', 'STAT', 'TACT', 'TERM', 'TREE', 'TXST',
-    'UTIL', 'WATR', 'WEAP'
+    'UTIL', 'WATR', 'WEAP', 'FISH'
   ];
 
 var
@@ -958,12 +958,11 @@ const
     (Index: 930; Name: 'IsNextClipLastShot'),
     (Index: 931; Name: 'WornInOrOutOfPowerArmorHasKeyword'; ParamType1: ptKeyword),
     (Index: 932; Name: 'IsPlayerInBestBuildCamp'),
-    (Index: 933; Name: 'GetWeakPointDamageMultiplier'; Desc: 'Gets the highest body part damage multiplier for the actor (ie weak point)'),
-    (Index: 934; Name: 'GetLastHitLimbDamageMultiplier'; Desc: 'Gets the limb damage multipler'),
-    (Index: 935; Name: 'IsLastDamageFromVATS'; Desc: 'True if last source of damage was from VATS'),
-    (Index: 936; Name: 'IsLastDamageCripplingLimb'; Desc: 'True if last source of damage crippled a limb'),
-    (Index: 937; Name: 'GetCurrentCAMPWeatherHasKeyword'; ParamType1: ptKeyword),
-    (Index: 938; Name: 'GetCurrentWeatherOverrideHasKeyword'; ParamType1: ptKeyword),
+    (Index: 933; Name: 'GetLastHitLimbDamageMultiplier'; Desc: 'Gets the limb damage multipler'),
+    (Index: 934; Name: 'IsLastDamageFromVATS'; Desc: 'True if last source of damage was from VATS'),
+    (Index: 935; Name: 'IsLastDamageCripplingLimb'; Desc: 'True if last source of damage crippled a limb'),
+    (Index: 936; Name: 'GetCurrentCAMPWeatherHasKeyword'; ParamType1: ptKeyword),
+    (Index: 937; Name: 'GetCurrentWeatherOverrideHasKeyword'; ParamType1: ptKeyword),
     (Index: 5000; Name: 'IsInAirOrFloating'; Desc: 'Is the Havok state InAir or IsFloating?'),
     (Index: 5001; Name: 'GetIsForm'; ParamType1: ptBaseObject),
     (Index: 5002; Name: 'GetIsInDailyOps'),
@@ -971,6 +970,7 @@ const
     (Index: 5004; Name: 'PlayerHasQuest'; ParamType1: ptQuest),
     (Index: 5005; Name: 'IsBackpackVisible'),
     (Index: 5006; Name: 'GetIsInExpedition'),
+    (Index: 5007; Name: 'HasCAMPWeatherActive'),
     (Index: 6000; Name: 'GetSecondsSinceLastAttack'),
     (Index: 8000; Name: 'IsDailyContentAvailable'), //Param1: ptDailyContentGroup
     (Index: 8001; Name: 'StartDailyContent'),   //Param1: ptDailyContentGroup //Does nothing on the client
@@ -5137,7 +5137,13 @@ begin
    {201} 'Apply Spell On Actor When Limb Crippled',
    {202} 'Mod Rads to Health Mult',
    {203} 'Mod Rads to Radshield Mult',
-   {204} 'Mod Weak Body Part Damage Mult'
+   {204} 'Mod Weak Body Part Damage Mult',
+   {205} 'Mod Projectile Bounce Count',
+   {206} 'Mod NPC Normalized Min Level',
+   {207} 'Mod NPC Normalized Max level',
+   {208} 'Mod NPC Normalized Level',
+   {209} 'Mod Ammo Spender Max Stack Count',
+   {210} 'Mod Ammo Spender Max Reload Stack Mult'
   ]);
 
   wbEquipType := wbFlags([
@@ -5318,24 +5324,24 @@ begin
   wbSNTP := wbFormIDCk(SNTP, 'Snap Template', [STMP]);
 
   wbXALGFlags := wbFlags([
-    {0x00000001} 'Unknown 1 (No Havok??)',
-    {0x00000002} 'Unknown 2',
-    {0x00000004} 'Unknown 3 (Reference??)',
-    {0x00000008} 'Unknown 4',
-    {0x00000010} 'Unknown 5',
-    {0x00000020} 'Unknown 6', //Unused
-    {0x00000040} 'Unknown 7',
-    {0x00000080} 'Unknown 8',
-    {0x00000100} 'Atom Shop Item',
-    {0x00000200} 'Unknown 10',
-    {0x00000400} 'Unknown 11',
+    {0x00000001} 'Skip HAVOK on Load',
+    {0x00000002} 'Server Authoritative',
+    {0x00000004} 'Disable Permanent Decals',
+    {0x00000008} 'Never Visible Distant',
+    {0x00000010} 'Item Dispenser',
+    {0x00000020} 'Item Dispenser Pickedup', //Unused
+    {0x00000040} 'Fast travel restricted',
+    {0x00000080} 'Block Item Dispenser',
+    {0x00000100} 'Premium',
+    {0x00000200} 'Visible Distant',
+    {0x00000400} 'Camera Weapon Detectable',
     {0x00000800} 'Fallout 1st',
-    {0x00001000} 'Unknown 13',
-    {0x00002000} 'Unknown 14',
-    {0x00004000} 'Unknown 15', //Unused
-    {0x00008000} 'Unknown 16', //Unused
-    {0x00010000} 'Unknown 17', //Unused
-    {0x00020000} 'Unknown 18', //Unused
+    {0x00001000} 'Bullion Reward Object',
+    {0x00002000} 'REFR invalidates previs',
+    {0x00004000} 'Deleted REFR invalidates previs', //Unused
+    {0x00008000} 'Container weight calculation queued', //Unused
+    {0x00010000} 'UNUSED 17', //Unused
+    {0x00020000} 'No refresh body 3D on load', //Unused
     {0x00040000} 'Unknown 19', //Unused
     {0x00080000} 'Unknown 20', //Unused
     {0x00100000} 'Unknown 21', //Unused
@@ -6960,7 +6966,15 @@ begin
     'Condition Form',
     'Unknown - AUVF',
     'Legendary Item',
-    'Event Quest Widget'
+    'Event Quest Widget',
+    'Event Playlist',
+    'Gameplay Reward',
+    'Daily Content Group',
+    'Quest Module',
+    'Loadout',
+    'District',
+    'Player Title',
+    'Fish'
 ]);
 
   wbMiscStatEnum := wbEnum([], [
@@ -8947,7 +8961,8 @@ begin
       wbFloat,
       wbFloat,
       wbFloat
-    ])
+    ]),
+    wbFloat(CSTD)
   ]);
 
   wbRecord(DIAL, 'Dialog Topic',
@@ -9399,19 +9414,22 @@ begin
   [
     wbEDID,
     wbKeywords,
-    wbFloat(FISP),
-    wbFloat(FIDS),
-    wbFloat(FIES),
-    wbUnknown(FIHS),
-    wbUnknown(FILS),
-    wbFloat(FIHD),
-    wbFloat(FILD),
-    wbFloat(FIJS),
-    wbFloat(FIHJ),
-    wbFloat(FILJ),
-    wbFloat(FILA),
-    wbFloat(FIHA),
-    wbFormID(FIRI, 'Reel-In Item')
+    wbFloat(FISP, 'Start Progress'),
+    wbFloat(FIDS, 'Draw In Speed'),
+    wbFloat(FIES, 'Escape Speed'),
+    wbInteger(FIHS, 'Max Stamina', itU8),
+    wbInteger(FILS, 'Min Stamina', itU8),
+    wbFloat(FIHD, 'Max Jump Delay'),
+    wbFloat(FILD, 'Min Jump Delay'),
+    wbFloat(FIJS, 'Jump Speed'),
+    wbFloat(FIHJ, 'Max Jump Distance'),
+    wbFloat(FILJ, 'Min Jump Distance'),
+    wbFloat(FILA, 'Min Initial Angle Distance'),
+    wbFloat(FIHA, 'Max Initial Angle Distance'),
+    wbFormID(FIRI, 'Item Reward'),
+    wbFormID(FIEX, 'Reel In Splash Override'),
+    wbFormID(FISD, 'Reel In Sound Override'),
+    wbFormID(FISU, 'Fanfare UI Sound Override')
   ]);
 
   wbRecord(FURN, 'Furniture',
@@ -12894,6 +12912,10 @@ begin
       ]),
       wbCOED,
       wbConditions,
+      wbStruct(LVUD, 'Leveled Item Data', [
+        wbFormID('Pick Up Sound'),
+        wbUnknown
+      ]),
       wbLVOV,
       wbLVOC,
       wbLVOT,
@@ -13393,9 +13415,9 @@ begin
     wbArrayS(FNAM, 'Category', wbFormIDCk('Keyword', [KYWD])),
     wbLString(HNAM, 'Build Group Name'),
     wbStruct(DNAM, 'Data', [
-      wbFloat('Unknown'),
+      wbFloat('Priority (UI sort order)'),
       wbInteger('Created Object Count', itU16),
-      wbInteger('Priority', itU16)
+      wbUnused(2)
     ], cpNormal, False, nil, 1),
     wbFormIDCk(CIFK, 'Constructible Instantiation Filter Keyword', [KYWD]),
     wbUnknown(RECF), // only cares about 0x1 and 0x2 and 0x3
@@ -14056,40 +14078,76 @@ begin
     wbPRPS,
     wbRUnion('General', [
       wbStruct(DATA, 'General', [  //0xE4
-        wbInteger('Flags', itU32, wbFlags([
-          {0x00000001} 'Start Game Enabled',
-          {0x00000002} 'Completed',
-          {0x00000004} 'Add Idle Topic To Hello',
-          {0x00000008} 'Allow repeated stages',
-          {0x00000010} 'Starts Enabled',
-          {0x00000020} 'Displayed In HUD',
-          {0x00000040} 'Failed',
-          {0x00000080} 'Stage Wait',
-          {0x00000100} 'Run Once',
-          {0x00000200} 'Exclude from dialogue export',
-          {0x00000400} 'Warn on alias fill failure',
-          {0x00000800} 'Active',
-          {0x00001000} 'Repeats Conditions',
-          {0x00002000} 'Keep Instance',
-          {0x00004000} 'Want Dormant',
-          {0x00008000} 'Has Dialogue Data',
-          {0x00010000} 'Instanced Quest',
-          {0x00020000} 'Unknown 17',
-          {0x00040000} 'Unknown 18',
-          {0x00080000} 'Holotape Container Quest',
-          {0x00100000} 'Unknown 20',
-          {0x00200000} 'Unknown 21',
-          {0x00400000} 'Unknown 22',
-          {0x00800000} 'Unknown 23',
-          {0x01000000} 'Unknown 24',
-          {0x02000000} 'Uses Default Quest Expire Timer',
-          {0x04000000} 'Unknown 26',
-          {0x08000000} 'Event Quest',
-          {0x10000000} 'Raid Quest',
-          {0x20000000} 'Unknown 29',
-          {0x40000000} 'Unknown 30',
-          {0x80000000} 'Unknown 31'
-        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
+        wbUnion('Flags', wbFormVersionDecider(202), [
+          wbInteger('Flags', itU32, wbFlags([
+            {0x00000001} 'Start Game Enabled',
+            {0x00000002} 'Completed',
+            {0x00000004} 'Add Idle Topic To Hello',
+            {0x00000008} 'Allow repeated stages',
+            {0x00000010} 'Starts Enabled',
+            {0x00000020} 'Displayed In HUD',
+            {0x00000040} 'Failed',
+            {0x00000080} 'Stage Wait',
+            {0x00000100} 'Run Once',
+            {0x00000200} 'Exclude from dialogue export',
+            {0x00000400} 'Warn on alias fill failure',
+            {0x00000800} 'Active',
+            {0x00001000} 'Repeats Conditions',
+            {0x00002000} 'Keep Instance',
+            {0x00004000} 'Want Dormant',
+            {0x00008000} 'Has Dialogue Data',
+            {0x00010000} 'Instanced Quest',
+            {0x00020000} 'Unknown 17',
+            {0x00040000} 'Unknown 18',
+            {0x00080000} 'Holotape Container Quest',
+            {0x00100000} 'Unknown 20',
+            {0x00200000} 'Unknown 21',
+            {0x00400000} 'Unknown 22',
+            {0x00800000} 'Unknown 23',
+            {0x01000000} 'Unknown 24',
+            {0x02000000} 'Uses Default Quest Expire Timer',
+            {0x04000000} 'Unknown 26',
+            {0x08000000} 'Event Quest',
+            {0x10000000} 'Raid Quest',
+            {0x20000000} 'Unknown 29',
+            {0x40000000} 'Unknown 30',
+            {0x80000000} 'Unknown 31'
+          ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
+          wbInteger('Flags', itU64, wbFlags([
+            {0x00000001} 'Start Game Enabled',
+            {0x00000002} 'Completed',
+            {0x00000004} 'Add Idle Topic To Hello',
+            {0x00000008} 'Allow repeated stages',
+            {0x00000010} 'Starts Enabled',
+            {0x00000020} 'Displayed In HUD',
+            {0x00000040} 'Failed',
+            {0x00000080} 'Stage Wait',
+            {0x00000100} 'Run Once',
+            {0x00000200} 'Exclude from dialogue export',
+            {0x00000400} 'Warn on alias fill failure',
+            {0x00000800} 'Active',
+            {0x00001000} 'Repeats Conditions',
+            {0x00002000} 'Keep Instance',
+            {0x00004000} 'Want Dormant',
+            {0x00008000} 'Has Dialogue Data',
+            {0x00010000} 'Instanced Quest',
+            {0x00020000} 'Unknown 17',
+            {0x00040000} 'Unknown 18',
+            {0x00080000} 'Holotape Container Quest',
+            {0x00100000} 'Unknown 20',
+            {0x00200000} 'Unknown 21',
+            {0x00400000} 'Unknown 22',
+            {0x00800000} 'Unknown 23',
+            {0x01000000} 'Unknown 24',
+            {0x02000000} 'Uses Default Quest Expire Timer',
+            {0x04000000} 'Unknown 26',
+            {0x08000000} 'Event Quest',
+            {0x10000000} 'Raid Quest',
+            {0x20000000} 'Unknown 29',
+            {0x40000000} 'Unknown 30',
+            {0x80000000} 'Unknown 31'
+          ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
+        ]),
         wbInteger('Priority',itU8), //0xE8
         wbUnused(3),
         wbFloat('Delay Time'), //0xE0
@@ -14106,10 +14164,10 @@ begin
           'Daily Ops',
           'Expedition',
           'Module',
-          'Caravan'
+          'Caravan',
+          'Raid'
         ])),  //0xE9
-        wbUnused(3),
-        wbUnknown
+        wbUnused(3)
       ]),
       wbStruct(DNAM, 'General', [
         wbInteger('Flags', itU16, wbFlags([
@@ -14999,7 +15057,9 @@ begin
         'Sphere',
         'Plane',
         'Line',
-        'Ellipsoid'
+        'Ellipsoid',
+        '',
+        'Cylinder'
       ]))
     ]),
 
@@ -17576,7 +17636,7 @@ begin
         {0x08000000} 'Unknown 28',
         {0x10000000} 'Unknown 29',
         {0x20000000} 'Unknown 30',
-        {0x40000000} 'Unknown 31',
+        {0x40000000} 'Has Overheating',
         {0x80000000} 'Unknown 32'
       ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Capacity', itU16),
@@ -17626,7 +17686,13 @@ begin
         wbFloat('Color Remapping Index')
       ]),
       wbFromVersion(146, wbInteger('Health',itU32)),
-      wbFromVersion(201, wbUnknown)
+      wbFromVersion(201, wbByteArray('Unknown', 8)),
+      wbFromVersion(199, wbStruct('Overheat Rate', [
+        wbFloat('Rate Up'),
+        wbFloat('Rate Down')
+      ])),
+      wbFromVersion(204, wbUnknown)
+      //wbFromVersion(242, wbByteArray('Unknown', 4))
     ]),
     wbStruct(FNAM, '', [
       wbFloat('Animation Fire Seconds'),
