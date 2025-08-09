@@ -4597,7 +4597,7 @@ begin
       wbArray(XWCU, 'Velocities',
         wbStruct('Current', [
           wbVec3('Velocity'),
-          wbInteger('Unknown', itU32)
+          wbUnknown(4)
         ])
       ).IncludeFlag(dfCollapsed, wbCollapseOther)
        .IncludeFlag(dfNotAlignable)
@@ -10065,7 +10065,7 @@ begin
       wbArray(XWCU, 'Velocities',
         wbStruct('Current', [
           wbVec3('Velocity'),
-          wbInteger('Unknown', itU32)
+          wbUnknown(4)
         ])
       ).IncludeFlag(dfCollapsed, wbCollapseOther)
        .IncludeFlag(dfNotAlignable)
