@@ -24,6 +24,9 @@ var
   _FormVersionDeciders : array of TwbUnionDecider;
   _RecordSizeDeciders : array of TwbUnionDecider;
 
+  wbIdxAddonNode: TwbNamedIndex;
+  wbIdxCollisionLayer: TwbNamedIndex;
+
   wbActorImpactMaterialEnum: IwbEnumDef;
   wbAggressionEnum: IwbEnumDef;
   wbAlignmentEnum: IwbEnumDef;
@@ -5384,7 +5387,26 @@ begin
         .SetSummaryPassthroughMaxDepth(1)
         .IncludeFlag(dfCollapsed, wbCollapseModelInfoTextures),
 
-      wbArray('Addons', wbInteger('Addon', itU32), wbModelInfoAddonCounter)
+      wbArray('Addons',
+        wbInteger('Addon', itU32)
+          .SetLinksToCallback(function(const aElement: IwbElement): IwbElement
+          begin
+            Result := nil;
+            if not Assigned(aElement) then
+              Exit;
+
+            var lAddonNodeIndex := aElement.NativeValue;
+            if not VarIsOrdinal(lAddonNodeIndex) then
+              Exit;
+
+            var lFile := aElement._File;
+            if not Assigned(lFile) then
+              Exit;
+
+            Result := lFile.RecordFromIndexByKey[wbIdxAddonNode, lAddonNodeIndex];
+          end)
+         .SetToStr(wbToStringFromLinksToMainRecordName),
+      wbModelInfoAddonCounter)
         .SetSummaryPassthroughMaxLength(80)
         .SetSummaryPassthroughMaxDepth(1)
         .IncludeFlag(dfCollapsed, wbCollapseModelInfoAddons),
@@ -5807,6 +5829,9 @@ end;
 {>>> Common Definitions <<<}
 procedure DefineCommon;
 begin
+  wbIdxAddonNode := wbNamedIndex('AddonNode', True);
+  wbIdxCollisionLayer := wbNamedIndex('CollisionLayer', True);
+
   wbActorImpactMaterialEnum :=
     wbEnum([
       {0}  'Stone',

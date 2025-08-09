@@ -2922,8 +2922,6 @@ begin
 
   var wbIdxAVMByType : TArray<TwbNamedIndex> := [-1, wbIdxSimpleGroup, wbIdxComplexGroup, wbIdxModulation];
 
-  var wbIdxCollisionLayer := wbNamedIndex('CollisionLayer', True);
-
   var wbIdxStarID := wbNamedIndex('StarID', True);
 
   var wbNull := wbUnused(-255);
@@ -10352,7 +10350,7 @@ begin
     wbODTYReq,
     wbBaseFormComponents,
     wbGenericModel(True),
-    wbInteger(DATA, 'Node Index', itS32, nil, cpNormal, True),
+    wbInteger(DATA, 'Index', itU32).SetRequired,
     wbFormIDCk(LNAM, 'Light', [LIGH]),
     wbStruct(PSDF, 'Reflection', [
       wbREFLBETH,
@@ -10374,8 +10372,18 @@ begin
         'Always Loaded',
         'Master Particle System and Always Loaded'
       ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
-    ], cpNormal, True)
-  ]);
+    ]).SetRequired
+  ]).SetBuildIndexKeys(procedure(const aMainRecord: IwbMainRecord; var aIndexKeys: TwbIndexKeys)
+    begin
+      if not Assigned(aMainRecord) then
+        Exit;
+
+      var lDATA := aMainRecord.ElementNativeValues[DATA];
+      if not VarIsOrdinal(lDATA) then
+        Exit;
+
+      aIndexKeys.Keys[wbIdxAddonNode] := lDATA;
+    end);
 
   {subrecords checked against Starfield.esm}
   wbRecord(AVIF, 'Actor Value Information',
@@ -12140,18 +12148,17 @@ begin
     wbString(MNAM, 'Name', 0, cpNormal, True),
 //    wbInteger(INTV, 'Interactables Count', itU32, nil, cpNormal, True),
     wbArrayS(CNAM, 'Collides With', wbFormIDCk('Forms', [COLL]), 0, cpNormal, False)
-  ])
-  .SetBuildIndexKeys(procedure(const aMainRecord: IwbMainRecord; var aIndexKeys: TwbIndexKeys)
-   begin
-     if not Assigned(aMainRecord) then
-       Exit;
+  ]).SetBuildIndexKeys(procedure(const aMainRecord: IwbMainRecord; var aIndexKeys: TwbIndexKeys)
+     begin
+       if not Assigned(aMainRecord) then
+         Exit;
 
-     var lBNAM := aMainRecord.ElementNativeValues[BNAM];
-     if not VarIsOrdinal(lBNAM) then
-       Exit;
+       var lBNAM := aMainRecord.ElementNativeValues[BNAM];
+       if not VarIsOrdinal(lBNAM) then
+         Exit;
 
-     aIndexKeys.Keys[wbIdxCollisionLayer] := lBNAM;
-   end) ;
+       aIndexKeys.Keys[wbIdxCollisionLayer] := lBNAM;
+     end);
 
   {subrecords checked against Starfield.esm}
   wbRecord(CLFM, 'Color',

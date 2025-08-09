@@ -8419,8 +8419,9 @@ begin
     wbEDID,
     wbOBND(True),
     wbGenericModel,
-    wbInteger(DATA, 'Node Index', itS32, nil, cpNormal, True)
-      .SetDefaultEditValue('284'),
+    wbInteger(DATA, 'Index', itU32)
+      .SetDefaultEditValue('284')
+      .SetRequired,
     wbFormIDCk(SNAM, 'Sound', [SNDR]),
     wbFormIDCk(LNAM, 'Light', [LIGH]),
     wbStruct(DNAM, 'Data', [
@@ -8431,8 +8432,18 @@ begin
         'Always Loaded',
         'Master Particle System and Always Loaded'
       ]))
-    ], cpNormal, True)
-  ]);
+    ]).SetRequired
+  ]).SetBuildIndexKeys(procedure(const aMainRecord: IwbMainRecord; var aIndexKeys: TwbIndexKeys)
+    begin
+      if not Assigned(aMainRecord) then
+        Exit;
+
+      var lDATA := aMainRecord.ElementNativeValues[DATA];
+      if not VarIsOrdinal(lDATA) then
+        Exit;
+
+      aIndexKeys.Keys[wbIdxAddonNode] := lDATA;
+    end);
 
   wbRecord(AVIF, 'Actor Value Information', [
     wbEDID,
@@ -10145,7 +10156,17 @@ begin
     wbString(MNAM, 'Name', 0, cpNormal, True),
     wbInteger(INTV, 'Interactables Count', itU32, nil, cpNormal, True),
     wbArrayS(CNAM, 'Collides With', wbFormIDCk('Forms', [COLL]), 0, cpNormal, False)
-  ]);
+  ]).SetBuildIndexKeys(procedure(const aMainRecord: IwbMainRecord; var aIndexKeys: TwbIndexKeys)
+     begin
+       if not Assigned(aMainRecord) then
+         Exit;
+
+       var lBNAM := aMainRecord.ElementNativeValues[BNAM];
+       if not VarIsOrdinal(lBNAM) then
+         Exit;
+
+       aIndexKeys.Keys[wbIdxCollisionLayer] := lBNAM;
+     end);
 
   wbRecord(CLFM, 'Color',
     wbFlags(wbFlagsList([
@@ -12213,7 +12234,24 @@ begin
     wbFormIDCk(XLCN, 'Persist Location', [LCTN]),
 
     {>>> COLL form Index value <<<}
-    wbInteger(XTRI, 'Collision Layer', itU32),
+    wbInteger(XTRI, 'Collision Layer', itU32)
+      .SetLinksToCallbackOnValue(function(const aElement: IwbElement): IwbElement
+      begin
+        Result := nil;
+        if not Assigned(aElement) then
+          Exit;
+
+        var lCollisionLayerIndex := aElement.NativeValue;
+        if not VarIsOrdinal(lCollisionLayerIndex) then
+          Exit;
+
+        var lFile := aElement._File;
+        if not Assigned(lFile) then
+          Exit;
+
+        Result := lFile.RecordFromIndexByKey[wbIdxCollisionLayer, lCollisionLayerIndex];
+      end)
+      .SetToStr(wbToStringFromLinksToMainRecordName),
 
     {--- Lock ---}
     wbStruct(XLOC, 'Lock Data', [
