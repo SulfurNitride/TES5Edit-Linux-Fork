@@ -6692,14 +6692,14 @@ begin
     wbFloat(XCLW, 'Water Height', cpNormal, False, 1, -1, nil, nil, 0, wbCELLXCLWGetConflictPriority),
     wbArrayS(XCLR, 'Regions', wbFormIDCk('Region', [REGN])),
     wbFormIDCk(XLCN, 'Location', [LCTN]),
-    wbRStruct('Water Data', [
-      wbInteger(XWCN, 'Data Count', itU32),
-      wbArray(XWCU, 'Water Velocities', wbStruct('Water Velocity', [
-        wbFloat('X Offset'),
-        wbFloat('Y Offset'),
-        wbFloat('Z Offset'),
-        wbFloat('Unknown')
-      ]), ['Linear','Angular','Unknown'])
+    wbRStruct('Water Current Velocities', [
+      wbInteger(XWCN, 'Velocity Count', itU32, nil, cpBenign),
+      wbArray(XWCU, 'Velocities',
+        wbStruct('Current', [
+          wbVec3('Velocity'),
+          wbUnknown(4)
+        ])
+      ).SetCountPathOnValue(XWCN, False)
     ]),
     wbFormIDCk(XCWT, 'Water', [WATR]),
 
@@ -12170,14 +12170,14 @@ begin
     wbFormIDCk(XMBR, 'MultiBound Reference', [REFR]),
 
     {--- Placed Water ---}
-    wbRStruct('Water Data', [
-      wbInteger(XWCN, 'Data Count', itU32),
-      wbArray(XWCU, 'Water Velocities', wbStruct('Water Velocity', [
-        wbFloat('X Offset'),
-        wbFloat('Y Offset'),
-        wbFloat('Z Offset'),
-        wbFloat('Unknown')
-      ]), ['Linear','Angular','Unknown'])
+    wbRStruct('Water Current Velocities', [
+      wbInteger(XWCN, 'Velocity Count', itU32, nil, cpBenign),
+      wbArray(XWCU, 'Velocities',
+        wbStruct('Current', [
+          wbVec3('Velocity'),
+          wbUnknown(4)
+        ])
+      ).SetCountPathOnValue(XWCN, False)
     ]),
 
     wbFormIDCk(XASP, 'Acoustic Restriction', [REFR]),
