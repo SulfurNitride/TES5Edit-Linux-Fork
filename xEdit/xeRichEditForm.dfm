@@ -25,7 +25,6 @@ object frmRichEdit: TfrmRichEdit
     Anchors = [akTop, akRight]
     Caption = '&Zoom:'
     FocusControl = tbrZoom
-    ExplicitLeft = 669
   end
   object btnOK: TButton
     Left = 777
@@ -37,8 +36,6 @@ object frmRichEdit: TfrmRichEdit
     Enabled = False
     ModalResult = 1
     TabOrder = 5
-    ExplicitLeft = 773
-    ExplicitTop = 581
   end
   object cbDontShowAgain: TCheckBox
     Left = 568
@@ -63,7 +60,6 @@ object frmRichEdit: TfrmRichEdit
     ShowSelRange = False
     TabOrder = 2
     OnChange = tbrZoomChange
-    ExplicitLeft = 698
   end
   object pnlMain: TPanel
     AlignWithMargins = True
@@ -76,8 +72,6 @@ object frmRichEdit: TfrmRichEdit
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 3
-    ExplicitWidth = 854
-    ExplicitHeight = 544
     object splTOC: TJvSplitter
       Left = 185
       Top = 0
@@ -87,8 +81,6 @@ object frmRichEdit: TfrmRichEdit
       ResizeStyle = rsUpdate
       Visible = False
       OnMoved = splTOCMoved
-      ExplicitLeft = 1000
-      ExplicitHeight = 536
     end
     object reMain: TJvRichEdit
       Left = 188
@@ -109,8 +101,6 @@ object frmRichEdit: TfrmRichEdit
       StreamFormat = sfRichText
       TabOrder = 1
       WantReturns = False
-      ExplicitWidth = 666
-      ExplicitHeight = 544
     end
     object pnlTOC: TPanel
       Left = 0
@@ -123,7 +113,6 @@ object frmRichEdit: TfrmRichEdit
       ShowHint = True
       TabOrder = 0
       Visible = False
-      ExplicitHeight = 544
       object vstTOC: TVirtualStringTree
         Left = 0
         Top = 0
@@ -140,7 +129,6 @@ object frmRichEdit: TfrmRichEdit
         OnCollapsing = vstTOCCollapsing
         OnGetText = vstTOCGetText
         OnNodeDblClick = vstTOCNodeDblClick
-        ExplicitHeight = 544
         Columns = <>
       end
     end
@@ -158,7 +146,6 @@ object frmRichEdit: TfrmRichEdit
     TabOrder = 1
     Text = ''
     OnKeyPress = edSearchKeyPress
-    ExplicitWidth = 537
   end
   object btnTOC: TButton
     Left = 8

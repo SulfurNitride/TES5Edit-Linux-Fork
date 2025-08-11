@@ -4599,7 +4599,8 @@ begin
           wbVec3('Velocity'),
           wbUnknown(4)
         ])
-      ).IncludeFlag(dfCollapsed, wbCollapseOther)
+      ).SetCountPathOnValue([XWCN, XWCS], False)
+       .IncludeFlag(dfCollapsed, wbCollapseOther)
        .IncludeFlag(dfNotAlignable)
     ]),
     wbFormIDCk(XCWT, 'Water', [WATR]),
@@ -10067,7 +10068,8 @@ begin
           wbVec3('Velocity'),
           wbUnknown(4)
         ])
-      ).IncludeFlag(dfCollapsed, wbCollapseOther)
+      ).SetCountPathOnValue([XWCN, XWCS], False)
+       .IncludeFlag(dfCollapsed, wbCollapseOther)
        .IncludeFlag(dfNotAlignable)
     ]),
     wbVec3(XCVL,'Water Current Linear Velocity'),

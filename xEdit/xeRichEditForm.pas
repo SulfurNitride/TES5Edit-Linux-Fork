@@ -86,7 +86,6 @@ procedure TfrmRichEdit.BuildTOC;
 var
   TD       : ITextDocument;
   TR       : ITextRange;
-  i        : Integer;
   LastEnd  : Integer;
   LastNode : PVirtualNode;
   LastTR   : ITextRange;
@@ -108,7 +107,7 @@ begin
     LastTR := nil;
 
     LastEnd := 0;
-    i := TR.MoveEnd(tomCharFormat, 1);
+    TR.MoveEnd(tomCharFormat, 1);
     while TR.End_ > LastEnd do begin
       LastEnd := TR.End_;
 
@@ -132,7 +131,7 @@ begin
           LastTR := NewTR;
         end;
       TR.Start := TR.End_;
-      i := TR.MoveEnd(tomCharFormat, 1);
+      TR.MoveEnd(tomCharFormat, 1);
     end;
 
     vstTOC.FullExpand;

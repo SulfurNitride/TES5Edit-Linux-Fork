@@ -4213,26 +4213,24 @@ begin
 end;
 
 function wbGMSTUnionDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
-var
-  EDID : IwbRecord;
-  S    : string;
 begin
+  Result := 1; //IntS32 is the most "harmless"
   if Assigned(aElement) then begin;
-    EDID := aElement.Container.RecordBySignature['EDID'];
-    if Assigned(EDID) then begin
-      S := EDID.Value;
-      if Length(S) > 0 then begin
-        case s[1] of
+    var lEDID := aElement.Container.RecordBySignature['EDID'];
+    if Assigned(lEDID) then begin
+      var lEditorID := lEDID.Value;
+      if Length(lEditorID) > 0 then begin
+        case lEditorID[1] of
           's': Result := 0; {String} {>>> Localization Strings <<<}
           'i': Result := 1; {intS32}
           'f': Result := 2; {Float}
         end;
         if wbGameMode >= gmTES5 then
-        case s[1] of
+        case lEditorID[1] of
           'b': Result := 3; {Boolean}
         end;
         if (wbGameMode in [gmFO76, gmSF1]) then
-        case s[1] of
+        case lEditorID[1] of
           'u': Result := 4; {Uint32}
         end;
       end;

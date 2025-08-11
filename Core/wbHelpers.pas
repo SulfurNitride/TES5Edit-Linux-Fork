@@ -16,6 +16,7 @@ uses
   Classes,
   Windows,
   System.UITypes,
+  System.AnsiStrings,
   SysUtils,
   Graphics,
   Forms,

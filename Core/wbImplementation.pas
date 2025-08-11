@@ -15087,21 +15087,22 @@ begin
     if not Supports(srValueDef, IwbArrayDef, lArrayDef) then
       Exit;
 
-  var lCountPath := lArrayDef.CountPath;
+  for var lCountPath in lArrayDef.CountPaths do
+  begin
+    if lCountPath = '' then
+      Continue;
 
-  if lCountPath = '' then
-    Exit;
+    var lContainer := GetContainer as IwbContainerElementRef;
+    if not Assigned(lContainer) then
+      Continue;
 
-  var lContainer := GetContainer as IwbContainerElementRef;
-  if not Assigned(lContainer) then
-    Exit;
+    //this way will prevent the creating of the Elements along the path if they don't already exist
+    var lCounterElement := lContainer.ElementByPath[lCountPath];
+    if not Assigned(lCounterElement) then
+      Continue;
 
-  //this way will prevent the creating of the Elements along the path if they don't already exist
-  var lCounterElement := lContainer.ElementByPath[lCountPath];
-  if not Assigned(lCounterElement) then
-    Exit;
-
-  lCounterElement.NativeValue := 0;
+    lCounterElement.NativeValue := 0;
+  end;
 end;
 
 procedure TwbSubRecord.BuildRef;
@@ -16270,29 +16271,29 @@ begin
     if not Supports(srValueDef, IwbArrayDef, lArrayDef) then
       Exit;
 
-  var lCountPath := (lArrayDef as IwbArrayDef).CountPath;
+  for var lCountPath in (lArrayDef as IwbArrayDef).CountPaths do begin
+    if lCountPath = '' then
+      Continue;
 
-  if lCountPath = '' then
-    Exit;
+    var lContainer := GetContainer as IwbContainerElementRef;
+    if not Assigned(lContainer) then
+      Continue;
 
-  var lContainer := GetContainer as IwbContainerElementRef;
-  if not Assigned(lContainer) then
-    Exit;
+    var lElementCount := GetElementCount;
 
-  var lElementCount := GetElementCount;
+    if lElementCount > 0 then begin
+      //setting it this way will try to create the elements along the path if necessary
+      lContainer.ElementNativeValues[lCountPath] := lElementCount;
+      Continue;
+    end;
 
-  if lElementCount > 0 then begin
-    //setting it this way will try to create the elements along the path if necessary
-    lContainer.ElementNativeValues[lCountPath] := lElementCount;
-    Exit;
+    //this way will prevent the creating of the Elements along the path if they don't already exist
+    var lCounterElement := lContainer.ElementByPath[lCountPath];
+    if not Assigned(lCounterElement) then
+      Continue;
+
+    lCounterElement.NativeValue := lElementCount;
   end;
-
-  //this way will prevent the creating of the Elements along the path if they don't already exist
-  var lCounterElement := lContainer.ElementByPath[lCountPath];
-  if not Assigned(lCounterElement) then
-    Exit;
-
-  lCounterElement.NativeValue := lElementCount;
 end;
 
 procedure TwbSubRecord.WriteToStreamInternal(aStream: TStream; aResetModified: TwbResetModified);
@@ -20430,21 +20431,21 @@ begin
 
   inherited;
 
-  var lCountPath := arcDef.CountPath;
+  for var lCountPath in arcDef.CountPaths do begin
+    if lCountPath = '' then
+      Continue;
 
-  if lCountPath = '' then
-    Exit;
+    var lContainer := GetContainer as IwbContainerElementRef;
+    if not Assigned(lContainer) then
+      Continue;
 
-  var lContainer := GetContainer as IwbContainerElementRef;
-  if not Assigned(lContainer) then
-    Exit;
+    //this way will prevent the creating of the Elements along the path if they don't already exist
+    var lCounterElement := lContainer.ElementByPath[lCountPath];
+    if not Assigned(lCounterElement) then
+      Continue;
 
-  //this way will prevent the creating of the Elements along the path if they don't already exist
-  var lCounterElement := lContainer.ElementByPath[lCountPath];
-  if not Assigned(lCounterElement) then
-    Exit;
-
-  lCounterElement.NativeValue := 0;
+    lCounterElement.NativeValue := 0;
+  end;
 end;
 
 function TwbSubRecordArray.CanAssignInternal(aIndex: Integer; const aElement: IwbElement; aCheckDontShow: Boolean): Boolean;
@@ -20798,29 +20799,29 @@ var
 begin
   SelfRef := Self;
 
-  var lCountPath := arcDef.CountPath;
+  for var lCountPath in arcDef.CountPaths do begin
+    if lCountPath = '' then
+      Continue;
 
-  if lCountPath = '' then
-    Exit;
+    var lContainer := GetContainer as IwbContainerElementRef;
+    if not Assigned(lContainer) then
+      Continue;
 
-  var lContainer := GetContainer as IwbContainerElementRef;
-  if not Assigned(lContainer) then
-    Exit;
+    var lElementCount := GetElementCount;
 
-  var lElementCount := GetElementCount;
+    if lElementCount > 0 then begin
+      //setting it this way will try to create the elements along the path if necessary
+      lContainer.ElementNativeValues[lCountPath] := lElementCount;
+      Continue;
+    end;
 
-  if lElementCount > 0 then begin
-    //setting it this way will try to create the elements along the path if necessary
-    lContainer.ElementNativeValues[lCountPath] := lElementCount;
-    Exit;
+    //this way will prevent the creating of the Elements along the path if they don't already exist
+    var lCounterElement := lContainer.ElementByPath[lCountPath];
+    if not Assigned(lCounterElement) then
+      Continue;
+
+    lCounterElement.NativeValue := lElementCount;
   end;
-
-  //this way will prevent the creating of the Elements along the path if they don't already exist
-  var lCounterElement := lContainer.ElementByPath[lCountPath];
-  if not Assigned(lCounterElement) then
-    Exit;
-
-  lCounterElement.NativeValue := lElementCount;
 end;
 
 procedure TwbSubRecordArray.UpdateNameSuffixes;
@@ -21867,21 +21868,21 @@ begin
 
   inherited;
 
-  var lCountPath := (vbValueDef as IwbArrayDef).CountPath;
+  for var lCountPath in (vbValueDef as IwbArrayDef).CountPaths do begin
+    if lCountPath = '' then
+      Continue;
 
-  if lCountPath = '' then
-    Exit;
+    var lContainer := GetContainer as IwbContainerElementRef;
+    if not Assigned(lContainer) then
+      Continue;
 
-  var lContainer := GetContainer as IwbContainerElementRef;
-  if not Assigned(lContainer) then
-    Exit;
+    //this way will prevent the creating of the Elements along the path if they don't already exist
+    var lCounterElement := lContainer.ElementByPath[lCountPath];
+    if not Assigned(lCounterElement) then
+      Continue;
 
-  //this way will prevent the creating of the Elements along the path if they don't already exist
-  var lCounterElement := lContainer.ElementByPath[lCountPath];
-  if not Assigned(lCounterElement) then
-    Exit;
-
-  lCounterElement.NativeValue := 0;
+    lCounterElement.NativeValue := 0;
+  end;
 end;
 
 function TwbArray.CanAssignInternal(aIndex: Integer; const aElement: IwbElement; aCheckDontShow: Boolean): Boolean;
@@ -22174,29 +22175,29 @@ var
 begin
   SelfRef := Self;
 
-  var lCountPath := (vbValueDef as IwbArrayDef).CountPath;
+  for var lCountPath in (vbValueDef as IwbArrayDef).CountPaths do begin
+    if lCountPath = '' then
+      Continue;
 
-  if lCountPath = '' then
-    Exit;
+    var lContainer := GetContainer as IwbContainerElementRef;
+    if not Assigned(lContainer) then
+      Continue;
 
-  var lContainer := GetContainer as IwbContainerElementRef;
-  if not Assigned(lContainer) then
-    Exit;
+    var lElementCount := GetElementCount;
 
-  var lElementCount := GetElementCount;
+    if lElementCount > 0 then begin
+      //setting it this way will try to create the elements along the path if necessary
+      lContainer.ElementNativeValues[lCountPath] := lElementCount;
+      Continue;
+    end;
 
-  if lElementCount > 0 then begin
-    //setting it this way will try to create the elements along the path if necessary
-    lContainer.ElementNativeValues[lCountPath] := lElementCount;
-    Exit;
+    //this way will prevent the creating of the Elements along the path if they don't already exist
+    var lCounterElement := lContainer.ElementByPath[lCountPath];
+    if not Assigned(lCounterElement) then
+      Continue;
+
+    lCounterElement.NativeValue := lElementCount;
   end;
-
-  //this way will prevent the creating of the Elements along the path if they don't already exist
-  var lCounterElement := lContainer.ElementByPath[lCountPath];
-  if not Assigned(lCounterElement) then
-    Exit;
-
-  lCounterElement.NativeValue := lElementCount;
 end;
 
 { TwbStruct }

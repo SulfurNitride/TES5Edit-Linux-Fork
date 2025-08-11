@@ -8,7 +8,7 @@
         <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <ProjectGuid>{B6CEA87D-C0BE-41A6-AA6E-05E30F0DA602}</ProjectGuid>
         <ProjectName Condition="'$(ProjectName)'==''">Sniff</ProjectName>
-        <ProjectVersion>20.2</ProjectVersion>
+        <ProjectVersion>20.3</ProjectVersion>
         <TargetedPlatforms>3</TargetedPlatforms>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
@@ -145,232 +145,290 @@
         <DCCReference Include="Sniff\SniffProcessor.pas"/>
         <DCCReference Include="Sniff\frmMain.pas">
             <Form>FormMain</Form>
+            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Sniff\frMessages.pas">
             <Form>FrameMessages</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\frmVertexPaintHelper.pas">
             <Form>FormVertexPaintHelper</Form>
+            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcAddBoundingBox.pas">
             <Form>FrameAddBoundingBox</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcAddFacialAnim.pas">
             <Form>FrameAddFacialAnim</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcAddHeadtrackingAnim.pas">
             <Form>FrameAddHeadtrackingAnim</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcAddLODNode.pas">
             <Form>FrameAddLODNode</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcAddRootCollisionNode.pas">
             <Form>FrameAddRootCollisionNode</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcAdjustTransform.pas">
             <Form>FrameAdjustTransform</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcAnalyzeMesh.pas">
             <Form>FrameAnalyzeMesh</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcAnimQuadraticToLinear.pas">
             <Form>FrameAnimQuadraticToLinear</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcAnimSkeletonDeath.pas">
             <Form>FrameAnimSkeletonDeath</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcApplyTransform.pas">
             <Form>FrameApplyTransform</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcAttachParent.pas">
             <Form>FrameAttachParent</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcChangePartitionSlot.pas">
             <Form>FrameChangePartitionSlot</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcCheckForErrors.pas">
             <Form>FrameCheckForErrors</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcConvertFO3Collision.pas">
             <Form>FrameConvertFO3Collision</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcConvertRootNode.pas">
             <Form>FrameConvertRootNode</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcConvertShader30.pas">
             <Form>FrameConvertShader30</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcCopyControlledBlocks.pas">
             <Form>FrameCopyControlledBlocks</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcCopyGeometryBlocks.pas">
             <Form>FrameCopyGeometryBlocks</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcCopyPriorities.pas">
             <Form>FrameCopyPriorities</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcDismemberSkin.pas">
             <Form>FrameDismemberSkin</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcFindDrawCalls.pas">
             <Form>FrameFindDrawCalls</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcFindSeveralStrips.pas">
             <Form>FrameFindSeveralStrips</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcFindUVs.pas">
             <Form>FrameFindUVs</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcFixExportedKFAnim.pas">
             <Form>FrameFixExportedKFAnim</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcGroupShapes.pas">
             <Form>FrameGroupShapes</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcHavokSearchMaterial.pas">
             <Form>FrameHavokMaterial</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcHavokSettingsUpdate.pas">
             <Form>FrameHavokSettings</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcInertiaUpdate.pas">
             <Form>Frame1</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcJamAnim.pas">
             <Form>FrameJamAnim</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcJsonConverter.pas">
             <Form>FrameJsonConverter</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcMergeShapes.pas">
             <Form>FrameMergeShapes</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcMoppUpdate.pas">
             <Form>FrameMoppUpdate</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcOptimize.pas">
             <Form>FrameOptimize</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcOptimizeKF.pas">
             <Form>FrameOptimizeKF</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcParallaxUpdate.pas">
             <Form>FrameParallaxUpdate</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcPriorityControlledBlocks.pas">
             <Form>FramePriorityControlledBlocks</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcRagdollConstraintUpdate.pas">
             <Form>FrameRagdollConstraintUpdate</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcRemoveControlledBlocks.pas">
             <Form>FrameRemoveControlledBlocks</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcRemoveNodes.pas">
             <Form>FrameRemoveNodes</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcRemoveUnusedNodes.pas">
             <Form>FrameRemoveUnusedNodes</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcRenameControlledBlocks.pas">
             <Form>FrameRenameControlledBlocks</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcRenameStrings.pas">
             <Form>FrameRenameStrings</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcReplaceAssets.pas">
             <Form>FrameReplaceAssets</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcSetMissingNames.pas">
             <Form>FrameSetMissingNames</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcShaderFlagsUpdate.pas">
             <Form>FrameShaderFlagsUpdate</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcTangents.pas">
             <Form>FrameTangents</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcUniversalFixer.pas">
             <Form>FrameUniversalFixer</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcUniversalTweaker.pas">
             <Form>FrameUniversalTweaker</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcUnskinMesh.pas">
             <Form>FrameUnskinMesh</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcUnweldedVertices.pas">
             <Form>FrameUnweldedVertices</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcUpdateAuthor.pas">
             <Form>FrameUpdateAuthor</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcUpdateBounds.pas">
             <Form>FrameUpdateBounds</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcVertexPaint.pas">
             <Form>FrameVertexPaint</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcWallsReflectionFlag.pas">
             <Form>FrameWallsReflectionFlag</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcWeiExplosion.pas">
             <Form>FrameWeiExplosion</Form>
+            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <BuildConfiguration Include="Base">

@@ -2041,7 +2041,6 @@ var
   Master     : IwbMainRecord;
   REFRs      : TDynMainRecords;
   Count      : Integer;
-  TotalCount : Integer;
   i, j, k, l : Integer;
   NameRec    : IwbContainerElementRef;
   DataRec    : IwbContainerElementRef;
@@ -2485,11 +2484,10 @@ var
   XESPLink            : IwbMainRecord;
   RefFormID           : TwbFormID;
   ErrCode             : Cardinal;
-  Count, TreesCount   : Integer;
+  TreesCount   : Integer;
   TreesDupCount       : Integer;
-  TotalCount          : Integer;
   LodLevel, ChunkSize : Integer;
-  i, j, k, l          : Integer;
+  i, j, k             : Integer;
   Lst                 : TwbLodTES5TreeList;
   LodSet              : TwbLodSettings;
   Res                 : TDynResources;
@@ -2498,7 +2496,7 @@ var
   slLODMeshes, slLODTextures: TStringList;
   RefPos, RefRot      : TwbVector;
   RefCell, RefBlock, ChunkSW, ChunkNE: TwbGridCell;
-  Scale, UVRange, LargeRefMinSize: Single;
+  Scale, UVRange: Single;
   LOD4                : array of TwbLodTES5TreeBlock;
   bChunk, bArea, bBuildAtlas, bTrees3D : Boolean;
   Bytes               : TBytes;

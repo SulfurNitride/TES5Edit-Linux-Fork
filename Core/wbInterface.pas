@@ -2636,7 +2636,8 @@ type
     function SetSummaryPassthroughMaxDepthOnValue(aDepth: Integer): IwbSubRecordWithArrayDef;
     function SetSummaryDelimiterOnValue(const aDelimiter: string): IwbSubRecordWithArrayDef;
     function SetDefaultEditValuesOnValue(const aValues: array of string): IwbSubRecordWithArrayDef;
-    function SetCountPathOnValue(const aValue: string; aUseForCountCallback: Boolean): IwbSubRecordWithArrayDef;
+    function SetCountPathOnValue(const aValue: string; aUseForCountCallback: Boolean): IwbSubRecordWithArrayDef; overload;
+    function SetCountPathOnValue(const aValues: array of string; aUseForCountCallback: Boolean): IwbSubRecordWithArrayDef; overload;
     function SetCountFromEnumOnValue(const aEnum: IwbEnumDef): IwbSubRecordWithArrayDef;
     function SetWronglyAssumedFixedSizePerElementOnValue(aSize: Integer): IwbSubRecordWithArrayDef;
   end;
@@ -2653,10 +2654,11 @@ type
     ['{67943BAC-B558-4112-8DBC-C94A44E0B1D1}']
     function GetElement: IwbRecordMemberDef;
     function GetSorted(const aContainer: IwbContainer): Boolean;
-    function GetCountPath: string;
+    function GetCountPaths: TArray<string>;
     function GetCount: Integer;
 
-    function SetCountPath(const aValue: string): IwbSubRecordArrayDef;
+    function SetCountPath(const aValue: string): IwbSubRecordArrayDef; overload;
+    function SetCountPath(const aValues: array of string): IwbSubRecordArrayDef; overload;
 
     function SetDefaultEditValues(const aValues: array of string): IwbSubRecordArrayDef;
     function GetDefaultEditValues: TwbStringArray;
@@ -2664,7 +2666,7 @@ type
     property Element: IwbRecordMemberDef read GetElement;
     property Count: Integer read GetCount; //fixed number of elementes if > 0
     property Sorted[const aContainer: IwbContainer]: Boolean read GetSorted;
-    property CountPath: string read GetCountPath;
+    property CountPaths: TArray<string> read GetCountPaths;
     property DefaultEditValues: TwbStringArray read GetDefaultEditValues;
   end;
 
@@ -2811,8 +2813,9 @@ type
     function SetDefaultEditValues(const aValues: array of string): IwbArrayDef;
     function GetDefaultEditValues: TwbStringArray;
 
-    function GetCountPath: string;
-    function SetCountPath(const aValue: string; aUseForCountCallback: Boolean): IwbArrayDef;
+    function GetCountPaths: TArray<string>;
+    function SetCountPath(const aValue: string; aUseForCountCallback: Boolean): IwbArrayDef; overload;
+    function SetCountPath(const aValues: array of string; aUseForCountCallback: Boolean): IwbArrayDef; overload;
 
     function SetShouldInclude(const aCallback: TwbShouldIncludeCallback): IwbArrayDef;
     function ShouldInclude(aBasePtr: Pointer; aEndPtr: Pointer; const aArray: IwbElement): Boolean;
@@ -2850,8 +2853,8 @@ type
     property PrefixCount[aBasePtr: Pointer]: Cardinal  // Value stored in the prefix
       read GetPrefixCount write SetPrefixCount;
 
-    property CountPath: string
-      read GetCountPath;
+    property CountPaths: TArray<string>
+      read GetCountPaths;
   end;
 
   IwbStructDef = interface(IwbValueDef)
@@ -6210,7 +6213,8 @@ type
     function SetSummaryDelimiterOnArray(const aDelimiter: string): IwbSubRecordWithArrayDef;
     function IwbSubRecordWithArrayDef.SetSummaryDelimiterOnValue = SetSummaryDelimiterOnArray;
     function SetDefaultEditValuesOnValue(const aValues: array of string): IwbSubRecordWithArrayDef;
-    function SetCountPathOnValue(const aValue: string; aUseForCountCallback: Boolean): IwbSubRecordWithArrayDef;
+    function SetCountPathOnValue(const aValue: string; aUseForCountCallback: Boolean): IwbSubRecordWithArrayDef; overload;
+    function SetCountPathOnValue(const aValues: array of string; aUseForCountCallback: Boolean): IwbSubRecordWithArrayDef; overload;
     function SetCountFromEnumOnValue(const aEnum: IwbEnumDef): IwbSubRecordWithArrayDef;
     function SetWronglyAssumedFixedSizePerElementOnValue(aSize: Integer): IwbSubRecordWithArrayDef;
 
@@ -6242,7 +6246,7 @@ type
     sraSorted            : Boolean;
     sraIsSorted          : TwbIsSortedCallback;
     sraDefaultEditValues : TwbStringArray;
-    sraCountPath         : string;
+    sraCountPaths        : TArray<string>;
   public
     constructor Clone(const aSource: TwbDef); override;
     constructor Create(aPriority  : TwbConflictPriority;
@@ -6288,13 +6292,14 @@ type
     {---IwbSubRecordArrayDef---}
     function GetElement: IwbRecordMemberDef;
     function GetSorted(const aContainer: IwbContainer): Boolean;
-    function GetCountPath: string;
+    function GetCountPaths: TArray<string>;
     function GetCount: Integer;
 
     function SetDefaultEditValues(const aValues: array of string): IwbSubRecordArrayDef;
     function GetDefaultEditValues: TwbStringArray;
 
-    function SetCountPath(const aValue: string): IwbSubRecordArrayDef;
+    function SetCountPath(const aValue: string): IwbSubRecordArrayDef; overload;
+    function SetCountPath(const aValues: array of string): IwbSubRecordArrayDef; overload;
   end;
 
   TwbSubRecordStructDef = class(TwbRecordMemberDef, IwbSubRecordStructDef, IwbRecordDef)
@@ -7083,7 +7088,7 @@ type
     arCanAddTo          : Boolean;
     arTerminated        : Boolean;
     arDefaultEditValues : TwbStringArray;
-    arCountPath         : string;
+    arCountPaths        : TArray<string>;
     arShouldInclude     : TwbShouldIncludeCallback;
     arWronglyAssumedFixedSizePerElement: Integer;
 
@@ -7163,8 +7168,9 @@ type
     function SetDefaultEditValues(const aValues: array of string): IwbArrayDef;
     function GetDefaultEditValues: TwbStringArray;
 
-    function GetCountPath: string;
-    function SetCountPath(const aValue: string; aUseForCountCallback: Boolean): IwbArrayDef;
+    function GetCountPaths: TArray<string>;
+    function SetCountPath(const aValue: string; aUseForCountCallback: Boolean): IwbArrayDef; overload;
+    function SetCountPath(const aValues: array of string; aUseForCountCallback: Boolean): IwbArrayDef; overload;
 
     function SetShouldInclude(const aCallback: TwbShouldIncludeCallback): IwbArrayDef;
     function ShouldInclude(aBasePtr: Pointer; aEndPtr: Pointer; const aArray: IwbElement): Boolean;
@@ -11608,11 +11614,43 @@ end;
 
 function TwbSubRecordDef.SetCountPathOnValue(const aValue: string; aUseForCountCallback: Boolean): IwbSubRecordWithArrayDef;
 begin
-  if defIsLocked then
-    Exit(TwbSubRecordDef(Duplicate).SetCountPathOnValue(aValue, aUseForCountCallback));
+  Result := SetCountPathOnValue([aValue], aUseForCountCallback);
+end;
+
+function TwbSubRecordDef.SetCountPathOnValue(const aValues: array of string; aUseForCountCallback: Boolean): IwbSubRecordWithArrayDef;
+begin
+  if defIsLocked then begin
+    var lCountCallback := (srValue as IwbArrayDef).GetCountCallback;
+    if not Assigned(lCountCallback) then begin
+      var lCountPaths := (srValue as IwbArrayDef).GetCountPaths;
+
+      var lDifferent := False;
+      var lOldLength := Length(lCountPaths);
+      var lNewLength := 0;
+
+      for var lIdx := 0 to High(aValues) do
+        if aValues[lIdx] <> '' then begin
+          if (lNewLength >= lOldLength) or (aValues[lIdx] <> lCountPaths[lNewLength]) then begin
+            lDifferent := True;
+            Break;
+          end;
+          Inc(lNewLength);
+        end;
+
+      if not aUseForCountCallback or (lNewLength = 0) then begin
+        if not lDifferent then
+          lDifferent := lNewLength <> lOldLength;
+
+        if not lDifferent then
+          Exit(Self);
+      end;
+    end;
+
+    Exit(TwbSubRecordDef(Duplicate).SetCountPathOnValue(aValues, aUseForCountCallback));
+  end;
 
   Result := Self;
-  srValue := (srValue as IwbArrayDef).SetCountPath(aValue, aUseForCountCallback);
+  srValue := (srValue as IwbArrayDef).SetCountPath(aValues, aUseForCountCallback);
   srValue := (srValue as IwbDefInternal).SetParent(Self, False) as IwbValueDef;
 end;
 
@@ -11864,7 +11902,7 @@ begin
   inherited AfterClone(aSource);
   with aSource as TwbSubRecordArrayDef do begin
     Self.sraDefaultEditValues := sraDefaultEditValues;
-    Self.sraCountPath := sraCountPath;
+    Self.sraCountPaths := Copy(sraCountPaths);
   end;
 end;
 
@@ -11955,9 +11993,9 @@ begin
   Result := sraCount;
 end;
 
-function TwbSubRecordArrayDef.GetCountPath: string;
+function TwbSubRecordArrayDef.GetCountPaths: TArray<string>;
 begin
-  Result := sraCountPath;
+  Result := sraCountPaths;
 end;
 
 function TwbSubRecordArrayDef.GetDefaultEditValues: TwbStringArray;
@@ -12016,11 +12054,43 @@ end;
 
 function TwbSubRecordArrayDef.SetCountPath(const aValue: string): IwbSubRecordArrayDef;
 begin
-  if defIsLocked then
-    Exit(TwbSubRecordArrayDef(Duplicate).SetCountPath(aValue));
+  if aValue = '' then
+    Result := SetCountPath([])
+  else
+    Result := SetCountPath([aValue]);
+end;
+
+function TwbSubRecordArrayDef.SetCountPath(const aValues: array of string): IwbSubRecordArrayDef;
+begin
+  var lDifferent := False;
+
+  var lOldLength := Length(sraCountPaths);
+  var lValuesLength := Length(aValues);
+
+  var lNewCountPaths: TArray<string>;
+  SetLength(lNewCountPaths, lValuesLength);
+  var lNewLength := 0;
+
+  for var lIdx := 0 to Pred(lValuesLength) do
+    if aValues[lIdx] <> '' then begin
+      lNewCountPaths[lNewLength] := aValues[lIdx];
+      if not lDifferent then
+        lDifferent := (lNewLength >= lOldLength) or (lNewCountPaths[lNewLength] <> sraCountPaths[lNewLength]);
+      Inc(lNewLength);
+    end;
+
+  if not lDifferent then
+    lDifferent := lNewLength <> lOldLength;
+
+  if lDifferent then begin
+    if defIsLocked then
+      Exit(TwbSubRecordArrayDef(Duplicate).SetCountPath(aValues));
+
+    SetLength(lNewCountPaths, lNewLength);
+    sraCountPaths := lNewCountPaths;
+  end;
 
   Result := Self;
-  sraCountPath := aValue;
 end;
 
 function TwbSubRecordArrayDef.ToSummaryInternal(aDepth: Integer; const aElement: IwbElement; var aLinksTo: IwbElement): string;
@@ -13650,7 +13720,7 @@ begin
     Self.arSummaryPassthroughMaxLength := arSummaryPassthroughMaxLength;
     Self.arSummaryPassthroughMaxDepth := arSummaryPassthroughMaxDepth;
     Self.arDefaultEditValues := arDefaultEditValues;
-    Self.arCountPath := arCountPath;
+    Self.arCountPaths := Copy(arCountPaths);
     Self.arShouldInclude := arShouldInclude;
     Self.arWronglyAssumedFixedSizePerElement := arWronglyAssumedFixedSizePerElement;
   end;
@@ -13720,9 +13790,9 @@ begin
   Result := arCountCallBack;
 end;
 
-function TwbArrayDef.GetCountPath: string;
+function TwbArrayDef.GetCountPaths: TArray<string>;
 begin
-  Result := arCountPath;
+  Result := arCountPaths;
 end;
 
 function TwbArrayDef.GetDefType: TwbDefType;
@@ -13978,11 +14048,11 @@ begin
               Exit;
             end;
             Inc(Result, Size);
-            if Assigned(aBasePtr) and Assigned(aEndPtr) and (NativeUInt(aEndPtr) < NativeUInt(aBasePtr) + Result) then begin
+            if Assigned(aBasePtr) and Assigned(aEndPtr) and (NativeUInt(aEndPtr) < NativeUInt(aBasePtr) + NativeUInt(Result)) then begin
   //            if Assigned(aBasePtr) and Assigned(aEndPtr) and (aEndPtr<>aBasePtr) then
   //              wbProgressCallback('Found an array with a negative size! (2) '+IntToHex64(Cardinal(aBasePtr)+Result, 8)+
   //                ' > '+IntToHex64(Cardinal(aEndPtr), 8)+'  for '+ndName);
-              Result := NativeUInt(aEndPtr) - NativeUInt(aBasePtr) + Result;
+              Result := NativeUInt(aEndPtr) - NativeUInt(aBasePtr) + NativeUInt(Result);
               Exit;
             end;
             if Assigned(BasePtr) then
@@ -14013,7 +14083,7 @@ begin
         Exit;
       end;
       Result := Size;
-      if Assigned(aBasePtr) and Assigned(aEndPtr) and (NativeUInt(aEndPtr) < NativeUInt(aBasePtr) + Result) then begin
+      if Assigned(aBasePtr) and Assigned(aEndPtr) and (NativeUInt(aEndPtr) < NativeUInt(aBasePtr) + NativeUInt(Result)) then begin
 //        if Assigned(aBasePtr) and Assigned(aEndPtr) and (aEndPtr<>aBasePtr) then
 //          wbProgressCallback('Found a static array with a negative size! (3) '+IntToHex64(Cardinal(aBasePtr)+Result, 8)+
 //            ' > '+IntToHex64(Cardinal(aEndPtr), 8)+'  for '+ndName);
@@ -14121,16 +14191,53 @@ end;
 
 function TwbArrayDef.SetCountPath(const aValue: string; aUseForCountCallback: Boolean): IwbArrayDef;
 begin
-  if arCountPath = aValue then
-    Exit(Self);
+  if aValue = '' then
+    Result := SetCountPath([], aUseForCountCallback)
+  else
+    Result := SetCountPath([aValue], aUseForCountCallback);
+end;
 
-  if defIsLocked then
-    Exit(TwbArrayDef(Duplicate).SetCountPath(aValue, aUseForCountCallback));
+function TwbArrayDef.SetCountPath(const aValues: array of string; aUseForCountCallback: Boolean): IwbArrayDef;
+begin
+  var lDifferent := False;
 
-  Result := Self;
-  arCountPath := aValue;
-  if (arCountPath <> '') and aUseForCountCallback then
-    arCountCallback := _GetCountCallbackForPath(arCountPath);
+  var lOldLength := Length(arCountPaths);
+  var lValuesLength := Length(aValues);
+
+  var lNewCountPaths: TArray<string>;
+  SetLength(lNewCountPaths, lValuesLength);
+  var lNewLength := 0;
+
+  for var lIdx := 0 to Pred(lValuesLength) do
+    if aValues[lIdx] <> '' then begin
+      lNewCountPaths[lNewLength] := aValues[lIdx];
+      if not lDifferent then
+        lDifferent := (lNewLength >= lOldLength) or (lNewCountPaths[lNewLength] <> arCountPaths[lNewLength]);
+      Inc(lNewLength);
+    end;
+
+  var lSetCallback := aUseForCountCallback and (lNewLength > 0);
+
+  lDifferent :=
+       lDifferent
+    or (lNewLength <> lOldLength)
+    or lSetCallback;
+
+  var lSetOn := Self;
+
+  if lDifferent then begin
+    SetLength(lNewCountPaths, lNewLength);
+
+    if defIsLocked then
+      lSetOn := TwbArrayDef(Duplicate);
+
+    lSetOn.arCountPaths := lNewCountPaths;
+
+    if lSetCallback then
+      lSetOn.arCountCallback := _GetCountCallbackForPath(lNewCountPaths[0]);
+  end;
+
+  Result := lSetOn;
 end;
 
 function TwbArrayDef.SetDefaultEditValues(const aValues: array of string): IwbArrayDef;
@@ -14475,7 +14582,7 @@ begin
           Break;
         end;
         Inc(Result, Size);
-        if Assigned(aBasePtr) and Assigned(aEndPtr) and (NativeUInt(aEndPtr) < NativeUInt(aBasePtr)+Result) then begin
+        if Assigned(aBasePtr) and Assigned(aEndPtr) and (NativeUInt(aEndPtr) < NativeUInt(aBasePtr) + NativeUInt(Result)) then begin
 //          if Assigned(aBasePtr) and Assigned(aEndPtr) and (aEndPtr<>aBasePtr) then
 //          wbProgressCallback('Found a struct with a negative size! (2) '+IntToHex64(Cardinal(aBasePtr)+Size, 8)+
 //            ' < '+IntToHex64(Cardinal(aEndPtr), 8)+'  for '+ndName);
@@ -14493,7 +14600,7 @@ begin
           Break;
         end;
         Inc(Result, Size);
-        if Assigned(aBasePtr) and Assigned(aEndPtr) and (NativeUInt(aEndPtr) < NativeUInt(aBasePtr)+Result) then begin
+        if Assigned(aBasePtr) and Assigned(aEndPtr) and (NativeUInt(aEndPtr) < NativeUInt(aBasePtr) + NativeUInt(Result)) then begin
 //          if Assigned(aBasePtr) and Assigned(aEndPtr) and (aEndPtr<>aBasePtr) then
 //            wbProgressCallback('Found a struct with a negative size! (2) '+IntToHex64(Cardinal(aBasePtr)+Result, 8)+
 //              ' > '+IntToHex64(Cardinal(aEndPtr), 8)+'  for '+ndName);
@@ -16792,7 +16899,6 @@ begin
   if Len < GetDefaultSize(aBasePtr, aEndPtr, aElement) then
     Exit(NaN)
   else begin
-    Result := NaN;
     ClearExceptions(False);
     ExceptionMask := GetExceptionMask;
     try
@@ -20455,7 +20561,7 @@ begin
       Element := aElement;
     Result := aMember.Size[aBasePtr, aEndPtr, Element];
     if Result = High(Integer) then Exit;
-    if Assigned(aBasePtr) and Assigned(aEndPtr) and (NativeUInt(aEndPtr) < NativeUInt(aBasePtr)+Result) then begin
+    if Assigned(aBasePtr) and Assigned(aEndPtr) and (NativeUInt(aEndPtr) < NativeUInt(aBasePtr) + NativeUInt(Result)) then begin
 //      if Assigned(aBasePtr) and Assigned(aEndPtr) and (aEndPtr<>aBasePtr) then
 //        wbProgressCallback('Found a union with a negative size! (2) '+IntToHex64(Cardinal(aBasePtr)+Result, 8)+
 //          ' > '+IntToHex64(Cardinal(aEndPtr), 8)+'  for '+ndName);

@@ -902,6 +902,7 @@ type
     procedure SaveModGroupsSelection(const aModGroups: TwbModGroupPtrs);
 
     function FindColors(const s: string; out aColors: TArray<TColor>): Boolean;
+    procedure WndProc(var Message: TMessage); override;
   private
     procedure WMUser(var Message: TMessage); message WM_USER;
     procedure WMUser1(var Message: TMessage); message WM_USER + 1;
@@ -909,7 +910,6 @@ type
     procedure WMUser3(var Message: TMessage); message WM_USER + 3;
     procedure WMUser4(var Message: TMessage); message WM_USER + 4;
     procedure WMUser5(var Message: TMessage); message WM_USER + 5;
-    procedure WndProc(var Message: TMessage); override;
     procedure UpdateTreeLineColor;
   public
     Files: TwbFiles;
@@ -1929,8 +1929,6 @@ var
   WasEnabled                  : Boolean;
   PrevAction                  : string;
 begin
-  Result := True;
-
   sl := TStringList.Create;
   sl.Sorted := True;
   sl.Duplicates := dupIgnore;
@@ -1994,7 +1992,6 @@ end;
 
 function TfrmMain.AddRequiredMasters(const aSourceElement: IwbElement; const aTargetFile: IwbFile; aAsNew: Boolean; aSilent: Boolean = False): Boolean;
 begin
-  Result := True;
   var lRequiredMasters := TStringList.Create;
   try
     lRequiredMasters.Sorted := True;
@@ -3479,7 +3476,6 @@ var
   NodeData     : PNavNodeData;
   CompareFile  : string;
   s            : String;
-  i            : Integer;
 begin
   NodeData := vstNav.GetNodeData(vstNav.FocusedNode);
   if not Assigned(NodeData) then
@@ -4934,28 +4930,17 @@ end;
 
 procedure TfrmMain.DoInit;
 var
-  i, j, k, l, m : Integer;
-  e             : Boolean;
+  i             : Integer;
   s             : string;
-  sl, sl2, sl3  : TStringList;
+  sl            : TStringList;
   ConflictAll   : TConflictAll;
   ConflictThis  : TConflictThis;
 
-  ModGroupFile  : string;
-  MessagePrefix : string;
-  IsOptional    : Boolean;
-  IsRequired    : Boolean;
-  MessageGiven  : Boolean;
-  ValidCRCs     : TDynCardinalArray;
-  FileCRC       : Cardinal;
-  FoundAll      : Boolean;
   saveExt       : string;
   coSaveExt     : string;
   R             : TSearchRec;
-  Rect          : TRect;
   frmFileSelect : TfrmFileSelect;
   Modules       : TwbModuleInfos;
-  Module        : PwbModuleInfo;
   AgeDateTime   : TDateTime;
 
   Stream        : TStream;
@@ -6141,7 +6126,7 @@ begin
           if i > 0 then begin
             var Elements := Copy(s, Succ(j), Pred(i - j)).Split([',']).ForEach(Trim);
             if Length(Elements) in [3, 4] then begin
-              var Valid := False;
+              var Valid: Boolean;
               var ColorBytes: TColorBytes;
               for var k := 0 to 2 do begin
                 Valid := TryStrToInt(Elements[k], ColorBytes[k]) and InRange(ColorBytes[k], 0, 255);
@@ -7316,7 +7301,6 @@ var
   i,j,k          : Integer;
   ConflictAll    : TConflictAll;
   ConflictThis   : TConflictThis;
-  ConflictThisLmt: TConflictThis;
   Element        : IwbElement;
   ElementCount   : Integer;
   HasElement     : Boolean;
@@ -9727,7 +9711,6 @@ var
   _File                       : IwbFile;
   _OldFile                    : IwbFile;
   _NewMasterFile              : IwbFile;
-  FoundNone                   : Boolean;
 begin
   if not wbEditAllowed then
     Exit;
@@ -13027,7 +13010,6 @@ var
   BaseRecord                  : IwbMainRecord;
   _File                       : IwbFile;
   MainRecordCount             : Cardinal;
-  StartTick                   : UInt64;
   Signatures                  : TStringList;
   SignaturesCreated           : Boolean;
   BaseSignatures              : TStringList;
@@ -13378,8 +13360,7 @@ begin
           if Result then Break;
         end;
     end;
-  var
-    i: Integer;
+
   begin
     Result := False;
     if Node.ChildCount = 0 then begin
@@ -14503,14 +14484,12 @@ function TfrmMain.NodeDatasForMainRecord(const aMainRecord: IwbMainRecord): TDyn
 var
   Master        : IwbMainRecord;
   Rec           : IwbMainRecord;
-  i, j, k       : Integer;
-  MadeChanges   : Boolean;
+  i, j          : Integer;
   EditorID      : string;
   FormID        : TwbFormID;
   LoadOrder     : Integer;
   Group         : IwbGroupRecord;
   Signature     : TwbSignature;
-  MasterAndLeafs: TDynMainRecords;
   MainRecords   : TDynMainRecords;
   Modules       : TwbModuleInfos;
   FirstModule   : PwbModuleInfo;
@@ -14932,7 +14911,6 @@ var
   _File                       : IwbFile;
   i                           : Integer;
   Nodes                       : TNodeArray;
-  sl                          : TStringList;
 begin
   mniNavTest.Visible := DebugHook <> 0;
 
@@ -20624,7 +20602,6 @@ var
   NewFile   : IwbFile;
   MasterFile: IwbFile;
   WasUnsaved: Boolean;
-  Worldspaces: IwbElement;
 begin
   try
     wbLoaderDone := True;
@@ -21139,7 +21116,6 @@ end;
 
 procedure TLoaderThread.Execute;
 var
-  dummy                       : Integer;
   bsaCount                    : Integer;
   _File                       : IwbFile;
   s,t                         : string;

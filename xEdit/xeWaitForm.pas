@@ -36,8 +36,8 @@ type
     fwProgressTail : TwbProgress;
 
     fwCanCancel    : Boolean;
-    fwShowDelay    : Integer;
-    fwUpdateDelay  : Integer;
+    fwShowDelay    : UInt64;
+    fwUpdateDelay  : UInt64;
 
     fwCreated      : UInt64;
     fwLastUpdate   : UInt64;
@@ -115,8 +115,10 @@ begin
   Caption := aCaption;
 
   fwCanCancel := aCanCancel;
-  fwShowDelay := aShowDelay;
-  fwUpdateDelay := aUpdateDelay;
+  if aShowDelay >= 0 then
+    fwShowDelay := aShowDelay;
+  if aUpdateDelay >= 0 then
+    fwUpdateDelay := aUpdateDelay;
 
   fwCreated := GetTickCount64;
   fwLastUpdate := fwCreated;
@@ -146,14 +148,12 @@ end;
 
 procedure TfrmWait.fwDoUpdate;
 begin
-  if (GetTickCount64 - fwUpdateDelay) > fwLastUpdate then begin
-
-    //!!!
+  if GetTickCount64 > fwLastUpdate + fwUpdateDelay then begin
 
     fwLastUpdate := GetTickCount64;
 
     if not Visible then
-      if (GetTickCount64 - fwShowDelay) > fwCreated then
+      if GetTickCount64 > fwCreated + fwShowDelay then
         Show;
 
     Application.ProcessMessages;
