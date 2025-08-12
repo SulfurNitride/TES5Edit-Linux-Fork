@@ -39,6 +39,7 @@ type
     mfHasESMFlag,
     mfHasLightFlag,
     mfHasMediumFlag,
+    mfHasBlueprintFlag,
     mfHasUpdateFlag,
     mfHasLocalizedFlag,
     mfHasESMExtension,
@@ -193,27 +194,33 @@ begin
 
   a := Item1;
   b := Item2;
-  Result := CmpI32(a.miOfficialIndex, b.miOfficialIndex);
-  if Result = 0 then begin
-    Result := CmpI32(a.miCCIndex, b.miCCIndex);
+  if (mfHasBlueprintFlag in a.miFlags) = (mfHasBlueprintFlag in b.miFlags) then begin
+    Result := CmpI32(a.miOfficialIndex, b.miOfficialIndex);
     if Result = 0 then begin
-      if (mfIsESM in a.miFlags) = (mfIsESM in b.miFlags) or (wbGameMode in [gmTES4, gmTES4R]) then begin
-        Result := CmpI32(a.miPluginsTxtIndex, b.miPluginsTxtIndex);
-        if Result = 0 then begin
-          Result := CmpDouble(a.miDateTime, b.miDateTime);
+      Result := CmpI32(a.miCCIndex, b.miCCIndex);
+      if Result = 0 then begin
+        if (mfIsESM in a.miFlags) = (mfIsESM in b.miFlags) or (wbGameMode in [gmTES4, gmTES4R]) then begin
+          Result := CmpI32(a.miPluginsTxtIndex, b.miPluginsTxtIndex);
           if Result = 0 then begin
-            Result := CompareText(a.miName, b.miName);
-            if Result = 0 then
-              Result := CmpPtr(Item1, Item2);
+            Result := CmpDouble(a.miDateTime, b.miDateTime);
+            if Result = 0 then begin
+              Result := CompareText(a.miName, b.miName);
+              if Result = 0 then
+                Result := CmpPtr(Item1, Item2);
+            end;
           end;
-        end;
-      end else
-        if mfIsESM in a.miFlags then
-          Result := -1
-        else
-          Result := 1;
+        end else
+          if mfIsESM in a.miFlags then
+            Result := -1
+          else
+            Result := 1;
+      end;
     end;
-  end;
+  end else
+    if mfHasBlueprintFlag in a.miFlags then
+      Result := 1
+    else
+      Result := -1;
 end;
 
 function _ModulesLoadOrderCompareCombined(Item1, Item2: Pointer): Integer;
@@ -225,47 +232,54 @@ begin
 
   a := Item1;
   b := Item2;
-  Result := CmpI32(a.miOfficialIndex, b.miOfficialIndex);
-  if Result = 0 then begin
-    Result := CmpI32(a.miCCIndex, b.miCCIndex);
+  if (mfHasBlueprintFlag in a.miFlags) = (mfHasBlueprintFlag in b.miFlags) then begin
+    Result := CmpI32(a.miOfficialIndex, b.miOfficialIndex);
     if Result = 0 then begin
-      if ((mfIsESM in a.miFlags) = (mfIsESM in b.miFlags)) or (wbGameMode in [gmTES4, gmTES4R]) then begin
-        Result := CmpI32(a.miCombinedIndex, b.miCombinedIndex);
-        if Result = 0 then begin
-          Result := CmpI32(a.miPluginsTxtIndex, b.miPluginsTxtIndex);
-          if Result = 0 then begin
-            Result := CmpDouble(a.miDateTime, b.miDateTime);
+      Result := CmpI32(a.miCCIndex, b.miCCIndex);
+      if Result = 0 then begin
+          if ((mfIsESM in a.miFlags) = (mfIsESM in b.miFlags)) or (wbGameMode in [gmTES4, gmTES4R]) then begin
+            Result := CmpI32(a.miCombinedIndex, b.miCombinedIndex);
             if Result = 0 then begin
-              Result := CompareText(a.miName, b.miName);
-              if Result = 0 then
-                Result := CmpPtr(Item1, Item2);
+              Result := CmpI32(a.miPluginsTxtIndex, b.miPluginsTxtIndex);
+              if Result = 0 then begin
+                Result := CmpDouble(a.miDateTime, b.miDateTime);
+                if Result = 0 then begin
+                  Result := CompareText(a.miName, b.miName);
+                  if Result = 0 then
+                    Result := CmpPtr(Item1, Item2);
+                end;
+              end;
             end;
-          end;
-        end;
-      end else
-        if mfIsESM in a.miFlags then
-          Result := -1
-        else
-          Result := 1;
+          end else
+            if mfIsESM in a.miFlags then
+              Result := -1
+            else
+              Result := 1;
+      end;
     end;
-  end;
+  end else
+    if mfHasBlueprintFlag in a.miFlags then
+      Result := 1
+    else
+      Result := -1;
 end;
 
 procedure wbLoadModules;
 var
-  Files      : TStringDynArray;
-  i, j, k    : Integer;
-  s          : string;
-  IsESM      ,
-  IsLight    ,
-  IsMedium   ,
-  IsUpdate   ,
-  IsLocalized: Boolean;
-  lIsActive  : Boolean;
-  sl         : TStringList;
-  ThisModule ,
-  PrevModule : PwbModuleInfo;
-  MadeAChange: Boolean;
+  Files       : TStringDynArray;
+  i, j, k     : Integer;
+  s           : string;
+  IsESM       : Boolean;
+  IsLight     : Boolean;
+  IsMedium    : Boolean;
+  IsBlueprint : Boolean;
+  IsUpdate    : Boolean;
+  IsLocalized : Boolean;
+  lIsActive   : Boolean;
+  sl          : TStringList;
+  ThisModule  : PwbModuleInfo;
+  PrevModule  : PwbModuleInfo;
+  MadeAChange : Boolean;
 begin
   if Assigned(_ModulesByName) then {already loaded}
     Exit;
@@ -322,7 +336,7 @@ begin
 
         miDateTime := wbGetLastWriteTime(wbDataPath + miOriginalName);
 
-        if not wbMastersForFile(wbDataPath+miOriginalName, miMasterNames, @IsESM, @IsLight, @IsLocalized, @IsUpdate, @IsMedium) then
+        if not wbMastersForFile(wbDataPath+miOriginalName, miMasterNames, @IsESM, @IsLight, @IsLocalized, @IsUpdate, @IsMedium, @IsBlueprint) then
           Continue;
 
         if IsESM then begin
@@ -356,6 +370,9 @@ begin
 
         if IsMedium then
           Include(miFlags, mfHasMediumFlag);
+
+        if IsBlueprint then
+          Include(miFlags, mfHasBlueprintFlag);
 
         if IsLocalized then
           Include(miFlags, mfHasLocalizedFlag);
@@ -723,12 +740,16 @@ end;
 function TwbModuleInfo.FlagsDescription: string;
 begin
   Result := '';
+  if mfHasBlueprintFlag in miFlags then
+    Result := Result + '<BP>';
   if mfGhost in miFlags then
     Result := Result + '<Ghost>';
   if mfHasESMFlag in miFlags then
     Result := Result + '<ESM>';
   if mfHasLightFlag in miFlags then
     Result := Result + '<Light>';
+  if mfHasMediumFlag in miFlags then
+    Result := Result + '<Medium>';
   if mfHasUpdateFlag in miFlags then
     Result := Result + '<Update>';
   if mfHasLocalizedFlag in miFlags then
@@ -794,6 +815,8 @@ begin
     Exit('[Template]');
 
   Result := '';
+  if (mfHasBlueprintFlag in miFlags) and (wbGameMode in [gmSF1]) then
+    Result := Result + '[BP]';
   if miOfficialIndex = Low(Integer) then
     Result := Result + '[GameMaster]'
   else if miOfficialIndex = Succ(Low(Integer)) then

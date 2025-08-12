@@ -44,8 +44,25 @@ var
   ChaptersToSkip     : TStringList;
   SubRecordOrderList : TStringList;
 
-function wbMastersForFile(const aFileName: string; aMasters: TStrings; aIsESM: PBoolean = nil; aIsLight: PBoolean = nil; aIsLocalized: PBoolean = nil; aIsUpdate: PBoolean = nil; aIsMedium: PBoolean = nil): Boolean; overload;
-function wbMastersForFile(const aFileName: string; out aMasters: TDynStrings; aIsESM: PBoolean = nil; aIsLight: PBoolean = nil; aIsLocalized: PBoolean = nil; aIsUpdate: PBoolean = nil; aIsMedium: PBoolean = nil): Boolean; overload;
+function wbMastersForFile(const aFileName    : string;
+                                aMasters     : TStrings;
+                                aIsESM       : PBoolean = nil;
+                                aIsLight     : PBoolean = nil;
+                                aIsLocalized : PBoolean = nil;
+                                aIsUpdate    : PBoolean = nil;
+                                aIsMedium    : PBoolean = nil;
+                                aIsBluePrint : PBoolean = nil)
+                                             : Boolean; overload;
+
+function wbMastersForFile(const aFileName    : string;
+                            out aMasters     : TDynStrings;
+                                aIsESM       : PBoolean = nil;
+                                aIsLight     : PBoolean = nil;
+                                aIsLocalized : PBoolean = nil;
+                                aIsUpdate    : PBoolean = nil;
+                                aIsMedium    : PBoolean = nil;
+                                aIsBluePrint : PBoolean = nil)
+                                             : Boolean; overload;
 
 function wbFile(const aFileName: string; aLoadOrder: Integer = -1; aCompareTo: string = ''; aStates: TwbFileStates = []; const aData: TBytes = nil): IwbFile;
 function wbNewFile(const aFileName: string; aLoadOrder: Integer; aIsLight, aIsMedium: Boolean): IwbFile; overload;
@@ -885,6 +902,10 @@ type
     function GetIsMediumDirect: Boolean;
     procedure SetIsMedium(Value: Boolean);
 
+    function GetIsBlueprint: Boolean;
+    function GetIsBlueprintDirect: Boolean;
+    procedure SetIsBlueprint(Value: Boolean);
+
     function GetIsUpdate: Boolean;
     function GetIsUpdateDirect: Boolean;
     procedure SetIsUpdate(Value: Boolean);
@@ -1362,6 +1383,8 @@ type
     procedure SetIsLight(aValue: Boolean);
     function GetIsMedium: Boolean;
     procedure SetIsMedium(aValue: Boolean);
+    function GetIsBlueprint: Boolean;
+    procedure SetIsBlueprint(aValue: Boolean);
     function GetIsUpdate: Boolean;
     procedure SetIsUpdate(aValue: Boolean);
 
@@ -3200,6 +3223,8 @@ begin
         Include(flModule.miFlags, mfHasLightFlag);
       if GetIsMediumDirect then
         Include(flModule.miFlags, mfHasMediumFlag);
+      if GetIsBlueprintDirect then
+        Include(flModule.miFlags, mfHasBlueprintFlag);
       if GetIsUpdateDirect then
         Include(flModule.miFlags, mfHasUpdateFlag);
       if GetIsLocalized then
@@ -3336,6 +3361,11 @@ begin
     Include(flModule.miFlags, mfHasMediumFlag);
     Exclude(flModule.miFlags, mfHasLightFlag);
     Exclude(flModule.miFlags, mfHasUpdateFlag);
+  end;
+
+  if (mfHasBlueprintFlag in aTemplate.miFlags) and wbIsBlueprintSupported then begin
+    Header.IsBlueprint := True;
+    Include(flModule.miFlags, mfHasBlueprintFlag);
   end;
 
   if mfHasESMFlag in aTemplate.miFlags then begin
@@ -4261,6 +4291,37 @@ begin
 
   Result := Header.IsMedium;
 end;
+
+function TwbFile.GetIsBlueprint: Boolean;
+var
+  Header         : IwbMainRecord;
+begin
+  if not wbIsBlueprintSupported or GetIsNotPlugin then
+    Exit(False);
+
+  var SelfRef := Self as IwbContainerElementRef;
+
+  if (GetElementCount < 1) or not Supports(GetElement(0), IwbMainRecord, Header) then
+    raise Exception.CreateFmt('Unexpected error reading file "%s"', [flFileName]);
+
+  Result := Header.IsBlueprint;
+end;
+
+function TwbFile.GetIsBlueprintDirect: Boolean;
+var
+  Header         : IwbMainRecord;
+begin
+  if not wbIsBlueprintSupported or GetIsNotPlugin then
+    Exit(False);
+
+  var SelfRef := Self as IwbContainerElementRef;
+
+  if (GetElementCount < 1) or not Supports(GetElement(0), IwbMainRecord, Header) then
+    raise Exception.CreateFmt('Unexpected error reading file "%s"', [flFileName]);
+
+  Result := Header.IsBlueprint;
+end;
+
 
 function TwbFile.GetIsLight: Boolean;
 var
@@ -6014,6 +6075,26 @@ begin
       raise Exception.Create('File "' + GetFileName + '" is not editable');
 
     Header.IsMedium := Value;
+  end;
+end;
+
+procedure TwbFile.SetIsBlueprint(Value: Boolean);
+var
+  Header         : IwbMainRecord;
+begin
+  if not wbIsBlueprintSupported then
+    Exit;
+  if GetIsNotPlugin then
+    Exit;
+
+  if (GetElementCount < 1) or not Supports(GetElement(0), IwbMainRecord, Header) then
+    raise Exception.CreateFmt('Unexpected error reading file "%s"', [flFileName]);
+
+  if Value <> Header.IsBlueprint then begin
+    if not IsElementEditable(nil) then
+      raise Exception.Create('File "' + GetFileName + '" is not editable');
+
+    Header.IsBlueprint := Value;
   end;
 end;
 
@@ -11669,6 +11750,11 @@ begin
   Result := GetFlags.IsMedium;
 end;
 
+function TwbMainRecord.GetIsBlueprint: Boolean;
+begin
+  Result := GetFlags.IsBlueprint;
+end;
+
 function TwbMainRecord.GetIsLight: Boolean;
 begin
   Result := GetFlags.IsLight;
@@ -13797,6 +13883,14 @@ begin
   if aValue <> GetIsMedium then begin
     MakeHeaderWriteable;
     GetFlagsPtr.SetMedium(aValue);
+  end;
+end;
+
+procedure TwbMainRecord.SetIsBlueprint(aValue: Boolean);
+begin
+  if aValue <> GetIsBlueprint then begin
+    MakeHeaderWriteable;
+    GetFlagsPtr.SetBlueprint(aValue);
   end;
 end;
 
@@ -22963,7 +23057,15 @@ begin
   end;
 end;
 
-function wbMastersForFile(const aFileName: string; aMasters: TStrings; aIsESM, aIsLight, aIsLocalized, aIsUpdate, aIsMedium: PBoolean): Boolean;
+function wbMastersForFile(const aFileName    : string;
+                                aMasters     : TStrings;
+                                aIsESM       : PBoolean;
+                                aIsLight     : PBoolean;
+                                aIsLocalized : PBoolean;
+                                aIsUpdate    : PBoolean;
+                                aIsMedium    : PBoolean;
+                                aIsBlueprint : PBoolean)
+                                             : Boolean;
 var
   FileName : string;
   i        : Integer;
@@ -22980,6 +23082,8 @@ begin
     aIsUpdate^ := False;
   if Assigned(aIsMedium) then
     aIsMedium^ := False;
+  if Assigned(aIsBlueprint) then
+    aIsBlueprint^ := False;
   wbProgressLock;
   try
     FileName := wbExpandFileName(aFileName);
@@ -23003,6 +23107,8 @@ begin
         aIsLocalized^ := _File.IsLocalized;
       if Assigned(aIsMedium) then
         aIsMedium^ := _File.IsMedium;
+      if Assigned(aIsBlueprint) then
+        aIsBlueprint^ := _File.IsBlueprint;
       Result := True;
     except
       // File neither found nor replaced, ignore if in xDump
@@ -23013,14 +23119,20 @@ begin
   end;
 end;
 
-function wbMastersForFile(const aFileName: string; out aMasters: TDynStrings; aIsESM, aIsLight, aIsLocalized, aIsUpdate, aIsMedium: PBoolean): Boolean; overload;
-var
-  sl : TStringList;
+function wbMastersForFile(const aFileName    : string;
+                            out aMasters     : TDynStrings;
+                                aIsESM       : PBoolean;
+                                aIsLight     : PBoolean;
+                                aIsLocalized : PBoolean;
+                                aIsUpdate    : PBoolean;
+                                aIsMedium    : PBoolean;
+                                aIsBlueprint : PBoolean)
+                                             : Boolean;
 begin
   aMasters := nil;
-  sl := TStringList.Create;
+  var sl := TStringList.Create;
   try
-    Result := wbMastersForFile(aFileName, sl, aIsESM, aIsLight, aIsLocalized, aIsUpdate, aIsMedium);
+    Result := wbMastersForFile(aFileName, sl, aIsESM, aIsLight, aIsLocalized, aIsUpdate, aIsMedium, aIsBlueprint);
     if Result then
       aMasters := sl.ToStringArray;
   finally

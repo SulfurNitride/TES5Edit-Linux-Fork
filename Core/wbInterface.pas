@@ -1609,6 +1609,10 @@ type
     function GetIsMediumDirect: Boolean;
     procedure SetIsMedium(Value: Boolean);
 
+    function GetIsBlueprint: Boolean;
+    function GetIsBlueprintDirect: Boolean;
+    procedure SetIsBlueprint(Value: Boolean);
+
     function GetIsUpdate: Boolean;
     function GetIsUpdateDirect: Boolean;
     procedure SetIsUpdate(Value: Boolean);
@@ -1729,6 +1733,10 @@ type
       read GetIsUpdate
       write SetIsUpdate;
 
+    property IsBlueprint: Boolean
+      read GetIsBlueprint
+      write SetIsBlueprint;
+
     property IsLocalized: Boolean
       read GetIsLocalized
       write SetIsLocalized;
@@ -1836,6 +1844,7 @@ type
     function IsCompressed: Boolean; inline;
     function IsLight: Boolean; inline;
     function IsMedium: Boolean; inline;
+    function IsBlueprint: Boolean; inline;
     function IsUpdate: Boolean; inline;
     function CantWait: Boolean; inline;
     function HasLODtree: Boolean; inline;
@@ -1850,6 +1859,7 @@ type
     procedure SetVisibleWhenDistant(aValue: Boolean);
     procedure SetLight(aValue: Boolean);
     procedure SetMedium(aValue: Boolean);
+    procedure SetBlueprint(aValue: Boolean);
     procedure SetUpdate(aValue: Boolean);
   end;
 
@@ -1988,6 +1998,8 @@ type
     procedure SetIsLight(aValue: Boolean);
     function GetIsMedium: Boolean;
     procedure SetIsMedium(aValue: Boolean);
+    function GetIsBlueprint: Boolean;
+    procedure SetIsBlueprint(aValue: Boolean);
     function GetIsUpdate: Boolean;
     procedure SetIsUpdate(aValue: Boolean);
 
@@ -2149,6 +2161,9 @@ type
     property IsMedium: Boolean
       read GetIsMedium
       write SetIsMedium;
+    property IsBlueprint: Boolean
+      read GetIsBlueprint
+      write SetIsBlueprint;
     property IsUpdate: Boolean
       read GetIsUpdate
       write SetIsUpdate;
@@ -4946,6 +4961,7 @@ function wbIsFallout76: Boolean; inline;
 function wbIsStarfield: Boolean; inline;
 function wbIsLightSupported: Boolean; inline;
 function wbIsMediumSupported: Boolean; inline;
+function wbIsBlueprintSupported: Boolean; inline;
 function wbIsUpdateSupported: Boolean; inline;
 
 procedure ReportDefs;
@@ -5575,6 +5591,11 @@ end;
 function wbIsMediumSupported: Boolean; inline;
 begin
   Result := (wbGameMode in [gmSF1]) or wbHasAddedMediumSupport;
+end;
+
+function wbIsBlueprintSupported: Boolean; inline;
+begin
+  Result := wbGameMode in [gmSF1];
 end;
 
 function wbIsUpdateSupported: Boolean; inline;
@@ -20833,6 +20854,13 @@ begin
     ((_Flags and $00000400) <> 0);
 end;
 
+function TwbMainRecordStructFlags.IsBlueprint: Boolean;
+begin
+  Result := wbIsBlueprintSupported and
+    ((_Flags and $00000800) <> 0);
+end;
+
+
 function TwbMainRecordStructFlags.IsLight: Boolean;
 begin
   if wbIsStarfield then
@@ -20904,6 +20932,15 @@ begin
       SetUpdate(False);
     end else
       _Flags := _Flags and not $00000400;
+end;
+
+procedure TwbMainRecordStructFlags.SetBlueprint(aValue: Boolean);
+begin
+  if wbIsBlueprintSupported then
+    if aValue then
+      _Flags := _Flags or $00000800
+    else
+      _Flags := _Flags and not $00000800;
 end;
 
 procedure TwbMainRecordStructFlags.SetLight(aValue: Boolean);
