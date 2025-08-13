@@ -5178,12 +5178,12 @@ begin
       if GetIsUpdateDirect and (GetIsLightDirect or GetIsMediumDirect) then
           SetIsUpdate(False);
 
-      if flModule.miExtension = meESP then begin
+      {if flModule.miExtension = meESP then begin
         if not wbRedPill then
           raise Exception.Create('".esp" modules can not be saved in ' + wbAppName + wbToolName)
         else
           FileHeader.ElementEditValues['CNAM'] := 'RedPill';
-      end;
+      end;}
     end;
 
     inherited;
