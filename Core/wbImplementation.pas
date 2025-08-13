@@ -16751,7 +16751,7 @@ var
   begin
     Result := nil;
 
-    if wbIsStarfield and wbStarfieldIsABugInfestedHellhole then begin
+    if wbIsStarfield then begin
       if aSource.LoadOrderFormID.ToCardinal = $25 then
         Exit;
 
