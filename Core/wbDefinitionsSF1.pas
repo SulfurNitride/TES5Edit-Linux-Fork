@@ -8321,11 +8321,17 @@ begin
         .SetToStr(wbToStringFromLinksToSummary)
     ])),
 
-    wbStruct(XWCU, 'Water Velocity', [
-      wbVec3('Offset'),
-      wbByteArray('Unknown', 4),
-      wbVec3('Angle'),
-      wbByteArray('Unknown', 0)
+    wbRStruct('Water Current Velocities', [
+      wbInteger(XWCN, 'Velocity Count', itU32, nil, cpBenign),
+      wbArray(XWCU, 'Velocities',
+        wbStruct('Current', [
+          wbVec3('Velocity'),
+          wbFloat
+        ])
+      ).SetCountPathOnValue(XWCN, False)
+       .SetRequired
+       .IncludeFlag(dfCollapsed, wbCollapseOther)
+       .IncludeFlag(dfNotAlignable)
     ]),
 
     wbFormIDCk(XCAS, 'Acoustic Space', [ASPC]),
