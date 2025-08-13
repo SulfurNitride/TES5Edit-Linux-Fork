@@ -8300,8 +8300,6 @@ begin
       wbString(XCLD)
     ]),
 
-    wbByteArray(XWCN, 'Water Data', 0, cpIgnore), // leftover
-
     wbFormIDCk(XCCM, 'Cell Sky Region', [REGN]),
 
     wbOwnership,
@@ -15521,9 +15519,12 @@ begin
       wbArray(XWCU, 'Velocities',
         wbStruct('Current', [
           wbVec3('Velocity'),
-          wbUnknown(4)
+          wbFloat
         ])
       ).SetCountPathOnValue(XWCN, False)
+       .SetRequired
+       .IncludeFlag(dfCollapsed, wbCollapseOther)
+       .IncludeFlag(dfNotAlignable)
     ]),
 
     wbRArray('Patrol', wbRStruct('Data', [

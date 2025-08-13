@@ -4592,14 +4592,17 @@ begin
     wbArrayS(XCLR, 'Regions', wbFormIDCk('Region', [REGN])),
     wbFormIDCk(XLCN, 'Location', [LCTN]),
     wbRStruct('Water Current Velocities', [
-      wbInteger(XWCS, 'Velocity Count (Old)', itU32, nil, cpBenign),
-      wbInteger(XWCN, 'Velocity Count', itU32, nil, cpBenign),
+      wbRUnion('', [
+        wbInteger(XWCN, 'Velocity Count', itU32, nil, cpBenign),
+        wbInteger(XWCS, 'Velocity Count', itU32, nil, cpBenign)
+      ]).IncludeFlag(dfUnionStaticResolve),
       wbArray(XWCU, 'Velocities',
         wbStruct('Current', [
           wbVec3('Velocity'),
-          wbUnknown(4)
+          wbFloat
         ])
-      ).SetCountPathOnValue([XWCN, XWCS], False)
+      ).SetCountPathOnValue('[0]', False)
+       .SetRequired
        .IncludeFlag(dfCollapsed, wbCollapseOther)
        .IncludeFlag(dfNotAlignable)
     ]),
@@ -10059,16 +10062,18 @@ begin
 
     {--- MultiBound ---}
     wbFormIDCk(XMBR, 'MultiBound Reference', [REFR]),
-
     wbRStruct('Water Current Velocities', [
-      wbInteger(XWCS, 'Velocity Count (Old)', itU32, nil, cpBenign),
-      wbInteger(XWCN, 'Velocity Count', itU32, nil, cpBenign),
+      wbRUnion('', [
+        wbInteger(XWCN, 'Velocity Count', itU32, nil, cpBenign),
+        wbInteger(XWCS, 'Velocity Count', itU32, nil, cpBenign)
+      ]).IncludeFlag(dfUnionStaticResolve),
       wbArray(XWCU, 'Velocities',
         wbStruct('Current', [
           wbVec3('Velocity'),
-          wbUnknown(4)
+          wbFloat
         ])
-      ).SetCountPathOnValue([XWCN, XWCS], False)
+      ).SetCountPathOnValue('[0]', False)
+       .SetRequired
        .IncludeFlag(dfCollapsed, wbCollapseOther)
        .IncludeFlag(dfNotAlignable)
     ]),

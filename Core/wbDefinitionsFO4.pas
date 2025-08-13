@@ -5236,14 +5236,17 @@ begin
     wbFormIDCk(XLRL, 'Location Reference', [LCRT, LCTN, NULL], False, cpBenignIfAdded),
     wbArray(XLRT, 'Location Ref Type', wbFormIDCk('Ref', [LCRT, NULL])),
 
-    wbRStruct('Water Data', [
-      wbInteger(XWCN, 'Data Count', itU32),
-      wbArray(XWCU, 'Water Velocities', wbStruct('Water Velocity', [
-        wbFloat('X Offset'),
-        wbFloat('Y Offset'),
-        wbFloat('Z Offset'),
-        wbFloat('Unknown')
-      ]), ['Linear','Angular','Unknown'])
+    wbRStruct('Water Current Velocities', [
+      wbInteger(XWCN, 'Velocity Count', itU32, nil, cpBenign),
+      wbArray(XWCU, 'Velocities',
+        wbStruct('Current', [
+          wbVec3('Velocity'),
+          wbFloat
+        ])
+      ).SetCountPathOnValue(XWCN, False)
+       .SetRequired
+       .IncludeFlag(dfCollapsed, wbCollapseOther)
+       .IncludeFlag(dfNotAlignable)
     ]),
 
     wbEmpty(XIS2, 'Ignored by Sandbox'),
@@ -6697,9 +6700,12 @@ begin
       wbArray(XWCU, 'Velocities',
         wbStruct('Current', [
           wbVec3('Velocity'),
-          wbUnknown(4)
+          wbFloat
         ])
       ).SetCountPathOnValue(XWCN, False)
+       .SetRequired
+       .IncludeFlag(dfCollapsed, wbCollapseOther)
+       .IncludeFlag(dfNotAlignable)
     ]),
     wbFormIDCk(XCWT, 'Water', [WATR]),
 
@@ -12175,9 +12181,12 @@ begin
       wbArray(XWCU, 'Velocities',
         wbStruct('Current', [
           wbVec3('Velocity'),
-          wbUnknown(4)
+          wbFloat
         ])
       ).SetCountPathOnValue(XWCN, False)
+       .SetRequired
+       .IncludeFlag(dfCollapsed, wbCollapseOther)
+       .IncludeFlag(dfNotAlignable)
     ]),
 
     wbFormIDCk(XASP, 'Acoustic Restriction', [REFR]),

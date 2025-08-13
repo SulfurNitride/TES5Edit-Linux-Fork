@@ -5461,14 +5461,18 @@ begin
     wbEmpty(XWPK, 'End Marker')
   ]);
 
-  wbWaterData := wbRStruct('Water Current Velocities', [
+  wbWaterData :=
+    wbRStruct('Water Current Velocities', [
       wbInteger(XWCN, 'Velocity Count', itU32, nil, cpBenign),
       wbArray(XWCU, 'Velocities',
         wbStruct('Current', [
           wbVec3('Velocity'),
-          wbUnknown(4)
+          wbFloat
         ])
       ).SetCountPathOnValue(XWCN, False)
+       .SetRequired
+       .IncludeFlag(dfCollapsed, wbCollapseOther)
+       .IncludeFlag(dfNotAlignable)
     ]);
 
   wbNAM1LODP := wbRStruct('Unknown', [
