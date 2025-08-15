@@ -167,7 +167,7 @@ procedure wbSOUNAfterLoad(const aElement: IwbElement);
 procedure wbSTATAfterLoad(const aElement: IwbElement);
 procedure wbWorldAfterLoad(const aElement: IwbElement);
 
-{>>> After Set Callbacks <<<} //34
+{>>> After Set Callbacks <<<} //33
 procedure wbACBSLevelMultAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbATANsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbBODCsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -183,7 +183,6 @@ procedure wbIdleMarkerPNAMAfterSet(const aElement: IwbElement; const aOldValue, 
 procedure wbIdleMarkerQNAMAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbLENSAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbMGEFAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbModelInfoAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbMorphPresetsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbNPCAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbNPCActorSoundsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -204,11 +203,8 @@ procedure wbUpdateSameParentUnions(const aElement: IwbElement; const aOldValue, 
 procedure wbWorldAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbWwiseKeywordMappingTemplateAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 
-{>>> Count Callbacks <<<} //8
+{>>> Count Callbacks <<<} //5
 function wbMHDTColumnsCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
-function wbModelInfoAddonCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
-function wbModelInfoMaterialFileCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
-function wbModelInfoTextureFileCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
 function wbNavmeshGridCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
 function wbWeatherCloudColorsCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
 function wbWorldColumnsCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
@@ -252,18 +248,16 @@ function wbGetPropertyValueArrayItems(const aContainer: IwbContainerElementRef):
 function wbGetREGNType(aElement: IwbElement): Integer;
 function wbGetScriptObjFormat(const aElement: IwbElement): Integer;
 
-{>>> Get Conflict Priority Callbacks <<<} //3
+{>>> Get Conflict Priority Callbacks <<<} //2
 procedure wbLandNormalsGetCP(const aElement: IwbElement; var aConflictPriority: TwbConflictPriority);
 procedure wbModelInfoGetCP(const aElement: IwbElement; var aConflictPriority: TwbConflictPriority);
-procedure wbModelInfoUnknownGetCP(const aElement: IwbElement; var aConflictPriority: TwbConflictPriority);
 
 {>>> Integer Formaters <<<} //1
 function wbBoolEnumSummary(const aTrueSummary: string; const aFalseSummary: string = ''): IwbEnumDef;
 
-{>>> Is Removable Callbacks <<<} //9
+{>>> Is Removable Callbacks <<<} //8
 function wbCellGridIsRemovable(const aElement: IwbElement): Boolean;
 function wbCellLightingIsRemovable(const aElement: IwbElement): Boolean;
-function wbModelInfoHeaderIsRemovable(const aElement: IwbElement): Boolean;
 function wbWorldLandDataIsRemovable(const aElement: IwbElement): Boolean;
 function wbWorldLODDataIsRemovable(const aElement: IwbElement): Boolean;
 function wbWorldMapDataIsRemovable(const aElement: IwbElement): Boolean;
@@ -1132,69 +1126,6 @@ begin
   wbCounterContainerByPathAfterSet('Magic Effect Data\DATA - Data\Counter effect count', 'Counter Effects', aElement);
 end;
 
-procedure wbModelInfoAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  if not Assigned(aElement) then
-    Exit;
-
-  if VarSameValue(aOldValue, aNewValue) then
-    Exit;
-
-  var lContainerElementRef : IwbContainerElementRef;
-  if not Supports(aElement, IwbContainerElementRef, lContainerElementRef) then
-    Exit;
-
-  if lContainerElementRef.ElementCount < 4 then
-    Exit;
-
-  lContainerElementRef.BeginUpdate;
-  try
-    var lHeaders : IwbContainerElementRef;
-    if not Supports(lContainerElementRef.Elements[0], IwbContainerElementRef, lHeaders) then
-      Exit;
-
-    var lTextures : IwbContainerElementRef;
-    if not Supports(lContainerElementRef.Elements[1], IwbContainerElementRef, lTextures) then
-      Exit;
-
-    var lAddons : IwbContainerElementRef;
-    if not Supports(lContainerElementRef.Elements[2], IwbContainerElementRef, lAddons) then
-      Exit;
-
-    var lMaterials : IwbContainerElementRef;
-    if not Supports(lContainerElementRef.Elements[3], IwbContainerElementRef, lMaterials) then
-      Exit;
-
-    var lMinHeaders := 0;
-    var lMaterialCount := lMaterials.ElementCount;
-    var lAddonCount := lAddons.ElementCount;
-    var lTextureCount := lTextures.ElementCount;
-
-    if lMaterialCount > 0 then
-      lMinHeaders := 4
-    else if lAddons.ElementCount > 0 then
-      lMinHeaders := 2
-    else if lTextures.ElementCount > 0 then
-      lMinHeaders := 1;
-
-    var lHeaderCount := lHeaders.ElementCount;
-    while lHeaderCount < lMinHeaders do
-      lHeaders.Add('');
-
-    if lHeaderCount > 0 then
-      if lHeaders.Elements[0].NativeValue <> lTextureCount then
-        lHeaders.Elements[0].NativeValue := lTextureCount;
-    if lHeaderCount > 1 then
-      if lHeaders.Elements[1].NativeValue <> lAddonCount then
-        lHeaders.Elements[1].NativeValue := lAddonCount;
-    if lHeaderCount > 3 then
-      if lHeaders.Elements[3].NativeValue <> lMaterialCount then
-        lHeaders.Elements[3].NativeValue := lMaterialCount;
-  finally
-    lContainerElementRef.EndUpdate;
-  end;
-end;
-
 procedure wbMorphPresetsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
   wbCounterAfterSet('MPPC - Count', aElement);
@@ -1485,7 +1416,7 @@ begin
   end;
 end;
 
-{>>> Count Callbacks <<<} //8
+{>>> Count Callbacks <<<} //5
 
 function wbMHDTColumnsCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
 var
@@ -1516,72 +1447,6 @@ begin
   MaxX := Element.NativeValue;
 
   Result := MaxX - MinX + 1;
-end;
-
-function wbModelInfoAddonCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
-var
-  Container : IwbContainerElementRef;
-  Headers   : IwbContainerElementRef;
-begin
-  Result := 0;
-
-  if not Supports(GetContainerFromUnion(aElement), IwbContainerElementRef, Container) then
-    Exit;
-
-  if not Supports(Container.Container, IwbContainerElementRef, Container) then
-    Exit;
-
-  if not Supports(Container.Elements[0], IwbContainerElementRef, Headers) then
-    Exit;
-
-  if Headers.ElementCount < 2 then
-    Exit;
-
-  Result := Headers.Elements[1].NativeValue;
-end;
-
-function wbModelInfoMaterialFileCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
-var
-  Container : IwbContainerElementRef;
-  Headers   : IwbContainerElementRef;
-begin
-  Result := 0;
-
-  if not Supports(GetContainerFromUnion(aElement), IwbContainerElementRef, Container) then
-    Exit;
-
-  if not Supports(Container.Container, IwbContainerElementRef, Container) then
-    Exit;
-
-  if not Supports(Container.Elements[0], IwbContainerElementRef, Headers) then
-    Exit;
-
-  if Headers.ElementCount < 4 then
-    Exit;
-
-  Result := Headers.Elements[3].NativeValue;
-end;
-
-function wbModelInfoTextureFileCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
-var
-  Container : IwbContainerElementRef;
-  Headers   : IwbContainerElementRef;
-begin
-  Result := 0;
-
-  if not Supports(GetContainerFromUnion(aElement), IwbContainerElementRef, Container) then
-    Exit;
-
-  if not Supports(Container.Container, IwbContainerElementRef, Container) then
-    Exit;
-
-  if not Supports(Container.Elements[0], IwbContainerElementRef, Headers) then
-    Exit;
-
-  if Headers.ElementCount < 1 then
-    Exit;
-
-  Result := Headers.Elements[0].NativeValue;
 end;
 
 function wbNavmeshGridCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
@@ -1885,7 +1750,7 @@ begin
   end;
 end;
 
-{>>> Get Conflict Priority Callbacks <<<} //3
+{>>> Get Conflict Priority Callbacks <<<} //2
 
 procedure wbLandNormalsGetCP(const aElement: IwbElement; var aConflictPriority: TwbConflictPriority);
 begin
@@ -1917,13 +1782,6 @@ begin
     Exit;
 
   if MainRecord.Version < 38 then
-    aConflictPriority := cpIgnore;
-end;
-
-procedure wbModelInfoUnknownGetCP(const aElement: IwbElement; var aConflictPriority: TwbConflictPriority);
-begin
-  aConflictPriority := cpNormal;
-  if aElement.EditValue = '' then
     aConflictPriority := cpIgnore;
 end;
 
@@ -2044,7 +1902,7 @@ begin
     ]);
 end;
 
-{>>> Is Removable Callbacks <<<} //9
+{>>> Is Removable Callbacks <<<} //8
 
 function wbCellGridIsRemovable(const aElement: IwbElement): Boolean;
 begin
@@ -2054,11 +1912,6 @@ end;
 function wbCellLightingIsRemovable(const aElement: IwbElement): Boolean;
 begin
   Result := (aElement.ContainingMainRecord.ElementNativeValues['DATA'] and 1 = 0);
-end;
-
-function wbModelInfoHeaderIsRemovable(const aElement: IwbElement): Boolean;
-begin
-  Result := Assigned(aElement) and (aElement.NativeValue = 0);
 end;
 
 function wbWorldLandDataIsRemovable(const aElement: IwbElement): Boolean;
@@ -5372,52 +5225,60 @@ begin
     var TextureFile := CreateFileEntry('Texture').IncludeFlag(dfCollapsed, wbCollapseModelInfoTexture);
     var MaterialFile := CreateFileEntry('Material').IncludeFlag(dfCollapsed, wbCollapseModelInfoMaterial);
 
-    var NewModelInfo := wbStruct('', [
-      wbArray('Headers',
-        wbInteger('Header', itU32, nil, nil, cpIgnore).SetIsRemovable(wbModelInfoHeaderIsRemovable)
-      , -1, ['Textures Count', 'Addons Count', 'TextureSets', 'Materials Count'], cpIgnore)
-        .IncludeFlag(dfNotAlignable)
-        .IncludeFlag(dfRemoveLastOnly)
-        .IncludeFlag(dfCollapsed, wbCollapseModelInfoHeader),
+    var NewModelInfo :=
+      wbStruct('', [
+        IsTES5(
+          wbArray('Counters',
+            wbInteger('Counter', itU32, nil, nil, cpIgnore),
+          -1, ['Textures', 'Addon Nodes'], cpIgnore)
+            .IncludeFlag(dfArrayStaticSize)
+            .IncludeFlag(dfCollapsed, wbCollapseModelInfoHeader)
+            .IncludeFlag(dfNotAlignable),
+          wbArray('Counters',
+            wbIntegeR('Counter', itU32, nil, nil, cpIgnore),
+          -1, ['Textures', 'Addon Nodes', 'Unknown', 'Materials'], cpIgnore)
+            .IncludeFlag(dfArrayStaticSize)
+            .IncludeFlag(dfCollapsed, wbCollapseModelInfoHeader)
+            .IncludeFlag(dfNotAlignable)
+        ),
+        wbArray('Textures', TextureFile)
+          .SetCountPath('Counters\[0]', True)
+          .SetSummaryPassthroughMaxLength(80)
+          .SetSummaryPassthroughMaxDepth(1)
+          .IncludeFlag(dfCollapsed, wbCollapseModelInfoTextures),
+        wbArray('Addon Nodes',
+          wbInteger('Addon Node', itU32)
+            .SetLinksToCallback(function(const aElement: IwbElement): IwbElement
+            begin
+              Result := nil;
+              if not Assigned(aElement) then
+                Exit;
 
-      wbArray('Textures', TextureFile, wbModelInfoTextureFileCounter)
-        .SetSummaryPassthroughMaxLength(80)
-        .SetSummaryPassthroughMaxDepth(1)
-        .IncludeFlag(dfCollapsed, wbCollapseModelInfoTextures),
+              var lAddonNodeIndex := aElement.NativeValue;
+              if not VarIsOrdinal(lAddonNodeIndex) then
+                Exit;
 
-      wbArray('Addons',
-        wbInteger('Addon', itU32)
-          .SetLinksToCallback(function(const aElement: IwbElement): IwbElement
-          begin
-            Result := nil;
-            if not Assigned(aElement) then
-              Exit;
+              var lFile := aElement._File;
+              if not Assigned(lFile) then
+                Exit;
 
-            var lAddonNodeIndex := aElement.NativeValue;
-            if not VarIsOrdinal(lAddonNodeIndex) then
-              Exit;
-
-            var lFile := aElement._File;
-            if not Assigned(lFile) then
-              Exit;
-
-            Result := lFile.RecordFromIndexByKey[wbIdxAddonNode, lAddonNodeIndex];
-          end)
-         .SetToStr(wbToStringFromLinksToMainRecordName),
-      wbModelInfoAddonCounter)
-        .SetSummaryPassthroughMaxLength(80)
-        .SetSummaryPassthroughMaxDepth(1)
-        .IncludeFlag(dfCollapsed, wbCollapseModelInfoAddons),
-
-      wbArray('Materials', MaterialFile, wbModelInfoMaterialFileCounter)
-        .SetSummaryPassthroughMaxLength(80)
-        .SetSummaryPassthroughMaxDepth(1)
-        .IncludeFlag(dfCollapsed, wbCollapseModelInfoMaterials),
-
-      wbByteArray('Unknown', 0, cpNormal, False, nil, wbModelInfoUnknownGetCP)
-    ]).SetSummaryKey([1, 2, 3])
-      .IncludeFlag(dfSummaryMembersNoName)
-      .SetAfterSet(wbModelInfoAfterSet);
+              Result := lFile.RecordFromIndexByKey[wbIdxAddonNode, lAddonNodeIndex];
+            end)
+           .SetToStr(wbToStringFromLinksToMainRecordName)
+        ).SetCountPath('Counters\[1]', True)
+         .SetSummaryPassthroughMaxLength(80)
+         .SetSummaryPassthroughMaxDepth(1)
+         .IncludeFlag(dfCollapsed, wbCollapseModelInfoAddons),
+        IsTES5(
+          nil,
+          wbArray('Materials', MaterialFile)
+            .SetCountPath('Counters\[3]', True)
+            .SetSummaryPassthroughMaxLength(80)
+            .SetSummaryPassthroughMaxDepth(1)
+            .IncludeFlag(dfCollapsed, wbCollapseModelInfoMaterials)
+        )
+      ]).SetSummaryKey([1, 2, 3])
+        .IncludeFlag(dfSummaryMembersNoName);
 
     Result := wbUnion(aSignature, aName, wbModelInfoDecider, [
       wbStruct('', [
