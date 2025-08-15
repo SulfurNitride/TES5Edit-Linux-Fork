@@ -1374,16 +1374,22 @@ begin
         if Shader.NativeValues['Shader Flags 2\Tree_Anim'] then begin
           if (nif.RootNode.BlockType <> 'BSLeafAnimNode') and (nif.RootNode.BlockType <> 'BSTreeNode') then begin
             Shader.NativeValues['Shader Flags 2\Tree_Anim'] := False;
+            if Shader.NativeValues['Shader Flags 1\Vertex_Alpha'] then
+              Shader.NativeValues['Shader Flags 1\Vertex_Alpha'] := False;
             Log.Add(#9 + Shader.Name + ': Removed Tree_Anim flag because root node is not BSLeafAnimNode or BSTreeNode');
             Result := True;
           end;
 
           if (ShaderType <> 'Default') and (ShaderType <> 'Tree Anim') then begin
             Shader.NativeValues['Shader Flags 2\Tree_Anim'] := False;
+            if Shader.NativeValues['Shader Flags 1\Vertex_Alpha'] then
+              Shader.NativeValues['Shader Flags 1\Vertex_Alpha'] := False;
             Log.Add(#9 + Shader.Name + ': Removed Tree_Anim flag because of wrong Shader Type');
             Result := True;
           end;
+        end;
 
+        if Shader.NativeValues['Shader Flags 2\Tree_Anim'] then begin
           if bHasVertexColors then begin
             if not Shader.NativeValues['Shader Flags 1\Vertex_Alpha'] then begin
               Shader.NativeValues['Shader Flags 1\Vertex_Alpha'] := True;
