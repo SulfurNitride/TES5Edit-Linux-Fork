@@ -12679,6 +12679,7 @@ begin
        .SetFlagHasDontShow(27, wbFlagNavmeshBoundingBoxDontShow)
        .SetFlagHasDontShow(30, wbFlagNavmeshGroundDontShow), [
     wbEDID,
+    wbVMAD,
     wbOBND(True),
     wbPTRN,
     wbFTYP,
