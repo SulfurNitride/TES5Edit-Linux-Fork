@@ -6142,7 +6142,7 @@ begin
       ])
 	  ]);
 
-  wbNVNM :=  wbUnion(NVNM, '', wbRecordSizeDecider([0]), [
+  wbNVNM :=  wbUnion(NVNM, '', wbRecordSizeDecider([1]), [
     wbEmpty('Navmesh Marker'),
     wbNVNMRecordVal
   ]);
