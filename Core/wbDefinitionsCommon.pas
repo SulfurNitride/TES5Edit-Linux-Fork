@@ -7174,8 +7174,9 @@ begin
       6, 'Preferred',
       9, 'Water',
      10, 'Door',
-     11, 'Found'
-    ], False, 12));
+     11, 'Found',
+     12, IsFO76('Unknown 12', '')
+    ], False, 13));
 
 { Flags below are wrong. The first 4 bit are an enum as follows:
 0000 = Open Edge No Cover
