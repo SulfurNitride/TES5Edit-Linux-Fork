@@ -5231,13 +5231,11 @@ begin
           wbArray('Counters',
             wbInteger('Counter', itU32, nil, nil, cpIgnore),
           -1, ['Textures', 'Addon Nodes'], cpIgnore)
-            .IncludeFlag(dfArrayStaticSize)
             .IncludeFlag(dfCollapsed, wbCollapseModelInfoHeader)
             .IncludeFlag(dfNotAlignable),
           wbArray('Counters',
             wbIntegeR('Counter', itU32, nil, nil, cpIgnore),
           -1, ['Textures', 'Addon Nodes', 'Unknown', 'Materials'], cpIgnore)
-            .IncludeFlag(dfArrayStaticSize)
             .IncludeFlag(dfCollapsed, wbCollapseModelInfoHeader)
             .IncludeFlag(dfNotAlignable)
         ),
