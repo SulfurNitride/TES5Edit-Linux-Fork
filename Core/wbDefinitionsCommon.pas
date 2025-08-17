@@ -2694,6 +2694,9 @@ end;
 function wbClmtTime(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 begin
   Result := '';
+  while aInt > 143 do
+    aInt := aInt - 143;
+
   if aType = ctToSortKey then
     Result := IntToHex64(aInt, 4)
   else if aType in [ctToStr, ctToSummary] then
