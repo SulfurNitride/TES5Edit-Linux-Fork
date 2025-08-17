@@ -2681,7 +2681,6 @@ var
   PrevDeleteResult     : TModalResult;
   lResult              : TDynElements;
   Operation            : string;
-  gl                   : TList;
 begin
   Result := nil;
   lResult := nil;
@@ -2704,7 +2703,6 @@ begin
   sl := TStringList.Create;
   sl.Sorted := True;
   sl.Duplicates := dupIgnore;
-  gl := TList.Create;
   try
     j := -1;
 
@@ -2724,10 +2722,14 @@ begin
                 GroupRecord.ReportRequiredMasters(lDict, AsNew);
             Container := Elements[i].Container;
             while Assigned(Container) do begin
-              if (Container.ElementType = etGroupRecord) and Assigned((Container as IwbGroupRecord).ChildrenOf) then
-                gl.Add(Container)
-              else
-                Container.ReportRequiredMasters(lDict, AsNew, False, True);
+              Container.ReportRequiredMasters(lDict, AsNew, False, True);
+              if Container.ElementType = etGroupRecord then
+                with Container as IwbGroupRecord do begin
+                  MainRecord := ChildrenOf;
+                  if Assigned(MainRecord) then
+                    MainRecord.ReportRequiredMasters(lDict, AsNew);
+                end;
+
               Container := Container.Container;
             end;
             if j >= 0 then begin
@@ -2736,15 +2738,6 @@ begin
             end;
           end;
         end;
-
-        for i := 0 to Pred(gl.Count) do
-          with IwbGroupRecord(gl[i]) do begin
-            MainRecord := ChildrenOf;
-            if Assigned(MainRecord) then begin
-              MainRecord.ReportRequiredMasters(lDict, AsNew);
-            end;
-          end;
-
         for var lFile in lDict.Keys do
           sl.AddObject(lFile.FileName, Pointer(lFile));
       finally
@@ -3004,7 +2997,6 @@ begin
 
               if Assigned(TargetFile) then begin
                 sl.Clear;
-                gl.Clear;
                 var lDict2 := TwbFilesDictionary.Create;
                 try
                   for j := Low(Elements) to High(Elements) do begin
@@ -3014,22 +3006,19 @@ begin
                         GroupRecord.ReportRequiredMasters(lDict2, AsNew);
                     Container := Elements[j].Container;
                     while Assigned(Container) do begin
-                      if (Container.ElementType = etGroupRecord) and Assigned((Container as IwbGroupRecord).ChildrenOf) then
-                        gl.Add(Container)
-                      else
-                        Container.ReportRequiredMasters(lDict2, AsNew, False, True);
+                      Container.ReportRequiredMasters(lDict2, AsNew, False, True);
+                      if Container.ElementType = etGroupRecord then
+                        with Container as IwbGroupRecord do begin
+                          MainRecord := ChildrenOf;
+                          if Assigned(MainRecord) then begin
+                            MainRecord := MainRecord.HighestOverrideVisibleForFile[TargetFile];
+                            MainRecord.ReportRequiredMasters(lDict2, AsNew);
+                          end;
+                        end;
+
                       Container := Container.Container;
                     end;
                   end;
-
-                  for j := 0 to Pred(gl.Count) do
-                    with IwbGroupRecord(gl[i]) do begin
-                      MainRecord := ChildrenOf;
-                      if Assigned(MainRecord) then begin
-                        MainRecord := MainRecord.HighestOverrideVisibleForFile[TargetFile];
-                        MainRecord.ReportRequiredMasters(lDict2, AsNew);
-                      end;
-                    end;
                   for var lFile in lDict2.Keys do
                     sl.AddObject(lFile.FileName, Pointer(lFile));
                 finally
@@ -3139,7 +3128,6 @@ begin
     end;
   finally
     sl.Free;
-    gl.Free;
   end;
 end;
 
