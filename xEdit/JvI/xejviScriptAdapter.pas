@@ -681,13 +681,13 @@ var
 begin
   if Supports(IInterface(Args.Values[0]), IwbElement, Element) then begin
     var lStrings := TStrings(V2O(Args.Values[1]));
-    var lDict := TwbFilesDictionary.Create;
+    var lMasters := TwbFilesSet.Create;
     try
-      Element.ReportRequiredMasters(lDict, Args.Values[2], Args.Values[3]);
-      for var lFile in lDict.Keys do
+      Element.ReportRequiredMasters(lMasters, Args.Values[2], Args.Values[3]);
+      for var lFile in lMasters do
         lStrings.AddObject(lFile.FileName, Pointer(lFile));
     finally
-      lDict.Free;
+      lMasters.Free;
     end;
   end;
 end;

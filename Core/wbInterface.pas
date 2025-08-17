@@ -891,7 +891,19 @@ type
 
   TwbFiles = TArray<IwbFile>;
   PwbFiles = ^TwbFiles;
-  TwbFilesDictionary = TDictionary<IwbFile, TwbNothing>;
+
+  TwbFilesSet = class(THashSet<IwbFile>)
+  strict private class var
+    fdGenerationHead: Cardinal;
+  strict private
+    fdGeneration: Cardinal;
+  public
+    constructor Create;
+    procedure Clear;
+
+    property Generation: Cardinal
+      read fdGeneration;
+  end;
 
   TwbFilesHelper = record helper for TwbFiles
     procedure Add(const aFile: IwbFile);
@@ -1117,7 +1129,7 @@ type
     procedure SetLinksTo(const aElement: IwbElement);
     function GetSummaryLinksTo: IwbElement;
     function GetNoReach: Boolean;
-    procedure ReportRequiredMasters(aDict: TwbFilesDictionary; aAsNew: Boolean; recursive: Boolean = True; initial: Boolean = False);
+    procedure ReportRequiredMasters(aMasters: TwbFilesSet; aAsNew: Boolean; recursive: Boolean = True; initial: Boolean = False);
     function AddIfMissing(const aElement: IwbElement; aAsNew, aDeepCopy : Boolean; const aPrefixRemove, aSuffixRemove, aPrefix, aSuffix: string; aAllowOverwrite: Boolean): IwbElement;
     procedure ResetConflict;
     procedure ResetReachable;
@@ -24241,6 +24253,20 @@ begin
     begin
       Result := Right.LoadOrder - Left.LoadOrder;
     end);
+end;
+
+{ TwbFilesSet }
+
+procedure TwbFilesSet.Clear;
+begin
+  fdGeneration := AtomicIncrement(fdGenerationHead);
+  inherited Clear;
+end;
+
+constructor TwbFilesSet.Create;
+begin
+  fdGeneration := AtomicIncrement(fdGenerationHead);
+  inherited Create;
 end;
 
 initialization
