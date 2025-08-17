@@ -306,6 +306,8 @@ type
     eCachedLinksTo     : IwbElement;
     eSummaryLinksTo    : IwbElement;
 
+    eReportMastersGen  : Cardinal;
+
     {---IInterface---}
     function _AddRef: Integer; virtual; stdcall;
     function _Release: Integer; virtual; stdcall;
@@ -336,7 +338,7 @@ type
     procedure NotifyChanged(aContainer: Pointer); virtual;
     procedure NotifyChangedInternal(aContainer: Pointer); virtual;
 
-    procedure ReportRequiredMasters(aDict: TwbFilesDictionary; aAsNew: Boolean; Recursive: Boolean = True; Initial: Boolean = false); virtual;
+    procedure ReportRequiredMasters(aMasters: TwbFilesSet; aAsNew: Boolean; Recursive: Boolean = True; Initial: Boolean = false); virtual;
 
     function GetElementID: Pointer;
     function GetElementStates: TwbElementStates;
@@ -572,7 +574,7 @@ type
     function Reached: Boolean; override;
     function RemoveInjected(aCanRemove: Boolean): Boolean; override;
 
-    procedure ReportRequiredMasters(aDict: TwbFilesDictionary; aAsNew: Boolean; Recursive: Boolean = True; Initial: Boolean = false); override;
+    procedure ReportRequiredMasters(aMasters: TwbFilesSet; aAsNew: Boolean; Recursive: Boolean = True; Initial: Boolean = false); override;
     procedure ResetConflict; override;
     procedure ResetReachable; override;
 
@@ -701,7 +703,7 @@ type
     procedure IncGeneration;
     function GetFileGeneration: Integer;
     procedure UpdateIndexKeys(const aMainRecord: IwbMainRecord; const aChangedKeys: TwbChangedKeys);
-    procedure AddAllMastersToDict(aDict: TwbFilesDictionary);
+    procedure AddAllMastersToSet(aMasters: TwbFilesSet);
     function flFindKeyInIndex(aIndex: TwbNamedIndex; const aKey: string; out aMainRecord: IwbMainRecord): Boolean;
   end;
 
@@ -945,7 +947,7 @@ type
     procedure IncGeneration;
     function GetFileGeneration: Integer;
     procedure UpdateIndexKeys(const aMainRecord: IwbMainRecord; const aChangedKeys: TwbChangedKeys);
-    procedure AddAllMastersToDict(aDict: TwbFilesDictionary);
+    procedure AddAllMastersToSet(aMasters: TwbFilesSet);
 
     procedure Scan; virtual;
     procedure SortRecords;
@@ -1250,7 +1252,7 @@ type
     function MastersUpdated(const aOld, aNew: TwbFileIDs; aOldCount, aNewCount: Byte): Boolean; override;
     procedure FindUsedMasters(aMasters: PwbUsedMasters); override;
     function GetReferenceFile: IwbFile; override;
-    procedure ReportRequiredMasters(aDict: TwbFilesDictionary; aAsNew: Boolean; Recursive: Boolean = True; Initial: Boolean = false); override;
+    procedure ReportRequiredMasters(aMasters: TwbFilesSet; aAsNew: Boolean; Recursive: Boolean = True; Initial: Boolean = false); override;
     function LinksToParent: Boolean; override;
     function Reached: Boolean; override;
     function GetContainingMainRecord: IwbMainRecord; override;
@@ -2328,13 +2330,13 @@ begin
     wbMergeSortPtr(@cntElements[1], High(cntElements), CompareSortOrder);
 end;
 
-procedure TwbFile.AddAllMastersToDict(aDict: TwbFilesDictionary);
+procedure TwbFile.AddAllMastersToSet(aMasters: TwbFilesSet);
 begin
   var lMasterFileInternal: IwbFileInternal;
   for var lMasterIdx := Pred(GetMasterCount(True)) downto 0 do
     if Supports(GetMaster(lMasterIdx, True), IwbFileInternal, lMasterFileInternal) then
-      if aDict.TryAdd(lMasterFileInternal, wbNothing) then
-        lMasterFileInternal.AddAllMastersToDict(aDict);
+      if aMasters.Add(lMasterFileInternal) then
+        lMasterFileInternal.AddAllMastersToSet(aMasters);
 end;
 
 function TwbFile.AddIfMissingInternal(const aElement: IwbElement; aAsNew, aDeepCopy : Boolean; const aPrefixRemove, aSuffixRemove, aPrefix, aSuffix: string; aAllowOverwrite: Boolean): IwbElement;
@@ -6351,13 +6353,13 @@ begin
 
   flAllMasters := nil;
 
-  var lDict := TwbFilesDictionary.Create;
+  var lMasters := TwbFilesSet.Create;
   try
-    AddAllMastersToDict(lDict);
-    flAllMasters := lDict.Keys.ToArray;
+    AddAllMastersToSet(lMasters);
+    flAllMasters := lMasters.ToArray;
     flAllMasters.SortByReverseLoadOrder;
   finally
-    lDict.Free;
+    lMasters.Free;
   end;
 
   flAllMastersGeneration := _FileGeneration;
@@ -8176,11 +8178,16 @@ begin
   end;
 end;
 
-procedure TwbContainer.ReportRequiredMasters(aDict: TwbFilesDictionary; aAsNew: Boolean; Recursive: Boolean = True; Initial: Boolean = false);
+procedure TwbContainer.ReportRequiredMasters(aMasters: TwbFilesSet; aAsNew: Boolean; Recursive: Boolean = True; Initial: Boolean = false);
 var
   i: Integer;
   SelfRef : IwbContainerElementRef;
 begin
+  if    ((eReportMastersGen and $7FFFFFFF) = aMasters.Generation)
+    and ((not Recursive) or ((eReportMastersGen and $80000000) <> 0))
+  then
+    Exit;
+
   var Def := GetDef;
   if Assigned(Def) and (dfDontAssign in Def.DefFlags) then
     Exit;
@@ -8195,7 +8202,7 @@ begin
   if Recursive or (Initial and not Supports(Self, IwbGroupRecord)) then
     for i := Low(cntElements) to High(cntElements) do
       if cntElements[i].CanContainFormIDs then
-        cntElements[i].ReportRequiredMasters(aDict, aAsNew, Recursive);
+        cntElements[i].ReportRequiredMasters(aMasters, aAsNew, Recursive);
 end;
 
 function TwbContainer.RemoveElement(aPos: Integer; aMarkModified: Boolean = False): IwbElement;
@@ -13564,18 +13571,23 @@ begin
 {$ENDIF}
 end;
 
-procedure TwbMainRecord.ReportRequiredMasters(aDict: TwbFilesDictionary; aAsNew: Boolean; Recursive: Boolean = True; Initial: Boolean = false);
+procedure TwbMainRecord.ReportRequiredMasters(aMasters: TwbFilesSet; aAsNew: Boolean; Recursive: Boolean = True; Initial: Boolean = false);
 begin
+  if    ((eReportMastersGen and $7FFFFFFF) = aMasters.Generation)
+    and ((not Recursive) or ((eReportMastersGen and $80000000) <> 0))
+  then
+    Exit;
+
   var lFile := GetFile;
   if Assigned(lFile) and ([fsIsHardcoded, fsIsGameMaster] * lFile.FileStates <> []) then begin
-    aDict.TryAdd(lFile, wbNothing);
+    aMasters.Add(lFile);
     Exit;
   end;
 
   if not aAsNew then begin
     var lRefFile := GetReferenceFile;
     if Assigned(lRefFile) then
-      aDict.TryAdd(lRefFile, wbNothing);
+      aMasters.Add(lRefFile);
   end;
 
   inherited;
@@ -19011,7 +19023,7 @@ begin
     IwbFile(Pointer(List.Objects[Index2])).LoadOrder);
 end;
 
-procedure AddRequiredMasters(aMasters: TwbFilesDictionary; const aTargetFile: IwbFile);
+procedure AddRequiredMasters(aMasters: TwbFilesSet; const aTargetFile: IwbFile);
 var
   sl                          : TStringList;
   i, j                        : Integer;
@@ -19021,7 +19033,7 @@ begin
     sl.Sorted := True;
     sl.Duplicates := dupIgnore;
 
-    var lFiles:TwbFiles := aMasters.Keys.ToArray;
+    var lFiles:TwbFiles := aMasters.ToArray;
     lFiles.SortByLoadOrder;
     for var lFile in lFiles do
       sl.AddObject(lFile.FileName, Pointer(lFile));
@@ -19050,10 +19062,10 @@ end;
 
 function TwbElement.CopyInto(const aFile: IwbFile; aAsNew, aDeepCopy: Boolean; const aPrefixRemove, aSuffixRemove, aPrefix, aSuffix: string): IwbElement;
 begin
-  var lDict := TwbFilesDictionary.Create;
+  var lMasters := TwbFilesSet.Create;
   try
-    ReportRequiredMasters(lDict, aAsNew);
-    AddRequiredMasters(lDict, aFile);
+    ReportRequiredMasters(lMasters, aAsNew);
+    AddRequiredMasters(lMasters, aFile);
 
     var lMainRecord: IwbMainRecord;
     if aDeepCopy and Supports(Self, IwbMainRecord, lMainRecord) and Assigned(lMainRecord.ChildGroup) then begin
@@ -19066,7 +19078,7 @@ begin
     end else
       Result := wbCopyElementToFile(Self, aFile, aAsNew, True, aPrefixRemove, aSuffixRemove, aPrefix, aSuffix, False {CheckMe!});
   finally
-    lDict.Free
+    lMasters.Free;
   end;
 end;
 
@@ -19971,11 +19983,16 @@ begin
   end;
 end;
 
-procedure TwbElement.ReportRequiredMasters(aDict: TwbFilesDictionary; aAsNew: Boolean; Recursive: Boolean = True; Initial: Boolean = false);
+procedure TwbElement.ReportRequiredMasters(aMasters: TwbFilesSet; aAsNew: Boolean; Recursive: Boolean = True; Initial: Boolean = false);
 var
   Element       : IwbElement;
   ReferenceFile : IwbFile;
 begin
+  if    ((eReportMastersGen and $7FFFFFFF) = aMasters.Generation)
+    and ((not Recursive) or ((eReportMastersGen and $80000000) <> 0))
+  then
+    Exit;
+
   var Def := GetDef;
   if Assigned(Def) and (dfDontAssign in Def.DefFlags) then
     Exit;
@@ -19988,8 +20005,12 @@ begin
   if Assigned(Element) then begin
     ReferenceFile := Element.ReferenceFile;
     if Assigned(ReferenceFile) then
-      aDict.TryAdd(ReferenceFile, wbNothing);
+      aMasters.Add(ReferenceFile);
   end;
+
+  eReportMastersGen := aMasters.Generation;
+  if Recursive then
+    eReportMastersGen := eReportMastersGen or $80000000;
 end;
 
 procedure TwbElement.RequestStorageChange(var aBasePtr, aEndPtr: Pointer; aNewSize: Cardinal);

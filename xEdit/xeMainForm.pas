@@ -1997,13 +1997,13 @@ begin
     lRequiredMasters.Sorted := True;
     lRequiredMasters.Duplicates := dupIgnore;
 
-    var lDict := TwbFilesDictionary.Create;
+    var lMasters := TwbFilesSet.Create;
     try
-      aSourceElement.ReportRequiredMasters(lDict, aAsNew);
-      for var lFile in lDict.Keys do
+      aSourceElement.ReportRequiredMasters(lMasters, aAsNew);
+      for var lFile in lMasters do
         lRequiredMasters.AddObject(lFile.FileName, Pointer(lFile));
     finally
-      lDict.Free;
+      lMasters.Free;
     end;
 
     var lFindIdx: Integer;
@@ -2707,7 +2707,7 @@ begin
     j := -1;
 
     begin
-      var lDict := TwbFilesDictionary.Create;
+      var lMasters := TwbFilesSet.Create;
       try
         for i := Low(Elements) to High(Elements) do begin
           if not Elements[i].CanCopy then begin
@@ -2716,18 +2716,18 @@ begin
               j := i;
             end;
           end else begin
-            Elements[i].ReportRequiredMasters(lDict, AsNew);
+            Elements[i].ReportRequiredMasters(lMasters, AsNew);
             if DeepCopy then
               if Supports(Elements[i], IwbMainRecord, MainRecord) and Supports(MainRecord.ChildGroup, IwbGroupRecord, GroupRecord) then
-                GroupRecord.ReportRequiredMasters(lDict, AsNew);
+                GroupRecord.ReportRequiredMasters(lMasters, AsNew);
             Container := Elements[i].Container;
             while Assigned(Container) do begin
-              Container.ReportRequiredMasters(lDict, AsNew, False, True);
+              Container.ReportRequiredMasters(lMasters, AsNew, False, True);
               if Container.ElementType = etGroupRecord then
                 with Container as IwbGroupRecord do begin
                   MainRecord := ChildrenOf;
                   if Assigned(MainRecord) then
-                    MainRecord.ReportRequiredMasters(lDict, AsNew);
+                    MainRecord.ReportRequiredMasters(lMasters, AsNew);
                 end;
 
               Container := Container.Container;
@@ -2739,10 +2739,10 @@ begin
           end;
         end;
 
-        for var lFile in lDict.Keys do
+        for var lFile in lMasters do
           sl.AddObject(lFile.FileName, Pointer(lFile));
       finally
-        FreeAndNil(lDict);
+        FreeAndNil(lMasters);
       end;
     end;
 
@@ -2998,32 +2998,32 @@ begin
 
               if Assigned(TargetFile) then begin
                 sl.Clear;
-                var lDict2 := TwbFilesDictionary.Create;
+                var lMasters2 := TwbFilesSet.Create;
                 try
                   for j := Low(Elements) to High(Elements) do begin
-                    Elements[j].ReportRequiredMasters(lDict2, AsNew);
+                    Elements[j].ReportRequiredMasters(lMasters2, AsNew);
                     if DeepCopy then
                       if Supports(Elements[j], IwbMainRecord, MainRecord) and Supports(MainRecord.ChildGroup, IwbGroupRecord, GroupRecord) then
-                        GroupRecord.ReportRequiredMasters(lDict2, AsNew);
+                        GroupRecord.ReportRequiredMasters(lMasters2, AsNew);
                     Container := Elements[j].Container;
                     while Assigned(Container) do begin
-                      Container.ReportRequiredMasters(lDict2, AsNew, False, True);
+                      Container.ReportRequiredMasters(lMasters2, AsNew, False, True);
                       if Container.ElementType = etGroupRecord then
                         with Container as IwbGroupRecord do begin
                           MainRecord := ChildrenOf;
                           if Assigned(MainRecord) then begin
                             MainRecord := MainRecord.HighestOverrideVisibleForFile[TargetFile];
-                            MainRecord.ReportRequiredMasters(lDict2, AsNew);
+                            MainRecord.ReportRequiredMasters(lMasters2, AsNew);
                           end;
                         end;
 
                       Container := Container.Container;
                     end;
                   end;
-                  for var lFile in lDict2.Keys do
+                  for var lFile in lMasters2 do
                     sl.AddObject(lFile.FileName, Pointer(lFile));
                 finally
-                  FreeAndNil(lDict2);
+                  FreeAndNil(lMasters2);
                 end;
               end;
 
@@ -4372,20 +4372,20 @@ begin
   sl.Sorted := True;
   sl.Duplicates := dupIgnore;
   try
-    var lDict := TwbFilesDictionary.Create;
+    var lMasters := TwbFilesSet.Create;
     try
       for i := Low(Elements) to High(Elements) do begin
-        Elements[i].ReportRequiredMasters(lDict, False);
+        Elements[i].ReportRequiredMasters(lMasters, False);
         Container := Elements[i].Container;
         while Assigned(Container) do begin
-          Container.ReportRequiredMasters(lDict, False, False);
+          Container.ReportRequiredMasters(lMasters, False, False);
           Container := Container.Container;
         end;
       end;
-      for var lFile in lDict.Keys do
+      for var lFile in lMasters do
         sl.AddObject(lFile.FileName, Pointer(lFile));
     finally
-      FreeAndNil(lDict);
+      FreeAndNil(lMasters);
     end;
 
     if AddRequiredMasters(sl, ReferenceFile) then
