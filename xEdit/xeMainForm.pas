@@ -2741,7 +2741,6 @@ begin
           with IwbGroupRecord(gl[i]) do begin
             MainRecord := ChildrenOf;
             if Assigned(MainRecord) then begin
-              MainRecord := MainRecord.WinningOverride;
               MainRecord.ReportRequiredMasters(lDict, AsNew);
             end;
           end;
@@ -3027,7 +3026,7 @@ begin
                     with IwbGroupRecord(gl[i]) do begin
                       MainRecord := ChildrenOf;
                       if Assigned(MainRecord) then begin
-                        MainRecord := MainRecord.WinningOverride;
+                        MainRecord := MainRecord.HighestOverrideVisibleForFile[TargetFile];
                         MainRecord.ReportRequiredMasters(lDict2, AsNew);
                       end;
                     end;
