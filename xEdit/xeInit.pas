@@ -1054,7 +1054,9 @@ begin
       wbLoadBSAs            := True;  // localization won't work otherwise
       wbHideIgnored         := False; // to show Form Version
       wbCanSortINFO         := True;
-      wbHasAddedLightSupport := (wbGameMode = gmTES5VR) and FileExists(wbDataPath + 'SKSE\Plugins\skyrimvresl.dll');
+      wbSkyrimVRESL         := (wbGameMode in [gmTES5VR]) and FileExists(wbDataPath + 'SKSE\Plugins\skyrimvresl.dll');
+      wbHasAddedLightSupport := wbSkyrimVRESL;
+      wbHasAddedUpdateSupport := wbSkyrimVRESL;
       wbCS                  := wbIsSkyrimSE and FileExists(wbDataPath + 'SKSE\Plugins\CommunityShaders.dll');
     end;
     gmFO4, gmFO4VR: begin

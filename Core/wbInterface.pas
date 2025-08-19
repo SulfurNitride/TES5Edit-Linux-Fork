@@ -179,6 +179,7 @@ var
   wbHasAddedLightSupport             : Boolean    = False;
   wbHasAddedMediumSupport            : Boolean    = False;
   wbHasAddedOptimizedSupport         : Boolean    = False;
+  wbHasAddedUpdateSupport            : Boolean    = False;
   wbAllowEditHEDRVersion             : Boolean    = False;
   wbAllowEditGameMaster              : Boolean    = False;
   wbIgnoreUpdate                     : Boolean    = False;
@@ -285,6 +286,7 @@ var
 
   wbCS                               : Boolean    = False;
   wbOBME                             : Boolean    = False;
+  wbSkyrimVRESL                      : Boolean    = False;
 
   wbAllowMakePartial                 : Boolean    = False;
 
@@ -5612,7 +5614,7 @@ end;
 
 function wbIsUpdateSupported: Boolean; inline;
 begin
-  Result := wbGameMode in [gmSF1];
+  Result := (wbGameMode in [gmSF1]) or wbHasAddedUpdateSupport;
 end;
 
 function wbDefToName(const aDef: IwbDef): string;
@@ -20886,7 +20888,10 @@ end;
 function TwbMainRecordStructFlags.IsUpdate: Boolean;
 begin
   Result := wbIsUpdateSupported and
-    ((_Flags and $00000200) <> 0);
+    (
+    (wbIsStarfield and ((_Flags and $00000200) <> 0)) or
+    ((wbGameMode in [gmTES5VR]) and ((_Flags and $100000) <> 0))
+    );
 end;
 
 function TwbMainRecordStructFlags.IsESM: Boolean;
@@ -20976,11 +20981,17 @@ procedure TwbMainRecordStructFlags.SetUpdate(aValue: Boolean);
 begin
   if wbIsUpdateSupported then
     if aValue then begin
-      _Flags := _Flags or $00000200;
+      if wbIsStarfield then
+        _Flags := _Flags or $00000200
+      else if wbSkyrimVRESL then
+        _Flags := _Flags or $100000;
       SetLight(False);
       SetMedium(False);
     end else
-      _Flags := _Flags and not $00000200;
+      if wbIsStarfield then
+        _Flags := _Flags and not $00000200
+      else if wbSkyrimVRESL then
+        _Flags := _Flags and not $100000;
 end;
 
 procedure TwbMainRecordStructFlags.SetESM(aValue: Boolean);

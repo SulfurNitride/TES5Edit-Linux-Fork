@@ -10439,15 +10439,16 @@ begin
 
   wbRecord(TES4, 'Main File Header',
     wbFlags(wbFlagsList([
-      0, 'ESM',
-      1, 'Altered',
-      2, 'Checked',
-      3, 'Active',
-      4, 'Optimized',
-      5, 'Temp ID Owner',
-      7, 'Localized',
-      8, 'Precalc Data Only',
-      9, IsSSE('ESL', '')
+      0,  'ESM',
+      1,  'Altered',
+      2,  'Checked',
+      3,  'Active',
+      4,  'Optimized',
+      5,  'Temp ID Owner',
+      7,  'Localized',
+      8,  'Precalc Data Only',
+      9,  IsSkyrimVRESL('ESL', IsSSE('ESL', '')),
+      20, IsSkyrimVRESL('Update', '')
     ], False), True), [
     wbHEDR,
     wbByteArray(OFST, 'Unknown', 0, cpIgnore),
@@ -11224,7 +11225,8 @@ begin
       wbCreationClubContentFileName := 'Skyrim.ccc';
   end;
   wbHEDRVersion := 1.7;
-  if wbGameMode in [gmSSE, gmEnderalSE] then
+  if (wbGameMode in [gmSSE, gmEnderalSE]) or wbSkyrimVRESL then
     wbHEDRVersion := 1.71;
 end;
+
 end.
