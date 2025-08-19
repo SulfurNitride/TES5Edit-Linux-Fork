@@ -1889,6 +1889,8 @@ begin
       Exit;
     s := s + aTemplate.miExtension.ToString;
     aFile := AddNewFileName(s, aTemplate);
+    if Assigned(aFile) and wbAlwaysLoadGameMaster then
+      aFile.AddMasterIfMissing(wbGameMasterESM);
     Result := Assigned(aFile);
   end;
 end;
