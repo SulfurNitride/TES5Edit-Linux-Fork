@@ -10447,8 +10447,8 @@ begin
       5,  'Temp ID Owner',
       7,  'Localized',
       8,  'Precalc Data Only',
-      9,  IsSkyrimVRESL('ESL', IsSSE('ESL', '')),
-      20, IsSkyrimVRESL('Update', '')
+      9,  IsSSE(IsVR(IsVRESL('ESL', ''),'ESL'),''),
+      20, IsVRESL('Update', '')
     ], False), True), [
     wbHEDR,
     wbByteArray(OFST, 'Unknown', 0, cpIgnore),
@@ -11225,7 +11225,7 @@ begin
       wbCreationClubContentFileName := 'Skyrim.ccc';
   end;
   wbHEDRVersion := 1.7;
-  if (wbGameMode in [gmSSE, gmEnderalSE]) or wbSkyrimVRESL then
+  if (wbGameMode in [gmSSE, gmEnderalSE]) then
     wbHEDRVersion := 1.71;
 end;
 

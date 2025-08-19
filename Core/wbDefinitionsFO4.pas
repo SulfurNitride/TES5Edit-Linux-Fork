@@ -12704,10 +12704,11 @@ begin
 
   wbRecord(TES4, 'Main File Header',
     wbFlags(wbFlagsList([
-      {0x00000001}  0, 'ESM',
-      {0x00000010}  4, 'Optimized',
-      {0x00000080}  7, 'Localized',
-      {0x00000200}  9, 'ESL'
+      0,  'ESM',
+      4,  'Optimized',
+      7,  'Localized',
+      9,  IsVR(IsVRESL('ESL',''), 'ESL'),
+      20, IsVRESL('Update', '')
     ], False), True), [
     wbHEDR,
     wbByteArray(OFST, 'Unknown', 0, cpIgnore),            // If possible then ignored by the runtime. Neither from the CK

@@ -401,9 +401,11 @@ function wbIsFlag(aFlag: Integer; const aValue: IwbValueDef; aIsUnused: Boolean 
 function wbIsNotFlag(aFlag: Integer; const aSignature: TwbSignature; const aValue: IwbValueDef; aIsUnused: Boolean = True): IwbRecordMemberDef; overload;
 function wbIsNotFlag(aFlag: Integer; const aValue: IwbValueDef; aIsUnused: Boolean = True): IwbValueDef; overload;
 
-{>>> DLL Mode IfThen Defs <<<} //1
+{>>> DLL Mode IfThen Defs <<<} //4
 function IsCS(const aDef1, aDef2: string): string;
 function IsOBME(const aDef1, aDef2: string): string;
+function IsVR(const aDef1, aDef2: string): string;
+function IsVRESL(const aDef1, aDef2: string): string;
 
 {>>> Game Mode IfThen Defs <<<} //35
 function IsTES3(const aDef1, aDef2: String): string; overload;
@@ -4486,7 +4488,7 @@ begin
       ]).IncludeFlag(dfMustBeUnion);
 end;
 
-{>>> DLL Mod IfThen Defs <<<} //1
+{>>> DLL Mod IfThen Defs <<<} //4
 
 function IsCS(const aDef1, aDef2: string): string;
 begin
@@ -4500,6 +4502,20 @@ begin
   Result := aDef2;
   if wbOBME then
     Result := aDef1
+end;
+
+function IsVR(const aDef1, aDef2: string): string;
+begin
+  Result := aDef2;
+  if wbGameMode in [gmTES5VR, gmFO4VR] then
+    Result := aDef1;
+end;
+
+function IsVRESL(const aDef1, aDef2: string): string;
+begin
+  Result := aDef2;
+  if wbVRESL then
+    Result := aDef1;
 end;
 
 {>>> wbGameMode IfThen Defs <<<} //35

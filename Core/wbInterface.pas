@@ -286,7 +286,7 @@ var
 
   wbCS                               : Boolean    = False;
   wbOBME                             : Boolean    = False;
-  wbSkyrimVRESL                      : Boolean    = False;
+  wbVRESL                            : Boolean    = False;
 
   wbAllowMakePartial                 : Boolean    = False;
 
@@ -20983,14 +20983,14 @@ begin
     if aValue then begin
       if wbIsStarfield then
         _Flags := _Flags or $00000200
-      else if wbSkyrimVRESL then
+      else if (wbGameMode in [gmTES5VR,gmFO4VR]) then
         _Flags := _Flags or $100000;
       SetLight(False);
       SetMedium(False);
     end else
       if wbIsStarfield then
         _Flags := _Flags and not $00000200
-      else if wbSkyrimVRESL then
+      else if (wbGameMode in [gmTES5VR,gmFO4VR]) then
         _Flags := _Flags and not $100000;
 end;
 

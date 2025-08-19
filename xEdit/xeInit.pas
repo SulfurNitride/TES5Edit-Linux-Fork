@@ -1054,9 +1054,9 @@ begin
       wbLoadBSAs            := True;  // localization won't work otherwise
       wbHideIgnored         := False; // to show Form Version
       wbCanSortINFO         := True;
-      wbSkyrimVRESL         := (wbGameMode in [gmTES5VR]) and FileExists(wbDataPath + 'SKSE\Plugins\skyrimvresl.dll');
-      wbHasAddedLightSupport := wbSkyrimVRESL;
-      wbHasAddedUpdateSupport := wbSkyrimVRESL;
+      wbVRESL               := (wbGameMode in [gmTES5VR]) and FileExists(wbDataPath + 'SKSE\Plugins\skyrimvresl.dll');
+      wbHasAddedLightSupport := wbVRESL;
+      wbHasAddedUpdateSupport := wbVRESL;
       wbCS                  := wbIsSkyrimSE and FileExists(wbDataPath + 'SKSE\Plugins\CommunityShaders.dll');
     end;
     gmFO4, gmFO4VR: begin
@@ -1066,6 +1066,9 @@ begin
       wbHideIgnored         := False; // to show Form Version
       wbAlwaysSaveOnam      := True;
       wbAlwaysSaveOnamForce := True;
+      wbVRESL               := (wbGameMode in [gmFO4VR]) and FileExists(wbDataPath + 'F4SE\Plugins\falloutvresl.dll');
+      wbHasAddedLightSupport := wbVRESL;
+      wbHasAddedUpdateSupport := wbVRESL;
     end;
     gmFO76: begin
       wbVWDInTemporary      := True;
