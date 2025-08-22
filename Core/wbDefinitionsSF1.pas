@@ -9379,7 +9379,7 @@ begin
     wbEDID,
     wbVMAD,
     wbBaseFormComponents,
-    wbCNAM.SetRequired,
+    wbByteRGBA(CNAM).SetRequired,
     wbString(DNAM, 'Notes'),
     wbInteger(TNAM, 'Type', itU32, wbKeywordTypeEnum, cpNormal, True),
     wbUnknown(FNAM).SetRequired, // always present, no UI element in CK, and always written as zeros
@@ -9437,7 +9437,7 @@ begin
     wbEDID,
     wbVMAD,
     wbBaseFormComponents,
-    wbCNAM,
+    wbByteRGBA(CNAM),
     wbString(DNAM, 'Notes'),
     wbInteger(TNAM, 'Type', itU32, wbKeywordTypeEnum),
     wbUnknown(FNAM),
@@ -9468,7 +9468,7 @@ begin
     wbEDID,
     wbVMAD,
     wbBaseFormComponents,
-    wbCNAM,
+    wbByteRGBA(CNAM),
     wbString(DNAM, 'Notes'),
     wbInteger(TNAM, 'Type', itU32, wbKeywordTypeEnum),
     wbUnknown(FNAM),
@@ -10827,7 +10827,7 @@ begin
     wbFloat(ANAM, 'Actor Fade Mult').SetDefaultEditValue('1.0'),
     wbFloat(TNAM, 'Random Conversation Timer'),
     wbByteArray(NAM0, 'Horse Marker (Unused', 4),
-    wbCNAM,
+    wbByteRGBA(CNAM),
     wbInteger(XNAM, 'Star ID', itS32, wbStarIDToStr, wbStrToStarID)
       .SetLinksToCallbackOnValue(function(const aElement: IwbElement): IwbElement
         begin

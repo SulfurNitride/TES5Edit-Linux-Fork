@@ -7579,7 +7579,7 @@ begin
       {0x00080000} {15} 15, 'Restricted'
     ])), [
     wbEDID,
-    wbCNAM.SetRequired,
+    wbByteRGBA(CNAM).SetRequired,
     wbString(DNAM, 'Notes'),
     wbInteger(TNAM, 'Type', itU32, wbKeywordTypeEnum)
       .SetDefaultEditValue('None')
@@ -7591,7 +7591,7 @@ begin
 
   wbRecord(LCRT, 'Location Reference Type', [
     wbEDID,
-    wbCNAM.SetRequired,
+    wbByteRGBA(CNAM).SetRequired,
     wbInteger(TNAM, 'Type', itU32, wbKeywordTypeEnum)
       .SetDefaultEditValue('None')
       .SetRequired
@@ -7602,7 +7602,7 @@ begin
       {0x00080000} {15} 15, 'Restricted'
     ])), [
     wbEDID,
-    wbCNAM.SetRequired,
+    wbByteRGBA(CNAM).SetRequired,
     wbString(DNAM, 'Notes'),
     wbInteger(TNAM, 'Type', itU32, wbKeywordTypeEnum)
       .SetDefaultEditValue('None')
@@ -8800,7 +8800,7 @@ begin
     wbFloat(RNAM, 'World Location Radius'),
     //wbFormIDCk(NAM0, 'Horse Marker Ref', [REFR]),
     wbFloat(ANAM, 'Actor Fade Mult').SetDefaultEditValue('1.0'),
-    wbCNAM
+    wbByteRGBA(CNAM)
   ]);
 
   var wbMenuButton :=

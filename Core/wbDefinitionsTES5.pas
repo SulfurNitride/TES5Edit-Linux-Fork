@@ -5583,17 +5583,17 @@ begin
 
   wbRecord(KYWD, 'Keyword', [
     wbEDID,
-    wbCNAM.SetRequired
+    wbByteRGBA(CNAM).SetRequired
   ]);
 
   wbRecord(LCRT, 'Location Reference Type', [
     wbEDID,
-    wbCNAM.SetRequired
+    wbByteRGBA(CNAM).SetRequired
   ]);
 
   wbRecord(AACT, 'Action', [
     wbEDID,
-    wbCNAM.SetRequired
+    wbByteRGBA(CNAM).SetRequired
   ]);
 
   wbRecord(TXST, 'Texture Set', [
@@ -6766,7 +6766,7 @@ begin
     wbFormIDCk(MNAM, 'World Location Marker Ref', [REFR, ACHR]),
     wbFloat(RNAM, 'World Location Radius'),
     wbFormIDCk(NAM0, 'Horse Marker Ref', [REFR]),
-    wbCNAM
+    wbByteRGBA(CNAM)
   ]);
 
   // load map markes list from external file if present
@@ -7951,7 +7951,7 @@ begin
     ])), [
     wbEDID,
     wbFULL,
-    wbCNAM(True),
+    wbByteRGBA(CNAM).SetRequired,
     wbInteger(FNAM, 'Playable', itU32, wbBoolEnum, cpNormal, True)
   ]);
 
@@ -10696,9 +10696,9 @@ begin
       wbFloat('Fog Properties - Above Water - Fog Distance - Near Plane'),
       wbFloat('Fog Properties - Above Water - Fog Distance - Far Plane'),
       wbStruct('Color Properties', [
-        wbByteColors('Shallow Color', '0', '128', '128'),
-        wbByteColors('Deep Color', '0', '0', '25'),
-        wbByteColors('Reflection Color', '255', '255', '255')
+        wbByteColors('Shallow Color', 0, 128, 128),
+        wbByteColors('Deep Color', 0, 0, 25),
+        wbByteColors('Reflection Color', 255, 255, 255)
       ]),
       wbInteger('Texture Blend', itU8),
       wbUnused(3),

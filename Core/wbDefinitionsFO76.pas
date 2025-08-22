@@ -9592,7 +9592,7 @@ begin
     wbEDID,
     wbXALG,
     wbFTAGs,
-    wbCNAM,
+    wbByteRGBA(CNAM),
     wbString(DNAM, 'Notes'),
     wbUnknown(FNAM),
     wbInteger(TNAM, 'Type', itU32, wbKeywordTypeEnum),
@@ -9608,7 +9608,7 @@ begin
       {0x00000010} { 4}  4, 'Unknown 4'
     ])), [
     wbEDID,
-    wbCNAM,
+    wbByteRGBA(CNAM),
     wbUnknown(FNAM),
     wbUnknown(TNAM),
     wbGenericModel,
@@ -9620,7 +9620,7 @@ begin
       {0x00080000} {15} 15, 'Restricted'
     ])), [
     wbEDID,
-    wbCNAM,
+    wbByteRGBA(CNAM),
     wbString(DNAM, 'Notes'),
     wbByteArray(FNAM, 'Unknown FNAM', 4),
     wbInteger(TNAM, 'Type', itU32, wbKeywordTypeEnum),
@@ -10800,11 +10800,7 @@ begin
     wbEDID,
     wbFormIDCk(PNAM, 'Material Parent', [MATT, NULL]),
     wbString(MNAM, 'Material Name'),
-    wbStruct(CNAM, 'Havok Display Color', [
-      wbFloat('Red', cpNormal, True, 255, 0),
-      wbFloat('Green', cpNormal, True, 255, 0),
-      wbFloat('Blue', cpNormal, True, 255, 0)
-    ]).SetToStr(wbRGBAToStr).IncludeFlag(dfCollapsed, wbCollapseRGBA),
+    wbFloatColors(CNAM, 'Havok Display Color'),
     wbFloat(BNAM, 'Buoyancy'),
     wbInteger(FNAM, 'Flags', itU32, wbFlags([
       'Stair Material',
@@ -11032,7 +11028,7 @@ begin
     wbFloat(ANAM, 'Actor Fade Mult'),
     wbUnknown(NAM5),
     wbUnknown(NAM6),
-    wbCNAM
+    wbByteRGBA(CNAM)
   ]);
 
   var wbMenuButton :=
@@ -12393,12 +12389,7 @@ begin
     wbEDID,
     wbDESCReq,
     wbInteger(BNAM, 'Index', itU32, nil, cpNormal, True),
-    wbStruct(FNAM, 'Debug Color', [
-      wbInteger('Red', itU8),
-      wbInteger('Green', itU8),
-      wbInteger('Blue', itU8),
-      wbInteger('Unused', itU8)
-    ], cpNormal, True).SetToStr(wbRGBAToStr).IncludeFlag(dfCollapsed, wbCollapseRGBA),
+    wbByteColors(FNAM).SetRequired,
     wbInteger(GNAM, 'Flags', itU32, wbFlags([
       {0x00000001} 'Trigger Volume',
       {0x00000002} 'Sensor',
@@ -13610,12 +13601,7 @@ begin
        wbFloat('Fat')
     ]),
     wbFormIDCk(FTST, 'Head Texture', [TXST], False, cpNormal, False),
-    wbStruct(QNAM, 'Texture lighting', [
-      wbFloat('Red', cpNormal, True, 255, 0),
-      wbFloat('Green', cpNormal, True, 255, 0),
-      wbFloat('Blue', cpNormal, True, 255, 0),
-      wbFloat('Alpha')
-    ]).SetToStr(wbRGBAToStr).IncludeFlag(dfCollapsed, wbCollapseRGBA),
+    wbFloatColors(QNAM),
     wbArray(MSDK, 'Morph Keys', wbInteger('Key', itU32, wbMorphValueToStr, wbHexStrToInt)),
     wbArray(MSDV, 'Morph Values', wbFloat('Value')),
     wbRArrayS('Face Tinting Layers',

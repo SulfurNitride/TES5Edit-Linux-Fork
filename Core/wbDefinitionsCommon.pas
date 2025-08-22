@@ -522,31 +522,87 @@ function wbSizePosRot(const aSignature : TwbSignature;
                                        : IwbSubRecordDef; overload;
 
 {>>> Color Defs <<<} //16
-function wbAmbientColors(const aSignature: TwbSignature; const aName: string = 'Directional Ambient Lighting Colors'): IwbSubRecordDef; overload;
-function wbAmbientColors(const aName: string = 'Directional Ambient Lighting Colors'): IwbStructDef; overload;
+function wbAmbientColors(const aSignature: TwbSignature;
+                         const aName     : string = 'Directional Ambient Lighting Colors')
+                                         : IwbSubRecordDef; overload;
+
+function wbAmbientColors(const aName : string = 'Directional Ambient Lighting Colors')
+                                     : IwbStructDef; overload;
+
 function wbByteColors(const aSignature : TwbSignature;
                       const aName      : string = 'Color';
-                            aDefault1  : string = '0';
-                            aDefault2  : string = '0';
-                            aDefault3  : string = '0')
+                      const aDefaultR  : Byte = 0;
+                      const aDefaultG  : Byte = 0;
+                      const aDefaultB  : Byte = 0)
                                        : IwbRecordMemberDef; overload
+
 function wbByteColors(const aName     : string = 'Color';
-                            aDefault1 : string = '0';
-                            aDefault2 : string = '0';
-                            aDefault3 : string = '0')
+                      const aDefaultR : Byte = 0;
+                      const aDefaultG : Byte = 0;
+                      const aDefaultB : Byte = 0)
                                       : IwbValueDef; overload;
-function wbByteABGR(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef; overload;
-function wbByteABGR(const aName: string = 'Color'): IwbValueDef; overload;
-function wbByteRGBA(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef; overload;
-function wbByteRGBA(const aName: string = 'Color'): IwbValueDef; overload;
-function wbByteBGRA(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef; overload;
-function wbByteBGRA(const aName: string = 'Color'): IwbValueDef; overload;
-function wbCNAM(aRequired: Boolean = False): IwbRecordMemberDef;
-function wbFloatColors(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef; overload;
-function wbFloatColors(const aName: string = 'Color'): IwbValueDef; overload;
-function wbRFloatColors(const aName: string = 'Color'; const aSigs: TwbSignatures = []): IwbRecordMemberDef;
-function wbFloatRGBA(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef; overload;
-function wbFloatRGBA(const aName: string = 'Color'): IwbValueDef; overload;
+
+function wbByteABGR(const aSignature : TwbSignature;
+                    const aName      : string = 'Color';
+                    const aDefaultA  : Byte = 0;
+                    const aDefaultB  : Byte = 0;
+                    const aDefaultG  : Byte = 0;
+                    const aDefaultR  : Byte = 0)
+                                     : IwbRecordMemberDef; overload;
+
+function wbByteABGR(const aName      : string = 'Color';
+                    const aDefaultA  : Byte = 0;
+                    const aDefaultB  : Byte = 0;
+                    const aDefaultG  : Byte = 0;
+                    const aDefaultR  : Byte = 0)
+                                     : IwbValueDef; overload;
+
+function wbByteRGBA(const aSignature : TwbSignature;
+                    const aName      : string = 'Color';
+                    const aDefaultR  : Byte = 0;
+                    const aDefaultG  : Byte = 0;
+                    const aDefaultB  : Byte = 0;
+                    const aDefaultA  : Byte = 0)
+                                     : IwbRecordMemberDef; overload;
+
+function wbByteRGBA(const aName      : string = 'Color';
+                    const aDefaultR  : Byte = 0;
+                    const aDefaultG  : Byte = 0;
+                    const aDefaultB  : Byte = 0;
+                    const aDefaultA  : Byte = 0)
+                                : IwbValueDef; overload;
+
+function wbByteBGRA(const aSignature : TwbSignature;
+                    const aName      : string = 'Color';
+                    const aDefaultB  : Byte = 0;
+                    const aDefaultG  : Byte = 0;
+                    const aDefaultR  : Byte = 0;
+                    const aDefaultA  : Byte = 0)
+                                     : IwbRecordMemberDef; overload;
+
+function wbByteBGRA(const aName      : string = 'Color';
+                    const aDefaultB  : Byte = 0;
+                    const aDefaultG  : Byte = 0;
+                    const aDefaultR  : Byte = 0;
+                    const aDefaultA  : Byte = 0)
+                                     : IwbValueDef; overload;
+
+function wbFloatColors(const aSignature : TwbSignature;
+                       const aName      : string = 'Color')
+                                        : IwbRecordMemberDef; overload;
+
+function wbFloatColors(const aName     : string = 'Color')
+                                       : IwbValueDef; overload;
+
+function wbRFloatColors(const aName : string = 'Color';
+                        const aSigs : TwbSignatures = []): IwbRecordMemberDef;
+
+function wbFloatRGBA(const aSignature : TwbSignature;
+                     const aName      : string = 'Color')
+                                      : IwbRecordMemberDef; overload;
+
+function wbFloatRGBA(const aName : string = 'Color')
+                                 : IwbValueDef; overload;
 
 {>>> Many Record Defs <<<} //2
 function wbModelInfo(aSignature: TwbSignature; aName: string = ''): IwbRecordMemberDef;
@@ -5144,7 +5200,9 @@ end;
 
 {>>> Color Defs <<<} //16
 
-function wbAmbientColors(const aSignature: TwbSignature; const aName: string = 'Directional Ambient Lighting Colors'): IwbSubRecordDef;
+function wbAmbientColors(const aSignature : TwbSignature;
+                         const aName      : string = 'Directional Ambient Lighting Colors')
+                                          : IwbSubRecordDef;
 begin
   Result := wbStruct(aSignature, aName, [
     wbStruct('Directional', [
@@ -5169,7 +5227,8 @@ begin
   ]);
 end;
 
-function wbAmbientColors(const aName: string = 'Directional Ambient Lighting Colors'): IwbStructDef;
+function wbAmbientColors(const aName : string = 'Directional Ambient Lighting Colors')
+                                     : IwbStructDef;
 begin
   Result := wbStruct(aName, [
     wbStruct('Directional', [
@@ -5196,115 +5255,137 @@ end;
 
 function wbByteColors(const aSignature : TwbSignature;
                       const aName      : string = 'Color';
-                            aDefault1  : string = '0';
-                            aDefault2  : string = '0';
-                            aDefault3  : string = '0')
+                      const aDefaultR  : Byte = 0;
+                      const aDefaultG  : Byte = 0;
+                      const aDefaultB  : Byte = 0)
                                        : IwbRecordMemberDef;
 begin
   Result := wbStruct(aSignature, aName, [
-    wbInteger('Red', itU8).SetDefaultEditValue(aDefault1),
-    wbInteger('Green', itU8).SetDefaultEditValue(aDefault2),
-    wbInteger('Blue', itU8).SetDefaultEditValue(aDefault3),
+    wbInteger('Red', itU8).SetDefaultNativeValue(aDefaultR),
+    wbInteger('Green', itU8).SetDefaultNativeValue(aDefaultG),
+    wbInteger('Blue', itU8).SetDefaultNativeValue(aDefaultB),
     wbUnused(1)
   ]).SetToStr(wbRGBAToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
 function wbByteColors(const aName     : string = 'Color';
-                            aDefault1 : string = '0';
-                            aDefault2 : string = '0';
-                            aDefault3 : string = '0')
+                      const aDefaultR : Byte = 0;
+                      const aDefaultG : Byte = 0;
+                      const aDefaultB : Byte = 0)
                                       : IwbValueDef;
 begin
   Result := wbStruct(aName, [
-    wbInteger('Red', itU8).SetDefaultEditValue(aDefault1),
-    wbInteger('Green', itU8).SetDefaultEditValue(aDefault2),
-    wbInteger('Blue', itU8).SetDefaultEditValue(aDefault3),
+    wbInteger('Red', itU8).SetDefaultNativeValue(aDefaultR),
+    wbInteger('Green', itU8).SetDefaultNativeValue(aDefaultG),
+    wbInteger('Blue', itU8).SetDefaultNativeValue(aDefaultB),
     wbUnused(1)
   ]).SetToStr(wbRGBAToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbByteABGR(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef;
+function wbByteABGR(const aSignature : TwbSignature;
+                    const aName      : string = 'Color';
+                    const aDefaultA  : Byte = 0;
+                    const aDefaultB  : Byte = 0;
+                    const aDefaultG  : Byte = 0;
+                    const aDefaultR  : Byte = 0)
+                                     : IwbRecordMemberDef;
 begin
   Result := wbStruct(aSignature, aName, [
-    wbInteger('Alpha', itU8),
-    wbInteger('Blue', itU8),
-    wbInteger('Green', itU8),
-    wbInteger('Red', itU8)
+    wbInteger('Alpha', itU8).SetDefaultNativeValue(aDefaultA),
+    wbInteger('Blue', itU8).SetDefaultNativeValue(aDefaultB),
+    wbInteger('Green', itU8).SetDefaultNativeValue(aDefaultG),
+    wbInteger('Red', itU8).SetDefaultNativeValue(aDefaultR)
   ]).SetToStr(wbABGRToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbByteABGR(const aName: string = 'Color'): IwbValueDef;
+function wbByteABGR(const aName     : string = 'Color';
+                    const aDefaultA : Byte = 0;
+                    const aDefaultB : Byte = 0;
+                    const aDefaultG : Byte = 0;
+                    const aDefaultR : Byte = 0)
+                                    : IwbValueDef;
 begin
   Result := wbStruct(aName, [
-    wbInteger('Alpha', itU8),
-    wbInteger('Blue', itU8),
-    wbInteger('Green', itU8),
-    wbInteger('Red', itU8)
+    wbInteger('Alpha', itU8).SetDefaultNativeValue(aDefaultA),
+    wbInteger('Blue', itU8).SetDefaultNativeValue(aDefaultB),
+    wbInteger('Green', itU8).SetDefaultNativeValue(aDefaultG),
+    wbInteger('Red', itU8).SetDefaultNativeValue(aDefaultR)
   ]).SetToStr(wbABGRToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbByteRGBA(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef;
+function wbByteRGBA(const aSignature : TwbSignature;
+                    const aName     : string = 'Color';
+                    const aDefaultR : Byte = 0;
+                    const aDefaultG : Byte = 0;
+                    const aDefaultB : Byte = 0;
+                    const aDefaultA : Byte = 0)
+                                    : IwbRecordMemberDef;
 begin
   Result := wbStruct(aSignature, aName, [
-    wbInteger('Red', itU8),
-    wbInteger('Green', itU8),
-    wbInteger('Blue', itU8),
-    wbInteger('Alpha', itU8)
+    wbInteger('Red', itU8).SetDefaultNativeValue(aDefaultR),
+    wbInteger('Green', itU8).SetDefaultNativeValue(aDefaultG),
+    wbInteger('Blue', itU8).SetDefaultNativeValue(aDefaultB),
+    wbInteger('Alpha', itU8).SetDefaultNativeValue(aDefaultA)
   ]).SetToStr(wbRGBAToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbByteRGBA(const aName: string = 'Color'): IwbValueDef;
+function wbByteRGBA(const aName     : string = 'Color';
+                    const aDefaultR : Byte = 0;
+                    const aDefaultG : Byte = 0;
+                    const aDefaultB : Byte = 0;
+                    const aDefaultA : Byte = 0)
+                                    : IwbValueDef;
 begin
   Result := wbStruct(aName, [
-    wbInteger('Red', itU8),
-    wbInteger('Green', itU8),
-    wbInteger('Blue', itU8),
-    wbInteger('Alpha', itU8)
+    wbInteger('Red', itU8).SetDefaultNativeValue(aDefaultR),
+    wbInteger('Green', itU8).SetDefaultNativeValue(aDefaultG),
+    wbInteger('Blue', itU8).SetDefaultNativeValue(aDefaultB),
+    wbInteger('Alpha', itU8).SetDefaultNativeValue(aDefaultA)
   ]).SetToStr(wbRGBAToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbByteBGRA(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef;
+function wbByteBGRA(const aSignature : TwbSignature;
+                    const aName      : string = 'Color';
+                    const aDefaultB  : Byte = 0;
+                    const aDefaultG  : Byte = 0;
+                    const aDefaultR  : Byte = 0;
+                    const aDefaultA  : Byte = 0)
+                                     : IwbRecordMemberDef;
 begin
   Result := wbStruct(aSignature, aName, [
-    wbInteger('Blue', itU8),
-    wbInteger('Green', itU8),
-    wbInteger('Red', itU8),
-    wbInteger('Alpha', itU8)
+    wbInteger('Blue', itU8).SetDefaultNativeValue(aDefaultB),
+    wbInteger('Green', itU8).SetDefaultNativeValue(aDefaultG),
+    wbInteger('Red', itU8).SetDefaultNativeValue(aDefaultR),
+    wbInteger('Alpha', itU8).SetDefaultNativeValue(aDefaultA)
   ]).SetToStr(wbBGRAToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbByteBGRA(const aName: string = 'Color'): IwbValueDef;
+function wbByteBGRA(const aName     : string = 'Color';
+                    const aDefaultB : Byte = 0;
+                    const aDefaultG : Byte = 0;
+                    const aDefaultR : Byte = 0;
+                    const aDefaultA : Byte = 0)
+                                    : IwbValueDef;
 begin
   Result := wbStruct(aName, [
-    wbInteger('Blue', itU8),
-    wbInteger('Green', itU8),
-    wbInteger('Red', itU8),
-    wbInteger('Alpha', itU8)
+    wbInteger('Blue', itU8).SetDefaultNativeValue(aDefaultB),
+    wbInteger('Green', itU8).SetDefaultNativeValue(aDefaultG),
+    wbInteger('Red', itU8).SetDefaultNativeValue(aDefaultR),
+    wbInteger('Alpha', itU8).SetDefaultNativeValue(aDefaultA)
   ]).SetToStr(wbBGRAToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbCNAM(aRequired: Boolean = False): IwbRecordMemberDef;
-begin
-  Result :=
-    wbStruct(CNAM, 'Color', [
-      wbInteger('Red', itU8),
-      wbInteger('Green', itU8),
-      wbInteger('Blue', itU8),
-      wbInteger('Alpha', itU8)
-    ]).SetRequired(aRequired)
-      .SetToStr(wbRGBAToStr)
-      .IncludeFlag(dfCollapsed, wbCollapseRGBA);
-end;
-
-function wbFloatColors(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef;
+function wbFloatColors(const aSignature : TwbSignature;
+                       const aName      : string = 'Color')
+                                        : IwbRecordMemberDef;
 begin
   Result := wbStruct(aSignature, aName, [
     wbFloat('Red', cpNormal, True, 255, 0),
@@ -5314,7 +5395,8 @@ begin
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbFloatColors(const aName: string = 'Color'): IwbValueDef;
+function wbFloatColors(const aName     : string = 'Color')
+                                       : IwbValueDef;
 begin
   Result := wbStruct(aName, [
     wbFloat('Red', cpNormal, True, 255, 0),
@@ -5324,7 +5406,9 @@ begin
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbRFloatColors(const aName: string = 'Color'; const aSigs: TwbSignatures = []): IwbRecordMemberDef;
+function wbRFloatColors(const aName : string = 'Color';
+                        const aSigs : TwbSignatures = [])
+                                    : IwbRecordMemberDef;
 begin
   Assert(Length(aSigs) = 3, 'wbRFloatColors called with incorrect number of signatures.');
 
@@ -5336,7 +5420,9 @@ begin
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbFloatRGBA(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef;
+function wbFloatRGBA(const aSignature : TwbSignature;
+                     const aName      : string = 'Color')
+                                      : IwbRecordMemberDef;
 begin
   Result := wbStruct(aSignature, aName, [
     wbFloat('Red', cpNormal, True, 255, 0),
@@ -5347,7 +5433,8 @@ begin
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbFloatRGBA(const aName: string = 'Color'): IwbValueDef;
+function wbFloatRGBA(const aName : string = 'Color')
+                                 : IwbValueDef;
 begin
   Result := wbStruct(aName, [
     wbFloat('Red', cpNormal, True, 255, 0),
