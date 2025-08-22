@@ -2166,48 +2166,58 @@ begin
 end;
 
 function wbREFRRecordFlagsDecider(const aElement: IwbElement): Integer;
-var
-  MainRecord : IwbMainRecord;
-  NameRec    : IwbElement;
 begin
   Result := 0;
-
-  if not wbTryGetContainingMainRecord(aElement, MainRecord) then
+  if not Assigned(aElement) then
     Exit;
 
-  NameRec := MainRecord.ElementBySignature[NAME];
-  if not wbTryGetMainRecord(NameRec, MainRecord) then
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
     Exit;
 
-  if (MainRecord.Signature = ACTI) or
-     (MainRecord.Signature = STAT) or
-     (MainRecord.Signature = TREE) or
-     (MainRecord.Signature = FLOR)
+  var lNAME := lMainRecord.ElementBySignature[NAME];
+  if not Assigned(lNAME) then
+    Exit;
+
+  var lSig := (lNAME.LinksTo as IwbMainRecord).Signature;
+  if lSig = ACTI then
+    Result := 1 else
+  if (lSig = ADDN) or
+     (lSig = ARTO) or
+     (lSig = ASPC) or
+     (lSig = FLOR) or
+     (lSig = FURN) or
+     (lSig = IDLM) or
+     (lSig = SOUN) or
+     (lSig = TACT) or
+     (lSig = TXST)
   then
-    Result := 1
-  else if MainRecord.Signature = CONT then
-    Result := 2
-  else if MainRecord.Signature = DOOR then
+    Result := 2 else
+  if (lSig = ALCH) or
+     (lSig = AMMO) or
+     (lSig = APPA) or
+     (lSig = ARMO) or
+     (lSig = BOOK) or
+     (lSig = INGR) or
+     (lSig = KEYM) or
+     (lSig = MISC) or
+     (lSig = SCRL) or
+     (lSig = SLGM) or
+     (lSig = WEAP)
+  then
     Result := 3
-  else if MainRecord.Signature = LIGH then
+  else if lSig = CONT then
     Result := 4
-  else if MainRecord.Signature = MSTT then
+  else if lSig = DOOR then
     Result := 5
-  else if MainRecord.Signature = ADDN then
+  else if lSig = LIGH then
     Result := 6
-  else if
-     (MainRecord.Signature = SCRL) or
-     (MainRecord.Signature = AMMO) or
-     (MainRecord.Signature = ARMO) or
-     (MainRecord.Signature = BOOK) or
-     (MainRecord.Signature = INGR) or
-     (MainRecord.Signature = KEYM) or
-     (MainRecord.Signature = MISC) or
-     (MainRecord.Signature = SLGM) or
-     (MainRecord.Signature = WEAP) or
-     (MainRecord.Signature = ALCH)
-  then
-    Result := 7;
+  else if lSig = MSTT then
+    Result := 7
+  else if lSig = STAT then
+    Result := 8
+  else if lSig = TREE then
+    Result := 9;
 end;
 
 type
@@ -9857,106 +9867,129 @@ begin
 
   wbRefRecord(REFR, 'Placed Object', wbFormaterUnion(wbREFRRecordFlagsDecider, [
     wbFlags(wbFlagsList([
-      10, 'Persistent',
-      11, 'Initially Disabled',
-      16, 'Is Full LOD',
-      26, 'Filter (Collision Geometry)',
-      27, 'Bounding Box (Collision Geometry)',
-      28, 'Reflected By Auto Water',
-      30, 'Ground',
-      31, 'Multibound'
-    ], True, True)),
-    wbFlags(wbFlagsList([ {ACTI STAT TREE FLOR}
-      9, 'Hidden From Local Map',
-     10, 'Persistent',
-     11, 'Initially Disabled',
-     13, 'Sky Marker',
-     15, 'Visible when distant',
-     16, 'Is Full LOD',
-     26, 'Filter (Collision Geometry)',
-     27, 'Bounding Box (Collision Geometry)',
-     28, 'Reflected By Auto Water',
-     29, 'Don''t Havok Settle',
-     30, 'No Respawn',
-     31, 'Multibound'
-    ], True, True)),
-    wbFlags(wbFlagsList([ {CONT}
-      10, 'Persistent',
-      11, 'Initially Disabled',
-      16, 'Is Full LOD',
-      25, 'No AI Acquire',
-      26, 'Filter (Collision Geometry)',
-      27, 'Bounding Box (Collision Geometry)',
-      28, 'Reflected By Auto Water',
-      29, 'Don''t Havok Settle',
-      30, 'Ground',
-      31, 'Multibound'
-    ], True, True)),
-    wbFlags(wbFlagsList([ {DOOR}
-      6, 'Hidden From Local Map',
-      8, 'Inaccessible',
-     10, 'Persistent',
-     11, 'Initially Disabled',
-     16, 'Is Full LOD',
-     26, 'Filter (Collision Geometry)',
-     27, 'Bounding Box (Collision Geometry)',
-     28, 'Reflected By Auto Water',
-     29, 'Don''t Havok Settle',
-     30, 'No Respawn',
-     31, 'Multibound'
-    ], True, True)),
-    wbFlags(wbFlagsList([ {LIGH}
-      8, 'Doesn''t Light Water',
-      9, 'Casts Shadows',
-     10, 'Persistent',
-     11, 'Initially Disabled',
-     16, 'Never Fades',
-     17, 'Doesn''t Light Landscape',
-     25, 'No AI Acquire',
-     28, 'Reflected By Auto Water',
-     29, 'Don''t Havok Settle',
-     30, 'No Respawn',
-     31, 'Multibound'
-    ], True, True)),
-    wbFlags(wbFlagsList([ {MSTT}
-      9, 'Motion Blur',
-     10, 'Persistent',
-     11, 'Initially Disabled',
-     16, 'Is Full LOD',
-     26, 'Filter (Collision Geometry)',
-     27, 'Bounding Box (Collision Geometry)',
-     28, 'Reflected By Auto Water',
-     29, 'Don''t Havok Settle',
-     30, 'No Respawn',
-     31, 'Multibound'
-    ], True, True)),
-    wbFlags(wbFlagsList([ {ADDN}
-      10, 'Persistent',
-      11, 'Initially Disabled',
-      16, 'Is Full LOD',
-      28, 'Reflected By Auto Water',
-      29, 'Don''t Havok Settle',
-      30, 'No Respawn',
-      31, 'Multibound'
-    ], True, True)),
-    wbFlags(wbFlagsList([ {ALCH SCRL AMMO ARMO INGR KEYM MISC SLGM WEAP}
-      10, 'Persistent',
-      11, 'Initially Disabled',
-      16, 'Is Full LOD',
-      25, 'No AI Acquire',
-      28, 'Reflected By Auto Water',
-      29, 'Don''t Havok Settle',
-      30, 'No Respawn',
-      31, 'Multibound'
-    ], True, True))
+    10, 'Persistent',
+    11, 'Initially Disabled'
+    ])),
+    wbFlags(wbFlagsList([ //ACTI
+    9,  'Hidden From Local Map',
+    10, 'Persistent',
+    11, 'Initially Disabled',
+    16, 'Is Full LOD',
+    26, 'Navmesh - Filter (Collision Geometry)',
+    27, 'Navmesh - Bounding Box (Collision Geometry)',
+    28, 'Reflected By Auto Water',
+    29, 'Don''t Havok Settle',
+    30, 'Navmesh - Ground',
+    31, 'Multibound'
+    ])).SetFlagHasDontShow(16, wbFlagREFRInteriorDontShow)
+       .SetFlagHasDontShow(28, wbFlagREFRInteriorDontShow),
+    wbFlags(wbFlagsList([ //ADDN ARTO ASPC FLOR FURN IDLM SOUN TACT TXST
+    10, 'Persistent',
+    11, 'Initially Disabled',
+    16, 'Is Full LOD',
+    28, 'Reflected By Auto Water',
+    29, 'Don''t Havok Settle',
+    30, 'No Respawn',
+    31, 'Multibound'
+    ])).SetFlagHasDontShow(16, wbFlagREFRInteriorDontShow)
+       .SetFlagHasDontShow(28, wbFlagREFRInteriorDontShow),
+    wbFlags(wbFlagsList([ //ALCH AMMO APPA ARMO BOOK INGR KEYM MISC SCRL SLGM WEAP
+    10, 'Persistent',
+    11, 'Initially Disable',
+    16, 'Is Full LOD',
+    25, 'No AI Acquire',
+    28, 'Reflected By Auto Water',
+    29, 'Don''t Havok Settle',
+    30, 'No Respawn',
+    31, 'Multibound'
+    ])).SetFlagHasDontShow(16, wbFlagREFRInteriorDontShow)
+       .SetFlagHasDontShow(28, wbFlagREFRInteriorDontShow),
+    wbFlags(wbFlagsList([ //CONT
+    10, 'Persistent',
+    11, 'Initially Disabled',
+    16, 'Is Full LOD',
+    25, 'No AI Acquire',
+    26, 'Navmesh - Filter',
+    27, 'Navmesh - Bounding Box',
+    28, 'Reflected By Auto Water',
+    29, 'Don''t Havok Settle',
+    30, 'Navmesh - Ground',
+    31, 'Multibound'
+    ])).SetFlagHasDontShow(16, wbFlagREFRInteriorDontShow)
+       .SetFlagHasDontShow(28, wbFlagREFRInteriorDontShow),
+    wbFlags(wbFlagsList([ //DOOR
+    6,  'Hidden From Local Map',
+    8,  'Inaccessible',
+    10, 'Persistent',
+    11, 'Initially Disabled',
+    16, 'Is Full LOD',
+    28, 'Reflected By Auto Water',
+    29, 'Don''t Havok Settle',
+    30, 'No Respawn',
+    31, 'Multibound'
+    ])).SetFlagHasDontShow(16, wbFlagREFRInteriorDontShow)
+       .SetFlagHasDontShow(28, wbFlagREFRInteriorDontShow),
+    wbFlags(wbFlagsList([ //LIGH
+    8,  'Doesn''t Light Water',
+    9,  'Cast Shadows',
+    10, 'Persistent',
+    11, 'Initially Disabled',
+    16, 'Never Fades',
+    17, 'Doesn''t Light Landscape',
+    25, 'No AI Acquire',
+    28, 'Reflected By Auto Water',
+    29, 'Don''t Havok Settle',
+    30, 'No Respawn',
+    31, 'Multibound'
+    ])).SetFlagHasDontShow(16, wbFlagREFRInteriorDontShow)
+       .SetFlagHasDontShow(28, wbFlagREFRInteriorDontShow),
+    wbFlags(wbFlagsList([ //MSTT
+    9,  'Motion Blur',
+    10, 'Persistent',
+    11, 'Initially Disabled',
+    16, 'Is Full LOD',
+    26, 'Navmesh - Filter (Collision Geometry)',
+    27, 'Navmesh - Bounding Box (Collision Geometry)',
+    28, 'Reflected By Auto Water',
+    29, 'Don''t Have Settle',
+    30, 'Navmesh - Ground',
+    31, 'Multibound'
+    ])).SetFlagHasDontShow(16, wbFlagREFRInteriorDontShow)
+       .SetFlagHasDontShow(28, wbFlagREFRInteriorDontShow),
+    wbFlags(wbFlagsList([ //STAT
+    9,  'Hidden From Local Map',
+    10, 'Persistent',
+    11, 'Initially Disabled',
+    13, 'Sky Marker',
+    15, 'Visible When Distant',
+    16, 'Is Full LOD',
+    26, 'Navmesh - Filter (Collision Geometry)',
+    27, 'Navmesh - Bounding Box (Collision Geometry)',
+    28, 'Reflected By Auto Water',
+    29, 'Don''t Havok Settle',
+    30, 'Navmesh - Ground',
+    31, 'Multibound'
+    ])).SetFlagHasDontShow(23, wbFlagREFRSkyMarkerDontShow)
+       .SetFlagHasDontShow(16, wbFlagREFRInteriorDontShow)
+       .SetFlagHasDontShow(28, wbFlagREFRInteriorDontShow),
+    wbFlags
+    (wbFlagsList([ //TREE
+    9,  'Hidden From Local Map',
+    10, 'Persistent',
+    11, 'Initially Disabled',
+    16, 'Is Full LOD',
+    28, 'Reflected By Auto Water',
+    29, 'Don''t Havok Settle',
+    30, 'No Respawn',
+    31, 'MultiBound'
+    ])).SetFlagHasDontShow(16, wbFlagREFRInteriorDontShow)
+       .SetFlagHasDontShow(28, wbFlagREFRInteriorDontShow)
   ]), [
     wbEDID,
     wbVMAD,
     wbFormIDCk(NAME, 'Base', [
-      TREE, SNDR, ACTI, DOOR, STAT, FURN, CONT, ARMO, AMMO, LVLN, LVLC,
-      MISC, WEAP, BOOK, KEYM, ALCH, LIGH, GRAS, ASPC, IDLM, ARMA, INGR,
-      MSTT, TACT, TXST, FLOR, SLGM, SCRL, SOUN, APPA, SPEL, ARTO, ADDN
-    ], False, cpNormal, True),
+      ACTI, ADDN, ALCH, AMMO, APPA, ARMO, ARTO, ASPC, BOOK, CONT, DOOR, FLOR, FURN, IDLM, INGR, KEYM, LIGH, MISC, MSTT, SCRL, SLGM, SOUN, STAT, TACT, TREE, TXST, WEAP
+    ]).SetRequired,
 
     {--- Bound Contents ---}
     {--- Bound Data ---}

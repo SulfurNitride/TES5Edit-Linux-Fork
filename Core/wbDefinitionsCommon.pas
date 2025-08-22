@@ -210,13 +210,15 @@ function wbWeatherCloudColorsCounter(aBasePtr: Pointer; aEndPtr: Pointer; const 
 function wbWorldColumnsCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
 function wbWorldRowsCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
 
-{>>> Flag Don't Show Callbacks <<<} //6
+{>>> Flag Don't Show Callbacks <<<} //7
+function wbFlagREFRInteriorDontShow(const aElement: IwbElement): Boolean;
 function wbFlagNavmeshFilterDontSHow(const aElement: IwbElement): Boolean;
 function wbFlagNavmeshBoundingBoxDontSHow(const aElement: IwbElement): Boolean;
 function wbFlagNavmeshOnlyCutDontSHow(const aElement: IwbElement): Boolean;
 function wbFlagNavmeshIgnoreErosionDontSHow(const aElement: IwbElement): Boolean;
 function wbFlagNavmeshGroundDontSHow(const aElement: IwbElement): Boolean;
 function wbFlagPartialFormDontShow(const aElement: IwbElement): Boolean;
+function wbFlagREFRSkyMarkerDontShow(const aElement: IwbElement): Boolean;
 
 {>>> Don't Show Callbacks <<<} //19
 function wbAlwaysDontShow(const aElement: IwbElement): Boolean;
@@ -1606,7 +1608,25 @@ begin
   Result := Round(MaxY) - Round(MinY) + 1;
 end;
 
-{>>> Flag Don't Show Callbacks <<<} //6
+{>>> Flag Don't Show Callbacks <<<} //7
+
+function wbFlagREFRInteriorDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := False;
+  if not Assigned(aElement) then
+    Exit;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  var lCell := lMainRecord.ElementLinksTo['Cell'] as IwbMainRecord;
+  if not Assigned(lCell) then
+    Exit;
+
+  if (lCell.ElementNativeValues['DATA'] and $1) <> 0 then
+    Exit(True);
+end;
 
 function wbFlagNavmeshFilterDontSHow(const aElement: IwbElement): Boolean;
 begin
@@ -1659,6 +1679,24 @@ begin
   if lMainRecord.IsPartialForm then
     Exit;
   Result := not lMainRecord.CanBePartial;
+end;
+
+function wbFlagREFRSkyMarkerDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := False;
+  if not Assigned(aElement) then
+    Exit;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  var lNAME := lMainRecord.ElementLinksTo['NAME'] as IwbMainRecord;
+  if not Assigned(lNAME) then
+    Exit;
+
+  if (lNAME.Flags._Flags and $1000000) = 0 then
+    Exit(True);
 end;
 
 {>>> Don't Show Callbacks <<<} //19
