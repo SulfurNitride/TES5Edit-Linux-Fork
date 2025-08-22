@@ -457,17 +457,67 @@ function wbFromVersion(aVersion: Integer; const aSignature: TwbSignature; const 
 function wbFromVersion(aVersion: Integer; const aValue: IwbValueDef): IwbValueDef; overload;
 
 {>>> Vec3 Defs <<<} //11
-function wbVec3(const aName: string = 'Unknown'; const aPrefix: string = ''): IwbValueDef; overload;
-function wbVec3(const aSignature: TwbSignature; const aName: string = 'Unknown'; const aPrefix: string = ''): IwbRecordMemberDef; overload;
-function wbVec3Pos(const aName: string = 'Position'; const aPrefix: string = 'Pos'): IwbValueDef; overload;
-function wbVec3Pos(const aSignature: TwbSignature; const aName: string = 'Position'; const aPrefix: string = 'Pos'): IwbRecordMemberDef; overload;
-function wbVec3Rot(const aName: string = 'Rotation'; const aPrefix: string = 'Rot'): IwbValueDef; overload;
-function wbVec3Rot(const aSignature: TwbSignature; const aName: string = 'Rotation'; const aPrefix: string = 'Rot'): IwbRecordMemberDef; overload;
-function wbVec3PosRot(const aCombinedName: string = 'Position/Rotation'; const aPosName: string = 'Position'; const aRotName: string = 'Rotation'; const aPosPrefix: string = 'Pos'; const aRotPrefix: string = 'Rot'): IwbValueDef; overload;
-function wbVec3PosRot(const aSignature: TwbSignature; const aCombinedName: string = 'Position/Rotation'; aPosName: string = 'Position'; const aRotName: string = 'Rotation'; const aPosPrefix: string = 'Pos'; const aRotPrefix: string = 'Rot'): IwbRecordMemberDef; overload;
-function wbVec3PosRotDegrees(const aCombinedName: string = 'Position/Rotation'; const aPosName: string = 'Position'; const aRotName: string = 'Rotation'; const aPosPrefix: string = 'Pos'; const aRotPrefix: string = 'Rot'): IwbValueDef; overload;
-function wbVec3PosRotDegrees(const aSignature: TwbSignature; const aCombinedName: string = 'Position/Rotation'; aPosName: string = 'Position'; const aRotName: string = 'Rotation'; const aPosPrefix: string ='Pos'; const aRotPrefix: string = 'Rot'): IwbRecordMemberDef; overload;
-function wbSizePosRot(aSignature: TwbSignature; aName: string; aPriority: TwbConflictPriority = cpNormal): IwbSubRecordDef; overload;
+function wbVec3(const aName   : string = 'Unknown';
+                const aPrefix : string = '')
+                              : IwbValueDef; overload;
+
+function wbVec3(const aSignature : TwbSignature;
+                const aName      : string = 'Unknown';
+                const aPrefix    : string = '')
+                                 : IwbRecordMemberDef; overload;
+
+function wbVec3Pos(const aName   : string = 'Position';
+                   const aPrefix : string = 'Pos')
+                                 : IwbValueDef; overload;
+
+function wbVec3Pos(const aSignature : TwbSignature;
+                   const aName      : string = 'Position';
+                   const aPrefix    : string = 'Pos')
+                                    : IwbRecordMemberDef; overload;
+
+function wbVec3Rot(const aName   : string = 'Rotation';
+                   const aPrefix : string = 'Rot')
+                                 : IwbValueDef; overload;
+
+function wbVec3Rot(const aSignature : TwbSignature;
+                   const aName      : string = 'Rotation';
+                   const aPrefix    : string = 'Rot')
+                                    : IwbRecordMemberDef; overload;
+
+function wbVec3PosRot(const aCombinedName : string = 'Position/Rotation';
+                      const aPosName      : string = 'Position';
+                      const aRotName      : string = 'Rotation';
+                      const aPosPrefix    : string = 'Pos';
+                      const aRotPrefix    : string = 'Rot')
+                                          : IwbValueDef; overload;
+
+function wbVec3PosRot(const aSignature   : TwbSignature;
+                      const aCombinedName : string = 'Position/Rotation';
+                      const aPosName      : string = 'Position';
+                      const aRotName      : string = 'Rotation';
+                      const aPosPrefix    : string = 'Pos';
+                      const aRotPrefix    : string = 'Rot')
+                                         : IwbRecordMemberDef; overload;
+
+function wbVec3PosRotDegrees(const aCombinedName : string = 'Position/Rotation';
+                             const aPosName      : string = 'Position';
+                             const aRotName      : string = 'Rotation';
+                             const aPosPrefix    : string = 'Pos';
+                             const aRotPrefix    : string = 'Rot')
+                                                 : IwbValueDef; overload;
+
+function wbVec3PosRotDegrees(const aSignature    : TwbSignature;
+                             const aCombinedName : string = 'Position/Rotation';
+                             const aPosName      : string = 'Position';
+                             const aRotName      : string = 'Rotation';
+                             const aPosPrefix    : string = 'Pos';
+                             const aRotPrefix    : string = 'Rot')
+                                                 : IwbRecordMemberDef; overload;
+
+function wbSizePosRot(const aSignature : TwbSignature;
+                      const aName      : string;
+                      const aPriority  : TwbConflictPriority = cpNormal)
+                                       : IwbSubRecordDef; overload;
 
 {>>> Color Defs <<<} //16
 function wbAmbientColors(const aSignature: TwbSignature; const aName: string = 'Directional Ambient Lighting Colors'): IwbSubRecordDef; overload;
@@ -4872,7 +4922,9 @@ end;
 
 {>>> Vec3 Defs <<<} //11
 
-function wbVec3(const aName: string = 'Unknown'; const aPrefix: string = ''): IwbValueDef;
+function wbVec3(const aName   : string = 'Unknown';
+                const aPrefix : string = '')
+                              : IwbValueDef;
 begin
   Result :=
     wbStruct(aName, [
@@ -4887,28 +4939,48 @@ begin
       .IncludeFlag(dfCollapsed, wbCollapseVec3);
 end;
 
-function wbVec3(const aSignature: TwbSignature; const aName: string = 'Unknown'; const aPrefix: string = ''): IwbRecordMemberDef;
+function wbVec3(const aSignature : TwbSignature;
+                const aName      : string = 'Unknown';
+                const aPrefix    : string = '')
+                                 : IwbRecordMemberDef;
 begin
-  Result := wbSubRecord(aSignature, aName, wbVec3(aName, aPrefix));
+  Result :=
+    wbStruct(aSignature, aName, [
+      wbFloat('X'),
+      wbFloat('Y'),
+      wbFloat('Z')
+    ]).SetSummaryKeyOnValue([0, 1, 2])
+      .SetSummaryPrefixSuffixOnValue(0, aPrefix + '(', '')
+      .SetSummaryPrefixSuffixOnValue(2, '', ')')
+      .SetSummaryDelimiterOnValue(', ')
+      .IncludeFlag(dfSummaryMembersNoName)
+      .IncludeFlag(dfCollapsed, wbCollapseVec3);
 end;
 
-function wbVec3Pos(const aName: string = 'Position'; const aPrefix: string = 'Pos'): IwbValueDef;
+function wbVec3Pos(const aName   : string = 'Position';
+                   const aPrefix : string = 'Pos')
+                                 : IwbValueDef;
 begin
   Result := wbVec3(aName, aPrefix);
 end;
 
-function wbVec3Pos(const aSignature: TwbSignature; const aName: string = 'Position'; const aPrefix: string = 'Pos'): IwbRecordMemberDef;
+function wbVec3Pos(const aSignature : TwbSignature;
+                   const aName      : string = 'Position';
+                   const aPrefix    : string = 'Pos')
+                                    : IwbRecordMemberDef;
 begin
-  Result := wbSubRecord(aSignature, aName, wbVec3Pos(''));
+  Result := wbVec3(aSignature, aName, aPrefix);
 end;
 
-function wbVec3Rot(const aName: string = 'Rotation'; const aPrefix: string = 'Rot'): IwbValueDef;
+function wbVec3Rot(const aName   : string = 'Rotation';
+                   const aPrefix : string = 'Rot')
+                                 : IwbValueDef;
 begin
   Result :=
     wbStruct(aName, [
-      wbFloatAngle('X', cpNormal, True),
-      wbFloatAngle('Y', cpNormal, True),
-      wbFloatAngle('Z', cpNormal, True)
+      wbFloatAngle('X'),
+      wbFloatAngle('Y'),
+      wbFloatAngle('Z')
     ]).SetSummaryKey([0, 1, 2])
       .SetSummaryMemberPrefixSuffix(0, aPrefix + '(', '')
       .SetSummaryMemberPrefixSuffix(2, '', ')')
@@ -4917,12 +4989,30 @@ begin
       .IncludeFlag(dfCollapsed, wbCollapseVec3);
 end;
 
-function wbVec3Rot(const aSignature: TwbSignature; const aName: string = 'Rotation'; const aPrefix: string = 'Rot'): IwbRecordMemberDef;
+function wbVec3Rot(const aSignature : TwbSignature;
+                   const aName      : string = 'Rotation';
+                   const aPrefix    : string = 'Rot')
+                                    : IwbRecordMemberDef;
 begin
-  Result := wbSubRecord(aSignature, aName, wbVec3Rot(''));
+  Result :=
+    wbStruct(aSignature, aName, [
+      wbFloatAngle('X'),
+      wbFloatAngle('Y'),
+      wbFloatAngle('Z')
+    ]).SetSummaryKeyOnValue([0, 1, 2])
+      .SetSummaryPrefixSuffixOnValue(0, aPrefix + '(', '')
+      .SetSummaryPrefixSuffixOnValue(2, '', ')')
+      .SetSummaryDelimiterOnValue(', ')
+      .IncludeFlag(dfSummaryMembersNoName)
+      .IncludeFlag(dfCollapsed, wbCollapseVec3);
 end;
 
-function wbVec3PosRot(const aCombinedName: string = 'Position/Rotation'; const aPosName: string = 'Position'; const aRotName: string = 'Rotation'; const aPosPrefix: string = 'Pos'; const aRotPrefix: string = 'Rot'): IwbValueDef;
+function wbVec3PosRot(const aCombinedName : string = 'Position/Rotation';
+                      const aPosName      : string = 'Position';
+                      const aRotName      : string = 'Rotation';
+                      const aPosPrefix    : string = 'Pos';
+                      const aRotPrefix    : string = 'Rot')
+                                          : IwbValueDef;
 begin
   Result :=
     wbStruct(aCombinedName, [
@@ -4933,12 +5023,29 @@ begin
       .IncludeFlag(dfCollapsed, wbCollapsePosRot);
 end;
 
-function wbVec3PosRot(const aSignature: TwbSignature; const aCombinedName: string = 'Position/Rotation'; aPosName: string = 'Position'; const aRotName: string = 'Rotation'; const aPosPrefix: string = 'Pos'; const aRotPrefix: string = 'Rot'): IwbRecordMemberDef;
+function wbVec3PosRot(const aSignature    : TwbSignature;
+                      const aCombinedName : string = 'Position/Rotation';
+                      const aPosName      : string = 'Position';
+                      const aRotName      : string = 'Rotation';
+                      const aPosPrefix    : string = 'Pos';
+                      const aRotPrefix    : string = 'Rot')
+                                          : IwbRecordMemberDef;
 begin
-  Result := wbSubRecord(aSignature, aCombinedName, wbVec3PosRot('', aPosName, aRotName, aPosPrefix, aRotPrefix));
+  Result :=
+    wbStruct(aSignature, aCombinedName, [
+      wbVec3Pos(aPosName, aPosPrefix),
+      wbVec3Rot(aRotName, aRotPrefix)
+    ]).SetSummaryKeyOnValue([0, 1])
+      .IncludeFlag(dfSummaryMembersNoName)
+      .IncludeFlag(dfCollapsed, wbCollapsePosRot);
 end;
 
-function wbVec3PosRotDegrees(const aCombinedName: string = 'Position/Rotation'; const aPosName: string = 'Position'; const aRotName: string = 'Rotation'; const aPosPrefix: string = 'Pos'; const aRotPrefix: string = 'Rot'): IwbValueDef;
+function wbVec3PosRotDegrees(const aCombinedName : string = 'Position/Rotation';
+                             const aPosName      : string = 'Position';
+                             const aRotName      : string = 'Rotation';
+                             const aPosPrefix    : string = 'Pos';
+                             const aRotPrefix    : string = 'Rot')
+                                                 : IwbValueDef;
 begin
   Result :=
     wbStruct(aCombinedName, [
@@ -4949,12 +5056,27 @@ begin
       .IncludeFlag(dfCollapsed, wbCollapsePosRot);
 end;
 
-function wbVec3PosRotDegrees(const aSignature: TwbSignature; const aCombinedName: string = 'Position/Rotation'; aPosName: string = 'Position'; const aRotName: string = 'Rotation'; const aPosPrefix: string = 'Pos'; const aRotPrefix: string = 'Rot'): IwbRecordMemberDef;
+function wbVec3PosRotDegrees(const aSignature    : TwbSignature;
+                             const aCombinedName : string = 'Position/Rotation';
+                             const aPosName      : string = 'Position';
+                             const aRotName      : string = 'Rotation';
+                             const aPosPrefix    : string = 'Pos';
+                             const aRotPrefix    : string = 'Rot')
+                                                 : IwbRecordMemberDef;
 begin
-  Result := wbSubRecord(aSignature, aCombinedName, wbVec3PosRotDegrees('', aPosName, aRotName, aPosPrefix, aRotPrefix));
+  Result :=
+    wbStruct(aSignature, aCombinedName, [
+      wbVec3Pos(aPosName, aPosPrefix),
+      wbVec3(aRotName, aRotPrefix)
+    ]).SetSummaryKeyOnValue([0, 1])
+      .IncludeFlag(dfSummaryMembersNoName)
+      .IncludeFlag(dfCollapsed, wbCollapsePosRot);
 end;
 
-function wbSizePosRot(aSignature: TwbSignature; aName: string; aPriority: TwbConflictPriority = cpNormal): IwbSubRecordDef;
+function wbSizePosRot(const aSignature : TwbSignature;
+                      const aName      : string;
+                      const aPriority  : TwbConflictPriority = cpNormal)
+                                       : IwbSubRecordDef;
 begin
   Result :=
     wbStruct(aSignature, aName, [
