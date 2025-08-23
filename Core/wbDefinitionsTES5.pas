@@ -9941,8 +9941,7 @@ begin
     29, 'Don''t Havok Settle',
     30, 'No Respawn',
     31, 'Multibound'
-    ])).SetFlagHasDontShow(16, wbFlagREFRInteriorDontShow)
-       .SetFlagHasDontShow(28, wbFlagREFRInteriorDontShow),
+    ])).SetFlagHasDontShow(28, wbFlagREFRInteriorDontShow),
     wbFlags(wbFlagsList([ //MSTT
     9,  'Motion Blur',
     10, 'Persistent',
