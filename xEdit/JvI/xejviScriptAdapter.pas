@@ -1930,6 +1930,11 @@ begin
   Value := wbCRC32File(string(Args.Values[0]));
 end;
 
+procedure Misc_CreateHashTES3(var Value: Variant; Args: TJvInterpreterArgs);
+begin
+  Value := CreateHashTES3(Args.Values[0]);
+end;
+
 procedure Misc_CreateHashTES4(var Value: Variant; Args: TJvInterpreterArgs);
 begin
   case Args.Count of
@@ -2390,6 +2395,7 @@ begin
     AddFunction(cUnit, 'wbCRC32Resource', Misc_wbCRC32Resource, 2, [varEmpty, varEmpty], varEmpty);
     AddFunction(cUnit, 'wbCRC32File', Misc_wbCRC32File, 1, [varEmpty], varEmpty);
     AddFunction(cUnit, 'bscrc32', Misc_bscrc32, 1, [varEmpty], varEmpty);
+    AddFunction(cUnit, 'CreateHashTES3', Misc_CreateHashTES3, 1, [varEmpty], varEmpty);
     AddFunction(cUnit, 'CreateHashTES4', Misc_CreateHashTES4, -1, [varEmpty], varEmpty);
     AddFunction(cUnit, 'CreateHashFO4', Misc_CreateHashFO4, 1, [varEmpty], varEmpty);
     AddFunction(cUnit, 'wbSHA1Data', Misc_wbSHA1Data, 1, [varEmpty], varEmpty);
