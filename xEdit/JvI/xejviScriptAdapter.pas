@@ -1939,8 +1939,8 @@ procedure Misc_CreateHashTES4(var Value: Variant; Args: TJvInterpreterArgs);
 begin
   case Args.Count of
    0: JvInterpreterError(ieNotEnoughParams, -1);
-   1: CreateHashTES4(Args.Values[0]);
-   2: CreateHashTES4(Args.Values[0], Args.Values[1]);
+   1: Value := CreateHashTES4(Args.Values[0]);
+   2: Value := CreateHashTES4(Args.Values[0], Args.Values[1]);
    else
      JvInterpreterError(ieTooManyParams, -1);
   end;
