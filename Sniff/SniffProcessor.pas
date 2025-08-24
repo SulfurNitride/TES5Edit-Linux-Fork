@@ -145,6 +145,8 @@ begin
 
   // starts with slash, remove it
   if Result[1] = '\' then Delete(Result, 1, 1);
+  // starts with Data, remove it
+  if Copy(Result, 1, 5) = 'data\' then Delete(Result, 1, 5);
   // root folder in Data for different resource types
   if (aResType = resMesh) and (Copy(Result, 1, 7) <> 'meshes\') then
     Result := 'meshes\' + Result
