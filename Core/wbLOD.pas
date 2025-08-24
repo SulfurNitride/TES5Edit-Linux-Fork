@@ -1002,17 +1002,12 @@ begin
     Exit;
 
   // absolute path, cut everything before Data or leave only file name
-  if Result[2] = ':' then begin
-    i := Pos('data\', Result);
-    if i <> 0 then
-      Delete(Result, 1, Pred(i))
-    else
-      Result := ExtractFileName(Result);
-  end;
+  i := Pos('data\', Result);
+  if i <> 0 then
+    Delete(Result, 1, Pred(i));
+
   // starts with slash, remove it
   if Result[1] = '\' then Delete(Result, 1, 1);
-  // starts with Data, remove it
-  if Copy(Result, 1, 5) = 'data\' then Delete(Result, 1, 5);
   // root folder in Data for different resource types
   if (aResType = resMesh) and (Copy(Result, 1, 7) <> 'meshes\') then
     Result := 'meshes\' + Result
