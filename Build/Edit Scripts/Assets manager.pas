@@ -1451,7 +1451,7 @@ begin
     end
     
     else if (sig = 'AMMO') then begin
-      ScanForAssets(ElementByName(e, 'Mode'));
+      ScanForAssets(ElementByName(e, 'Model'));
       ScanForAssets(ElementByName(e, 'Icon'));
       ScanForAssets(ElementByName(e, 'Destructible'));
     end
