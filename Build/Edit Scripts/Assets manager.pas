@@ -1718,7 +1718,7 @@ begin
         ents := ElementBySignature(e, 'MNAM');
         for i := 0 to Pred(ElementCount(ents)) do begin
           ent := ElementByIndex(ents, i);
-          s := wbNormalizeResourceName(GetElementEditValues(ent, 'Mesh'), resMesh);
+          s := wbNormalizeResourceName(GetEditValue(ent), resMesh);
           ProcessAssetEx(e, s, 'Static LOD Level ' + IntToStr(i) + ' Mesh For ' + Name(e), atLODAsset);
         end;
 	  end;
@@ -1912,7 +1912,7 @@ begin
       ents := ElementBySignature(e, 'MNAM');
       for i := 0 to Pred(ElementCount(ents)) do begin
         ent := ElementByIndex(ents, i);
-        s := wbNormalizeResourceName(GetElementEditValues(ent, 'Mesh'), resMesh);
+        s := wbNormalizeResourceName(GetEditValue(ent), resMesh);
         ProcessAssetEx(e, s, 'Static LOD Level ' + IntToStr(i) + ' Mesh for ' + Name(e), atLODAsset);
       end;
     end
