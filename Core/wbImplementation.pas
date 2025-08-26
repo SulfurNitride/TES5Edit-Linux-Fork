@@ -3053,14 +3053,7 @@ begin
       j := 0;
       for i := Low(flMasters) to High(flMasters) do
         if UsedMasters[i] or
-           (
-             wbStarfieldIsABugInfestedHellhole and
-             wbIsStarfield and
-             (
-                  SameText(flMasters[i].FileName, 'Starfield.esm')
-//             or SameText(flMasters[i].FileName, 'BlueprintShips-Starfield.esm')
-             )
-           )
+           SameText(flMasters[i].FileName, wbGameMasterESM)
         then begin
           if i <> j then begin
             flMasters[j] := flMasters[i];
