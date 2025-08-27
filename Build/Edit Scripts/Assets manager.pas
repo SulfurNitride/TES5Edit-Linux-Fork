@@ -979,15 +979,17 @@ begin
   if Pos(sig, sSkipSignatures) > 0 then
     Exit;
   
-  // generic model common for all records
-  ScanForAssets(ElementByName(e, 'Model'));
+  if (wbGameMode = gmFO3) or (wbGameMode = gmFNV) or (wbGameMode = gmFO4) then begin
+    // generic model common for all records
+	ScanForAssets(ElementByName(e, 'Model'));
 
-  // generic icon common for all records
-  ProcessAsset(ElementBySignature(e, 'ICON'));
-  ScanForAssets(ElementByName(e, 'Icon'));
+    // generic icon common for all records
+    ProcessAsset(ElementBySignature(e, 'ICON'));
+    ScanForAssets(ElementByName(e, 'Icon'));
 
-  // generic destruction models common for all records
-  ScanForAssets(ElementByPath(e, 'Destructible'));
+    // generic destruction models common for all records
+    ScanForAssets(ElementByPath(e, 'Destructible'));
+  end;
   
   // GAME SPECIFIC ELEMENTS
   
