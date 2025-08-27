@@ -3262,13 +3262,13 @@ begin
   wbPLDT := wbStruct(PLDT, 'Location', [
     wbInteger('Type', itS32, wbLocationEnum),
     wbUnion('Location Value', wbTypeDecider, [
-      {0} wbFormIDCkNoReach('Reference', [NULL, DOOR, PLYR, ACHR, REFR, PGRE, PHZD, PMIS, PARW, PBAR, PBEA, PCON, PFLA]),
-      {1} wbFormIDCkNoReach('Cell', [NULL, CELL]),
+      {0} wbFormIDCkNoReach('Reference', [DOOR, PLYR, ACHR, REFR, PGRE, PHZD, PMIS, PARW, PBAR, PBEA, PCON, PFLA]),
+      {1} wbFormIDCkNoReach('Cell', [CELL]),
       {2} wbByteArray('Near Package Start Location', 4, cpIgnore),
       {3} wbByteArray('Near Editor Location', 4, cpIgnore),
-      {4} wbFormIDCkNoReach('Object ID', [NULL, ACTI, DOOR, STAT, MSTT, FURN, SPEL, SCRL, NPC_, CONT, ARMO, AMMO, MISC, WEAP, BOOK, KEYM, ALCH, LIGH, FACT, FLST, IDLM, SHOU]),
+      {4} wbFormIDCkNoReach('Object ID', [ACTI, DOOR, STAT, MSTT, FURN, SPEL, SCRL, NPC_, CONT, ARMO, AMMO, MISC, WEAP, BOOK, KEYM, ALCH, LIGH, FACT, FLST, IDLM, SHOU]),
       {5} wbInteger('Object Type', itU32, wbObjectTypeEnum),
-      {6} wbFormIDCk('Keyword', [NULL, KYWD]),
+      {6} wbFormIDCk('Keyword', [KYWD]),
       {7} wbUnused(4),
       {8} wbInteger('Alias', itS32, wbPackageLocationAliasToStr, wbAliasToInt),
       {9} wbInteger('Reference', itS32, wbPackageLocationAliasToStr, wbAliasToInt),
@@ -3282,13 +3282,13 @@ begin
   wbPLVD := wbStruct(PLVD, 'Location', [
     wbInteger('Type', itS32, wbLocationEnum),
     wbUnion('Location Value', wbTypeDecider, [
-      {0} wbFormIDCkNoReach('Reference', [NULL, DOOR, PLYR, ACHR, REFR, PGRE, PHZD, PMIS, PARW, PBAR, PBEA, PCON, PFLA]),
-      {1} wbFormIDCkNoReach('Cell', [NULL, CELL]),
+      {0} wbFormIDCkNoReach('Reference', [ACHR, DOOR, PARW, PBAR, PBEA, PCON, PFLA, PGRE, PHZD, PLYR, PMIS, REFR]),
+      {1} wbFormIDCkNoReach('Cell', [CELL]),
       {2} wbByteArray('Near Package Start Location', 4, cpIgnore),
       {3} wbByteArray('Near Editor Location', 4, cpIgnore),
-      {4} wbFormIDCkNoReach('Object ID', [NULL, ACTI, DOOR, STAT, MSTT, FURN, SPEL, SCRL, NPC_, CONT, ARMO, AMMO, MISC, WEAP, BOOK, KEYM, ALCH, INGR, LIGH, FACT, FLST, IDLM, SHOU]),
+      {4} wbFormIDCkNoReach('Object ID', [ACTI, ALCH, AMMO, ARMO, BOOK, CONT, DOOR, FACT, FLST, FURN, IDLM, INGR, KEYM, LIGH, MISC, MSTT, NPC_, SCRL, SHOU, SPEL, STAT, WEAP]),
       {5} wbInteger('Object Type', itU32, wbObjectTypeEnum),
-      {6} wbFormIDCk('Keyword', [NULL, KYWD]),
+      {6} wbFormIDCk('Keyword', [KYWD]),
       {7} wbUnused(4),
       {8} wbInteger('Alias', itS32, wbPackageLocationAliasToStr, wbAliasToInt),
       {9} wbInteger('Reference', itS32, wbPackageLocationAliasToStr, wbAliasToInt),
@@ -8938,8 +8938,8 @@ begin
               {6} 'Self'
               ])).SetDefaultNativeValue(2),
             wbUnion('Target', wbTypeDecider, [
-            {0} wbFormIDCkNoReach('Reference', [NULL, PLYR, ACHR, REFR, PGRE, PHZD, PMIS, PARW, PBAR, PBEA, PCON, PFLA], True),
-            {1} wbFormIDCkNoReach('Object ID', [NULL, ACTI, DOOR, STAT, MSTT, FURN, SPEL, SCRL, NPC_, CONT, ARMO, AMMO, MISC, WEAP, BOOK, KEYM, ALCH, INGR, LIGH, FACT, FLST, IDLM, SHOU, SOUN, TXST, PROJ, FLOR, SLGM]),
+            {0} wbFormIDCkNoReach('Reference', [ACHR, PARW, PBAR, PBEA, PCON, PFLA, PGRE, PHZD, PLYR, PMIS, REFR], True),
+            {1} wbFormIDCkNoReach('Object ID', [ACTI, ALCH, AMMO, ARMO, BOOK, CONT, DOOR, FACT, FLST, FLOR, FURN, IDLM, INGR, KEYM, LIGH, MISC, MSTT, NPC_, PROJ, SCRL, SHOU, SLGM, SOUN, SPEL, STAT, TXST, WEAP]),
             {2} wbInteger('Object Type', itU32, wbObjectTypeEnum),
             {3} wbFormID('Reference'),
             {4} wbInteger('Alias', itS32, wbPackageLocationAliasToStr, wbAliasToInt),
