@@ -526,7 +526,16 @@ begin
         end;
         Log.Add(#9 + palette.Name + ': Updated AV Objects');
         Result := True;
-      end;
+      end else
+        for var i := 0 to Pred(objs.Count) do begin
+          var obj := objs[i];
+          var objAV := obj.Elements['AV Object'].LinksTo;
+          if objAV.EditValues['Name'] <> obj.EditValues['Name'] then begin
+            obj.EditValues['Name'] := objAV.EditValues['Name'];
+            Log.Add(#9 + palette.Name + ': Updated Object #' + IntToStr(i) + '''s name to match name of linked AV Object');
+            Result := True;
+          end;
+        end;
     end;
 
     // update extra targets
