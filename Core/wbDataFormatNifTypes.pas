@@ -152,6 +152,7 @@ function wbSkyrimShaderPropertyFlags1(const aName, aDefaultValue: string; const 
 function wbSkyrimShaderPropertyFlags2(const aName, aDefaultValue: string; const aEvents: array of const): TdfDef;
 function wbFallout4ShaderPropertyFlags1(const aName, aDefaultValue: string; const aEvents: array of const): TdfDef;
 function wbFallout4ShaderPropertyFlags2(const aName, aDefaultValue: string; const aEvents: array of const): TdfDef;
+function wbNewShaderFlags(const aName: string; aDataType: TdfDataType): TdfDef;
 function wbVertexFlags(const aName, aDefaultValue: string; const aEvents: array of const): TdfDef;
 function wbBSCPCullingType(const aName, aDefaultValue: string; const aEvents: array of const): TdfDef;
 function wbNiSwitchFlags(const aName, aDefaultValue: string; const aEvents: array of const): TdfDef;
@@ -2281,6 +2282,44 @@ begin
     30, 'Effect_Lighting',
     31, 'Refraction_Writes_Depth'
   ], aDefaultValue, aEvents);
+end;
+
+function wbNewShaderFlags(const aName: string; aDataType: TdfDataType): TdfDef;
+begin
+  Result := dfEnum(aName, aDataType, [
+    314919375,  'FACE',
+    348504749,  'VERTEXCOLORS',
+    442246519,  'GRAYSCALE_TO_PALETTE_COLOR',
+    731263983,  'PBR',
+    759557230,  'TWO_SIDED',
+    902349195,  'REFRACTION_FALLOFF',
+    1264105798, 'HAIRTINT',
+    1483897208, 'SKIN_TINT',
+    1563274220, 'CAST_SHADOWS',
+    1576614759, 'DYNAMIC_DECAL',
+    1740048692, 'ZBUFFER_TEST',
+    1957349758, 'REFRACTION',
+    2078326675, 'WEAPON_BLOOD',
+    2150459555, 'EXTERNAL_EMITTANCE',
+    2262553490, 'EMIT_ENABLED',
+    2333069810, 'VERTEX_ALPHA',
+    2399422528, 'GLOWMAP',
+    2548465567, 'MODELSPACENORMALS',
+    2893749418, 'ENVMAP',
+    2896726515, 'LOD_OBJECTS',
+    2901038324, 'GRAYSCALE_TO_PALETTE_ALPHA',
+    2994043788, 'NOFADE',
+    3030867718, 'INVERTED_FADE_PATTERN',
+    3166356979, 'ZBUFFER_WRITE',
+    3196772338, 'TRANSFORM_CHANGED',
+    3448946507, 'RGB_FALLOFF',
+    3473438218, 'EFFECT_LIGHTING',
+    3503164976, 'SOFT_EFFECT',
+    3707406987, 'NO_EXPOSURE',
+    3744563888, 'SKINNED',
+    3849131744, 'DECAL',
+    3980660124, 'FALLOFF'
+  ]);
 end;
 
 function wbVertexFlags(const aName, aDefaultValue: string; const aEvents: array of const): TdfDef;
