@@ -11549,14 +11549,30 @@ begin
 
   wbRecord(FSTS, 'Footstep Set', [
     wbEDID,
-    wbStruct(XCNT, 'Count', [
-      wbInteger('Walking', itU32),
-      wbInteger('Running', itU32),
-      wbInteger('Sprinting', itU32),
-      wbInteger('Sneaking', itU32),
-      wbInteger('Swimming', itU32)
-    ], cpNormal, True),
-    wbArray(DATA, 'Footstep Sets', wbFormIDCk('Footstep', [FSTP]), 0, nil, nil, cpNormal, True)
+    wbStruct(XCNT, 'Footstep Counts', [
+      wbInteger('Walking Count', itU32),
+      wbInteger('Running Count', itU32),
+      wbInteger('Sprinting Count', itU32),
+      wbInteger('Sneaking Count', itU32),
+      wbInteger('Swimming Count', itU32)
+    ]).SetRequired,
+    wbStruct(DATA, 'Footsteps', [
+      wbArray('Swimming Footsteps',
+        wbFormIDCk('Footstep', [FSTP])
+      ).SetCountPath('..\XCNT\Swimming Count', True),
+      wbArray('Sneaking Footsteps',
+        wbFormIDCk('Footstep', [FSTP])
+      ).SetCountPath('..\XCNT\Sneaking Count', True),
+      wbArray('Sprinting Footsteps',
+        wbFormIDCk('Footstep', [FSTP])
+      ).SetCountPath('..\XCNT\Sprinting Count', True),
+      wbArray('Running Footsteps',
+        wbFormIDCk('Footstep', [FSTP])
+      ).SetCountPath('..\XCNT\Running Count', True),
+      wbArray('Walking Footsteps',
+        wbFormIDCk('Footstep', [FSTP])
+      ).SetCountPath('..\XCNT\Walking Count', True)
+    ]).SetRequired
   ]);
 
   wbRecord(SMBN, 'Story Manager Branch Node', [
