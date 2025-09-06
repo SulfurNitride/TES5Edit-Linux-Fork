@@ -9992,6 +9992,7 @@ begin
     9,  'Hidden From Local Map',
     10, 'Persistent',
     11, 'Initially Disabled',
+    15, 'Visible When Distant',
     16, 'Is Full LOD',
     28, 'Reflected By Auto Water',
     29, 'Don''t Havok Settle',
