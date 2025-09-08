@@ -991,7 +991,7 @@ begin
       if (aInt and $80) = 0 then
         Result := Result + ', Must return a file';
       if (aInt and $40) = 1 then
-        Result := Result + ', Unknown Flag';
+        Result := Result + ', Loose File';
     end;
     ctToSortKey: begin
       Result := IntToHex64(aInt, 2);
