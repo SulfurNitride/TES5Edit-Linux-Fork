@@ -12419,22 +12419,22 @@ begin
           62, 'Satellite', {Vv}
           63, 'Sentinel', {Vv}
           64, 'USS Constitution', {Vv}
-          65, 'Mechanist LairRaider settlementVassal settlementPotential Vassal settlement', {Vv}
-          66, 'Custom 66',
-          67, 'Custom 67',
-          68, 'Custom 68',
-          69, 'Custom 69',
-          70, 'Custom 70',
-          71, 'Custom 71',
-          72, 'Custom 72',
-          73, 'Custom 73',
-          74, 'Custom 74',
-          75, 'Custom 75',
-          76, 'Custom 76',
-          77, 'Custom 77',
-          78, 'Custom 78',
-          79, 'Custom 79',
-          80, 'Custom 80',
+          65, 'Mechanist Lair', {Vv}
+          66, 'Raider settlement', {Vv}
+          67, 'Vassal settlement', {Vv}
+          68, 'Potential Vassal settlement', {Vv}
+          69, 'Bottling Plant', {Vv}
+          70, 'Galactic', {Vv}
+          71, 'HUB', {Vv}
+          72, 'Kiddie Kingdom', {Vv}
+          73, 'Monorail', {Vv}
+          74, 'Rides', {Vv}
+          75, 'Safari', {Vv}
+          76, 'Wild West', {Vv}
+          77, 'POI', {Vv}
+          78, 'Disciples', {Vv}
+          79, 'Operators', {Vv}
+          80, 'Pack', {Vv}
           81, 'Custom 81',
           82, 'Custom 82',
           83, 'Custom 83',
