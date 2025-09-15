@@ -4982,7 +4982,7 @@ begin
       .SetSummaryPrefixSuffixOnValue(0, aPrefix + '(', '')
       .SetSummaryPrefixSuffixOnValue(2, '', ')')
       .SetSummaryDelimiterOnValue(', ')
-      .IncludeFlag(dfSummaryMembersNoName)
+      .IncludeFlagOnValue(dfSummaryMembersNoName)
       .IncludeFlag(dfCollapsed, wbCollapseVec3);
 end;
 
@@ -5065,7 +5065,7 @@ begin
       wbVec3Pos(aPosName, aPosPrefix),
       wbVec3Rot(aRotName, aRotPrefix)
     ]).SetSummaryKeyOnValue([0, 1])
-      .IncludeFlag(dfSummaryMembersNoName)
+      .IncludeFlagOnValue(dfSummaryMembersNoName)
       .IncludeFlag(dfCollapsed, wbCollapsePosRot);
 end;
 
@@ -5098,7 +5098,7 @@ begin
       wbVec3Pos(aPosName, aPosPrefix),
       wbVec3(aRotName, aRotPrefix)
     ]).SetSummaryKeyOnValue([0, 1])
-      .IncludeFlag(dfSummaryMembersNoName)
+      .IncludeFlagOnValue(dfSummaryMembersNoName)
       .IncludeFlag(dfCollapsed, wbCollapsePosRot);
 end;
 
