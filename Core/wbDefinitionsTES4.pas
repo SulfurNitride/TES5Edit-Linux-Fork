@@ -2287,7 +2287,9 @@ begin
     wbEDID,
     wbQSTI,
     wbQSTR,
-    wbFULL,
+    wbFULL
+      .SetAfterLoad(wbDialogueTextAfterLoad)
+      .SetAfterSet(wbDialogueTextAfterSet),
     wbInteger(DATA, 'Type', itU8, wbDialogueTypeEnum).SetRequired,
     wbINOM,
     wbINOA
@@ -2592,7 +2594,9 @@ begin
           wbInteger('Response Number', itU8),
           wbUnused(3)
         ]),
-        wbStringKC(NAM1, 'Response Text', 0, cpTranslate),
+        wbStringKC(NAM1, 'Response Text', 0, cpTranslate)
+          .SetAfterLoad(wbDialogueTextAfterLoad)
+          .SetAfterSet(wbDialogueTextAfterSet),
         wbString(NAM2, 'Actor Notes', 0, cpTranslate)
       ])),
     wbConditions,

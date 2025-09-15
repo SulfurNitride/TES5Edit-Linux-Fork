@@ -5004,7 +5004,9 @@ begin
       14, 'Partial Form'
     ]), [14]), [
     wbEDID,
-    wbFULL,
+    wbFULL
+      .SetAfterLoad(wbDialogueTextAfterLoad)
+      .SetAfterSet(wbDialogueTextAfterSet),
     wbFloat(PNAM, 'Priority', cpNormal, True, 1, -1, nil, nil, 50.0),
     wbFormIDCk(BNAM, 'Branch', [DLBR, NULL]),
     wbFormIDCkNoReach(QNAM, 'Quest', [QUST, NULL], False, cpNormal, False),
@@ -8132,7 +8134,9 @@ begin
         ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbUnused(3)
       ]),
-      wbLStringKC(NAM1, 'Response Text', 0, cpTranslate),
+      wbLStringKC(NAM1, 'Response Text', 0, cpTranslate)
+        .SetAfterLoad(wbDialogueTextAfterLoad)
+        .SetAfterSet(wbDialogueTextAfterSet),
       wbString(NAM2, 'Script Notes'),
       wbString(NAM3, 'Edits'),
       wbFormIDCk(SNAM, 'Idle Animations: Speaker', [IDLE]),
@@ -8151,7 +8155,9 @@ begin
          .SetDontShow(wbNeverShow),
     {>>> END leftover from earlier CK versions <<<}
 
-    wbLStringKC(RNAM, 'Prompt', 0, cpTranslate),
+    wbLStringKC(RNAM, 'Prompt', 0, cpTranslate)
+      .SetAfterLoad(wbDialogueTextAfterLoad)
+      .SetAfterSet(wbDialogueTextAfterSet),
     wbFormIDCkNoReach(ANAM, 'Speaker', [NPC_]),
     wbFormIDCk(TWAT, 'Walk Away Topic', [DIAL]),
     wbFormIDCk(ONAM, 'Audio Output Override', [SOPM])

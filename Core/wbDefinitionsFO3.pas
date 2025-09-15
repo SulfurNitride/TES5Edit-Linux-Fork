@@ -4125,7 +4125,9 @@ begin
     wbEDIDReqKC,
     wbQSTI,
     wbQSTR,
-    wbFULL,
+    wbFULL
+      .SetAfterLoad(wbDialogueTextAfterLoad)
+      .SetAfterSet(wbDialogueTextAfterSet),
     wbFloat(PNAM, 'Priority')
       .SetDefaultNativeValue(50)
       .SetRequired,
@@ -5898,7 +5900,10 @@ begin
           wbInteger('Use Emotion Animation', itU8, wbBoolEnum),
           wbUnused(3)
         ], cpNormal, False, nil, 5),
-        wbStringKC(NAM1, 'Response Text', 0, cpTranslate).SetRequired,
+        wbStringKC(NAM1, 'Response Text', 0, cpTranslate)
+          .SetAfterLoad(wbDialogueTextAfterLoad)
+          .SetAfterSet(wbDialogueTextAfterSet)
+          .SetRequired,
         wbString(NAM2, 'Script Notes', 0, cpTranslate).SetRequired,
         wbString(NAM3, 'Edits'),
         wbFormIDCk(SNAM, 'Speaker Animation', [IDLE]),
@@ -5916,7 +5921,9 @@ begin
       wbEmbeddedScriptReq
     ]).SetRequired,
     wbFormIDCk(SNDD, 'Unused', [SOUN]),
-    wbStringKC(RNAM, 'Prompt', 0, cpTranslate),
+    wbStringKC(RNAM, 'Prompt', 0, cpTranslate)
+      .SetAfterLoad(wbDialogueTextAfterLoad)
+      .SetAfterSet(wbDialogueTextAfterSet),
     wbFormIDCk(ANAM, 'Speaker', [CREA, NPC_]),
     wbFormIDCk(KNAM, 'ActorValue/Perk', [AVIF, PERK]),
     wbInteger(DNAM, 'Speech Challenge', itU32,

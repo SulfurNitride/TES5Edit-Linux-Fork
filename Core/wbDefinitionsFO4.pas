@@ -6951,7 +6951,9 @@ begin
       {0x00004000} 14, 'Partial Form'
     ]), [14]), [
     wbEDID,
-    wbFULL,
+    wbFULL
+      .SetAfterLoad(wbDialogueTextAfterLoad)
+      .SetAfterSet(wbDialogueTextAfterSet),
     wbFloat(PNAM, 'Priority', cpNormal, True, 1, -1, nil, nil, 50.0),
     wbFormIDCkNoReach(BNAM, 'Branch', [DLBR]),
     wbFormIDCkNoReach(QNAM, 'Quest', [QUST], False, cpNormal, False),
@@ -10355,7 +10357,10 @@ begin
         wbInteger('Camera Target Alias', itS32),
         wbInteger('Camera Location Alias', itS32)
       ]),
-      wbLStringKC(NAM1, 'Response Text', 0, cpTranslate, True),
+      wbLStringKC(NAM1, 'Response Text', 0, cpTranslate)
+        .SetAfterLoad(wbDialogueTextAfterLoad)
+        .SetAfterSet(wbDialogueTextAfterSet)
+        .SetRequired,
       wbString(NAM2, 'Script Notes', 0, cpNormal, True),
       wbString(NAM3, 'Edits', 0, cpNormal, True),
       wbString(NAM4, 'Alternate LIP Text', 0, cpNormal, True),
@@ -10368,7 +10373,9 @@ begin
     ])),
 
     wbConditions,
-    wbLStringKC(RNAM, 'Prompt', 0, cpTranslate),
+    wbLStringKC(RNAM, 'Prompt', 0, cpTranslate)
+      .SetAfterLoad(wbDialogueTextAfterLoad)
+      .SetAfterSet(wbDialogueTextAfterSet),
     wbFormIDCk(ANAM, 'Speaker', [NPC_]),
     wbFormIDCk(TSCE, 'Start Scene', [SCEN]),
     wbUnknown(INTV),
