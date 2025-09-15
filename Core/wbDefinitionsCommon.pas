@@ -5032,7 +5032,7 @@ begin
       .SetSummaryPrefixSuffixOnValue(0, aPrefix + '(', '')
       .SetSummaryPrefixSuffixOnValue(2, '', ')')
       .SetSummaryDelimiterOnValue(', ')
-      .IncludeFlag(dfSummaryMembersNoName)
+      .IncludeFlagOnValue(dfSummaryMembersNoName)
       .IncludeFlag(dfCollapsed, wbCollapseVec3);
 end;
 
