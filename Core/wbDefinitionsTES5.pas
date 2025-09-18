@@ -6236,13 +6236,13 @@ begin
   ]);
 
   var wbPerkConditions :=
-    wbRStructSK([0,1], 'Perk Condition', [
+    wbRStructExSK([0], [1], 'Perk Condition', [
       wbInteger(PRKC, 'Run On (Tab Index)', itS8{, wbPRKCToStr, wbPRKCToInt}),
       wbConditions.SetRequired
     ], [], cpNormal, False{, nil, nil, wbPERKPRKCDontShow});
 
   var wbPerkEffect :=
-    wbRStructSK([0,1,3,2], 'Effect', [
+    wbRStructExSK([0,1,3], [2], 'Effect', [
       wbStructSK(PRKE, [1, 2, 0], 'Header', [
         wbPerkEffectType(wbPERKPRKETypeAfterSet),
         wbInteger('Rank', itU8),
