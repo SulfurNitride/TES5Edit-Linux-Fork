@@ -789,12 +789,16 @@ begin
     Exit;
 
   if (wbGameMode = gmTES5) or (wbGameMode = gmSSE) then begin
-    if (Signature(e) = 'MOD2') or
-       (Signature(e) = 'MOD3') or
-       (Signature(e) = 'MOD4') or
-       (Signature(e) = 'MOD5')
-    then begin
-      s := wbNormalizeResourceName(GetEditValue(e), resMesh);
+    if (
+	   ((Signature(e) = 'MOD2') or (Signature(e) = 'MOD4')) and
+	   (GetElementNativeValues(ContainingMainRecord(e), 'DNAM\Weight Slider - Male\Enabled') <> 0)
+	   )
+	or (
+	   ((Signature(e) = 'MOD3') or (Signature(e) = 'MOD5')) and
+	   (GetElementNativeValues(ContainingMainRecord(e), 'DNAM\Weight Slider - Female\Enabled') <> 0)
+	   )
+    then begin	
+	  s := wbNormalizeResourceName(GetEditValue(e), resMesh);
       if SameText(Copy(s, Length(s)-5, 6), '_1.nif') then
         ProcessAssetEx(e, Copy(s, 1, Length(s)-6) + '_0.nif', '', atMesh)
       else if SameText(Copy(s, Length(s)-5, 6), '_0.nif') then
