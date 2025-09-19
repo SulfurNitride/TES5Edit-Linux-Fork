@@ -2906,7 +2906,7 @@ begin
   wbFULLReq := wbLStringKC(FULL, 'Name', 0, cpTranslate, True);
   wbDESC := wbLStringKC(DESC, 'Description', 0, cpTranslate);
   wbDESCReq := wbLStringKC(DESC, 'Description', 0, cpTranslate, True);
-  wbXSCL := wbFloat(XSCL, 'Scale');
+  wbXSCL := wbFloat(XSCL, 'Scale', cpNormal, False, 1, -1, nil, wbNormalizeToRange(0.0, 10.0));
 
   wbPropTypeEnum := wbEnumSummary([
     {00} 'None', '',
