@@ -8602,7 +8602,7 @@ begin
     wbCOCT,
     wbCNTOsNoReach,
     wbConditions,
-    wbFormID(CNAM, 'Created Object'),
+    wbFormIDCk(CNAM, 'Created Object', [ALCH,AMMO,ARMO,BOOK,INGR,KEYM,LIGH,MISC,SCRL,SLGM,WEAP]).SetRequired,
     wbFormIDCkNoReach(BNAM, 'Workbench Keyword', [KYWD]),
     wbInteger(NAM1, 'Created Object Count', itU16)
   ], False, nil, cpNormal, False, nil, wbContainerAfterSet)
