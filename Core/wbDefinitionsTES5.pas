@@ -10474,7 +10474,7 @@ begin
     wbOBND(True),
     wbGenericModel,
     wbStruct(DNAM, 'Direction Material', [
-      wbFloat('Max Angle (30-120)'),
+      wbFloat('Max Angle (30-120)').SetDefaultNativeValue(90),
       wbFormIDCk('Material', [MATO, NULL]),
       IsSSE(
         wbInteger('Considered Snow', itU8, wbBoolEnum),
