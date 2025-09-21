@@ -5521,10 +5521,10 @@ begin
       {0x02000000} 'Disables Activation',
       {0x04000000} 'Is Perch',
       {0x08000000} 'Must Exit to Talk',
-      {0x10000000} 'Unknown 29',
+      {0x10000000} 'Has Lean Marker',
       {0x20000000} 'Unknown 30',
-      {0x40000000} 'Unknown 31',
-      {0x80000000} 'Unknown 32'
+      {0x40000000} 'Has Sit Marker',
+      {0x80000000} 'Has Sleep Marker'
     ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbStruct(WBDT, 'Workbench Data', [
       wbInteger('Bench Type', itU8, wbEnum([
