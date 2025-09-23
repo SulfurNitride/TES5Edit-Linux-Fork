@@ -10852,10 +10852,12 @@ begin
       wbFloat('Weight')
     ], cpNormal, True),
     // the amount of components is the same as size of CDIX, so should not be sorted probably
-    wbStructs(CVPA, 'Components', 'Component', [
-      wbFormIDCk('Component', sigBaseObjects), // CK allows only CMPO
-      wbInteger('Count', itU32)
-    ]),
+    wbArrayS(CVPA, 'Components',
+      wbStructSK([0], 'Component', [
+        wbFormIDCkNoReach('Component', sigBaseObjects),
+        wbInteger('Count', itU32)
+      ])
+    ),
     wbArray(CDIX, 'Component Display Indices', wbInteger('Display Index', itU8))
   ]);
 

@@ -13374,11 +13374,13 @@ begin
     wbUnknown(AQIC),
     wbFormIDCk(DIQO, 'Quest', [QUST]),
     // the amount of components is the same as size of CDIX, so should not be sorted probably
-    wbStructs(CVPA, 'Components', 'Component', [
-      wbFormIDCk('Component', sigBaseObjects), // CK allows only CMPO
-      wbInteger('Count', itU32),
-      wbFromVersion(152, wbFormIDCk('Curve Table', [CURV, NULL]))
-    ]),
+    wbArrayS(CVPA, 'Components',
+      wbStructSK([0], 'Component', [
+        wbFormIDCkNoReach('Component', sigBaseObjects),
+        wbInteger('Count', itU32),
+        wbFromVersion(152, wbFormIDCk('Curve Table', [CURV, NULL]))
+      ])
+    ),
     wbArray(CDIX, 'Component Display Indices', wbInteger('Display Index', itU8))
   ]);
 
