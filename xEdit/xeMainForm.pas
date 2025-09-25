@@ -4233,7 +4233,7 @@ begin
       Inc(Count);
     end;
   end;
-  PostAddMessage('[Create SEQ file done] Processed Plugins: ' + IntToStr(Count) + ', Sequence Files Created: ' + IntToStr(j));
+  PostAddMessage('[Create SEQ file done] Processed Plugins: ' + IntToStr(Count) + ', SEQ Files Created: ' + IntToStr(j));
 end;
 
 procedure TfrmMain.mniNavDeleteModGroupsClick(Sender: TObject);
