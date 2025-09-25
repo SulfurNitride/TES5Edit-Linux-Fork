@@ -11241,8 +11241,7 @@ begin
     ).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbInteger(XNAM, 'Max concurrent quests', itU32),
     wbInteger(ENAM, 'Type', itU32, wbQuestEventEnum)
-  ]).SetSummaryKey([7])
-    .SetAddInfo(wbSMENAddInfo);
+  ]);
 
   {subrecords checked against Starfield.esm}
   wbRecord(DLBR, 'Dialog Branch', [
