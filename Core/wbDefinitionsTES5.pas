@@ -77,7 +77,7 @@ var
   wbCNTOs: IwbSubRecordArrayDef;
   wbCNTONoReach: IwbRecordMemberDef;
   wbCNTOsNoReach: IwbSubRecordArrayDef;
-  wbAIDT: IwbSubRecordDef;
+  wbAIDT: IwbRecordMemberDef;
   wbCSDT: IwbSubRecordStructDef;
   wbCSDTs: IwbSubRecordArrayDef;
   wbFULL: IwbSubRecordDef;
@@ -2478,7 +2478,7 @@ begin
 
   wbSPCT := wbInteger(SPCT, 'Count', itU32, nil, cpBenign);
   wbSPLO := wbFormIDCk(SPLO, 'Actor Effect', [SPEL, SHOU, LVSP]);
-  wbSPLOs := wbRArrayS('Actor Effects', wbSPLO, cpNormal, False, nil, wbSPLOsAfterSet, nil{wbActorTemplateUseActorEffectList});
+  wbSPLOs := wbRArrayS('Actor Effects', wbSPLO, cpNormal, False, nil, wbSPLOsAfterSet);
 
   wbCOED := wbStructExSK(COED, [2], [0, 1], 'Extra Data', [
     {00} wbFormIDCkNoReach('Owner', [NPC_, FACT, NULL]),
@@ -2902,7 +2902,6 @@ begin
 
   wbEDID := wbStringKC(EDID, 'Editor ID', 0, cpOverride);
   wbFULL := wbLStringKC(FULL, 'Name', 0, cpTranslate);
-  wbFULLActor := wbLStringKC(FULL, 'Name', 0, cpTranslate, False, nil{wbActorTemplateUseBaseData});
   wbFULLReq := wbLStringKC(FULL, 'Name', 0, cpTranslate, True);
   wbDESC := wbLStringKC(DESC, 'Description', 0, cpTranslate);
   wbDESCReq := wbLStringKC(DESC, 'Description', 0, cpTranslate, True);
@@ -3359,50 +3358,7 @@ begin
         .SetSummaryKey([0, 1])
         .IncludeFlag(dfSummaryMembersNoName)
     )
-  ], [], cpNormal, False, nil);
-
-  wbDESTActor := wbRStruct('Destructible', [
-    wbStruct(DEST, 'Header', [
-      wbInteger('Health', itS32),
-      wbInteger('Count', itU8),
-      wbInteger('VATS Targetable', itU8, wbBoolEnum),
-      wbByteArray('Unknown', 2)
-    ]).SetSummaryKeyOnValue([0])
-      .SetSummaryPrefixSuffixOnValue(0,'Health ','')
-      .IncludeFlag(dfCollapsed, wbCollapseDestruction),
-    wbRArray('Stages',  // Begin Stage Array
-      wbRStruct('Stage', [ // Begin Stage RStruct
-        wbStruct(DSTD, 'Destruction Stage Data', [ // Begin DSTD
-          wbInteger('Health %', itU8),
-          wbInteger('Index', itU8),
-          wbInteger('Damage Stage', itU8),
-          wbInteger('Flags', itU8, wbFlags([
-            'Cap Damage',
-            'Disable',
-            'Destroy'
-          ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
-          wbInteger('Self Damage per Second', itS32),
-          wbFormIDCk('Explosion', [EXPL, NULL]),
-          wbFormIDCk('Debris', [DEBR, NULL]),
-          wbInteger('Debris Count', itS32)
-        ], cpNormal, True)
-        .SetSummaryKeyOnValue([0,5,6])
-        .SetSummaryPrefixSuffixOnValue(0,'Health ','%')
-        .SetSummaryDelimiterOnValue(', ')
-        .IncludeFlagOnValue(dfSummaryExcludeNULL)
-        .IncludeFlagOnValue(dfSummaryMembersNoName)
-        .IncludeFlag(dfCollapsed, wbCollapseDestruction), // End DSTD
-        wbRStructSK([0], 'Model', [ // Begin DMDL
-          wbString(DMDL, 'Model FileName')
-        ]), // End DMDL
-        wbDMDT,
-        wbDMDSs,
-        wbEmpty(DSTF, 'End Marker', cpNormal, True)
-      ]) // End Stage RStruct
-        .SetSummaryKey([0, 1])
-        .IncludeFlag(dfSummaryMembersNoName)
-    ) // End Stage Array
-  ], [], cpNormal, False, nil{wbActorTemplateUseModelAnimation});
+  ]);
 
   wbXESP := wbStruct(XESP, 'Enable Parent', [
     wbFormIDCk('Reference', [PLYR, ACHR, REFR, PGRE, PHZD, PMIS, PARW, PBAR, PBEA, PCON, PFLA]),
@@ -4797,7 +4753,7 @@ begin
     wbSoundTypeSounds
   ]);
 
-  wbCSDTs := wbRArrayS('Sound Types', wbCSDT, cpNormal, False, nil, nil, nil{wbActorTemplateUseModelAnimation});
+  wbCSDTs := wbRArrayS('Sound Types', wbCSDT);
 
   wbAIDT :=
     wbStruct(AIDT, 'AI Data', [
@@ -4814,7 +4770,7 @@ begin
             wbInteger('Warn/Attack', itU32),
             wbInteger('Attack', itU32)
           ])
-    ], cpNormal, True, nil{wbActorTemplateUseAIData});
+    ]).SetRequired;
 
   wbAttackAnimationEnum := wbEnum([], [
      26, 'AttackLeft',
@@ -8658,32 +8614,32 @@ begin
         {0x40000000} 'Unknown 30',
         {0x80000000} 'Invulnerable'
       ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
-      wbInteger('Magicka Offset', itS16, nil, cpNormal, True, nil{wbActorTemplateUseStats}),
-      wbInteger('Stamina Offset', itS16, nil, cpNormal, False, nil{wbActorTemplateUseAIData}),
+      wbInteger('Magicka Offset', itS16),
+      wbInteger('Stamina Offset', itS16),
       wbUnion('Level', wbACBSLevelDecider, [
         wbInteger('Level', itU16),
         wbInteger('Level Mult', itU16, wbDiv(1000, 2))
           .SetAfterLoad(wbACBSLevelMultAfterLoad)
       ]).SetAfterSet(wbACBSLevelMultAfterSet),
-      wbInteger('Calc min level', itU16, nil, cpNormal, True, nil{wbActorTemplateUseStats}),
-      wbInteger('Calc max level', itU16, nil, cpNormal, True, nil{wbActorTemplateUseStats}),
-      wbInteger('Speed Multiplier', itU16, nil, cpNormal, True, nil{wbActorTemplateUseStats}),
-      wbInteger('Disposition Base (unused)', itS16, nil, cpIgnore, True, nil{wbActorTemplateUseTraits}),
+      wbInteger('Calc min level', itU16),
+      wbInteger('Calc max level', itU16),
+      wbInteger('Speed Multiplier', itU16),
+      wbInteger('Disposition Base (unused)', itS16, nil, cpIgnore),
       wbInteger('Template Flags', itU16, wbTemplateFlags)
         .IncludeFlag(dfCollapsed,  wbCollapseFlags),
-      wbInteger('Health Offset', itS16, nil, cpNormal, True, nil{wbActorTemplateUseStats}),
-      wbInteger('Bleedout Override', itU16, nil, cpNormal, True, nil{wbActorTemplateUseStats})
+      wbInteger('Health Offset', itS16),
+      wbInteger('Bleedout Override', itU16)
     ], cpNormal, True),
-    wbRArrayS('Factions', wbFaction, cpNormal, False, nil, nil, nil{wbActorTemplateUseFactions}),
-    wbFormIDCk(INAM, 'Death item', [LVLI], False, cpNormal, False, nil{wbActorTemplateUseTraits}),
-    wbFormIDCk(VTCK, 'Voice', [VTYP], False, cpNormal, False, nil{wbActorTemplateUseTraits}),
+    wbRArrayS('Factions', wbFaction),
+    wbFormIDCk(INAM, 'Death item', [LVLI]),
+    wbFormIDCk(VTCK, 'Voice', [VTYP]),
     wbFormIDCk(TPLT, 'Template', [LVLN, NPC_]),
-    wbFormIDCk(RNAM, 'Race', [RACE], False, cpNormal, True, nil{wbActorTemplateUseTraits}),
+    wbFormIDCk(RNAM, 'Race', [RACE]).SetRequired,
     wbSPCT,
     wbSPLOs,
     wbDEST,
     wbFormIDCk(WNAM, 'Skin', [ARMO], False, cpNormal, False),
-    wbFormIDCk(ANAM, 'Far away model', [ARMO], False, cpNormal, False, nil{wbActorTemplateUseTraits}),
+    wbFormIDCk(ANAM, 'Far away model', [ARMO]),
     wbFormIDCk(ATKR, 'Attack Race', [RACE], False, cpNormal, False),
     wbRArrayS('Attacks', wbAttackData),
     wbFormIDCk(SPOR, 'Spectator override package list', [FLST], False, cpNormal, False),
@@ -8705,7 +8661,7 @@ begin
     wbCOCT,
     wbCNTOs,
     wbAIDT,
-    wbRArray('Packages', wbFormIDCk(PKID, 'Package', [PACK]), cpNormal, False, nil{wbActorTemplateUseAIPackages}),
+    wbRArray('Packages', wbFormIDCk(PKID, 'Package', [PACK])),
     wbKeywords,
     wbFormIDCk(CNAM, 'Class', [CLAS], False, cpNormal, True),
     wbFULL,
@@ -8760,8 +8716,8 @@ begin
       wbFloat('Far away model distance'),
       wbInteger('Geared up weapons', itU8),
       wbUnused(3)
-    ], cpNormal, False, nil{wbActorTemplateUseStatsAutoCalc}),
-    wbRArrayS('Head Parts', wbFormIDCk(PNAM, 'Head Part', [HDPT]), cpNormal, False, nil, nil, nil{wbActorTemplateUseModelAnimation}),
+    ]),
+    wbRArrayS('Head Parts', wbFormIDCk(PNAM, 'Head Part', [HDPT])),
     wbFormIDCk(HCLF, 'Hair Color', [CLFM], False, cpNormal, False),
     wbFormIDCk(ZNAM, 'Combat Style', [CSTY], False, cpNormal, False),
     wbFormIDCk(GNAM, 'Gift Filter', [FLST], False, cpNormal, False),

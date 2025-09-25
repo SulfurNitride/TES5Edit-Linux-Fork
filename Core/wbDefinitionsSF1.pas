@@ -2203,198 +2203,6 @@ begin
     Result := True;
 end;
 
-function wbActorTemplatesUseTemplate0(const aElement: IwbElement): Boolean;
-var
-  MainRecord : IwbMainRecord;
-begin
-  Result := False;
-  MainRecord := aElement.ContainingMainRecord;
-
-  if not Assigned(MainRecord) then
-    Exit;
-  Result := (Cardinal(MainRecord.ElementNativeValues['ACBS\Template Flags']) shr 0 and 1) = 0;
-end;
-
-function wbActorTemplatesUseTemplate1(const aElement: IwbElement): Boolean;
-var
-  MainRecord : IwbMainRecord;
-begin
-  Result := False;
-  MainRecord := aElement.ContainingMainRecord;
-
-  if not Assigned(MainRecord) then
-    Exit;
-  Result := (Cardinal(MainRecord.ElementNativeValues['ACBS\Template Flags']) shr 1 and 1) = 0;
-end;
-
-function wbActorTemplatesUseTemplate2(const aElement: IwbElement): Boolean;
-var
-  MainRecord : IwbMainRecord;
-begin
-  Result := False;
-  MainRecord := aElement.ContainingMainRecord;
-
-  if not Assigned(MainRecord) then
-    Exit;
-  Result := (Cardinal(MainRecord.ElementNativeValues['ACBS\Template Flags']) shr 2 and 1) = 0;
-end;
-
-function wbActorTemplatesUseTemplate3(const aElement: IwbElement): Boolean;
-var
-  MainRecord : IwbMainRecord;
-begin
-  Result := False;
-  MainRecord := aElement.ContainingMainRecord;
-
-  if not Assigned(MainRecord) then
-    Exit;
-  Result := (Cardinal(MainRecord.ElementNativeValues['ACBS\Template Flags']) shr 3 and 1) = 0;
-end;
-
-function wbActorTemplatesUseTemplate4(const aElement: IwbElement): Boolean;
-var
-  MainRecord : IwbMainRecord;
-begin
-  Result := False;
-  MainRecord := aElement.ContainingMainRecord;
-
-  if not Assigned(MainRecord) then
-    Exit;
-  Result := (Cardinal(MainRecord.ElementNativeValues['ACBS\Template Flags']) shr 4 and 1) = 0;
-end;
-
-function wbActorTemplatesUseTemplate5(const aElement: IwbElement): Boolean;
-var
-  MainRecord : IwbMainRecord;
-begin
-  Result := False;
-  MainRecord := aElement.ContainingMainRecord;
-
-  if not Assigned(MainRecord) then
-    Exit;
-  Result := (Cardinal(MainRecord.ElementNativeValues['ACBS\Template Flags']) shr 5 and 1) = 0;
-end;
-
-function wbActorTemplatesUseTemplate6(const aElement: IwbElement): Boolean;
-var
-  MainRecord : IwbMainRecord;
-begin
-  Result := False;
-  MainRecord := aElement.ContainingMainRecord;
-
-  if not Assigned(MainRecord) then
-    Exit;
-  Result := (Cardinal(MainRecord.ElementNativeValues['ACBS\Template Flags']) shr 6 and 1) = 0;
-end;
-
-function wbActorTemplatesUseTemplate7(const aElement: IwbElement): Boolean;
-var
-  MainRecord : IwbMainRecord;
-begin
-  Result := False;
-  MainRecord := aElement.ContainingMainRecord;
-
-  if not Assigned(MainRecord) then
-    Exit;
-  Result := (Cardinal(MainRecord.ElementNativeValues['ACBS\Template Flags']) shr 7 and 1) = 0;
-end;
-
-function wbActorTemplatesUseTemplate8(const aElement: IwbElement): Boolean;
-var
-  MainRecord : IwbMainRecord;
-begin
-  Result := False;
-  MainRecord := aElement.ContainingMainRecord;
-
-  if not Assigned(MainRecord) then
-    Exit;
-  Result := (Cardinal(MainRecord.ElementNativeValues['ACBS\Template Flags']) shr 8 and 1) = 0;
-end;
-
-function wbActorTemplatesUseTemplate9(const aElement: IwbElement): Boolean;
-var
-  MainRecord : IwbMainRecord;
-begin
-  Result := False;
-  MainRecord := aElement.ContainingMainRecord;
-
-  if not Assigned(MainRecord) then
-    Exit;
-  Result := (Cardinal(MainRecord.ElementNativeValues['ACBS\Template Flags']) shr 9 and 1) = 0;
-end;
-
-function wbActorTemplatesUseTemplate10(const aElement: IwbElement): Boolean;
-var
-  MainRecord : IwbMainRecord;
-begin
-  Result := False;
-  MainRecord := aElement.ContainingMainRecord;
-
-  if not Assigned(MainRecord) then
-    Exit;
-  Result := (Cardinal(MainRecord.ElementNativeValues['ACBS\Template Flags']) shr 10 and 1) = 0;
-end;
-
-function wbActorTemplatesUseTemplate11(const aElement: IwbElement): Boolean;
-var
-  MainRecord : IwbMainRecord;
-begin
-  Result := False;
-  MainRecord := aElement.ContainingMainRecord;
-
-  if not Assigned(MainRecord) then
-    Exit;
-  Result := (Cardinal(MainRecord.ElementNativeValues['ACBS\Template Flags']) shr 11 and 1) = 0;
-end;
-
-function wbActorTemplatesUseTemplate12(const aElement: IwbElement): Boolean;
-var
-  MainRecord : IwbMainRecord;
-begin
-  Result := False;
-  MainRecord := aElement.ContainingMainRecord;
-
-  if not Assigned(MainRecord) then
-    Exit;
-  Result := (Cardinal(MainRecord.ElementNativeValues['ACBS\Template Flags']) shr 12 and 1) = 0;
-end;
-
-function wbActorTemplatesUseTemplate13(const aElement: IwbElement): Boolean;
-var
-  MainRecord : IwbMainRecord;
-begin
-  Result := False;
-  MainRecord := aElement.ContainingMainRecord;
-
-  if not Assigned(MainRecord) then
-    Exit;
-  Result := (Cardinal(MainRecord.ElementNativeValues['ACBS\Template Flags']) shr 13 and 1) = 0;
-end;
-
-function wbActorTemplatesUseTemplate14(const aElement: IwbElement): Boolean;
-var
-  MainRecord : IwbMainRecord;
-begin
-  Result := False;
-  MainRecord := aElement.ContainingMainRecord;
-
-  if not Assigned(MainRecord) then
-    Exit;
-  Result := (Cardinal(MainRecord.ElementNativeValues['ACBS\Template Flags']) shr 14 and 1) = 0;
-end;
-
-function wbActorTemplatesUseTemplateAny(const aElement: IwbElement): Boolean;
-var
-  MainRecord : IwbMainRecord;
-begin
-  Result := False;
-  MainRecord := aElement.ContainingMainRecord;
-
-  if not Assigned(MainRecord) then
-    Exit;
-  Result := Cardinal(MainRecord.ElementNativeValues['ACBS\Template Flags']) = 0;
-end;
-
 procedure wbCELLXCLWGetConflictPriority(const aElement: IwbElement; var aCP: TwbConflictPriority);
 var
   Container  : IwbContainerElementRef;
@@ -2919,7 +2727,7 @@ begin
 
   var wbSPCT := wbInteger(SPCT, 'Count', itU32, nil, cpBenign);
   var wbSPLO := wbFormIDCk(SPLO, 'Actor Effect', [SPEL, LVSP]);
-  var wbSPLOs := wbRArrayS('Actor Effects', wbSPLO, cpNormal, False, nil, wbSPLOsAfterSet, nil{wbActorTemplateUseActorEffectList});
+  var wbSPLOs := wbRArrayS('Actor Effects', wbSPLO, cpNormal, False, nil, wbSPLOsAfterSet);
 
   var wbCVPA := wbArray(CVPA,'Components',
     wbStruct('Component', [
@@ -3884,7 +3692,6 @@ begin
   var wbEDID := wbStringKC(EDID, 'Editor ID', 0, cpOverride);
   var wbNLDT := wbString(NLDT, 'Context Notes'); // localization note, explanation of variable, etc.
   var wbFULL := wbLStringKC(FULL, 'Name', 0, cpTranslate);
-  var wbFULLActor := wbLStringKC(FULL, 'Name', 0, cpTranslate, False, nil{wbActorTemplateUseBaseData});
   var wbFULLReq := wbLStringKC(FULL, 'Name', 0, cpTranslate, True);
   var wbDESC := function(aName: string = 'Description'):IwbSubRecordWithBaseStringDef
   begin
@@ -4595,50 +4402,6 @@ begin
     ).SetCountPath('...\DEST - Header\Stage Count')
   ], [], cpNormal, False, nil)
   .SetSummaryKey([3]);
-
-  var wbDESTActor := wbRStruct('Destructible', [
-    wbStruct(DEST, 'Header', [
-      wbInteger('Health', itS32),
-      wbInteger('Count', itU8),
-      wbInteger('VATS Targetable', itU8, wbBoolEnum),
-      wbUnused(2)
-    ]).SetSummaryKeyOnValue([0])
-      .SetSummaryPrefixSuffixOnValue(0,'Health ','')
-      .IncludeFlag(dfCollapsed, wbCollapseDestruction),
-    wbRArray('Stages',  // Begin Stage Array
-      wbRStruct('Stage', [ // Begin Stage RStruct
-        wbStruct(DSTD, 'Destruction Stage Data', [ // Begin DSTD
-          wbInteger('Health %', itU8),
-          wbInteger('Index', itU8),
-          wbInteger('Damage Stage', itU8),
-          wbInteger('Flags', itU8, wbFlags([
-            'Cap Damage',
-            'Disable',
-            'Destroy'
-          ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
-          wbInteger('Self Damage per Second', itS32),
-          wbFormIDCk('Explosion', [EXPL, NULL]),
-          wbFormIDCk('Debris', [DEBR, NULL]),
-          wbInteger('Debris Count', itS32)
-        ], cpNormal, True)
-        .SetSummaryKeyOnValue([0,5,6])
-        .SetSummaryPrefixSuffixOnValue(0,'Health ','%')
-        .SetSummaryDelimiterOnValue(', ')
-        .IncludeFlagOnValue(dfSummaryExcludeNULL)
-        .IncludeFlagOnValue(dfSummaryMembersNoName)
-        .IncludeFlag(dfCollapsed, wbCollapseDestruction), // End DSTD
-        wbRStructSK([0], 'Model', [ // Begin DMDL
-          wbString(DMDL, 'Model FileName')
-        ]), // End DMDL
-        wbDMDT,
-        wbDMDC,
-        wbDMDS,
-        wbEmpty(DSTF, 'End Marker', cpNormal, True)
-      ]) // End Stage RStruct
-        .SetSummaryKey([0, 1])
-        .IncludeFlag(dfSummaryMembersNoName)
-    ) // End Stage Array
-  ]);
 
   var wbXESP := wbStruct(XESP, 'Enable State Parent', [
     wbFormIDCk('Reference', sigReferences),
@@ -11478,8 +11241,8 @@ begin
     ).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbInteger(XNAM, 'Max concurrent quests', itU32),
     wbInteger(ENAM, 'Type', itU32, wbQuestEventEnum)
-  ])
-    .SetSummaryKey([7]);
+  ]).SetSummaryKey([7])
+    .SetAddInfo(wbSMENAddInfo);
 
   {subrecords checked against Starfield.esm}
   wbRecord(DLBR, 'Dialog Branch', [
@@ -13316,14 +13079,14 @@ begin
         {0x80000000} 'Invulnerable'
       ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
       ,
-      wbInteger('XP Value Offset', itS16, nil, cpNormal, True, nil{wbActorTemplateUseStats}),
+      wbInteger('XP Value Offset', itS16),
       wbUnion('Level', wbACBSLevelDecider, [
         wbInteger('Level', itU16),
         wbInteger('Level Mult', itU16, wbDiv(1000, 2))
           .SetAfterLoad(wbACBSLevelMultAfterLoad)
       ]).SetAfterSet(wbACBSLevelMultAfterSet),
-      wbInteger('Calc min level', itU16, nil, cpNormal, True, nil{wbActorTemplateUseStats}),
-      wbInteger('Calc max level', itU16, nil, cpNormal, True, nil{wbActorTemplateUseStats}),
+      wbInteger('Calc min level', itU16),
+      wbInteger('Calc max level', itU16),
       wbInteger('Disposition Base', itS16),
       wbInteger('Template Flags', itU16, wbTemplateFlags)
         .IncludeFlag(dfCollapsed, wbCollapseFlags)
@@ -13331,38 +13094,37 @@ begin
       .SetSummaryKeyOnValue([0,6])
       .SetSummaryPrefixSuffixOnValue(0, '[',']')
       .SetSummaryPrefixSuffixOnValue(1, '[',']'),
-    wbRArrayS('Factions', wbFaction, cpNormal, False, nil, nil, nil{wbActorTemplateUseFactions}),
-    wbFormIDCk(INAM, 'Death item', [LVLI], False, cpNormal, False, nil{wbActorTemplateUseTraits}),
-    wbFormIDCk(VTCK, 'Voice', [VTYP], False, cpNormal, False, nil{wbActorTemplateUseTraits}),
+    wbRArrayS('Factions', wbFaction),
+    wbFormIDCk(INAM, 'Death item', [LVLI]),
+    wbFormIDCk(VTCK, 'Voice', [VTYP]),
     wbFormIDCk(TPLT, 'Default Template', [BMMO, LVLN, NPC_]),
     wbFormIDCk(LTPT, 'Legendary Template', [BMMO, LVLN, NPC_]),
     wbFormIDCk(LTPC, 'Legendary Chance', [GLOB]),
     wbStruct(TPTA, 'Template Actors', [
-      wbFormIDCk('Traits', [BMMO, LVLN, NPC_, NULL], False, cpNormal, False, wbActorTemplatesUseTemplate0),
-      wbFormIDCk('Stats', [BMMO, LVLN, NPC_, NULL], False, cpNormal, False, wbActorTemplatesUseTemplate1),
-      wbFormIDCk('Factions', [BMMO, LVLN, NPC_, NULL], False, cpNormal, False, wbActorTemplatesUseTemplate2),
-      wbFormIDCk('Spell List', [BMMO, LVLN, NPC_, NULL], False, cpNormal, False, wbActorTemplatesUseTemplate3),
-      wbFormIDCk('AI Data', [BMMO, LVLN, NPC_, NULL], False, cpNormal, False, wbActorTemplatesUseTemplate4),
-      wbFormIDCk('AI Packages', [BMMO, LVLN, NPC_, NULL], False, cpNormal, False, wbActorTemplatesUseTemplate5),
-      wbFormIDCk('Model/Animation', [BMMO, LVLN, NPC_, NULL], False, cpNormal, False, wbActorTemplatesUseTemplate6),
-      wbFormIDCk('Base Data', [BMMO, LVLN, NPC_, NULL], False, cpNormal, False, wbActorTemplatesUseTemplate7),
-      wbFormIDCk('Inventory', [BMMO, LVLN, NPC_, NULL], False, cpNormal, False, wbActorTemplatesUseTemplate8),
-      wbFormIDCk('Script', [BMMO, LVLN, NPC_, NULL], False, cpNormal, False, wbActorTemplatesUseTemplate9),
-      wbFormIDCk('Def Pack List', [BMMO, LVLN, NPC_, NULL], False, cpNormal, False, wbActorTemplatesUseTemplate10),
-      wbFormIDCk('Attack Data', [BMMO, LVLN, NPC_, NULL], False, cpNormal, False, wbActorTemplatesUseTemplate11),
-      wbFormIDCk('Keywords', [BMMO, LVLN, NPC_, NULL], False, cpNormal, False, wbActorTemplatesUseTemplate12),
-      wbFormIDCk('Reaction Radius', [BMMO, LVLN, NPC_, NULL], False, cpNormal, False, wbActorTemplatesUseTemplate13),
-      wbFormIDCk('Combat Style', [BMMO, LVLN, NPC_, NULL], False, cpNormal, False, wbActorTemplatesUseTemplate14)
-    ], cpNormal, False, wbActorTemplatesUseTemplateAny)
-    .SetSummaryKeyOnValue([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14])
-    .IncludeFlagOnValue(dfSummaryExcludeNULL)
-    ,
-    wbFormIDCk(RNAM, 'Race', [RACE], False, cpNormal, True, nil{wbActorTemplateUseTraits}),
+      wbNPCTemplateActorEntry('Traits'),
+      wbNPCTemplateActorEntry('Stats'),
+      wbNPCTemplateActorEntry('Factions'),
+      wbNPCTemplateActorEntry('Spell List'),
+      wbNPCTemplateActorEntry('AI Data'),
+      wbNPCTemplateActorEntry('AI Packages'),
+      wbNPCTemplateActorEntry('Model/Animation'),
+      wbNPCTemplateActorEntry('Base Data'),
+      wbNPCTemplateActorEntry('Inventory'),
+      wbNPCTemplateActorEntry('Script'),
+      wbNPCTemplateActorEntry('Def Package List'),
+      wbNPCTemplateActorEntry('Attack Data'),
+      wbNPCTemplateActorEntry('Keywords'),
+      wbNPCTemplateActorEntry('Reaction Radius'),
+      wbNPCTemplateActorEntry('Combat Style')
+    ]).SetSummaryKeyOnValue([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14])
+      .IncludeFlagOnValue(dfSummaryExcludeNULL)
+      .SetDontShow(wbTemplateActorsDontShow),
+    wbFormIDCk(RNAM, 'Race', [RACE]).SetRequired,
 //    wbSPCT,
     wbSPLOs,
     wbDEST,
     wbFormIDCk(WNAM, 'Skin', [ARMO], False, cpNormal, False),
-//    wbFormIDCk(ANAM, 'Far away model', [ARMO], False, cpNormal, False, nil{wbActorTemplateUseTraits}),
+//    wbFormIDCk(ANAM, 'Far away model', [ARMO]),
     wbFormIDCk(ATKR, 'Attack Race', [RACE], False, cpNormal, False),
     wbFormIDCk(SPOR, 'Spectator Override Package List', [FLST]),
     wbFormIDCk(OCOR, 'Observe Dead Body Override Package List', [FLST]),
@@ -13390,7 +13152,7 @@ begin
     wbNTRM,
     wbContainerItems.SetSummaryKey([1]),
     wbAIDT,
-    wbRArray('Packages', wbFormIDCk(PKID, 'Package', [PACK]), cpNormal, False, nil{wbActorTemplateUseAIPackages}),
+    wbRArray('Packages', wbFormIDCk(PKID, 'Package', [PACK])),
     wbArray(RDSA, 'Reaction Radius Behavior',
       wbStruct('Entry', [
         {  0} wbInteger('Reaction Type', itU32, wbEnum([
@@ -13479,7 +13241,7 @@ begin
       .SetSummaryPrefixSuffixOnValue(2, 'Model Distance: ','')
       .SetSummaryPrefixSuffixOnValue(3, 'Weapons: ','')
       .SetSummaryDelimiterOnValue(', '),
-    wbRArrayS('Head Parts', wbFormIDCk(PNAM, 'Head Part', [HDPT]), cpNormal, False, nil, nil, nil{wbActorTemplateUseModelAnimation}),
+    wbRArrayS('Head Parts', wbFormIDCk(PNAM, 'Head Part', [HDPT])),
 //    wbFormIDCk(HCLF, 'Hair Color', [CLFM], False, cpNormal, False),
 //    wbFormIDCk(BCLF, 'Facial Hair Color', [CLFM], False, cpNormal, False),
     wbFormIDCk(ZNAM, 'Combat Style', [CSTY], False, cpNormal, False),

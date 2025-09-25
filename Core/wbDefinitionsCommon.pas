@@ -220,7 +220,7 @@ function wbFlagNavmeshGroundDontSHow(const aElement: IwbElement): Boolean;
 function wbFlagPartialFormDontShow(const aElement: IwbElement): Boolean;
 function wbFlagREFRSkyMarkerDontShow(const aElement: IwbElement): Boolean;
 
-{>>> Don't Show Callbacks <<<} //15
+{>>> Don't Show Callbacks <<<} //17
 function wbAlwaysDontShow(const aElement: IwbElement): Boolean;
 function wbCellInteriorDontShow(const aElement: IwbElement): Boolean;
 function wbCellExteriorDontShow(const aElement: IwbElement): Boolean;
@@ -235,6 +235,8 @@ function wbREGNMapDontShow(const aElement: IwbElement): Boolean;
 function wbREGNObjectsDontShow(const aElement: IwbElement): Boolean;
 function wbREGNSoundDontShow(const aElement: IwbElement): Boolean;
 function wbREGNWeatherDontShow(const aElement: IwbElement): Boolean;
+function wbTemplateActorDontShow(const aElement: IwbElement): Boolean;
+function wbTemplateActorsDontShow(const aElement: IwbElement): Boolean;
 function wbWorldXWEMDontShow(const aElement: IwbElement): Boolean;
 
 {>>> Float Normalizers <<<} //1
@@ -630,6 +632,9 @@ function wbDebrisModel(aTextureFileHashes: IwbRecordMemberDef): IwbRecordMemberD
 function wbIMADMultAddCount(const aName: string): IwbValueDef;
 function wbTimeInterpolators(const aSignature: TwbSignature; const aName: string): IwbRecordMemberDef;
 function wbTimeInterpolatorsMultAdd(const aSignatureMult, aSignatureAdd: TwbSignature; const aName: string): IwbRecordMemberDef;
+
+{>>> NPC Defs <<<} //1
+function wbNPCTemplateActorEntry(const aName: string): IwbValueDef;
 
 {>>> Perk Defs <<<} //1
 function wbPerkEffectType(aAfterSetCallback: TwbAfterSetCallback): IwbValueDef;
@@ -1748,7 +1753,7 @@ begin
     Exit(True);
 end;
 
-{>>> Don't Show Callbacks <<<} //15
+{>>> Don't Show Callbacks <<<} //17
 
 function wbAlwaysDontShow(const aElement: IwbElement): Boolean;
 begin
@@ -1847,6 +1852,39 @@ end;
 function wbREGNWeatherDontShow(const aElement: IwbElement): Boolean;
 begin
   Result := wbGetREGNType(aElement) <> 3;
+end;
+
+function wbTemplateActorDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := False;
+
+  var lSubRecord := aElement.ContainingSubRecord;
+  if not Assigned(lSubRecord) then
+    Exit;
+
+  var shrInt : Integer;
+  for var I := 0 to Pred(lSubRecord.ElementCount - 1) do
+    if aElement = lSubRecord.Elements[I] then
+      shrInt := I
+    else
+      Continue;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  Result := (Cardinal(lMainRecord.ElementNativeValues['ACBS\Template Flags']) shr shrInt and 1) = 0;
+end;
+
+function wbTemplateActorsDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := False;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  Result := Cardinal(lMainRecord.ElementNativeValues['ACBS\Template Flags']) = 0;
 end;
 
 function wbWorldXWEMDontShow(const aElement: IwbElement): Boolean;
@@ -5831,6 +5869,14 @@ begin
     ]).SetSummaryKey([0, 1])
       .SetRequired
       .IncludeFlag(dfCollapsed, wbCollapseTimeInterpolatorsMultAdd);
+end;
+
+{>>> NPC Defs <<<} //1
+
+function wbNPCTemplateActorEntry(const aName: string): IwbValueDef;
+begin
+  Result :=
+    wbFormIDCk(aName, [BMMO,LVLN,NPC_,NULL], False, cpNormalIgnoreEmpty).SetDontShow(wbTemplateActorDontShow);
 end;
 
 {>>> Perk Defs <<<} //1
