@@ -600,12 +600,12 @@ function wbFloatRGBA(const aSignature : TwbSignature;
 function wbFloatRGBA(const aName : string = 'Color')
                                  : IwbValueDef; overload;
 
-{>>> Many Record Defs <<<} //3
-function wbDamageTypeArray(const aItemName: string): IwbRecordMemberDef;
+{>>> Many Record Defs <<<} //2
 function wbModelInfo(aSignature: TwbSignature; aName: string = ''): IwbRecordMemberDef;
 function wbOBND(aRequired: Boolean = False): IwbRecordMemberDef;
 
-{>>> Multiple Record Defs <<<} //3
+{>>> Multiple Record Defs <<<} //4
+function wbDamageTypeArray(const aItemName: string): IwbRecordMemberDef;
 function wbEnchantment(aCapacity: Boolean = False): IwbRecordMemberDef;
 function wbLeveledListEntry(aObjectName: string; aSigs: TwbSignatures): IwbRecordMemberDef;
 function wbOwnership(aSkipSigs: TwbSignatures = nil): IwbRecordMemberDef;
@@ -5418,19 +5418,7 @@ begin
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-{>>> Many Record Defs <<<} //3
-
-function wbDamageTypeArray(const aItemName: string): IwbRecordMemberDef;
-begin
-  Result := wbArrayS(DAMA, aItemName + 's',
-    wbStructSK([0], aItemName, [
-      wbFormIDCk('Type', [DMGT]),
-      wbInteger('Amount', itU32),
-      wbFromVersion(152, wbFormIDCk('Curve Table', [CURV, NULL]))
-    ]).SetSummaryKey([1])
-      .SetSummaryMemberPrefixSuffix(1, '= ','')
-      .IncludeFlag(dfSummaryMembersNoName))
-end;
+{>>> Many Record Defs <<<} //2
 
 function wbModelInfo(aSignature: TwbSignature; aName: string = ''): IwbRecordMemberDef;
 begin
@@ -5578,7 +5566,19 @@ begin
       .IncludeFlag(dfCollapsed, wbCollapseObjectBounds);
 end;
 
-{>>> Multiple Record Defs <<<} //3
+{>>> Multiple Record Defs <<<} //4
+
+function wbDamageTypeArray(const aItemName: string): IwbRecordMemberDef;
+begin
+  Result := wbArrayS(DAMA, aItemName + 's',
+    wbStructSK([0], aItemName, [
+      wbFormIDCk('Type', [DMGT]),
+      wbInteger('Amount', itU32),
+      wbFromVersion(152, wbFormIDCk('Curve Table', [CURV, NULL]))
+    ]).SetSummaryKey([1])
+      .SetSummaryMemberPrefixSuffix(1, '= ','')
+      .IncludeFlag(dfSummaryMembersNoName))
+end;
 
 function wbEnchantment(aCapacity: Boolean = False): IwbRecordMemberDef;
 begin
