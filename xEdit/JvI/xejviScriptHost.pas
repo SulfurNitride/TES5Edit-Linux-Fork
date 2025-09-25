@@ -182,10 +182,9 @@ begin
       JvInterpreterError(ieDirectInvalidArgument, 0); // or  ieNotEnoughParams, ieIncompatibleTypes or others.
   end
   else if SameText(Identifier, 'FileByLoadOrderFileID') then begin
-    if (Args.Count = 1) and VarIsNumeric(Args.Values[0]) and (Args.Values[0] < Length(Files)) then begin
-      var aLoadOrderFileID := TwbFileID.CreateFull(Integer(Args.Values[0]));
+    if (Args.Count = 1) and VarIsStr(Args.Values[0]) then begin
       for i := Low(Files) to High(Files) do
-        if Files[i].LoadOrderFileID = aLoadOrderFileID then begin
+        if Files[i].LoadOrderFileID.ToString = Args.Values[0] then begin
           Value := Files[i];
           Break;
         end;
