@@ -13617,7 +13617,7 @@ begin
        wbFloat('Fat')
     ]),
     wbFormIDCk(FTST, 'Head Texture', [TXST], False, cpNormal, False),
-    wbFloatColors(QNAM),
+    wbFloatRGBA(QNAM),
     wbArray(MSDK, 'Morph Keys', wbInteger('Key', itU32, wbMorphValueToStr, wbHexStrToInt)),
     wbArray(MSDV, 'Morph Values', wbFloat('Value')),
     wbRArrayS('Face Tinting Layers',
