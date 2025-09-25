@@ -69,7 +69,6 @@ var
   wbCOED: IwbSubRecordDef;
   wbXLCM: IwbSubRecordDef;
   wbDEST: IwbSubRecordStructDef;
-  wbDESTActor: IwbSubRecordStructDef;
   wbDODT: IwbSubRecordDef;
   wbSPLO: IwbSubRecordDef;
   wbSPLOs: IwbSubRecordArrayDef;
@@ -81,7 +80,6 @@ var
   wbCSDT: IwbSubRecordStructDef;
   wbCSDTs: IwbSubRecordArrayDef;
   wbFULL: IwbSubRecordDef;
-  wbFULLActor: IwbSubRecordDef;
   wbFULLReq: IwbSubRecordDef;
   wbDESC: IwbSubRecordDef;
   wbDESCReq: IwbSubRecordDef;
