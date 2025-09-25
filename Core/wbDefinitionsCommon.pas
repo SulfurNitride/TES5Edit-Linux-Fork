@@ -600,7 +600,8 @@ function wbFloatRGBA(const aSignature : TwbSignature;
 function wbFloatRGBA(const aName : string = 'Color')
                                  : IwbValueDef; overload;
 
-{>>> Many Record Defs <<<} //2
+{>>> Many Record Defs <<<} //3
+function wbDamageTypeArray(const aItemName: string): IwbRecordMemberDef;
 function wbModelInfo(aSignature: TwbSignature; aName: string = ''): IwbRecordMemberDef;
 function wbOBND(aRequired: Boolean = False): IwbRecordMemberDef;
 
@@ -5417,7 +5418,19 @@ begin
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-{>>> Many Record Defs <<<} //2
+{>>> Many Record Defs <<<} //3
+
+function wbDamageTypeArray(const aItemName: string): IwbRecordMemberDef;
+begin
+  Result := wbArrayS(DAMA, aItemName + 's',
+    wbStructSK([0], aItemName, [
+      wbFormIDCk('Type', [DMGT]),
+      wbInteger('Amount', itU32),
+      wbFromVersion(152, wbFormIDCk('Curve Table', [CURV, NULL]))
+    ]).SetSummaryKey([1])
+      .SetSummaryMemberPrefixSuffix(1, '= ','')
+      .IncludeFlag(dfSummaryMembersNoName))
+end;
 
 function wbModelInfo(aSignature: TwbSignature; aName: string = ''): IwbRecordMemberDef;
 begin

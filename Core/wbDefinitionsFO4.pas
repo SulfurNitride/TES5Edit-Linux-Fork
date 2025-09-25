@@ -6486,10 +6486,7 @@ begin
       wbInteger('Stagger Rating', itU8, wbStaggerEnum),
       wbUnused(3)
     ]),
-    wbArrayS(DAMA, 'Resistances', wbStructSK([0], 'Resistance', [
-      wbFormIDCk('Damage Type', [DMGT]),
-      wbInteger('Value', itU32)
-    ])),
+    wbDamageTypeArray('Resistance'),
     wbFormIDCk(TNAM, 'Template Armor', [ARMO]),
     wbAPPR,
     wbObjectTemplate
@@ -13655,10 +13652,7 @@ begin
     wbFormIDCk(WAMD, 'Aim Model', [AMDL]),
     wbFormIDCk(WZMD, 'Zoom', [ZOOM]),
     wbFormIDCk(CNAM, 'Template', [WEAP]),
-    wbStructs(DAMA, 'Damage Types', 'Damage Type', [
-      wbFormIDCk('Type', [DMGT]),
-      wbInteger('Amount', itU32)
-    ]),
+    wbDamageTypeArray('Damage Type'),
     wbFLTR,
     wbInteger(MASE, 'Melee Speed', itU32, wbEnum([
       'Very Slow',

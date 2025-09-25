@@ -1441,15 +1441,6 @@ begin
     .IncludeFlag(dfAllowAnyMember);
 end; //WIP }
 
-function wbDamageTypeArray(aItemName: string): IwbSubRecordDef;
-begin
-    Result := wbArrayS(DAMA, aItemName+'s', wbStructSK([0], aItemName, [
-      wbFormIDCk('Damage Type', [DMGT]),
-      wbInteger('Value', itU32),
-      wbFromVersion(152, wbFormIDCk('Curve Table', [CURV, NULL]))
-    ]))
-end;
-
 function wbEPFDActorValueToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 var
   AsCardinal : Cardinal;

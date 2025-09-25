@@ -993,19 +993,6 @@ begin
     .IncludeFlag(dfCollapsed, wbCollapseObjectBounds);
 end;
 
-function wbDamageTypeArray(aItemName: string): IwbSubRecordDef;
-begin
-  Result := wbArrayS(DAMA, aItemName+'s', wbStructSK([0], aItemName, [
-    wbFormIDCk('Damage Type', [DMGT]),
-    wbInteger('Value', itU32),
-    wbFromVersion(152, wbFormIDCk('Curve Table', [CURV, NULL]))
-  ])
-  .SetSummaryKey([1])
-  .SetSummaryMemberPrefixSuffix(1, '= ','')
-  .IncludeFlag(dfSummaryMembersNoName)
-  )
-end;
-
 procedure wbBIOMScaleToStr(var aValue:string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 var
   tValue: Float32;
