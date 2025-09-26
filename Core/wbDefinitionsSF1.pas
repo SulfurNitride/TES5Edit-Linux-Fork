@@ -5423,7 +5423,7 @@ begin
     {29} wbFormIDCkNoReach('Base Effect', [MGEF]),
     {30} wbFormIDCkNoReach('Effect Item', [SPEL, ENCH, ALCH, INGR, SCRL]),
     {31} wbInteger('Misc Stat', itU32, wbMiscStatEnum),
-    {32} wbFormIDCkNoReach('Object Reference', sigReferences),
+    {32} wbFormIDCkNoReach('Reference', [ACHR,PARW,PBAR,PBEA,PCON,PFLA,PGRE,PHZD,PLYR,PMIS,REFR,TRGT], True),
     {33} wbFormIDCkNoReach('Owner', [NULL, FACT, NPC_]),
     {34} wbFormIDCkNoReach('Package', [PACK]),
     {35} wbInteger('Packdata ID', itU32),

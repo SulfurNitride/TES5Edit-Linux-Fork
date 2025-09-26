@@ -4132,7 +4132,7 @@ begin
     {23} wbInteger('Ward State', itU32, wbWardStateEnum),
 
     //FormIDs
-    {24} wbFormIDCkNoReach('Actor', [ACHR, PLYR, REFR, NULL]),
+    {24} wbFormIDCkNoReach('Actor', [ACHR,PLYR,REFR,TRGT], True),
     {25} wbFormIDCkNoReach('Actor Base', [NPC_]),
     {26} wbFormIDCkNoReach('Association Type', [ASTP]),
     {27} wbFormIDCkNoReach('Base Object', wbConditionBaseObjects + [FLST, NULL], wbConditionBaseObjects),
@@ -4159,7 +4159,7 @@ begin
     {48} wbFormIDCkNoReach('Perk', [PERK]),
     {49} wbFormIDCkNoReach('Quest', [QUST]),
     {50} wbFormIDCkNoReach('Race', [RACE]),
-    {51} wbFormIDCkNoReach('Reference', [ACHR, PARW, PBAR, PBEA, PCON, PFLA, PGRE, PHZD, PLYR, PMIS, REFR, NULL]),
+    {51} wbFormIDCkNoReach('Reference', [ACHR,PARW,PBAR,PBEA,PCON,PFLA,PGRE,PHZD,PLYR,PMIS,REFR,TRGT], True),
     {52} wbFormIDCkNoReach('Region', [REGN]),
     {53} wbFormIDCkNoReach('Scene', [SCEN, NULL]),
     {54} wbFormIDCkNoReach('Shout', [SHOU]),
