@@ -408,7 +408,7 @@ function IsOBME(const aDef1, aDef2: string): string;
 function IsVR(const aDef1, aDef2: string): string;
 function IsVRESL(const aDef1, aDef2: string): string;
 
-{>>> Game Mode IfThen Defs <<<} //35
+{>>> Game Mode IfThen Defs <<<} //36
 function IsTES3(const aDef1, aDef2: String): string; overload;
 function IsTES3(const aDef1, aDef2: TwbSignature): TwbSignature; overload;
 function IsTES4(const aDef1, aDef2: Integer): Integer; overload;
@@ -440,6 +440,7 @@ function IsFO4Plus(const aDef1, aDef2: IwbValueDef): IwbValueDef; overload;
 function IsFO4Plus(const aDef1, aDef2: string): string; overload;
 function IsFO76(const aDef1, aDef2: IwbValueDef): IwbValueDef; overload;
 function IsFO76(const aDef1, aDef2: string): string; overload;
+function IsFO76SF1(const aDef1, aDef2: string): string;
 function IsSF1(const aDef1, aDef2: Integer): Integer; overload;
 function IsSF1(const aDef1, aDef2: IwbRecordMemberDef): IwbRecordMemberDef; overload;
 function IsSF1(const aDef1, aDef2: IwbValueDef): IwbValueDef; overload;
@@ -4674,7 +4675,7 @@ begin
     Result := aDef1;
 end;
 
-{>>> wbGameMode IfThen Defs <<<} //35
+{>>> wbGameMode IfThen Defs <<<} //36
 
 function IsTES3(const aDef1, aDef2: string): string;
 begin
@@ -4890,6 +4891,13 @@ function IsFO76(const aDef1, aDef2: string): string;
 begin
   Result := aDef2;
   if wbIsFallout76 then
+    Result := aDef1
+end;
+
+function IsFO76SF1(const aDef1, aDef2: string): string;
+begin
+  Result := aDef2;
+  if wbIsFallout76 or wbIsStarfield then
     Result := aDef1
 end;
 
@@ -7341,7 +7349,7 @@ begin
       9, 'Water',
      10, 'Door',
      11, 'Found',
-     12, IsFO76('Unknown 12', '')
+     12, IsFO76SF1('Unknown 12', '')
     ], False, 13));
 
 { Flags below are wrong. The first 4 bit are an enum as follows:
