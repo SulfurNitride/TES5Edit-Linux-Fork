@@ -7105,7 +7105,7 @@ begin
     {56} wbFormIDCkNoReach('Race', [RACE]),
     {57} wbFormIDCkNoReach('Reference', [ACHR,PARW,PBAR,PBEA,PCON,PFLA,PGRE,PHZD,PLYR,PMIS,REFR,TRGT], True),
     {58} wbFormIDCkNoReach('Region', [REGN]),
-    {59} wbFormIDCkNoReach('Scene', [NULL,SCEN]),
+    {59} wbFormIDCkNoReach('Scene', [SCEN]),
     {60} wbFormIDCkNoReach('Spell', [SPEL]),
     {61} wbFormIDCkNoReach('Voice Type', [FLST,VTYP]),
     {62} wbFormIDCkNoReach('Weather', [WTHR]),
