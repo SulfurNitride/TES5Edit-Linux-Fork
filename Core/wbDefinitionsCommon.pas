@@ -59,6 +59,7 @@ var
   wbZoomOverlayEnum: IwbEnumDef;
   wbZTestFuncEnum: IwbEnumDef;
 
+  wbFurnitureEntryTypeFlags: IwbFlagsDef;
   wbPackageFlags: IwbFlagsDef;
   wbServiceFlags: IwbFlagsDef;
   wbTemplateFlags: IwbFlagsDef;
@@ -6788,6 +6789,15 @@ begin
       5, 'Greater Than',
       7, 'Greater Than or Equal To',
       8, 'Always Show'
+    ]);
+
+  wbFurnitureEntryTypeFlags :=
+    wbFlags([
+    {0} 'Front',
+    {1} 'Behind',
+    {2} 'Right',
+    {3} 'Left',
+    {4} 'Up'
     ]);
 
   wbPackageFlags :=

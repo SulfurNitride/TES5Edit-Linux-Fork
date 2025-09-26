@@ -18,7 +18,6 @@ uses
 var
   wbBipedObjectFlags: IwbFlagsDef;
   wbEquipType: IwbFlagsDef;
-  wbFurnitureEntryTypeFlags: IwbFlagsDef;
   wbPKDTInterruptFlags: IwbFlagsDef;
 
   wbActorBehaviorEnum: IwbEnumDef;
@@ -4076,14 +4075,6 @@ begin
     {2} 'Lay',
     {3} '',
     {4} 'Lean'
-  ]);
-
-  wbFurnitureEntryTypeFlags := wbFlags([
-    {0x01} 'Front',
-    {0x02} 'Behind',
-    {0x04} 'Right',
-    {0x08} 'Left',
-    {0x10} 'Up'
   ]);
 
   wbWardStateEnum := wbEnum([
