@@ -3053,14 +3053,7 @@ begin
       j := 0;
       for i := Low(flMasters) to High(flMasters) do
         if UsedMasters[i] or
-           (
-             wbStarfieldIsABugInfestedHellhole and
-             wbIsStarfield and
-             (
-                  SameText(flMasters[i].FileName, 'Starfield.esm')
-//             or SameText(flMasters[i].FileName, 'BlueprintShips-Starfield.esm')
-             )
-           )
+           SameText(flMasters[i].FileName, wbGameMasterESM)
         then begin
           if i <> j then begin
             flMasters[j] := flMasters[i];
@@ -5180,12 +5173,12 @@ begin
       if GetIsUpdateDirect and (GetIsLightDirect or GetIsMediumDirect) then
           SetIsUpdate(False);
 
-      if flModule.miExtension = meESP then begin
+      {if flModule.miExtension = meESP then begin
         if not wbRedPill then
           raise Exception.Create('".esp" modules can not be saved in ' + wbAppName + wbToolName)
         else
           FileHeader.ElementEditValues['CNAM'] := 'RedPill';
-      end;
+      end;}
     end;
 
     inherited;
@@ -9935,7 +9928,7 @@ var
     if wbGameMode >= gmFO3 then begin
       case wbGameMode of
         gmSF1                        : BasePtr.mrsVersion^ := 576;
-        gmFO76                       : BasePtr.mrsVersion^ := 203;
+        gmFO76                       : BasePtr.mrsVersion^ := 204;
         gmFO4, gmFO4VR               : BasePtr.mrsVersion^ := 131;
         gmSSE, gmTES5VR, gmEnderalSE : BasePtr.mrsVersion^ := 44;
         gmTES5, gmEnderal            : BasePtr.mrsVersion^ := 43;
@@ -16763,7 +16756,7 @@ var
   begin
     Result := nil;
 
-    if wbIsStarfield and wbStarfieldIsABugInfestedHellhole then begin
+    if wbIsStarfield then begin
       if aSource.LoadOrderFormID.ToCardinal = $25 then
         Exit;
 

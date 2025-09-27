@@ -817,7 +817,7 @@ begin
     wbGameName         := 'Morrowind';
     wbGameSteamID      := '22320';
     (**)
-    ToolModes          := (**)[tmView];(** )wbAlwaysMode - [tmLODgen];(**)
+    ToolModes          := (**)[tmView, tmEdit];(** )wbAlwaysMode - [tmLODgen];(**)
     ToolSources        := [tsPlugins];
     (**)
   end
@@ -1054,7 +1054,9 @@ begin
       wbLoadBSAs            := True;  // localization won't work otherwise
       wbHideIgnored         := False; // to show Form Version
       wbCanSortINFO         := True;
-      wbHasAddedLightSupport := (wbGameMode = gmTES5VR) and FileExists(wbDataPath + 'SKSE\Plugins\skyrimvresl.dll');
+      wbVRESL               := (wbGameMode in [gmTES5VR]) and FileExists(wbDataPath + 'SKSE\Plugins\skyrimvresl.dll');
+      wbHasAddedLightSupport := wbVRESL;
+      wbHasAddedUpdateSupport := wbVRESL;
       wbCS                  := wbIsSkyrimSE and FileExists(wbDataPath + 'SKSE\Plugins\CommunityShaders.dll');
     end;
     gmFO4, gmFO4VR: begin
@@ -1064,6 +1066,9 @@ begin
       wbHideIgnored         := False; // to show Form Version
       wbAlwaysSaveOnam      := True;
       wbAlwaysSaveOnamForce := True;
+      wbVRESL               := (wbGameMode in [gmFO4VR]) and FileExists(wbDataPath + 'F4SE\Plugins\falloutvresl.dll');
+      wbHasAddedLightSupport := wbVRESL;
+      wbHasAddedUpdateSupport := wbVRESL;
     end;
     gmFO76: begin
       wbVWDInTemporary      := True;

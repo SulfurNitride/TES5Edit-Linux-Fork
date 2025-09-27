@@ -789,12 +789,16 @@ begin
     Exit;
 
   if (wbGameMode = gmTES5) or (wbGameMode = gmSSE) then begin
-    if (Signature(e) = 'MOD2') or
-       (Signature(e) = 'MOD3') or
-       (Signature(e) = 'MOD4') or
-       (Signature(e) = 'MOD5')
-    then begin
-      s := wbNormalizeResourceName(GetEditValue(e), resMesh);
+    if (
+	   ((Signature(e) = 'MOD2') or (Signature(e) = 'MOD4')) and
+	   (GetElementNativeValues(ContainingMainRecord(e), 'DNAM\Weight Slider - Male\Enabled') <> 0)
+	   )
+	or (
+	   ((Signature(e) = 'MOD3') or (Signature(e) = 'MOD5')) and
+	   (GetElementNativeValues(ContainingMainRecord(e), 'DNAM\Weight Slider - Female\Enabled') <> 0)
+	   )
+    then begin	
+	  s := wbNormalizeResourceName(GetEditValue(e), resMesh);
       if SameText(Copy(s, Length(s)-5, 6), '_1.nif') then
         ProcessAssetEx(e, Copy(s, 1, Length(s)-6) + '_0.nif', '', atMesh)
       else if SameText(Copy(s, Length(s)-5, 6), '_0.nif') then
@@ -979,15 +983,17 @@ begin
   if Pos(sig, sSkipSignatures) > 0 then
     Exit;
   
-  // generic model common for all records
-  ScanForAssets(ElementByName(e, 'Model'));
+  if (wbGameMode = gmFO3) or (wbGameMode = gmFNV) or (wbGameMode = gmFO4) then begin
+    // generic model common for all records
+	ScanForAssets(ElementByName(e, 'Model'));
 
-  // generic icon common for all records
-  ProcessAsset(ElementBySignature(e, 'ICON'));
-  ScanForAssets(ElementByName(e, 'Icon'));
+    // generic icon common for all records
+    ProcessAsset(ElementBySignature(e, 'ICON'));
+    ScanForAssets(ElementByName(e, 'Icon'));
 
-  // generic destruction models common for all records
-  ScanForAssets(ElementByPath(e, 'Destructible'));
+    // generic destruction models common for all records
+    ScanForAssets(ElementByPath(e, 'Destructible'));
+  end;
   
   // GAME SPECIFIC ELEMENTS
   
@@ -1451,7 +1457,7 @@ begin
     end
     
     else if (sig = 'AMMO') then begin
-      ScanForAssets(ElementByName(e, 'Mode'));
+      ScanForAssets(ElementByName(e, 'Model'));
       ScanForAssets(ElementByName(e, 'Icon'));
       ScanForAssets(ElementByName(e, 'Destructible'));
     end
@@ -1718,7 +1724,7 @@ begin
         ents := ElementBySignature(e, 'MNAM');
         for i := 0 to Pred(ElementCount(ents)) do begin
           ent := ElementByIndex(ents, i);
-          s := wbNormalizeResourceName(GetElementEditValues(ent, 'Mesh'), resMesh);
+          s := wbNormalizeResourceName(GetEditValue(ent), resMesh);
           ProcessAssetEx(e, s, 'Static LOD Level ' + IntToStr(i) + ' Mesh For ' + Name(e), atLODAsset);
         end;
 	  end;
@@ -1912,7 +1918,7 @@ begin
       ents := ElementBySignature(e, 'MNAM');
       for i := 0 to Pred(ElementCount(ents)) do begin
         ent := ElementByIndex(ents, i);
-        s := wbNormalizeResourceName(GetElementEditValues(ent, 'Mesh'), resMesh);
+        s := wbNormalizeResourceName(GetEditValue(ent), resMesh);
         ProcessAssetEx(e, s, 'Static LOD Level ' + IntToStr(i) + ' Mesh for ' + Name(e), atLODAsset);
       end;
     end

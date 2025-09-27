@@ -3214,7 +3214,7 @@ begin
     FNifVersion := nfTES5
   else if (Version = v20207) and (UserVersion = 12) and (UserVersion2 = 100) then
     FNifVersion := nfSSE
-  else if (Version = v20207) and (UserVersion = 12) and (UserVersion2 = 130) then
+  else if (Version = v20207) and (UserVersion = 12) and (UserVersion2 in [130, 132]) then
     FNifVersion := nfFO4
   else
     FNifVersion := nfUnknown;
@@ -4157,11 +4157,13 @@ begin
   //Result := (Version = v10012) or ((Version = v20207) or (Version = v20005) or ((Version >= v10100) and (Version <= v20004) and (UserVersion <= 11))) and (UserVersion >= 3);
 end;
 
-function NiHeader_EnExportInfo(const e: TdfElement): Boolean; begin Result := (e.NativeValues['..\Version'] >= v10010) and (e.NativeValues['..\User Version'] >= 3); end;
+function NiHeader_EnExportInfo(const e: TdfElement): Boolean; begin Result := (e.NativeValues['..\Version'] >= v10010) and(e.NativeValues['..\User Version'] >= 3); end;
 function NiHeader_EnBefore10012(const e: TdfElement): Boolean; begin Result := e.NativeValues['..\..\Version'] <= v10012; end;
-function NiHeader_EnMaxFilepath(const e: TdfElement): Boolean; begin Result := (e.NativeValues['..\Version'] = v20207) and (e.NativeValues['..\User Version 2'] = 130); end;
+function NiHeader_EnMaxFilepath(const e: TdfElement): Boolean; begin Result := (e.NativeValues['..\Version'] = v20207) and (Integer(e.NativeValues['..\User Version 2']) in [130,132]); end;
 function NiHeader_EnSince20207(const e: TdfElement): Boolean; begin Result := e.NativeValues['..\Version'] >= v20207; end;
 function NiHeader_EnSince20103(const e: TdfElement): Boolean; begin Result := e.NativeValues['..\Version'] >= v20103; end;
+function NiHeader_EnProccessScript(const e: TdfElement): Boolean; begin Result := e.NativeValues['..\..\User Version 2'] <= 130; end;
+function NiHeader_EnUnknownExportInt(const e: TdfElement): Boolean; begin Result := e.NativeValues['..\..\User Version 2'] >= 131; end;
 procedure NiHeader_GetTextVersion(const e: TdfElement; var aText: string); begin aText := wbIntToNifVersion(e.NativeValue); end;
 procedure NiHeader_SetTextVersion(const e: TdfElement; var aText: string); begin aText := IntToStr(wbNifVersionToInt(aText)); end;
 
@@ -4218,7 +4220,8 @@ begin
     dfStruct('Export Info', [
       dfInteger('Unknown Int', dtU32, '3', [DF_OnGetEnabled, @NiHeader_EnBefore10012]),
       wbShortString('Author'),
-      wbShortString('Process Script'),
+      wbShortString('Process Script').SetOnEnabled(NiHeader_EnProccessScript),
+      dfInteger('Unknown Int 2', dtU32, '0').SetOnEnabled(NiHeader_EnUnknownExportInt),
       wbShortString('Export Script')
     ], [DF_OnGetEnabled, @NiHeader_EnExportInfo]),
     wbShortString('Max Filepath', [DF_OnGetEnabled, @NiHeader_EnMaxFilepath]),
@@ -5399,13 +5402,15 @@ end;
 { BSLightingShaderProperty }
 function BSLightingShaderProperty_EnShaderType(const e: TdfElement): Boolean; begin Result := nif(e).UserVersion2 >= 83; end;
 function BSLightingShaderProperty_DecideShaderFlags(const e: TdfElement): Integer; begin if nif(e).UserVersion2 <> 130 then Result := 0 else Result := 1; end;
-function BSLightingShaderProperty_EnWet(const e: TdfElement): Boolean; begin Result := nif(e).UserVersion2 = 130; end;
+function BSLightingShaderProperty_EnOldShaderFlags(const e: TdfElement): Boolean; begin Result := nif(e).UserVersion2 <= 130; end;
+function BSLightingShaderProperty_EnNewShaderFlags(const e: TdfElement): Boolean; begin Result := nif(e).UserVersion2 >= 131; end;
+function BSLightingShaderProperty_EnWet(const e: TdfElement): Boolean; begin Result := nif(e).UserVersion2 in [130, 132]; end;
 function BSLightingShaderProperty_EnLightingEffect(const e: TdfElement): Boolean; begin Result := nif(e).UserVersion2 < 130; end;
-function BSLightingShaderProperty_EnBacklightPower(const e: TdfElement): Boolean; begin Result := (nif(e).UserVersion2 = 130) and (e.EditValues['..\Rimlight Power'] = 'Max'); end;
+function BSLightingShaderProperty_EnBacklightPower(const e: TdfElement): Boolean; begin Result := (nif(e).UserVersion2 in [130, 132]) and (e.EditValues['..\Rimlight Power'] = 'Max'); end;
 function BSLightingShaderProperty_EnEnvMapScale(const e: TdfElement): Boolean; begin Result := e.NativeValues['..\Shader Type'] = 1; end;
-function BSLightingShaderProperty_EnUnknownEnvMapShort(const e: TdfElement): Boolean; begin Result := (nif(e).UserVersion2 = 130) and (e.NativeValues['..\Shader Type'] = 1); end;
+function BSLightingShaderProperty_EnUnknownEnvMapShort(const e: TdfElement): Boolean; begin Result := (nif(e).UserVersion2 in [130, 132]) and (e.NativeValues['..\Shader Type'] = 1); end;
 function BSLightingShaderProperty_EnSkinTintColor(const e: TdfElement): Boolean; begin Result := e.NativeValues['..\Shader Type'] = 5; end;
-function BSLightingShaderProperty_EnUnknownSkinTintInt(const e: TdfElement): Boolean; begin Result := (nif(e).UserVersion2 = 130) and (e.NativeValues['..\Shader Type'] = 5); end;
+function BSLightingShaderProperty_EnUnknownSkinTintInt(const e: TdfElement): Boolean; begin Result := (nif(e).UserVersion2 in [130, 132]) and (e.NativeValues['..\Shader Type'] = 5); end;
 function BSLightingShaderProperty_EnHairTintColor(const e: TdfElement): Boolean; begin Result := e.NativeValues['..\Shader Type'] = 6; end;
 function BSLightingShaderProperty_EnMaxPasses(const e: TdfElement): Boolean; begin Result := e.NativeValues['..\Shader Type'] = 7; end;
 function BSLightingShaderProperty_EnParallax(const e: TdfElement): Boolean; begin Result := e.NativeValues['..\Shader Type'] = 11; end;
@@ -5419,11 +5424,16 @@ begin
     dfUnion([
       wbSkyrimShaderPropertyFlags1('Shader Flags 1', '2185233153', []),
       wbFallout4ShaderPropertyFlags1('Shader Flags 1', '2151678465', [])
-    ], [DF_OnDecide, @BSLightingShaderProperty_DecideShaderFlags]),
+    ]).SetOnDecide(BSLightingShaderProperty_DecideShaderFlags)
+      .SetOnEnabled(BSLightingShaderProperty_EnOldShaderFlags),
     dfUnion([
       wbSkyrimShaderPropertyFlags2('Shader Flags 2', '32801', []),
       wbFallout4ShaderPropertyFlags2('Shader Flags 2', '1', [])
-    ], [DF_OnDecide, @BSLightingShaderProperty_DecideShaderFlags]),
+    ]).SetOnDecide(BSLightingShaderProperty_DecideShaderFlags)
+      .SetOnEnabled(BSLightingShaderProperty_EnOldShaderFlags),
+    dfArray('Shader Flags',
+      wbNewShaderFlags('Shader Flag', dtU32),
+    -4).SetOnEnabled(BSLightingShaderProperty_EnNewShaderFlags),
     wbTexCoord('UV Offset'),
     wbTexCoord('UV Scale', '1 1', []),
     wbNiRef('Texture Set', 'BSShaderTextureSet'),
@@ -5885,11 +5895,11 @@ end;
 
 //===========================================================================
 { BSTriShape }
-function BSTriShape_DecideNumTriangles(const e: TdfElement): Integer; begin if nif(e).UserVersion2 = 130 then Result := 0 else Result := 1; end;
+function BSTriShape_DecideNumTriangles(const e: TdfElement): Integer; begin if nif(e).UserVersion2 in [130, 132] then Result := 0 else Result := 1; end;
 
 function BSTriShape_EnVertexData(const e: TdfElement): Boolean;
 begin
-  Result := (nif(e).UserVersion2 in [100, 130]) and (e.NativeValues['..\Data Size'] > 0);
+  Result := (nif(e).UserVersion2 in [100, 130, 132]) and (e.NativeValues['..\Data Size'] > 0);
   if Result then e.UserData := e.NativeValues['..\VertexDesc\VF']; // cache VF here
 end;
 

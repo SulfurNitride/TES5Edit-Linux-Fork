@@ -139,13 +139,10 @@ begin
     Exit;
 
   // absolute path, cut everything before Data or leave only file name
-  if Result[2] = ':' then begin
-    i := Pos('data\', Result);
-    if i <> 0 then
-      Delete(Result, 1, Pred(i))
-    else
-      Result := ExtractFileName(Result);
-  end;
+  i := Pos('data\', Result);
+  if i <> 0 then
+    Delete(Result, 1, Pred(i));
+
   // starts with slash, remove it
   if Result[1] = '\' then Delete(Result, 1, 1);
   // starts with Data, remove it

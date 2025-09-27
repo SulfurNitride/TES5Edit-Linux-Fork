@@ -1889,6 +1889,8 @@ begin
       Exit;
     s := s + aTemplate.miExtension.ToString;
     aFile := AddNewFileName(s, aTemplate);
+    if Assigned(aFile) and wbAlwaysLoadGameMaster then
+      aFile.AddMasterIfMissing(wbGameMasterESM);
     Result := Assigned(aFile);
   end;
 end;
@@ -2738,7 +2740,6 @@ begin
             end;
           end;
         end;
-
         for var lFile in lMasters do
           sl.AddObject(lFile.FileName, Pointer(lFile));
       finally
@@ -4232,7 +4233,7 @@ begin
       Inc(Count);
     end;
   end;
-  PostAddMessage('[Create SEQ file done] Processed Plugins: ' + IntToStr(Count) + ', Sequence Files Created: ' + IntToStr(j));
+  PostAddMessage('[Create SEQ file done] Processed Plugins: ' + IntToStr(Count) + ', SEQ Files Created: ' + IntToStr(j));
 end;
 
 procedure TfrmMain.mniNavDeleteModGroupsClick(Sender: TObject);

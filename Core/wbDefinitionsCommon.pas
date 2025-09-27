@@ -59,6 +59,7 @@ var
   wbZoomOverlayEnum: IwbEnumDef;
   wbZTestFuncEnum: IwbEnumDef;
 
+  wbFurnitureEntryTypeFlags: IwbFlagsDef;
   wbPackageFlags: IwbFlagsDef;
   wbServiceFlags: IwbFlagsDef;
   wbTemplateFlags: IwbFlagsDef;
@@ -156,6 +157,7 @@ function wbSCENAddInfo(const aMainRecord: IwbMainRecord): string;
 {>>> After Load Callbacks <<<} //12
 procedure wbACBSLevelMultAfterLoad(const aElement: IwbElement);
 procedure wbAVIFSkillAfterLoad(const aElement: IwbElement);
+procedure wbDialogueTextAfterLoad(const aElement: IwbElement);
 procedure wbDOBJObjectsAfterLoad(const aElement: IwbElement);
 procedure wbPACKDateAfterLoad(const aElement: IwbElement);
 procedure wbPACKHourAfterLoad(const aElement: IwbElement);
@@ -164,7 +166,6 @@ procedure wbRPLDAfterLoad(const aElement: IwbElement);
 procedure wbScrollCastAfterLoad(const aElement: IwbElement);
 procedure wbScrollTypeAfterLoad(const aElement: IwbElement);
 procedure wbSOUNAfterLoad(const aElement: IwbElement);
-procedure wbSTATAfterLoad(const aElement: IwbElement);
 procedure wbWorldAfterLoad(const aElement: IwbElement);
 
 {>>> After Set Callbacks <<<} //34
@@ -179,11 +180,11 @@ procedure wbContainerAfterSet(const aElement: IwbElement; const aOldValue, aNewV
 procedure wbCounterEffectsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbCTDAsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbConditionRunOnAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+procedure wbDialogueTextAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbIdleMarkerPNAMAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbIdleMarkerQNAMAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbLENSAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbMGEFAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbModelInfoAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbMorphPresetsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbNPCAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbNPCActorSoundsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -196,7 +197,6 @@ procedure wbSceneActionTypeAfterSet(const aElement: IwbElement; const aOldValue,
 procedure wbSDLTListAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbSNDRRatesOfFireAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbSPLOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbSTATAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbTERMCNTOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbTERMDisplayItemsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbTERMMenuItemsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -204,25 +204,24 @@ procedure wbUpdateSameParentUnions(const aElement: IwbElement; const aOldValue, 
 procedure wbWorldAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbWwiseKeywordMappingTemplateAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 
-{>>> Count Callbacks <<<} //8
+{>>> Count Callbacks <<<} //5
 function wbMHDTColumnsCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
-function wbModelInfoAddonCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
-function wbModelInfoMaterialFileCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
-function wbModelInfoTextureFileCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
 function wbNavmeshGridCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
 function wbWeatherCloudColorsCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
 function wbWorldColumnsCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
 function wbWorldRowsCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
 
-{>>> Flag Don't Show Callbacks <<<} //6
+{>>> Flag Don't Show Callbacks <<<} //7
+function wbFlagREFRInteriorDontShow(const aElement: IwbElement): Boolean;
 function wbFlagNavmeshFilterDontSHow(const aElement: IwbElement): Boolean;
 function wbFlagNavmeshBoundingBoxDontSHow(const aElement: IwbElement): Boolean;
 function wbFlagNavmeshOnlyCutDontSHow(const aElement: IwbElement): Boolean;
 function wbFlagNavmeshIgnoreErosionDontSHow(const aElement: IwbElement): Boolean;
 function wbFlagNavmeshGroundDontSHow(const aElement: IwbElement): Boolean;
 function wbFlagPartialFormDontShow(const aElement: IwbElement): Boolean;
+function wbFlagREFRSkyMarkerDontShow(const aElement: IwbElement): Boolean;
 
-{>>> Don't Show Callbacks <<<} //19
+{>>> Don't Show Callbacks <<<} //17
 function wbAlwaysDontShow(const aElement: IwbElement): Boolean;
 function wbCellInteriorDontShow(const aElement: IwbElement): Boolean;
 function wbCellExteriorDontShow(const aElement: IwbElement): Boolean;
@@ -237,10 +236,8 @@ function wbREGNMapDontShow(const aElement: IwbElement): Boolean;
 function wbREGNObjectsDontShow(const aElement: IwbElement): Boolean;
 function wbREGNSoundDontShow(const aElement: IwbElement): Boolean;
 function wbREGNWeatherDontShow(const aElement: IwbElement): Boolean;
-function wbSTATLODDontShow(const aElement: IwbElement): Boolean;
-function wbSTATLOD1DontShow(const aElement: IwbElement): Boolean;
-function wbSTATLOD2DontShow(const aElement: IwbElement): Boolean;
-function wbSTATLOD3DontShow(const aElement: IwbElement): Boolean;
+function wbTemplateActorDontShow(const aElement: IwbElement): Boolean;
+function wbTemplateActorsDontShow(const aElement: IwbElement): Boolean;
 function wbWorldXWEMDontShow(const aElement: IwbElement): Boolean;
 
 {>>> Float Normalizers <<<} //1
@@ -252,18 +249,16 @@ function wbGetPropertyValueArrayItems(const aContainer: IwbContainerElementRef):
 function wbGetREGNType(aElement: IwbElement): Integer;
 function wbGetScriptObjFormat(const aElement: IwbElement): Integer;
 
-{>>> Get Conflict Priority Callbacks <<<} //3
+{>>> Get Conflict Priority Callbacks <<<} //2
 procedure wbLandNormalsGetCP(const aElement: IwbElement; var aConflictPriority: TwbConflictPriority);
 procedure wbModelInfoGetCP(const aElement: IwbElement; var aConflictPriority: TwbConflictPriority);
-procedure wbModelInfoUnknownGetCP(const aElement: IwbElement; var aConflictPriority: TwbConflictPriority);
 
 {>>> Integer Formaters <<<} //1
 function wbBoolEnumSummary(const aTrueSummary: string; const aFalseSummary: string = ''): IwbEnumDef;
 
-{>>> Is Removable Callbacks <<<} //9
+{>>> Is Removable Callbacks <<<} //8
 function wbCellGridIsRemovable(const aElement: IwbElement): Boolean;
 function wbCellLightingIsRemovable(const aElement: IwbElement): Boolean;
-function wbModelInfoHeaderIsRemovable(const aElement: IwbElement): Boolean;
 function wbWorldLandDataIsRemovable(const aElement: IwbElement): Boolean;
 function wbWorldLODDataIsRemovable(const aElement: IwbElement): Boolean;
 function wbWorldMapDataIsRemovable(const aElement: IwbElement): Boolean;
@@ -407,11 +402,13 @@ function wbIsFlag(aFlag: Integer; const aValue: IwbValueDef; aIsUnused: Boolean 
 function wbIsNotFlag(aFlag: Integer; const aSignature: TwbSignature; const aValue: IwbValueDef; aIsUnused: Boolean = True): IwbRecordMemberDef; overload;
 function wbIsNotFlag(aFlag: Integer; const aValue: IwbValueDef; aIsUnused: Boolean = True): IwbValueDef; overload;
 
-{>>> DLL Mode IfThen Defs <<<} //1
+{>>> DLL Mode IfThen Defs <<<} //4
 function IsCS(const aDef1, aDef2: string): string;
 function IsOBME(const aDef1, aDef2: string): string;
+function IsVR(const aDef1, aDef2: string): string;
+function IsVRESL(const aDef1, aDef2: string): string;
 
-{>>> Game Mode IfThen Defs <<<} //35
+{>>> Game Mode IfThen Defs <<<} //36
 function IsTES3(const aDef1, aDef2: String): string; overload;
 function IsTES3(const aDef1, aDef2: TwbSignature): TwbSignature; overload;
 function IsTES4(const aDef1, aDef2: Integer): Integer; overload;
@@ -443,6 +440,7 @@ function IsFO4Plus(const aDef1, aDef2: IwbValueDef): IwbValueDef; overload;
 function IsFO4Plus(const aDef1, aDef2: string): string; overload;
 function IsFO76(const aDef1, aDef2: IwbValueDef): IwbValueDef; overload;
 function IsFO76(const aDef1, aDef2: string): string; overload;
+function IsFO76SF1(const aDef1, aDef2: string): string;
 function IsSF1(const aDef1, aDef2: Integer): Integer; overload;
 function IsSF1(const aDef1, aDef2: IwbRecordMemberDef): IwbRecordMemberDef; overload;
 function IsSF1(const aDef1, aDef2: IwbValueDef): IwbValueDef; overload;
@@ -461,50 +459,175 @@ function wbFromVersion(aVersion: Integer; const aSignature: TwbSignature; const 
 function wbFromVersion(aVersion: Integer; const aValue: IwbValueDef): IwbValueDef; overload;
 
 {>>> Vec3 Defs <<<} //11
-function wbVec3(const aName: string = 'Unknown'; const aPrefix: string = ''): IwbValueDef; overload;
-function wbVec3(const aSignature: TwbSignature; const aName: string = 'Unknown'; const aPrefix: string = ''): IwbRecordMemberDef; overload;
-function wbVec3Pos(const aName: string = 'Position'; const aPrefix: string = 'Pos'): IwbValueDef; overload;
-function wbVec3Pos(const aSignature: TwbSignature; const aName: string = 'Position'; const aPrefix: string = 'Pos'): IwbRecordMemberDef; overload;
-function wbVec3Rot(const aName: string = 'Rotation'; const aPrefix: string = 'Rot'): IwbValueDef; overload;
-function wbVec3Rot(const aSignature: TwbSignature; const aName: string = 'Rotation'; const aPrefix: string = 'Rot'): IwbRecordMemberDef; overload;
-function wbVec3PosRot(const aCombinedName: string = 'Position/Rotation'; const aPosName: string = 'Position'; const aRotName: string = 'Rotation'; const aPosPrefix: string = 'Pos'; const aRotPrefix: string = 'Rot'): IwbValueDef; overload;
-function wbVec3PosRot(const aSignature: TwbSignature; const aCombinedName: string = 'Position/Rotation'; aPosName: string = 'Position'; const aRotName: string = 'Rotation'; const aPosPrefix: string = 'Pos'; const aRotPrefix: string = 'Rot'): IwbRecordMemberDef; overload;
-function wbVec3PosRotDegrees(const aCombinedName: string = 'Position/Rotation'; const aPosName: string = 'Position'; const aRotName: string = 'Rotation'; const aPosPrefix: string = 'Pos'; const aRotPrefix: string = 'Rot'): IwbValueDef; overload;
-function wbVec3PosRotDegrees(const aSignature: TwbSignature; const aCombinedName: string = 'Position/Rotation'; aPosName: string = 'Position'; const aRotName: string = 'Rotation'; const aPosPrefix: string ='Pos'; const aRotPrefix: string = 'Rot'): IwbRecordMemberDef; overload;
-function wbSizePosRot(aSignature: TwbSignature; aName: string; aPriority: TwbConflictPriority = cpNormal): IwbSubRecordDef; overload;
+function wbVec3(const aName   : string = 'Unknown';
+                const aPrefix : string = '')
+                              : IwbValueDef; overload;
+
+function wbVec3(const aSignature : TwbSignature;
+                const aName      : string = 'Unknown';
+                const aPrefix    : string = '')
+                                 : IwbRecordMemberDef; overload;
+
+function wbVec3Pos(const aName   : string = 'Position';
+                   const aPrefix : string = 'Pos')
+                                 : IwbValueDef; overload;
+
+function wbVec3Pos(const aSignature : TwbSignature;
+                   const aName      : string = 'Position';
+                   const aPrefix    : string = 'Pos')
+                                    : IwbRecordMemberDef; overload;
+
+function wbVec3Rot(const aName   : string = 'Rotation';
+                   const aPrefix : string = 'Rot')
+                                 : IwbValueDef; overload;
+
+function wbVec3Rot(const aSignature : TwbSignature;
+                   const aName      : string = 'Rotation';
+                   const aPrefix    : string = 'Rot')
+                                    : IwbRecordMemberDef; overload;
+
+function wbVec3PosRot(const aCombinedName : string = 'Position/Rotation';
+                      const aPosName      : string = 'Position';
+                      const aRotName      : string = 'Rotation';
+                      const aPosPrefix    : string = 'Pos';
+                      const aRotPrefix    : string = 'Rot')
+                                          : IwbValueDef; overload;
+
+function wbVec3PosRot(const aSignature   : TwbSignature;
+                      const aCombinedName : string = 'Position/Rotation';
+                      const aPosName      : string = 'Position';
+                      const aRotName      : string = 'Rotation';
+                      const aPosPrefix    : string = 'Pos';
+                      const aRotPrefix    : string = 'Rot')
+                                         : IwbRecordMemberDef; overload;
+
+function wbVec3PosRotDegrees(const aCombinedName : string = 'Position/Rotation';
+                             const aPosName      : string = 'Position';
+                             const aRotName      : string = 'Rotation';
+                             const aPosPrefix    : string = 'Pos';
+                             const aRotPrefix    : string = 'Rot')
+                                                 : IwbValueDef; overload;
+
+function wbVec3PosRotDegrees(const aSignature    : TwbSignature;
+                             const aCombinedName : string = 'Position/Rotation';
+                             const aPosName      : string = 'Position';
+                             const aRotName      : string = 'Rotation';
+                             const aPosPrefix    : string = 'Pos';
+                             const aRotPrefix    : string = 'Rot')
+                                                 : IwbRecordMemberDef; overload;
+
+function wbSizePosRot(const aSignature : TwbSignature;
+                      const aName      : string;
+                      const aPriority  : TwbConflictPriority = cpNormal)
+                                       : IwbSubRecordDef; overload;
 
 {>>> Color Defs <<<} //16
-function wbAmbientColors(const aSignature: TwbSignature; const aName: string = 'Directional Ambient Lighting Colors'): IwbSubRecordDef; overload;
-function wbAmbientColors(const aName: string = 'Directional Ambient Lighting Colors'): IwbStructDef; overload;
+function wbAmbientColors(const aSignature: TwbSignature;
+                         const aName     : string = 'Directional Ambient Lighting Colors')
+                                         : IwbSubRecordDef; overload;
+
+function wbAmbientColors(const aName : string = 'Directional Ambient Lighting Colors')
+                                     : IwbStructDef; overload;
+
 function wbByteColors(const aSignature : TwbSignature;
                       const aName      : string = 'Color';
-                            aDefault1  : string = '0';
-                            aDefault2  : string = '0';
-                            aDefault3  : string = '0')
+                      const aDefaultR  : Byte = 0;
+                      const aDefaultG  : Byte = 0;
+                      const aDefaultB  : Byte = 0)
                                        : IwbRecordMemberDef; overload
+
 function wbByteColors(const aName     : string = 'Color';
-                            aDefault1 : string = '0';
-                            aDefault2 : string = '0';
-                            aDefault3 : string = '0')
+                      const aDefaultR : Byte = 0;
+                      const aDefaultG : Byte = 0;
+                      const aDefaultB : Byte = 0)
                                       : IwbValueDef; overload;
-function wbByteABGR(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef; overload;
-function wbByteABGR(const aName: string = 'Color'): IwbValueDef; overload;
-function wbByteRGBA(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef; overload;
-function wbByteRGBA(const aName: string = 'Color'): IwbValueDef; overload;
-function wbByteBGRA(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef; overload;
-function wbByteBGRA(const aName: string = 'Color'): IwbValueDef; overload;
-function wbCNAM(aRequired: Boolean = False): IwbRecordMemberDef;
-function wbFloatColors(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef; overload;
-function wbFloatColors(const aName: string = 'Color'): IwbValueDef; overload;
-function wbRFloatColors(const aName: string = 'Color'; const aSigs: TwbSignatures = []): IwbRecordMemberDef;
-function wbFloatRGBA(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef; overload;
-function wbFloatRGBA(const aName: string = 'Color'): IwbValueDef; overload;
+
+function wbByteABGR(const aSignature : TwbSignature;
+                    const aName      : string = 'Color';
+                    const aDefaultA  : Byte = 0;
+                    const aDefaultB  : Byte = 0;
+                    const aDefaultG  : Byte = 0;
+                    const aDefaultR  : Byte = 0)
+                                     : IwbRecordMemberDef; overload;
+
+function wbByteABGR(const aName      : string = 'Color';
+                    const aDefaultA  : Byte = 0;
+                    const aDefaultB  : Byte = 0;
+                    const aDefaultG  : Byte = 0;
+                    const aDefaultR  : Byte = 0)
+                                     : IwbValueDef; overload;
+
+function wbByteRGBA(const aSignature : TwbSignature;
+                    const aName      : string = 'Color';
+                    const aDefaultR  : Byte = 0;
+                    const aDefaultG  : Byte = 0;
+                    const aDefaultB  : Byte = 0;
+                    const aDefaultA  : Byte = 0)
+                                     : IwbRecordMemberDef; overload;
+
+function wbByteRGBA(const aName      : string = 'Color';
+                    const aDefaultR  : Byte = 0;
+                    const aDefaultG  : Byte = 0;
+                    const aDefaultB  : Byte = 0;
+                    const aDefaultA  : Byte = 0)
+                                : IwbValueDef; overload;
+
+function wbByteBGRA(const aSignature : TwbSignature;
+                    const aName      : string = 'Color';
+                    const aDefaultB  : Byte = 0;
+                    const aDefaultG  : Byte = 0;
+                    const aDefaultR  : Byte = 0;
+                    const aDefaultA  : Byte = 0)
+                                     : IwbRecordMemberDef; overload;
+
+function wbByteBGRA(const aName      : string = 'Color';
+                    const aDefaultB  : Byte = 0;
+                    const aDefaultG  : Byte = 0;
+                    const aDefaultR  : Byte = 0;
+                    const aDefaultA  : Byte = 0)
+                                     : IwbValueDef; overload;
+
+function wbFloatColors(const aSignature : TwbSignature;
+                       const aName      : string = 'Color';
+                       const aDefaultR  : Single = 0;
+                       const aDefaultG  : Single = 0;
+                       const aDefaultB  : Single = 0)
+                                        : IwbRecordMemberDef; overload;
+
+function wbFloatColors(const aName     : string = 'Color';
+                       const aDefaultR : Single = 0;
+                       const aDefaultG : Single = 0;
+                       const aDefaultB : Single = 0)
+                                       : IwbValueDef; overload;
+
+function wbRFloatColors(const aName     : string = 'Color';
+                        const aSigs     : TwbSignatures = [];
+                        const aDefaultR : Single = 0;
+                        const aDefaultG : Single = 0;
+                        const aDefaultB : Single = 0)
+                                        : IwbRecordMemberDef;
+
+function wbFloatRGBA(const aSignature : TwbSignature;
+                     const aName      : string = 'Color';
+                     const aDefaultR  : Single = 0;
+                     const aDefaultG  : Single = 0;
+                     const aDefaultB  : Single = 0;
+                     const aDefaultA  : Single = 0)
+                                      : IwbRecordMemberDef; overload;
+
+function wbFloatRGBA(const aName     : string = 'Color';
+                     const aDefaultR : Single = 0;
+                     const aDefaultG : Single = 0;
+                     const aDefaultB : Single = 0;
+                     const aDefaultA : Single = 0)
+                                     : IwbValueDef; overload;
 
 {>>> Many Record Defs <<<} //2
 function wbModelInfo(aSignature: TwbSignature; aName: string = ''): IwbRecordMemberDef;
 function wbOBND(aRequired: Boolean = False): IwbRecordMemberDef;
 
-{>>> Multiple Record Defs <<<} //3
+{>>> Multiple Record Defs <<<} //4
+function wbDamageTypeArray(const aItemName: string): IwbRecordMemberDef;
 function wbEnchantment(aCapacity: Boolean = False): IwbRecordMemberDef;
 function wbLeveledListEntry(aObjectName: string; aSigs: TwbSignatures): IwbRecordMemberDef;
 function wbOwnership(aSkipSigs: TwbSignatures = nil): IwbRecordMemberDef;
@@ -529,6 +652,9 @@ function wbDebrisModel(aTextureFileHashes: IwbRecordMemberDef): IwbRecordMemberD
 function wbIMADMultAddCount(const aName: string): IwbValueDef;
 function wbTimeInterpolators(const aSignature: TwbSignature; const aName: string): IwbRecordMemberDef;
 function wbTimeInterpolatorsMultAdd(const aSignatureMult, aSignatureAdd: TwbSignature; const aName: string): IwbRecordMemberDef;
+
+{>>> NPC Defs <<<} //1
+function wbNPCTemplateActorEntry(const aName: string): IwbValueDef;
 
 {>>> Perk Defs <<<} //1
 function wbPerkEffectType(aAfterSetCallback: TwbAfterSetCallback): IwbValueDef;
@@ -728,6 +854,22 @@ begin
   end;
 end;
 
+procedure wbDialogueTextAfterLoad(const aElement: IwbElement);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    if not Assigned(aElement._File) then
+      Exit;
+
+    if not aElement._File.IsLocalized then
+      aElement.EditValue := Trim(aElement.EditValue);
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
 procedure wbDOBJObjectsAfterLoad(const aElement: IwbElement);
 begin
   if not Assigned(aElement) then
@@ -917,24 +1059,6 @@ begin
   end;
 end;
 
-procedure wbSTATAfterLoad(const aElement: IwbElement);
-begin
-  if not Assigned(aElement) then
-    Exit;
-
-  var lMainRecord := aElement.ContainingMainRecord;
-  if not Assigned(lMainRecord) then
-    Exit;
-
-  if wbBeginInternalEdit then try
-    if (lMainRecord.Flags._Flags and $8000) = 0 then
-      if Assigned(lMainRecord.ElementBySignature['MNAM']) then
-        lMainRecord.RemoveElement(MNAM);
-  finally
-    wbEndInternalEdit;
-  end;
-end;
-
 procedure wbWorldAfterLoad(const aElement: IwbElement);
 
   function OutOfRange(aValue: Integer; aRange: Integer = 256): Boolean;
@@ -981,7 +1105,7 @@ begin
   end;
 end;
 
-{>>> After Set Callbacks <<<} //33
+{>>> After Set Callbacks <<<} //34
 
 procedure wbACBSLevelMultAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
@@ -1090,6 +1214,25 @@ begin
   end;
 end;
 
+procedure wbDialogueTextAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if VarSameValue(aOldValue, aNewValue) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    if not Assigned(aElement._File) then
+      Exit;
+
+    if not aElement._File.IsLocalized then
+      aElement.EditValue := Trim(aNewValue);
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
 procedure wbIdleMarkerPNAMAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
   if not Assigned(aElement) then
@@ -1130,69 +1273,6 @@ end;
 procedure wbMGEFAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
   wbCounterContainerByPathAfterSet('Magic Effect Data\DATA - Data\Counter effect count', 'Counter Effects', aElement);
-end;
-
-procedure wbModelInfoAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  if not Assigned(aElement) then
-    Exit;
-
-  if VarSameValue(aOldValue, aNewValue) then
-    Exit;
-
-  var lContainerElementRef : IwbContainerElementRef;
-  if not Supports(aElement, IwbContainerElementRef, lContainerElementRef) then
-    Exit;
-
-  if lContainerElementRef.ElementCount < 4 then
-    Exit;
-
-  lContainerElementRef.BeginUpdate;
-  try
-    var lHeaders : IwbContainerElementRef;
-    if not Supports(lContainerElementRef.Elements[0], IwbContainerElementRef, lHeaders) then
-      Exit;
-
-    var lTextures : IwbContainerElementRef;
-    if not Supports(lContainerElementRef.Elements[1], IwbContainerElementRef, lTextures) then
-      Exit;
-
-    var lAddons : IwbContainerElementRef;
-    if not Supports(lContainerElementRef.Elements[2], IwbContainerElementRef, lAddons) then
-      Exit;
-
-    var lMaterials : IwbContainerElementRef;
-    if not Supports(lContainerElementRef.Elements[3], IwbContainerElementRef, lMaterials) then
-      Exit;
-
-    var lMinHeaders := 0;
-    var lMaterialCount := lMaterials.ElementCount;
-    var lAddonCount := lAddons.ElementCount;
-    var lTextureCount := lTextures.ElementCount;
-
-    if lMaterialCount > 0 then
-      lMinHeaders := 4
-    else if lAddons.ElementCount > 0 then
-      lMinHeaders := 2
-    else if lTextures.ElementCount > 0 then
-      lMinHeaders := 1;
-
-    var lHeaderCount := lHeaders.ElementCount;
-    while lHeaderCount < lMinHeaders do
-      lHeaders.Add('');
-
-    if lHeaderCount > 0 then
-      if lHeaders.Elements[0].NativeValue <> lTextureCount then
-        lHeaders.Elements[0].NativeValue := lTextureCount;
-    if lHeaderCount > 1 then
-      if lHeaders.Elements[1].NativeValue <> lAddonCount then
-        lHeaders.Elements[1].NativeValue := lAddonCount;
-    if lHeaderCount > 3 then
-      if lHeaders.Elements[3].NativeValue <> lMaterialCount then
-        lHeaders.Elements[3].NativeValue := lMaterialCount;
-  finally
-    lContainerElementRef.EndUpdate;
-  end;
 end;
 
 procedure wbMorphPresetsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -1335,27 +1415,6 @@ begin
   wbCounterAfterSet('SPCT - Count', aElement);
 end;
 
-procedure wbSTATAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  if not Assigned(aElement) then
-    Exit;
-
-  if VarSameValue(aOldValue, aNewValue) then
-    Exit;
-
-  if wbBeginInternalEdit then try
-    var lMainRecord := aElement.ContainingMainRecord;
-    if not Assigned(lMainRecord) then
-      Exit;
-
-    if (lMainRecord.Flags._Flags and $8000) = 0 then
-      if Assigned(lMainRecord.ElementBySignature['MNAM']) then
-        lMainRecord.RemoveElement(MNAM);
-  finally
-    wbEndInternalEdit;
-  end;
-end;
-
 procedure wbTERMCNTOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
   wbCounterAfterSet('COCT - Holds Holotape (Count)', aElement);
@@ -1485,7 +1544,7 @@ begin
   end;
 end;
 
-{>>> Count Callbacks <<<} //8
+{>>> Count Callbacks <<<} //5
 
 function wbMHDTColumnsCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
 var
@@ -1516,72 +1575,6 @@ begin
   MaxX := Element.NativeValue;
 
   Result := MaxX - MinX + 1;
-end;
-
-function wbModelInfoAddonCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
-var
-  Container : IwbContainerElementRef;
-  Headers   : IwbContainerElementRef;
-begin
-  Result := 0;
-
-  if not Supports(GetContainerFromUnion(aElement), IwbContainerElementRef, Container) then
-    Exit;
-
-  if not Supports(Container.Container, IwbContainerElementRef, Container) then
-    Exit;
-
-  if not Supports(Container.Elements[0], IwbContainerElementRef, Headers) then
-    Exit;
-
-  if Headers.ElementCount < 2 then
-    Exit;
-
-  Result := Headers.Elements[1].NativeValue;
-end;
-
-function wbModelInfoMaterialFileCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
-var
-  Container : IwbContainerElementRef;
-  Headers   : IwbContainerElementRef;
-begin
-  Result := 0;
-
-  if not Supports(GetContainerFromUnion(aElement), IwbContainerElementRef, Container) then
-    Exit;
-
-  if not Supports(Container.Container, IwbContainerElementRef, Container) then
-    Exit;
-
-  if not Supports(Container.Elements[0], IwbContainerElementRef, Headers) then
-    Exit;
-
-  if Headers.ElementCount < 4 then
-    Exit;
-
-  Result := Headers.Elements[3].NativeValue;
-end;
-
-function wbModelInfoTextureFileCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
-var
-  Container : IwbContainerElementRef;
-  Headers   : IwbContainerElementRef;
-begin
-  Result := 0;
-
-  if not Supports(GetContainerFromUnion(aElement), IwbContainerElementRef, Container) then
-    Exit;
-
-  if not Supports(Container.Container, IwbContainerElementRef, Container) then
-    Exit;
-
-  if not Supports(Container.Elements[0], IwbContainerElementRef, Headers) then
-    Exit;
-
-  if Headers.ElementCount < 1 then
-    Exit;
-
-  Result := Headers.Elements[0].NativeValue;
 end;
 
 function wbNavmeshGridCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
@@ -1689,7 +1682,25 @@ begin
   Result := Round(MaxY) - Round(MinY) + 1;
 end;
 
-{>>> Flag Don't Show Callbacks <<<} //6
+{>>> Flag Don't Show Callbacks <<<} //7
+
+function wbFlagREFRInteriorDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := False;
+  if not Assigned(aElement) then
+    Exit;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  var lCell := lMainRecord.ElementLinksTo['Cell'] as IwbMainRecord;
+  if not Assigned(lCell) then
+    Exit;
+
+  if (lCell.ElementNativeValues['DATA'] and $1) <> 0 then
+    Exit(True);
+end;
 
 function wbFlagNavmeshFilterDontSHow(const aElement: IwbElement): Boolean;
 begin
@@ -1744,7 +1755,25 @@ begin
   Result := not lMainRecord.CanBePartial;
 end;
 
-{>>> Don't Show Callbacks <<<} //19
+function wbFlagREFRSkyMarkerDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := False;
+  if not Assigned(aElement) then
+    Exit;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  var lNAME := lMainRecord.ElementLinksTo['NAME'] as IwbMainRecord;
+  if not Assigned(lNAME) then
+    Exit;
+
+  if (lNAME.Flags._Flags and $1000000) = 0 then
+    Exit(True);
+end;
+
+{>>> Don't Show Callbacks <<<} //17
 
 function wbAlwaysDontShow(const aElement: IwbElement): Boolean;
 begin
@@ -1845,24 +1874,37 @@ begin
   Result := wbGetREGNType(aElement) <> 3;
 end;
 
-function wbSTATLODDontShow(const aElement: IwbElement): Boolean;
+function wbTemplateActorDontShow(const aElement: IwbElement): Boolean;
 begin
-  Result := aElement.ContainingMainRecord.Flags._Flags and $8000 = 0;
+  Result := False;
+
+  var lSubRecord := aElement.ContainingSubRecord;
+  if not Assigned(lSubRecord) then
+    Exit;
+
+  var shrInt : Integer;
+  for var I := 0 to Pred(lSubRecord.ElementCount - 1) do
+    if aElement = lSubRecord.Elements[I] then
+      shrInt := I
+    else
+      Continue;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  Result := (Cardinal(lMainRecord.ElementNativeValues['ACBS\Template Flags']) shr shrInt and 1) = 0;
 end;
 
-function wbSTATLOD1DontShow(const aElement: IwbElement): Boolean;
+function wbTemplateActorsDontShow(const aElement: IwbElement): Boolean;
 begin
-  Result := aElement.Container.Elements[0].EditValue = '';
-end;
+  Result := False;
 
-function wbSTATLOD2DontShow(const aElement: IwbElement): Boolean;
-begin
-  Result := aElement.Container.Elements[1].EditValue = '';
-end;
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
 
-function wbSTATLOD3DontShow(const aElement: IwbElement): Boolean;
-begin
-  Result := aElement.Container.Elements[2].EditValue = '';
+  Result := Cardinal(lMainRecord.ElementNativeValues['ACBS\Template Flags']) = 0;
 end;
 
 function wbWorldXWEMDontShow(const aElement: IwbElement): Boolean;
@@ -1885,7 +1927,7 @@ begin
   end;
 end;
 
-{>>> Get Conflict Priority Callbacks <<<} //3
+{>>> Get Conflict Priority Callbacks <<<} //2
 
 procedure wbLandNormalsGetCP(const aElement: IwbElement; var aConflictPriority: TwbConflictPriority);
 begin
@@ -1917,13 +1959,6 @@ begin
     Exit;
 
   if MainRecord.Version < 38 then
-    aConflictPriority := cpIgnore;
-end;
-
-procedure wbModelInfoUnknownGetCP(const aElement: IwbElement; var aConflictPriority: TwbConflictPriority);
-begin
-  aConflictPriority := cpNormal;
-  if aElement.EditValue = '' then
     aConflictPriority := cpIgnore;
 end;
 
@@ -2044,7 +2079,7 @@ begin
     ]);
 end;
 
-{>>> Is Removable Callbacks <<<} //9
+{>>> Is Removable Callbacks <<<} //8
 
 function wbCellGridIsRemovable(const aElement: IwbElement): Boolean;
 begin
@@ -2054,11 +2089,6 @@ end;
 function wbCellLightingIsRemovable(const aElement: IwbElement): Boolean;
 begin
   Result := (aElement.ContainingMainRecord.ElementNativeValues['DATA'] and 1 = 0);
-end;
-
-function wbModelInfoHeaderIsRemovable(const aElement: IwbElement): Boolean;
-begin
-  Result := Assigned(aElement) and (aElement.NativeValue = 0);
 end;
 
 function wbWorldLandDataIsRemovable(const aElement: IwbElement): Boolean;
@@ -2841,6 +2871,9 @@ end;
 function wbClmtTime(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 begin
   Result := '';
+  while aInt > 143 do
+    aInt := aInt - 143;
+
   if aType = ctToSortKey then
     Result := IntToHex64(aInt, 4)
   else if aType in [ctToStr, ctToSummary] then
@@ -4630,7 +4663,7 @@ begin
       ]).IncludeFlag(dfMustBeUnion);
 end;
 
-{>>> DLL Mod IfThen Defs <<<} //1
+{>>> DLL Mod IfThen Defs <<<} //4
 
 function IsCS(const aDef1, aDef2: string): string;
 begin
@@ -4646,7 +4679,21 @@ begin
     Result := aDef1
 end;
 
-{>>> wbGameMode IfThen Defs <<<} //35
+function IsVR(const aDef1, aDef2: string): string;
+begin
+  Result := aDef2;
+  if wbGameMode in [gmTES5VR, gmFO4VR] then
+    Result := aDef1;
+end;
+
+function IsVRESL(const aDef1, aDef2: string): string;
+begin
+  Result := aDef2;
+  if wbVRESL then
+    Result := aDef1;
+end;
+
+{>>> wbGameMode IfThen Defs <<<} //36
 
 function IsTES3(const aDef1, aDef2: string): string;
 begin
@@ -4865,6 +4912,13 @@ begin
     Result := aDef1
 end;
 
+function IsFO76SF1(const aDef1, aDef2: string): string;
+begin
+  Result := aDef2;
+  if wbIsFallout76 or wbIsStarfield then
+    Result := aDef1
+end;
+
 function IsSF1(const aDef1, aDef2: Integer): Integer;
 begin
   Result := aDef2;
@@ -5000,7 +5054,9 @@ end;
 
 {>>> Vec3 Defs <<<} //11
 
-function wbVec3(const aName: string = 'Unknown'; const aPrefix: string = ''): IwbValueDef;
+function wbVec3(const aName   : string = 'Unknown';
+                const aPrefix : string = '')
+                              : IwbValueDef;
 begin
   Result :=
     wbStruct(aName, [
@@ -5015,28 +5071,48 @@ begin
       .IncludeFlag(dfCollapsed, wbCollapseVec3);
 end;
 
-function wbVec3(const aSignature: TwbSignature; const aName: string = 'Unknown'; const aPrefix: string = ''): IwbRecordMemberDef;
+function wbVec3(const aSignature : TwbSignature;
+                const aName      : string = 'Unknown';
+                const aPrefix    : string = '')
+                                 : IwbRecordMemberDef;
 begin
-  Result := wbSubRecord(aSignature, aName, wbVec3(aName, aPrefix));
+  Result :=
+    wbStruct(aSignature, aName, [
+      wbFloat('X'),
+      wbFloat('Y'),
+      wbFloat('Z')
+    ]).SetSummaryKeyOnValue([0, 1, 2])
+      .SetSummaryPrefixSuffixOnValue(0, aPrefix + '(', '')
+      .SetSummaryPrefixSuffixOnValue(2, '', ')')
+      .SetSummaryDelimiterOnValue(', ')
+      .IncludeFlagOnValue(dfSummaryMembersNoName)
+      .IncludeFlag(dfCollapsed, wbCollapseVec3);
 end;
 
-function wbVec3Pos(const aName: string = 'Position'; const aPrefix: string = 'Pos'): IwbValueDef;
+function wbVec3Pos(const aName   : string = 'Position';
+                   const aPrefix : string = 'Pos')
+                                 : IwbValueDef;
 begin
   Result := wbVec3(aName, aPrefix);
 end;
 
-function wbVec3Pos(const aSignature: TwbSignature; const aName: string = 'Position'; const aPrefix: string = 'Pos'): IwbRecordMemberDef;
+function wbVec3Pos(const aSignature : TwbSignature;
+                   const aName      : string = 'Position';
+                   const aPrefix    : string = 'Pos')
+                                    : IwbRecordMemberDef;
 begin
-  Result := wbSubRecord(aSignature, aName, wbVec3Pos(''));
+  Result := wbVec3(aSignature, aName, aPrefix);
 end;
 
-function wbVec3Rot(const aName: string = 'Rotation'; const aPrefix: string = 'Rot'): IwbValueDef;
+function wbVec3Rot(const aName   : string = 'Rotation';
+                   const aPrefix : string = 'Rot')
+                                 : IwbValueDef;
 begin
   Result :=
     wbStruct(aName, [
-      wbFloatAngle('X', cpNormal, True),
-      wbFloatAngle('Y', cpNormal, True),
-      wbFloatAngle('Z', cpNormal, True)
+      wbFloatAngle('X'),
+      wbFloatAngle('Y'),
+      wbFloatAngle('Z')
     ]).SetSummaryKey([0, 1, 2])
       .SetSummaryMemberPrefixSuffix(0, aPrefix + '(', '')
       .SetSummaryMemberPrefixSuffix(2, '', ')')
@@ -5045,12 +5121,30 @@ begin
       .IncludeFlag(dfCollapsed, wbCollapseVec3);
 end;
 
-function wbVec3Rot(const aSignature: TwbSignature; const aName: string = 'Rotation'; const aPrefix: string = 'Rot'): IwbRecordMemberDef;
+function wbVec3Rot(const aSignature : TwbSignature;
+                   const aName      : string = 'Rotation';
+                   const aPrefix    : string = 'Rot')
+                                    : IwbRecordMemberDef;
 begin
-  Result := wbSubRecord(aSignature, aName, wbVec3Rot(''));
+  Result :=
+    wbStruct(aSignature, aName, [
+      wbFloatAngle('X'),
+      wbFloatAngle('Y'),
+      wbFloatAngle('Z')
+    ]).SetSummaryKeyOnValue([0, 1, 2])
+      .SetSummaryPrefixSuffixOnValue(0, aPrefix + '(', '')
+      .SetSummaryPrefixSuffixOnValue(2, '', ')')
+      .SetSummaryDelimiterOnValue(', ')
+      .IncludeFlagOnValue(dfSummaryMembersNoName)
+      .IncludeFlag(dfCollapsed, wbCollapseVec3);
 end;
 
-function wbVec3PosRot(const aCombinedName: string = 'Position/Rotation'; const aPosName: string = 'Position'; const aRotName: string = 'Rotation'; const aPosPrefix: string = 'Pos'; const aRotPrefix: string = 'Rot'): IwbValueDef;
+function wbVec3PosRot(const aCombinedName : string = 'Position/Rotation';
+                      const aPosName      : string = 'Position';
+                      const aRotName      : string = 'Rotation';
+                      const aPosPrefix    : string = 'Pos';
+                      const aRotPrefix    : string = 'Rot')
+                                          : IwbValueDef;
 begin
   Result :=
     wbStruct(aCombinedName, [
@@ -5061,12 +5155,29 @@ begin
       .IncludeFlag(dfCollapsed, wbCollapsePosRot);
 end;
 
-function wbVec3PosRot(const aSignature: TwbSignature; const aCombinedName: string = 'Position/Rotation'; aPosName: string = 'Position'; const aRotName: string = 'Rotation'; const aPosPrefix: string = 'Pos'; const aRotPrefix: string = 'Rot'): IwbRecordMemberDef;
+function wbVec3PosRot(const aSignature    : TwbSignature;
+                      const aCombinedName : string = 'Position/Rotation';
+                      const aPosName      : string = 'Position';
+                      const aRotName      : string = 'Rotation';
+                      const aPosPrefix    : string = 'Pos';
+                      const aRotPrefix    : string = 'Rot')
+                                          : IwbRecordMemberDef;
 begin
-  Result := wbSubRecord(aSignature, aCombinedName, wbVec3PosRot('', aPosName, aRotName, aPosPrefix, aRotPrefix));
+  Result :=
+    wbStruct(aSignature, aCombinedName, [
+      wbVec3Pos(aPosName, aPosPrefix),
+      wbVec3Rot(aRotName, aRotPrefix)
+    ]).SetSummaryKeyOnValue([0, 1])
+      .IncludeFlagOnValue(dfSummaryMembersNoName)
+      .IncludeFlag(dfCollapsed, wbCollapsePosRot);
 end;
 
-function wbVec3PosRotDegrees(const aCombinedName: string = 'Position/Rotation'; const aPosName: string = 'Position'; const aRotName: string = 'Rotation'; const aPosPrefix: string = 'Pos'; const aRotPrefix: string = 'Rot'): IwbValueDef;
+function wbVec3PosRotDegrees(const aCombinedName : string = 'Position/Rotation';
+                             const aPosName      : string = 'Position';
+                             const aRotName      : string = 'Rotation';
+                             const aPosPrefix    : string = 'Pos';
+                             const aRotPrefix    : string = 'Rot')
+                                                 : IwbValueDef;
 begin
   Result :=
     wbStruct(aCombinedName, [
@@ -5077,12 +5188,27 @@ begin
       .IncludeFlag(dfCollapsed, wbCollapsePosRot);
 end;
 
-function wbVec3PosRotDegrees(const aSignature: TwbSignature; const aCombinedName: string = 'Position/Rotation'; aPosName: string = 'Position'; const aRotName: string = 'Rotation'; const aPosPrefix: string = 'Pos'; const aRotPrefix: string = 'Rot'): IwbRecordMemberDef;
+function wbVec3PosRotDegrees(const aSignature    : TwbSignature;
+                             const aCombinedName : string = 'Position/Rotation';
+                             const aPosName      : string = 'Position';
+                             const aRotName      : string = 'Rotation';
+                             const aPosPrefix    : string = 'Pos';
+                             const aRotPrefix    : string = 'Rot')
+                                                 : IwbRecordMemberDef;
 begin
-  Result := wbSubRecord(aSignature, aCombinedName, wbVec3PosRotDegrees('', aPosName, aRotName, aPosPrefix, aRotPrefix));
+  Result :=
+    wbStruct(aSignature, aCombinedName, [
+      wbVec3Pos(aPosName, aPosPrefix),
+      wbVec3(aRotName, aRotPrefix)
+    ]).SetSummaryKeyOnValue([0, 1])
+      .IncludeFlagOnValue(dfSummaryMembersNoName)
+      .IncludeFlag(dfCollapsed, wbCollapsePosRot);
 end;
 
-function wbSizePosRot(aSignature: TwbSignature; aName: string; aPriority: TwbConflictPriority = cpNormal): IwbSubRecordDef;
+function wbSizePosRot(const aSignature : TwbSignature;
+                      const aName      : string;
+                      const aPriority  : TwbConflictPriority = cpNormal)
+                                       : IwbSubRecordDef;
 begin
   Result :=
     wbStruct(aSignature, aName, [
@@ -5112,7 +5238,9 @@ end;
 
 {>>> Color Defs <<<} //16
 
-function wbAmbientColors(const aSignature: TwbSignature; const aName: string = 'Directional Ambient Lighting Colors'): IwbSubRecordDef;
+function wbAmbientColors(const aSignature : TwbSignature;
+                         const aName      : string = 'Directional Ambient Lighting Colors')
+                                          : IwbSubRecordDef;
 begin
   Result := wbStruct(aSignature, aName, [
     wbStruct('Directional', [
@@ -5137,7 +5265,8 @@ begin
   ]);
 end;
 
-function wbAmbientColors(const aName: string = 'Directional Ambient Lighting Colors'): IwbStructDef;
+function wbAmbientColors(const aName : string = 'Directional Ambient Lighting Colors')
+                                     : IwbStructDef;
 begin
   Result := wbStruct(aName, [
     wbStruct('Directional', [
@@ -5164,164 +5293,209 @@ end;
 
 function wbByteColors(const aSignature : TwbSignature;
                       const aName      : string = 'Color';
-                            aDefault1  : string = '0';
-                            aDefault2  : string = '0';
-                            aDefault3  : string = '0')
+                      const aDefaultR  : Byte = 0;
+                      const aDefaultG  : Byte = 0;
+                      const aDefaultB  : Byte = 0)
                                        : IwbRecordMemberDef;
 begin
   Result := wbStruct(aSignature, aName, [
-    wbInteger('Red', itU8).SetDefaultEditValue(aDefault1),
-    wbInteger('Green', itU8).SetDefaultEditValue(aDefault2),
-    wbInteger('Blue', itU8).SetDefaultEditValue(aDefault3),
+    wbInteger('Red', itU8).SetDefaultNativeValue(aDefaultR),
+    wbInteger('Green', itU8).SetDefaultNativeValue(aDefaultG),
+    wbInteger('Blue', itU8).SetDefaultNativeValue(aDefaultB),
     wbUnused(1)
   ]).SetToStr(wbRGBAToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
 function wbByteColors(const aName     : string = 'Color';
-                            aDefault1 : string = '0';
-                            aDefault2 : string = '0';
-                            aDefault3 : string = '0')
+                      const aDefaultR : Byte = 0;
+                      const aDefaultG : Byte = 0;
+                      const aDefaultB : Byte = 0)
                                       : IwbValueDef;
 begin
   Result := wbStruct(aName, [
-    wbInteger('Red', itU8).SetDefaultEditValue(aDefault1),
-    wbInteger('Green', itU8).SetDefaultEditValue(aDefault2),
-    wbInteger('Blue', itU8).SetDefaultEditValue(aDefault3),
+    wbInteger('Red', itU8).SetDefaultNativeValue(aDefaultR),
+    wbInteger('Green', itU8).SetDefaultNativeValue(aDefaultG),
+    wbInteger('Blue', itU8).SetDefaultNativeValue(aDefaultB),
     wbUnused(1)
   ]).SetToStr(wbRGBAToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbByteABGR(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef;
+function wbByteABGR(const aSignature : TwbSignature;
+                    const aName      : string = 'Color';
+                    const aDefaultA  : Byte = 0;
+                    const aDefaultB  : Byte = 0;
+                    const aDefaultG  : Byte = 0;
+                    const aDefaultR  : Byte = 0)
+                                     : IwbRecordMemberDef;
 begin
   Result := wbStruct(aSignature, aName, [
-    wbInteger('Alpha', itU8),
-    wbInteger('Blue', itU8),
-    wbInteger('Green', itU8),
-    wbInteger('Red', itU8)
+    wbInteger('Alpha', itU8).SetDefaultNativeValue(aDefaultA),
+    wbInteger('Blue', itU8).SetDefaultNativeValue(aDefaultB),
+    wbInteger('Green', itU8).SetDefaultNativeValue(aDefaultG),
+    wbInteger('Red', itU8).SetDefaultNativeValue(aDefaultR)
   ]).SetToStr(wbABGRToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbByteABGR(const aName: string = 'Color'): IwbValueDef;
+function wbByteABGR(const aName     : string = 'Color';
+                    const aDefaultA : Byte = 0;
+                    const aDefaultB : Byte = 0;
+                    const aDefaultG : Byte = 0;
+                    const aDefaultR : Byte = 0)
+                                    : IwbValueDef;
 begin
   Result := wbStruct(aName, [
-    wbInteger('Alpha', itU8),
-    wbInteger('Blue', itU8),
-    wbInteger('Green', itU8),
-    wbInteger('Red', itU8)
+    wbInteger('Alpha', itU8).SetDefaultNativeValue(aDefaultA),
+    wbInteger('Blue', itU8).SetDefaultNativeValue(aDefaultB),
+    wbInteger('Green', itU8).SetDefaultNativeValue(aDefaultG),
+    wbInteger('Red', itU8).SetDefaultNativeValue(aDefaultR)
   ]).SetToStr(wbABGRToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbByteRGBA(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef;
+function wbByteRGBA(const aSignature : TwbSignature;
+                    const aName     : string = 'Color';
+                    const aDefaultR : Byte = 0;
+                    const aDefaultG : Byte = 0;
+                    const aDefaultB : Byte = 0;
+                    const aDefaultA : Byte = 0)
+                                    : IwbRecordMemberDef;
 begin
   Result := wbStruct(aSignature, aName, [
-    wbInteger('Red', itU8),
-    wbInteger('Green', itU8),
-    wbInteger('Blue', itU8),
-    wbInteger('Alpha', itU8)
+    wbInteger('Red', itU8).SetDefaultNativeValue(aDefaultR),
+    wbInteger('Green', itU8).SetDefaultNativeValue(aDefaultG),
+    wbInteger('Blue', itU8).SetDefaultNativeValue(aDefaultB),
+    wbInteger('Alpha', itU8).SetDefaultNativeValue(aDefaultA)
   ]).SetToStr(wbRGBAToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbByteRGBA(const aName: string = 'Color'): IwbValueDef;
+function wbByteRGBA(const aName     : string = 'Color';
+                    const aDefaultR : Byte = 0;
+                    const aDefaultG : Byte = 0;
+                    const aDefaultB : Byte = 0;
+                    const aDefaultA : Byte = 0)
+                                    : IwbValueDef;
 begin
   Result := wbStruct(aName, [
-    wbInteger('Red', itU8),
-    wbInteger('Green', itU8),
-    wbInteger('Blue', itU8),
-    wbInteger('Alpha', itU8)
+    wbInteger('Red', itU8).SetDefaultNativeValue(aDefaultR),
+    wbInteger('Green', itU8).SetDefaultNativeValue(aDefaultG),
+    wbInteger('Blue', itU8).SetDefaultNativeValue(aDefaultB),
+    wbInteger('Alpha', itU8).SetDefaultNativeValue(aDefaultA)
   ]).SetToStr(wbRGBAToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbByteBGRA(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef;
+function wbByteBGRA(const aSignature : TwbSignature;
+                    const aName      : string = 'Color';
+                    const aDefaultB  : Byte = 0;
+                    const aDefaultG  : Byte = 0;
+                    const aDefaultR  : Byte = 0;
+                    const aDefaultA  : Byte = 0)
+                                     : IwbRecordMemberDef;
 begin
   Result := wbStruct(aSignature, aName, [
-    wbInteger('Blue', itU8),
-    wbInteger('Green', itU8),
-    wbInteger('Red', itU8),
-    wbInteger('Alpha', itU8)
+    wbInteger('Blue', itU8).SetDefaultNativeValue(aDefaultB),
+    wbInteger('Green', itU8).SetDefaultNativeValue(aDefaultG),
+    wbInteger('Red', itU8).SetDefaultNativeValue(aDefaultR),
+    wbInteger('Alpha', itU8).SetDefaultNativeValue(aDefaultA)
   ]).SetToStr(wbBGRAToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbByteBGRA(const aName: string = 'Color'): IwbValueDef;
+function wbByteBGRA(const aName     : string = 'Color';
+                    const aDefaultB : Byte = 0;
+                    const aDefaultG : Byte = 0;
+                    const aDefaultR : Byte = 0;
+                    const aDefaultA : Byte = 0)
+                                    : IwbValueDef;
 begin
   Result := wbStruct(aName, [
-    wbInteger('Blue', itU8),
-    wbInteger('Green', itU8),
-    wbInteger('Red', itU8),
-    wbInteger('Alpha', itU8)
+    wbInteger('Blue', itU8).SetDefaultNativeValue(aDefaultB),
+    wbInteger('Green', itU8).SetDefaultNativeValue(aDefaultG),
+    wbInteger('Red', itU8).SetDefaultNativeValue(aDefaultR),
+    wbInteger('Alpha', itU8).SetDefaultNativeValue(aDefaultA)
   ]).SetToStr(wbBGRAToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbCNAM(aRequired: Boolean = False): IwbRecordMemberDef;
-begin
-  Result :=
-    wbStruct(CNAM, 'Color', [
-      wbInteger('Red', itU8),
-      wbInteger('Green', itU8),
-      wbInteger('Blue', itU8),
-      wbInteger('Alpha', itU8)
-    ]).SetRequired(aRequired)
-      .SetToStr(wbRGBAToStr)
-      .IncludeFlag(dfCollapsed, wbCollapseRGBA);
-end;
-
-function wbFloatColors(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef;
+function wbFloatColors(const aSignature : TwbSignature;
+                       const aName      : string = 'Color';
+                       const aDefaultR  : Single = 0;
+                       const aDefaultG  : Single = 0;
+                       const aDefaultB  : Single = 0)
+                                        : IwbRecordMemberDef;
 begin
   Result := wbStruct(aSignature, aName, [
-    wbFloat('Red', cpNormal, True, 255, 0),
-    wbFloat('Green', cpNormal, True, 255, 0),
-    wbFloat('Blue', cpNormal, True, 255, 0)
+    wbFloat('Red', cpNormal, True, 255, 0, nil, wbNormalizeToRange(0, 255), aDefaultR),
+    wbFloat('Green', cpNormal, True, 255, 0, nil, wbNormalizeToRange(0, 255), aDefaultG),
+    wbFloat('Blue', cpNormal, True, 255, 0, nil, wbNormalizeToRange(0, 255), aDefaultB)
   ]).SetToStr(wbRGBAToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbFloatColors(const aName: string = 'Color'): IwbValueDef;
+function wbFloatColors(const aName     : string = 'Color';
+                       const aDefaultR : Single = 0;
+                       const aDefaultG : Single = 0;
+                       const aDefaultB : Single = 0)
+                                       : IwbValueDef;
 begin
   Result := wbStruct(aName, [
-    wbFloat('Red', cpNormal, True, 255, 0),
-    wbFloat('Green', cpNormal, True, 255, 0),
-    wbFloat('Blue', cpNormal, True, 255, 0)
+    wbFloat('Red', cpNormal, True, 255, 0, nil, wbNormalizeToRange(0, 255), aDefaultR),
+    wbFloat('Green', cpNormal, True, 255, 0, nil, wbNormalizeToRange(0, 255), aDefaultG),
+    wbFloat('Blue', cpNormal, True, 255, 0, nil, wbNormalizeToRange(0, 255), aDefaultB)
   ]).SetToStr(wbRGBAToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbRFloatColors(const aName: string = 'Color'; const aSigs: TwbSignatures = []): IwbRecordMemberDef;
+function wbRFloatColors(const aName     : string = 'Color';
+                        const aSigs     : TwbSignatures = [];
+                        const aDefaultR : Single = 0;
+                        const aDefaultG : Single = 0;
+                        const aDefaultB : Single = 0)
+                                        : IwbRecordMemberDef;
 begin
   Assert(Length(aSigs) = 3, 'wbRFloatColors called with incorrect number of signatures.');
 
   Result := wbRStruct(aName, [
-    wbFloat(aSigs[0], 'Red', cpNormal, True, 255, 0),
-    wbFloat(aSigs[1], 'Green', cpNormal, True, 255, 0),
-    wbFloat(aSigs[2], 'Blue', cpNormal, True, 255, 0)
+    wbFloat(aSigs[0], 'Red', cpNormal, True, 255, 0, nil, wbNormalizeToRange(0, 255), aDefaultR),
+    wbFloat(aSigs[1], 'Green', cpNormal, True, 255, 0, nil, wbNormalizeToRange(0, 255), aDefaultG),
+    wbFloat(aSigs[2], 'Blue', cpNormal, True, 255, 0, nil, wbNormalizeToRange(0, 255), aDefaultB)
   ]).SetToStr(wbRGBAToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbFloatRGBA(const aSignature: TwbSignature; const aName: string = 'Color'): IwbRecordMemberDef;
+function wbFloatRGBA(const aSignature : TwbSignature;
+                     const aName      : string = 'Color';
+                     const aDefaultR  : Single = 0;
+                     const aDefaultG  : Single = 0;
+                     const aDefaultB  : Single = 0;
+                     const aDefaultA  : Single = 0)
+                                      : IwbRecordMemberDef;
 begin
   Result := wbStruct(aSignature, aName, [
-    wbFloat('Red', cpNormal, True, 255, 0),
-    wbFloat('Green', cpNormal, True, 255, 0),
-    wbFloat('Blue', cpNormal, True, 255, 0),
-    wbFloat('Alpha', cpNormal, True, 255, 0)
+    wbFloat('Red', cpNormal, True, 255, 0, nil, wbNormalizeToRange(0, 255), aDefaultR),
+    wbFloat('Green', cpNormal, True, 255, 0, nil, wbNormalizeToRange(0, 255), aDefaultG),
+    wbFloat('Blue', cpNormal, True, 255, 0, nil, wbNormalizeToRange(0, 255), aDefaultB),
+    wbFloat('Alpha', cpNormal, True, 255, 0, nil, wbNormalizeToRange(0, 255), aDefaultA)
   ]).SetToStr(wbRGBAToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
 
-function wbFloatRGBA(const aName: string = 'Color'): IwbValueDef;
+function wbFloatRGBA(const aName     : string = 'Color';
+                     const aDefaultR : Single = 0;
+                     const aDefaultG : Single = 0;
+                     const aDefaultB : Single = 0;
+                     const aDefaultA : Single = 0)
+                                     : IwbValueDef;
 begin
   Result := wbStruct(aName, [
-    wbFloat('Red', cpNormal, True, 255, 0),
-    wbFloat('Green', cpNormal, True, 255, 0),
-    wbFloat('Blue', cpNormal, True, 255, 0),
-    wbFloat('Alpha', cpNormal, True, 255, 0)
+    wbFloat('Red', cpNormal, True, 255, 0, nil, wbNormalizeToRange(0, 255), aDefaultR),
+    wbFloat('Green', cpNormal, True, 255, 0, nil, wbNormalizeToRange(0, 255), aDefaultG),
+    wbFloat('Blue', cpNormal, True, 255, 0, nil, wbNormalizeToRange(0, 255), aDefaultB),
+    wbFloat('Alpha', cpNormal, True, 255, 0, nil, wbNormalizeToRange(0, 255), aDefaultA)
   ]).SetToStr(wbRGBAToStr)
     .IncludeFlag(dfCollapsed, wbCollapseRGBA);
 end;
@@ -5372,52 +5546,58 @@ begin
     var TextureFile := CreateFileEntry('Texture').IncludeFlag(dfCollapsed, wbCollapseModelInfoTexture);
     var MaterialFile := CreateFileEntry('Material').IncludeFlag(dfCollapsed, wbCollapseModelInfoMaterial);
 
-    var NewModelInfo := wbStruct('', [
-      wbArray('Headers',
-        wbInteger('Header', itU32, nil, nil, cpIgnore).SetIsRemovable(wbModelInfoHeaderIsRemovable)
-      , -1, ['Textures Count', 'Addons Count', 'TextureSets', 'Materials Count'], cpIgnore)
-        .IncludeFlag(dfNotAlignable)
-        .IncludeFlag(dfRemoveLastOnly)
-        .IncludeFlag(dfCollapsed, wbCollapseModelInfoHeader),
+    var NewModelInfo :=
+      wbStruct('', [
+        IsTES5(
+          wbArray('Counters',
+            wbInteger('Counter', itU32, nil, nil, cpIgnore),
+          -1, ['Textures', 'Addon Nodes'], cpIgnore)
+            .IncludeFlag(dfCollapsed, wbCollapseModelInfoHeader)
+            .IncludeFlag(dfNotAlignable),
+          wbArray('Counters',
+            wbIntegeR('Counter', itU32, nil, nil, cpIgnore),
+          -1, ['Textures', 'Addon Nodes', 'Unknown', 'Materials'], cpIgnore)
+            .IncludeFlag(dfCollapsed, wbCollapseModelInfoHeader)
+            .IncludeFlag(dfNotAlignable)
+        ),
+        wbArray('Textures', TextureFile)
+          .SetCountPath('Counters\[0]', True)
+          .SetSummaryPassthroughMaxLength(80)
+          .SetSummaryPassthroughMaxDepth(1)
+          .IncludeFlag(dfCollapsed, wbCollapseModelInfoTextures),
+        wbArray('Addon Nodes',
+          wbInteger('Addon Node', itU32)
+            .SetLinksToCallback(function(const aElement: IwbElement): IwbElement
+            begin
+              Result := nil;
+              if not Assigned(aElement) then
+                Exit;
 
-      wbArray('Textures', TextureFile, wbModelInfoTextureFileCounter)
-        .SetSummaryPassthroughMaxLength(80)
-        .SetSummaryPassthroughMaxDepth(1)
-        .IncludeFlag(dfCollapsed, wbCollapseModelInfoTextures),
+              var lAddonNodeIndex := aElement.NativeValue;
+              if not VarIsOrdinal(lAddonNodeIndex) then
+                Exit;
 
-      wbArray('Addons',
-        wbInteger('Addon', itU32)
-          .SetLinksToCallback(function(const aElement: IwbElement): IwbElement
-          begin
-            Result := nil;
-            if not Assigned(aElement) then
-              Exit;
+              var lFile := aElement._File;
+              if not Assigned(lFile) then
+                Exit;
 
-            var lAddonNodeIndex := aElement.NativeValue;
-            if not VarIsOrdinal(lAddonNodeIndex) then
-              Exit;
-
-            var lFile := aElement._File;
-            if not Assigned(lFile) then
-              Exit;
-
-            Result := lFile.RecordFromIndexByKey[wbIdxAddonNode, lAddonNodeIndex];
-          end)
-         .SetToStr(wbToStringFromLinksToMainRecordName),
-      wbModelInfoAddonCounter)
-        .SetSummaryPassthroughMaxLength(80)
-        .SetSummaryPassthroughMaxDepth(1)
-        .IncludeFlag(dfCollapsed, wbCollapseModelInfoAddons),
-
-      wbArray('Materials', MaterialFile, wbModelInfoMaterialFileCounter)
-        .SetSummaryPassthroughMaxLength(80)
-        .SetSummaryPassthroughMaxDepth(1)
-        .IncludeFlag(dfCollapsed, wbCollapseModelInfoMaterials),
-
-      wbByteArray('Unknown', 0, cpNormal, False, nil, wbModelInfoUnknownGetCP)
-    ]).SetSummaryKey([1, 2, 3])
-      .IncludeFlag(dfSummaryMembersNoName)
-      .SetAfterSet(wbModelInfoAfterSet);
+              Result := lFile.RecordFromIndexByKey[wbIdxAddonNode, lAddonNodeIndex];
+            end)
+           .SetToStr(wbToStringFromLinksToMainRecordName)
+        ).SetCountPath('Counters\[1]', True)
+         .SetSummaryPassthroughMaxLength(80)
+         .SetSummaryPassthroughMaxDepth(1)
+         .IncludeFlag(dfCollapsed, wbCollapseModelInfoAddons),
+        IsTES5(
+          nil,
+          wbArray('Materials', MaterialFile)
+            .SetCountPath('Counters\[3]', True)
+            .SetSummaryPassthroughMaxLength(80)
+            .SetSummaryPassthroughMaxDepth(1)
+            .IncludeFlag(dfCollapsed, wbCollapseModelInfoMaterials)
+        )
+      ]).SetSummaryKey([1, 2, 3])
+        .IncludeFlag(dfSummaryMembersNoName);
 
     Result := wbUnion(aSignature, aName, wbModelInfoDecider, [
       wbStruct('', [
@@ -5468,7 +5648,19 @@ begin
       .IncludeFlag(dfCollapsed, wbCollapseObjectBounds);
 end;
 
-{>>> Multiple Record Defs <<<} //3
+{>>> Multiple Record Defs <<<} //4
+
+function wbDamageTypeArray(const aItemName: string): IwbRecordMemberDef;
+begin
+  Result := wbArrayS(DAMA, aItemName + 's',
+    wbStructSK([0], aItemName, [
+      wbFormIDCk('Type', [DMGT]),
+      wbInteger('Amount', itU32),
+      wbFromVersion(152, wbFormIDCk('Curve Table', [CURV, NULL]))
+    ]).SetSummaryKey([1])
+      .SetSummaryMemberPrefixSuffix(1, '= ','')
+      .IncludeFlag(dfSummaryMembersNoName))
+end;
 
 function wbEnchantment(aCapacity: Boolean = False): IwbRecordMemberDef;
 begin
@@ -5721,6 +5913,14 @@ begin
     ]).SetSummaryKey([0, 1])
       .SetRequired
       .IncludeFlag(dfCollapsed, wbCollapseTimeInterpolatorsMultAdd);
+end;
+
+{>>> NPC Defs <<<} //1
+
+function wbNPCTemplateActorEntry(const aName: string): IwbValueDef;
+begin
+  Result :=
+    wbFormIDCk(aName, [BMMO,LVLN,NPC_,NULL], False, cpNormalIgnoreEmpty).SetDontShow(wbTemplateActorDontShow);
 end;
 
 {>>> Perk Defs <<<} //1
@@ -6634,6 +6834,15 @@ begin
       8, 'Always Show'
     ]);
 
+  wbFurnitureEntryTypeFlags :=
+    wbFlags([
+    {0} 'Front',
+    {1} 'Behind',
+    {2} 'Right',
+    {3} 'Left',
+    {4} 'Up'
+    ]);
+
   wbPackageFlags :=
     wbFlags(wbSparseFlags([
       0,           'Offers Services',
@@ -7118,7 +7327,7 @@ begin
       wbRUnion('Layer', [
         wbRStructSK([0], 'Base Layer', [
           wbStructSK(BTXT, [1, 3], 'Base Layer', [
-            wbFormIDCk('Texture', [LTEX, NULL]),
+            wbFormIDCk('Texture', [LTEX]),
             wbInteger('Quadrant', itU8, wbQuadrantEnum),
             wbUnused(1),
             wbInteger('Layer', itS16)
@@ -7132,7 +7341,7 @@ begin
         ]).IncludeFlag(dfCollapsed, wbCollapseOther),
         wbRStructSK([0], 'Alpha Layer', [
           wbStructSK(ATXT, [1, 3], 'Alpha Layer Header', [
-            wbFormIDCk('Texture', [LTEX, NULL]),
+            wbFormIDCk('Texture', [LTEX]),
             wbInteger('Quadrant', itU8, wbQuadrantEnum),
             wbUnused(1),
             wbInteger('Layer', itS16)
@@ -7174,8 +7383,9 @@ begin
       6, 'Preferred',
       9, 'Water',
      10, 'Door',
-     11, 'Found'
-    ], False, 12));
+     11, 'Found',
+     12, IsFO76SF1('Unknown 12', '')
+    ], False, 13));
 
 { Flags below are wrong. The first 4 bit are an enum as follows:
 0000 = Open Edge No Cover

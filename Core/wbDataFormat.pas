@@ -609,6 +609,7 @@ function dfArray(
   const aCounter: string;
   const aEvents: array of const
 ): TdfArrayDef; overload;
+function dfArray(const aName: string; const aMemberDef: TdfDef; aSize: integer; const aCounter: string): TdfArrayDef; overload;
 function dfArray(const aName: string; const aMemberDef: TdfDef; aSize: integer): TdfArrayDef; overload;
 function dfArray(const aName: string; const aMemberDef: TdfDef; const aCounter: string): TdfArrayDef; overload;
 
@@ -618,6 +619,7 @@ function dfUnion(
   const aEvents: array of const
 ): TdfUnionDef; overload;
 function dfUnion(const aDefs: TdfDefs; const aEvents: array of const): TdfUnionDef; overload;
+function dfUnion(const aDefs: TdfDefs): TdfUnionDef; overload;
 function dfUnion(aDecider: TdfOnDecideEvent; const aDefs: TdfDefs): TdfUnionDef; overload;
 
 function dfValueUnion(
@@ -664,6 +666,7 @@ function dfEnum(
   const aDefaultValue: string;
   const aEvents: array of const
 ): TdfEnumDef; overload;
+function dfEnum(const aName: string; aDataType: TdfDataType; const aValues: array of const; const aDefaultValue: string): TdfEnumDef; overload;
 function dfEnum(const aName: string; aDataType: TdfDataType; const aValues: array of const): TdfEnumDef; overload;
 function dfBool(const aName: string; aDataType: TdfDataType; const aDefaultValue: string; const aEvents: array of const): TdfEnumDef; overload;
 function dfBool(const aName: string; aDataType: TdfDataType; const aDefaultValue: string): TdfEnumDef; overload;
@@ -3832,6 +3835,11 @@ begin
   Result.AssignEvents(aEvents);
 end;
 
+function dfArray(const aName: string; const aMemberDef: TdfDef; aSize: integer; const aCounter: string): TdfArrayDef;
+begin
+  Result := dfArray(aName, aMemberDef, aSize, aCounter, []);
+end;
+
 function dfArray(const aName: string; const aMemberDef: TdfDef; aSize: integer): TdfArrayDef;
 begin
   Result := dfArray(aName, aMemberDef, aSize, '', []);
@@ -3858,6 +3866,11 @@ end;
 function dfUnion(const aDefs: TdfDefs; const aEvents: array of const): TdfUnionDef;
 begin
   Result := dfUnion(nil, aDefs, aEvents);
+end;
+
+function dfUnion(const aDefs: TdfDefs): TdfUnionDef;
+begin
+  Result := dfUnion(nil, aDefs, []);
 end;
 
 function dfUnion(aDecider: TdfOnDecideEvent; const aDefs: TdfDefs): TdfUnionDef;
@@ -3994,6 +4007,11 @@ begin
   Result.DefaultValue := aDefaultValue;
   Result.AssignEvents(aEvents);
   Result.AssignValuesMap(aValues);
+end;
+
+function dfEnum(const aName: string; aDataType: TdfDataType; const aValues: array of const; const aDefaultValue: string): TdfEnumDef;
+begin
+  Result := dfEnum(aName, aDataType, aValues, aDefaultValue, []);
 end;
 
 function dfEnum(const aName: string; aDataType: TdfDataType; const aValues: array of const): TdfEnumDef;

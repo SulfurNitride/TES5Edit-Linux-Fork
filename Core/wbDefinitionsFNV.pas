@@ -1343,7 +1343,7 @@ begin
       if (aInt and $80) = 0 then
         Result := Result + ', Must return a file';
       if (aInt and $40) = 1 then
-        Result := Result + ', Unknown Flag';
+        Result := Result + ', Loose Idle';
     end;
     ctToSortKey: begin
       Result := IntToHex64(aInt, 2);
@@ -4651,7 +4651,9 @@ begin
       wbUnknown(INFC, cpIgnore),
       wbUnknown(INFX, cpIgnore)
     ]), cpIgnore, False, nil, nil, wbNeverShow),
-    wbFULL,
+    wbFULL
+      .SetAfterLoad(wbDialogueTextAfterLoad)
+      .SetAfterSet(wbDialogueTextAfterSet),
     wbFloat(PNAM, 'Priority', cpNormal, True, 1, -1, nil, nil, 50.0),
     wbStringKC(TDUM, 'Dumb Response'),
     wbStruct(DATA, '', [
@@ -6538,7 +6540,10 @@ begin
           ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
           wbUnused(3)
         ], cpNormal, False, nil, 5),
-        wbStringKC(NAM1, 'Response Text', 0, cpTranslate, True),
+        wbStringKC(NAM1, 'Response Text', 0, cpTranslate)
+          .SetAfterLoad(wbDialogueTextAfterLoad)
+          .SetAfterSet(wbDialogueTextAfterSet)
+          .SetRequired,
         wbString(NAM2, 'Script Notes', 0, cpTranslate, True),
         wbString(NAM3, 'Edits'),
         wbFormIDCk(SNAM, 'Speaker Animation', [IDLE]),
@@ -6557,7 +6562,9 @@ begin
       wbEmbeddedScriptReq
     ], [], cpNormal, True),
     wbFormIDCk(SNDD, 'Unused', [SOUN]),
-    wbStringKC(RNAM, 'Prompt', 0, cpTranslate),
+    wbStringKC(RNAM, 'Prompt', 0, cpTranslate)
+      .SetAfterLoad(wbDialogueTextAfterLoad)
+      .SetAfterSet(wbDialogueTextAfterSet),
     wbFormIDCk(ANAM, 'Speaker', [CREA, NPC_]),
     wbFormIDCk(KNAM, 'ActorValue/Perk', [AVIF, PERK]),
     wbInteger(DNAM, 'Speech Challenge', itU32, wbEnum([

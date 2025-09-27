@@ -2287,7 +2287,9 @@ begin
     wbEDID,
     wbQSTI,
     wbQSTR,
-    wbFULL,
+    wbFULL
+      .SetAfterLoad(wbDialogueTextAfterLoad)
+      .SetAfterSet(wbDialogueTextAfterSet),
     wbInteger(DATA, 'Type', itU8, wbDialogueTypeEnum).SetRequired,
     wbINOM,
     wbINOA
@@ -2592,7 +2594,9 @@ begin
           wbInteger('Response Number', itU8),
           wbUnused(3)
         ]),
-        wbStringKC(NAM1, 'Response Text', 0, cpTranslate),
+        wbStringKC(NAM1, 'Response Text', 0, cpTranslate)
+          .SetAfterLoad(wbDialogueTextAfterLoad)
+          .SetAfterSet(wbDialogueTextAfterSet),
         wbString(NAM2, 'Actor Notes', 0, cpTranslate)
       ])),
     wbConditions,
@@ -3721,9 +3725,9 @@ begin
         wbFloat('Near').SetDefaultNativeValue(27852.800782),
         wbFloat('Far').SetDefaultNativeValue(163840)
       ]),
-      wbByteColors('Shallow Color', '0', '128', '128'),
-      wbByteColors('Deep Color', '0', '0', '25'),
-      wbByteColors('Reflection Color', '255', '255', '255'),
+      wbByteColors('Shallow Color', 0, 128, 128),
+      wbByteColors('Deep Color', 0, 0, 25),
+      wbByteColors('Reflection Color', 255, 255, 255),
       wbInteger('Texture Blend', itU8).SetDefaultNativeValue(50),
       wbUnused(3),
       wbStruct('Rain Simulator', [

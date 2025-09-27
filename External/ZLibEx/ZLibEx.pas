@@ -282,7 +282,7 @@ type
     function GetCompressionRate: Single;
   public
     constructor Create(dest: TStream;
-      compressionLevel: TZCompressionLevel = zcDefault); overload;
+      compressionLevel: TZCompressionLevel = zcMax); overload;
 
     constructor Create(dest: TStream; compressionLevel: TZCompressionLevel;
       windowBits, memLevel: Integer; strategy: TZStrategy); overload;
@@ -350,7 +350,7 @@ type
 
   TZCompressionBuffer = class(TZCustomBuffer)
   public
-    constructor Create(level: TZCompressionLevel = zcDefault); overload;
+    constructor Create(level: TZCompressionLevel = zcMax); overload;
     constructor Create(level: TZCompressionLevel;
       windowBits, memLevel: Integer; strategy: TZStrategy); overload;
 
@@ -381,7 +381,7 @@ type
 {** zlib deflate routines ***********************************************************************}
 
 function  ZDeflateInit(var stream: TZStreamRec;
-  level: TZCompressionLevel): Integer;
+  level: TZCompressionLevel = zcMax): Integer;
   {$ifdef Version2005Plus} inline; {$endif}
 
 function  ZDeflateInit2(var stream: TZStreamRec;
@@ -448,7 +448,7 @@ procedure ZInflateEx(var stream: TZStreamRec; param: Pointer;
 
 procedure ZCompress(const inBuffer: Pointer; inSize: Integer;
   out outBuffer: Pointer; out outSize: Integer;
-  level: TZCompressionLevel = zcDefault);
+  level: TZCompressionLevel = zcMax);
 
 {*************************************************************************************************
 *  ZCompress2                                                                                    *
@@ -522,14 +522,14 @@ procedure ZDecompress2(const inBuffer: Pointer; inSize: Integer;
 *************************************************************************************************}
 
 function  ZCompressStr(const s: AnsiString;
-  level: TZCompressionLevel = zcDefault): RawByteString;
+  level: TZCompressionLevel = zcMax): RawByteString;
 
 procedure ZCompressString(var result: RawByteString; const s: AnsiString;
-  level: TZCompressionLevel = zcDefault); overload;
+  level: TZCompressionLevel = zcMax); overload;
 
 {$ifdef Version6Plus}
 procedure ZCompressString(var result: RawByteString; const s: UnicodeString;
-  level: TZCompressionLevel = zcDefault); overload;
+  level: TZCompressionLevel = zcMax); overload;
 {$endif}
 
 {*************************************************************************************************
@@ -545,14 +545,14 @@ procedure ZCompressString(var result: RawByteString; const s: UnicodeString;
 *************************************************************************************************}
 
 function  ZCompressStrEx(const s: AnsiString;
-  level: TZCompressionLevel = zcDefault): RawByteString;
+  level: TZCompressionLevel = zcMax): RawByteString;
 
 procedure ZCompressStringEx(var result: RawByteString; const s: AnsiString;
-  level: TZCompressionLevel = zcDefault); overload;
+  level: TZCompressionLevel = zcMax); overload;
 
 {$ifdef Version6Plus}
 procedure ZCompressStringEx(var result: RawByteString; const s: UnicodeString;
-  level: TZCompressionLevel = zcDefault); overload;
+  level: TZCompressionLevel = zcMax); overload;
 {$endif}
 
 {*************************************************************************************************
@@ -668,7 +668,7 @@ procedure ZDecompressString2(var result: UnicodeString;
 {** stream routines *****************************************************************************}
 
 procedure ZCompressStream(inStream, outStream: TStream;
-  level: TZCompressionLevel = zcDefault);
+  level: TZCompressionLevel = zcMax);
 
 procedure ZCompressStream2(inStream, outStream: TStream;
   level: TZCompressionLevel; windowBits, memLevel: Integer;
@@ -747,9 +747,9 @@ end;
 {** zlib deflate routines ***********************************************************************}
 
 function ZDeflateInit(var stream: TZStreamRec;
-  level: TZCompressionLevel): Integer;
+  level: TZCompressionLevel = zcMax): Integer;
 begin
-  result := deflateInit_(stream, ZLevels[level], ZLIB_VERSION,
+  result := deflateInit_(stream, ZLevels[zcMax], ZLIB_VERSION,
     SizeOf(TZStreamRec));
 end;
 
@@ -757,7 +757,7 @@ function ZDeflateInit2(var stream: TZStreamRec;
   level: TZCompressionLevel; windowBits, memLevel: Integer;
   strategy: TZStrategy): Integer;
 begin
-  result := deflateInit2_(stream, ZLevels[level], Z_DEFLATED, windowBits,
+  result := deflateInit2_(stream, ZLevels[zcMax], Z_DEFLATED, windowBits,
     memLevel, ZStrategies[strategy], ZLIB_VERSION, SizeOf(TZStreamRec));
 end;
 
@@ -1118,13 +1118,13 @@ end;
 
 procedure ZCompress(const inBuffer: Pointer; inSize: Integer;
   out outBuffer: Pointer; out outSize: Integer;
-  level: TZCompressionLevel);
+  level: TZCompressionLevel = zcMax);
 var
   zstream: TZStreamRec;
 begin
   FillChar(zstream, SizeOf(TZStreamRec), 0);
 
-  ZCompressCheck(ZDeflateInit(zstream, level));
+  ZCompressCheck(ZDeflateInit(zstream, zcMax));
 
   ZInternalCompress(zstream, inBuffer, inSize, outBuffer, outSize);
 end;
@@ -1137,7 +1137,7 @@ var
 begin
   FillChar(zstream, SizeOf(TZStreamRec), 0);
 
-  ZCompressCheck(ZDeflateInit2(zstream, level, windowBits, memLevel,
+  ZCompressCheck(ZDeflateInit2(zstream, zcMax, windowBits, memLevel,
     strategy));
 
   ZInternalCompress(zstream, inBuffer, inSize, outBuffer, outSize);
@@ -1173,18 +1173,18 @@ end;
 {** string routines *****************************************************************************}
 
 function ZCompressStr(const s: AnsiString;
-  level: TZCompressionLevel): RawByteString;
+  level: TZCompressionLevel = zcMax): RawByteString;
 begin
-  ZCompressString(result, s, level);
+  ZCompressString(result, s, zcMax);
 end;
 
 procedure ZCompressString(var result: RawByteString; const s: AnsiString;
-  level: TZCompressionLevel);
+  level: TZCompressionLevel = zcMax);
 var
   buffer: Pointer;
   size  : Integer;
 begin
-  ZCompress(Pointer(s), Length(s), buffer, size, level);
+  ZCompress(Pointer(s), Length(s), buffer, size, zcMax);
 
   SetLength(result, size);
 
@@ -1198,12 +1198,12 @@ end;
 
 {$ifdef Version6Plus}
 procedure ZCompressString(var result: RawByteString; const s: UnicodeString;
-  level: TZCompressionLevel);
+  level: TZCompressionLevel = zcMax);
 var
   buffer: Pointer;
   size  : Integer;
 begin
-  ZCompress(Pointer(s), Length(s) * SizeOf(UnicodeChar), buffer, size, level);
+  ZCompress(Pointer(s), Length(s) * SizeOf(UnicodeChar), buffer, size, zcMax);
 
   SetLength(result, size);
 
@@ -1217,18 +1217,18 @@ end;
 {$endif}
 
 function ZCompressStrEx(const s: AnsiString;
-  level: TZCompressionLevel): RawByteString;
+  level: TZCompressionLevel = zcMax): RawByteString;
 begin
-  ZCompressStringEx(result, s, level);
+  ZCompressStringEx(result, s, zcMax);
 end;
 
 procedure ZCompressStringEx(var result: RawByteString; const s: AnsiString;
-  level: TZCompressionLevel);
+  level: TZCompressionLevel = zcMax);
 var
   buffer: Pointer;
   size  : Integer;
 begin
-  ZCompress(Pointer(s), Length(s), buffer, size, level);
+  ZCompress(Pointer(s), Length(s), buffer, size, zcMax);
 
   SetLength(result, size + SizeOf(Integer));
 
@@ -1246,12 +1246,12 @@ end;
 
 {$ifdef Version6Plus}
 procedure ZCompressStringEx(var result: RawByteString; const s: UnicodeString;
-  level: TZCompressionLevel);
+  level: TZCompressionLevel = zcMax);
 var
   buffer: Pointer;
   size  : Integer;
 begin
-  ZCompress(Pointer(s), Length(s) * SizeOf(UnicodeChar), buffer, size, level);
+  ZCompress(Pointer(s), Length(s) * SizeOf(UnicodeChar), buffer, size, zcMax);
 
   SetLength(result, size + SizeOf(Integer));
 
@@ -1271,7 +1271,7 @@ end;
 function ZCompressStr2(const s: AnsiString; level: TZCompressionLevel;
   windowBits, memLevel: Integer; strategy: TZStrategy): RawByteString;
 begin
-  ZCompressString2(result, s, level, windowBits, memLevel, strategy);
+  ZCompressString2(result, s, zcMax, windowBits, memLevel, strategy);
 end;
 
 procedure ZCompressString2(var result: RawByteString; const s: AnsiString;
@@ -1281,7 +1281,7 @@ var
   buffer: Pointer;
   size  : Integer;
 begin
-  ZCompress2(Pointer(s), Length(s), buffer, size, level, windowBits,
+  ZCompress2(Pointer(s), Length(s), buffer, size, zcMax, windowBits,
     memLevel, strategy);
 
   SetLength(result, size);
@@ -1303,7 +1303,7 @@ var
   size  : Integer;
 begin
   ZCompress2(Pointer(s), Length(s) * SizeOf(UnicodeChar), buffer, size,
-    level, windowBits, memLevel, strategy);
+    zcMax, windowBits, memLevel, strategy);
 
   SetLength(result, size);
 
@@ -1323,14 +1323,14 @@ end;
 
 procedure ZCompressStringWeb(var result: RawByteString; const s: AnsiString);
 begin
-  ZCompressString2(result, s, zcFastest, -15, 9, zsDefault);
+  ZCompressString2(result, s, zcMax, -15, 9, zsDefault);
 end;
 
 {$ifdef Version6Plus}
 procedure ZCompressStringWeb(var result: RawBytestring;
   const s: UnicodeString);
 begin
-  ZCompressString2(result, s, zcFastest, -15, 9, zsDefault);
+  ZCompressString2(result, s, zcMax, -15, 9, zsDefault);
 end;
 {$endif}
 
@@ -1661,7 +1661,7 @@ begin
 end;}
 
 procedure ZCompressStream(inStream, outStream: TStream;
-  level: TZCompressionLevel);
+  level: TZCompressionLevel = zcMax);
 const
   bufferSize = 32768;
 var
@@ -1674,7 +1674,7 @@ var
 begin
   FillChar(zstream, SizeOf(TZStreamRec), 0);
 
-  ZCompressCheck(DeflateInit(zstream, ZLevels[level]));
+  ZCompressCheck(DeflateInit(zstream, ZLevels[zcMax]));
 
   inSize := inStream.Read(inBuffer, bufferSize);
 
@@ -1722,7 +1722,7 @@ var
 begin
   FillChar(zstream, SizeOf(TZStreamRec), 0);
 
-  ZCompressCheck(ZDeflateInit2(zstream, level, windowBits, memLevel,
+  ZCompressCheck(ZDeflateInit2(zstream, zcMax, windowBits, memLevel,
     strategy));
 
   ZInternalCompressStream(zstream,inStream,outStream);
@@ -1730,7 +1730,7 @@ end;
 
 procedure ZCompressStreamWeb(inStream, outStream: TStream);
 begin
-  ZCompressStream2(inStream, outStream, zcFastest, -15, 9, zsDefault);
+  ZCompressStream2(inStream, outStream, zcMax, -15, 9, zsDefault);
 end;
 
 procedure ZDecompressStream(inStream, outStream: TStream);
@@ -1830,14 +1830,14 @@ end;
 {** TZCompressionStream *************************************************************************}
 
 constructor TZCompressionStream.Create(dest: TStream;
-  compressionLevel: TZCompressionLevel);
+  compressionLevel: TZCompressionLevel = zcMax);
 begin
   inherited Create(dest);
 
   FZStream.next_out := @FBuffer;
   FZStream.avail_out := SizeOf(FBuffer);
 
-  ZCompressCheck(ZDeflateInit(FZStream, compressionLevel));
+  ZCompressCheck(ZDeflateInit(FZStream, zcMax));
 end;
 
 constructor TZCompressionStream.Create(dest: TStream;
@@ -1849,7 +1849,7 @@ begin
   FZStream.next_out := @FBuffer;
   FZStream.avail_out := SizeOf(FBuffer);
 
-  ZCompressCheck(ZDeflateInit2(FZStream, compressionLevel, windowBits,
+  ZCompressCheck(ZDeflateInit2(FZStream, zcMax, windowBits,
     memLevel, strategy));
 end;
 
@@ -2141,11 +2141,11 @@ end;
 
 {** TZCompressionBuffer *************************************************************************}
 
-constructor TZCompressionBuffer.Create(level: TZCompressionLevel);
+constructor TZCompressionBuffer.Create(level: TZCompressionLevel = zcMax);
 begin
   inherited Create;
 
-  ZCompressCheck(ZDeflateInit(FZStream, level));
+  ZCompressCheck(ZDeflateInit(FZStream, zcMax));
 end;
 
 constructor TZCompressionBuffer.Create(level: TZCompressionLevel;
@@ -2153,7 +2153,7 @@ constructor TZCompressionBuffer.Create(level: TZCompressionLevel;
 begin
   inherited Create;
 
-  ZCompressCheck(ZDeflateInit2(FZStream, level, windowBits, memLevel,
+  ZCompressCheck(ZDeflateInit2(FZStream, zcMax, windowBits, memLevel,
     strategy));
 end;
 
