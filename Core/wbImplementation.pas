@@ -6623,6 +6623,7 @@ begin
       Exit;
 
   DoInit(True);
+  GetResolvedValueDef;
 
   if inherited CanAssignInternal(aIndex, aElement, False) then
     Result := inherited AssignInternal(aIndex, aElement, aOnlySK);
