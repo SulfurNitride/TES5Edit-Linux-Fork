@@ -7338,7 +7338,7 @@ begin
       wbRUnion('Layer', [
         wbRStructSK([0], 'Base Layer', [
           wbStructSK(BTXT, [1, 3], 'Base Layer', [
-            wbFormIDCk('Texture', [LTEX]),
+            wbFormIDCk('Texture', [LTEX,NULL]),  //NULL probably Shouldn't be accepted, as the CK doesn't allow you to do that.  But the Game Masters are full of em.
             wbInteger('Quadrant', itU8, wbQuadrantEnum),
             wbUnused(1),
             wbInteger('Layer', itS16)
@@ -7352,7 +7352,7 @@ begin
         ]).IncludeFlag(dfCollapsed, wbCollapseOther),
         wbRStructSK([0], 'Alpha Layer', [
           wbStructSK(ATXT, [1, 3], 'Alpha Layer Header', [
-            wbFormIDCk('Texture', [LTEX]),
+            wbFormIDCk('Texture', [LTEX,NULL]),  //NULL probably Shouldn't be accepted, as the CK doesn't allow you to do that.  But the Game Masters are full of em.
             wbInteger('Quadrant', itU8, wbQuadrantEnum),
             wbUnused(1),
             wbInteger('Layer', itS16)
