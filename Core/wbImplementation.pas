@@ -14770,12 +14770,13 @@ begin
 end;
 
 procedure TwbMainRecord.YouAreTheMaster(const aOldMaster: IwbMainRecord; const aOverrides, aReferencedBy: TDynMainRecords; aReferencedByCount: Integer);
-var
-  i      : Integer;
 begin
 {$IFDEF USE_PARALLEL_BUILD_REFS}
   Assert(not wbBuildingRefsParallel);
 {$ENDIF}
+
+  if Assigned(mrMaster) and Assigned(aOldMaster) and aOldMaster.Equals(IwbMainRecord(mrMaster)) then
+    mrMaster := nil;
 
   Assert(not Assigned(mrMaster));
   Assert(Length(mrOverrides) = 0);
@@ -14783,11 +14784,16 @@ begin
 
   SetLength(mrOverrides, Succ(Length(aOverrides)));
   mrOverrides[0] := aOldMaster;
-  for i := Low(aOverrides) to High(aOverrides) do
-    mrOverrides[Succ(i)] := aOverrides[i];
+  var lTargetIdx := 1;
+  for var lSourceIdx := Low(aOverrides) to High(aOverrides) do
+  if not Equals(aOverrides[lSourceIdx]) then begin
+    mrOverrides[lTargetIdx] := aOverrides[lSourceIdx];
+    Inc(lTargetIdx);
+  end;
+  SetLength(mrOverrides, lTargetIdx);
 
-  for i := Low(mrOverrides) to High(mrOverrides) do
-    (mrOverrides[i] as IwbMainRecordInternal).SetMaster(Self);
+  for var lSetMasterIdx := Low(mrOverrides) to High(mrOverrides) do
+    (mrOverrides[lSetMasterIdx] as IwbMainRecordInternal).SetMaster(Self);
   Exclude(mrStates, mrsOverridesSorted);
   mrMasterAndLeafs := nil;
 
@@ -14795,9 +14801,23 @@ begin
   mrReferencedBySize := Length(mrReferencedBy);
   mrReferencedByCount := aReferencedByCount;
 
-  for i := 0 to Pred(mrReferencedByCount) do
-    (mrReferencedBy[i] as IwbMainRecordInternal).SetReferencesInjected(False);
   Exclude(mrStates, mrsIsInjectedChecked);
+  var lIsInjected := GetIsInjected;
+
+  for var lRefByIdx := 0 to Pred(mrReferencedByCount) do
+    (mrReferencedBy[lRefByIdx] as IwbMainRecordInternal).SetReferencesInjected(lIsInjected);
+
+  if lIsInjected then begin
+    var lInjectionMaster: IwbFileInternal;
+    var lFile := GetFile;
+    if Assigned(lFile) then begin
+      var lFormID := GetFixedFormID;
+      var lFileID := lFormID.FileID;
+      lInjectionMaster := lFile.GetMasterForFileID(lFileId, True, False) as IwbFileInternal;
+    end;
+    if Assigned(lInjectionMaster) then
+      lInjectionMaster.InjectMainRecord(Self);
+  end;
 end;
 
 procedure TwbMainRecord.YouGotAMaster(const aMaster: IwbMainRecord);
@@ -14806,17 +14826,34 @@ begin
   Assert(not wbBuildingRefsParallel);
 {$ENDIF}
 
+  var lSelfRef := Self as IwbMainRecord;
+
+  var lIsInjected := GetIsInjected;
+  var lInjectionMaster: IwbFileInternal;
+
+  if lIsInjected then begin
+    var lFile := GetFile;
+    if Assigned(lFile) then begin
+      var lFormID := GetFixedFormID;
+      var lFileID := lFormID.FileID;
+      lInjectionMaster := lFile.GetMasterForFileID(lFileId, True, False) as IwbFileInternal;
+    end;
+  end;
+
   Assert(Assigned(aMaster));
   Assert(not Assigned(mrMaster));
+  if Assigned(lInjectionMaster) then
+    lInjectionMaster.RemoveInjectedMainRecord(Self);
+
   (aMaster as IwbMainRecordInternal).YouAreTheMaster(Self as IwbMainRecord, mrOverrides, mrReferencedBy, mrReferencedByCount);
+
   Assert(aMaster.Equals(IwbElement(mrMaster)));
   mrOverrides := nil;
   mrReferencedBy := nil;
   mrReferencedBySize := 0;
   mrReferencedByCount := 0;
-  (aMaster._File as IwbFileInternal).RemoveInjectedMainRecord(Self);
-  Include(mrStates, mrsIsInjectedChecked);
-  Exclude(mrStates, mrsIsInjected);
+
+  Exclude(mrStates, mrsIsInjectedChecked);
 end;
 
 { TwbSubRecord }

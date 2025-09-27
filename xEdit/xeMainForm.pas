@@ -1067,7 +1067,7 @@ type
     procedure SetActiveRecord(const aMainRecords: TDynMainRecords); overload;
     procedure SetActiveContainer(const aContainer: IwbDataContainer); overload;
 
-    procedure DoSetActiveRecord(const aMainRecord: IwbMainRecord); overload;
+    procedure DoSetActiveRecord(const aMainRecord: IwbMainRecord; aForce: Boolean = False); overload;
     procedure DoSetActiveRecord(const aMainRecords: TDynMainRecords); overload;
     procedure DoSetActiveContainer(const aContainer: IwbDataContainer); overload;
   protected
@@ -10140,6 +10140,16 @@ begin
   if DialogResult <> mrYes then
     Exit;
 
+  var lNewMainRecord := ActiveRecord;
+  if Element.Equals(lNewMainRecord) then
+    for var lActiveIdx := Low(ActiveRecords) to High(ActiveRecords) do
+      if     Supports(ActiveRecords[lActiveIdx].Element, IwbMainRecord, lNewMainRecord)
+         and not Element.Equals(lNewMainRecord)
+      then
+        Break;
+  if Element.Equals(lNewMainRecord) then
+    lNewMainRecord := nil;
+
   vstNav.BeginUpdate;
   try
     CheckHistoryRemove(BackHistory, MainRecord);
@@ -10167,15 +10177,17 @@ begin
     vstNav.EndUpdate;
   end;
 
-  MainRecord := ActiveRecord;
-  if Element.Equals(MainRecord) then
-    MainRecord := nil;
+  MainRecord := nil;
   DoSetActiveRecord(nil);
-
   Element := nil;
-
-  DoSetActiveRecord(MainRecord);
   InvalidateElementsTreeView(NoNodes);
+
+  if Assigned(lNewMainRecord) then
+    JumpTo(lNewMainRecord, True)
+  else begin
+    DoSetActiveRecord(nil, True);
+    vstView.Refresh;
+  end;
 end;
 
 procedure TfrmMain.mniNavGenerateLODClick(Sender: TObject);
@@ -16587,7 +16599,7 @@ begin
   end;
 end;
 
-procedure TfrmMain.DoSetActiveRecord(const aMainRecord: IwbMainRecord);
+procedure TfrmMain.DoSetActiveRecord(const aMainRecord: IwbMainRecord; aForce: Boolean);
 var
   i                           : Integer;
   ViewLabel: string;
@@ -16601,8 +16613,9 @@ begin
   ComparingSiblings := False;
   CompareRecords := nil;
 
-  if (ActiveRecord = aMainRecord) and (Assigned(ActiveRecord) = (Length(ActiveRecords) > 0)) then
-    Exit;
+  if not aForce then
+    if (ActiveRecord = aMainRecord) and (Assigned(ActiveRecord) = (Length(ActiveRecords) > 0)) then
+      Exit;
 
   Inc(ActiveRecordLock);
   lvReferencedBy.Items.BeginUpdate;
