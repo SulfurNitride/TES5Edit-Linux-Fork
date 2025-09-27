@@ -1878,22 +1878,33 @@ function wbTemplateActorDontShow(const aElement: IwbElement): Boolean;
 begin
   Result := False;
 
-  var lSubRecord := aElement.ContainingSubRecord;
-  if not Assigned(lSubRecord) then
+  if not Assigned(aElement) then
     Exit;
 
-  var shrInt : Integer;
-  for var I := 0 to Pred(lSubRecord.ElementCount - 1) do
-    if aElement = lSubRecord.Elements[I] then
-      shrInt := I
-    else
-      Continue;
+  var lSubRecord: IwbContainerElementRef;
+  if not Supports(aElement.ContainingSubRecord, IwbContainerElementRef, lSubRecord) then
+    Exit;
 
   var lMainRecord := aElement.ContainingMainRecord;
   if not Assigned(lMainRecord) then
     Exit;
 
-  Result := (Cardinal(lMainRecord.ElementNativeValues['ACBS\Template Flags']) shr shrInt and 1) = 0;
+  var lTemplateFlags := Cardinal(lMainRecord.ElementNativeValues['ACBS\Template Flags']);
+  if lTemplateFlags = 0 then
+    Exit(True);
+
+  var shrInt := -1;
+  for var lIdx := 0 to Pred(lSubRecord.ElementCount) do
+    if aElement.Equals(lSubRecord.Elements[lIdx]) then
+    begin
+      shrInt := lIdx;
+      Break;
+    end;
+
+  if shrInt < 0 then
+    Exit;
+
+  Result := ((lTemplateFlags shr shrInt) and 1) = 0;
 end;
 
 function wbTemplateActorsDontShow(const aElement: IwbElement): Boolean;

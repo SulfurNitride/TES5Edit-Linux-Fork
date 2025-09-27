@@ -2806,29 +2806,27 @@ begin
 end;
 
 function wbOMODDataPropertyValue1Decider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
-var
-  Container     : IwbContainer;
-  ValueType     : Integer;
-  PropName      : string;
 begin
   Result := 0;
 
-  if not wbTryGetContainerFromUnion(aElement, Container) then
+  var lContainer: IwbContainer;
+  if not wbTryGetContainerFromUnion(aElement, lContainer) then
     Exit;
 
-  ValueType := Container.ElementNativeValues['Value Type'];
-  PropName := Container.ElementEditValues['Property'];
+  var lValueType := lContainer.ElementNativeValues['Value Type'];
 
-  case ValueType of
+  case lValueType of
     0: Result := 1;
     1: Result := 2;
     2: Result := 3;
     4, 6: Result := 4;
     5: begin
-      if PropName = 'SoundLevel'    then Result := 6 else
-      if PropName = 'StaggerValue'  then Result := 7 else
-      if PropName = 'HitBehaviour'  then Result := 8 else
-      Result := 5;
+      var lPropName := lContainer.ElementEditValues['Property'];
+
+      if lPropName = 'SoundLevel'    then Result := 6 else
+      if lPropName = 'StaggerValue'  then Result := 7 else
+      if lPropName = 'HitBehaviour'  then Result := 8 else
+                                          Result := 5;
     end;
   end;
 end;

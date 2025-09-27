@@ -817,7 +817,7 @@ begin
     wbGameName         := 'Morrowind';
     wbGameSteamID      := '22320';
     (**)
-    ToolModes          := (**)[tmView, tmEdit];(** )wbAlwaysMode - [tmLODgen];(**)
+    ToolModes          := (**)[tmView];(** )wbAlwaysMode - [tmLODgen];(**)
     ToolSources        := [tsPlugins];
     (**)
   end

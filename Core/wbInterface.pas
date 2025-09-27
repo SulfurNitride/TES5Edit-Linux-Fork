@@ -20887,11 +20887,12 @@ end;
 
 function TwbMainRecordStructFlags.IsUpdate: Boolean;
 begin
-  Result := wbIsUpdateSupported and
-    (
-    (wbIsStarfield and ((_Flags and $00000200) <> 0)) or
-    ((wbGameMode in [gmTES5VR]) and ((_Flags and $100000) <> 0))
-    );
+  Result := 
+        wbIsUpdateSupported 
+    and (
+             (wbIsStarfield and ((_Flags and $00000200) <> 0)) 
+          or (wbVRESL       and ((_Flags and $00100000) <> 0))
+        );
 end;
 
 function TwbMainRecordStructFlags.IsESM: Boolean;
@@ -20983,15 +20984,15 @@ begin
     if aValue then begin
       if wbIsStarfield then
         _Flags := _Flags or $00000200
-      else if (wbGameMode in [gmTES5VR,gmFO4VR]) then
-        _Flags := _Flags or $100000;
+      else if wbVRESL then
+        _Flags := _Flags or $00100000;
       SetLight(False);
       SetMedium(False);
     end else
       if wbIsStarfield then
         _Flags := _Flags and not $00000200
-      else if (wbGameMode in [gmTES5VR,gmFO4VR]) then
-        _Flags := _Flags and not $100000;
+      else if wbVRESL then
+        _Flags := _Flags and not $00100000;
 end;
 
 procedure TwbMainRecordStructFlags.SetESM(aValue: Boolean);

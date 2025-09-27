@@ -2175,31 +2175,34 @@ begin
   if not Assigned(lNAME) then
     Exit;
 
-  var lSig := (lNAME.LinksTo as IwbMainRecord).Signature;
+  if not Supports(lNAME.LinksTo, IwbMainRecord, lMainRecord) then
+    Exit;
+
+  var lSig := lMainRecord.Signature;
   if lSig = ACTI then
-    Result := 1 else
-  if (lSig = ADDN) or
-     (lSig = ARTO) or
-     (lSig = ASPC) or
-     (lSig = FLOR) or
-     (lSig = FURN) or
-     (lSig = IDLM) or
-     (lSig = SOUN) or
-     (lSig = TACT) or
-     (lSig = TXST)
+    Result := 1
+  else if (lSig = ADDN) or
+          (lSig = ARTO) or
+          (lSig = ASPC) or
+          (lSig = FLOR) or
+          (lSig = FURN) or
+          (lSig = IDLM) or
+          (lSig = SOUN) or
+          (lSig = TACT) or
+          (lSig = TXST)
   then
-    Result := 2 else
-  if (lSig = ALCH) or
-     (lSig = AMMO) or
-     (lSig = APPA) or
-     (lSig = ARMO) or
-     (lSig = BOOK) or
-     (lSig = INGR) or
-     (lSig = KEYM) or
-     (lSig = MISC) or
-     (lSig = SCRL) or
-     (lSig = SLGM) or
-     (lSig = WEAP)
+    Result := 2
+  else if (lSig = ALCH) or
+          (lSig = AMMO) or
+          (lSig = APPA) or
+          (lSig = ARMO) or
+          (lSig = BOOK) or
+          (lSig = INGR) or
+          (lSig = KEYM) or
+          (lSig = MISC) or
+          (lSig = SCRL) or
+          (lSig = SLGM) or
+          (lSig = WEAP)
   then
     Result := 3
   else if lSig = CONT then
@@ -11222,7 +11225,7 @@ begin
       wbCreationClubContentFileName := 'Skyrim.ccc';
   end;
   wbHEDRVersion := 1.7;
-  if (wbGameMode in [gmSSE, gmEnderalSE]) then
+  if wbGameMode in [gmSSE, gmEnderalSE] then
     wbHEDRVersion := 1.71;
 end;
 

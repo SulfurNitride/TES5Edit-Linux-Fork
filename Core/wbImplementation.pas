@@ -16760,13 +16760,6 @@ var
       if aSource.LoadOrderFormID.ToCardinal = $25 then
         Exit;
 
-      if (aSource.Signature = 'PKIN') and not aAsNew then begin
-        var lSourceName := aElement.FullPath;
-        var lTargetName := GetFullPath;
-        wbProgress('Error adding [%s] to [%s]: %s', [lSourceName, lTargetName, 'Pack-In overrides don''t work correctly in Starfield']);
-        Exit;
-      end;
-
       if aElement.ContainsReflection then begin
         var lSourceName := aElement.FullPath;
         var lTargetName := GetFullPath;
