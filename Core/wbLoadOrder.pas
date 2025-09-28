@@ -199,7 +199,7 @@ begin
     if Result = 0 then begin
       Result := CmpI32(a.miCCIndex, b.miCCIndex);
       if Result = 0 then begin
-        if (mfIsESM in a.miFlags) = (mfIsESM in b.miFlags) or (wbGameMode in [gmTES4, gmTES4R]) then begin
+        if ((mfIsESM in a.miFlags) = (mfIsESM in b.miFlags)) or (wbGameMode in [gmTES4, gmTES4R]) then begin
           Result := CmpI32(a.miPluginsTxtIndex, b.miPluginsTxtIndex);
           if Result = 0 then begin
             Result := CmpDouble(a.miDateTime, b.miDateTime);
