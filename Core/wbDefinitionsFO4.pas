@@ -236,24 +236,25 @@ type
     {29} ptEquipType,       //EQUP
     {30} ptEventData,       //LCTN, KYWD or FLST
     {31} ptFaction,         //FACT
-	  {32} ptFormList,        //FLST
-    {33} ptFurniture,       //FURN
-    {34} ptGlobal,          //GLOB
-    {35} ptIdleForm,        //IDLE
-    {36} ptKeyword,         //KYWD
-    {37} ptLocation,        //LCTN
-    {38} ptLocationRefType, //LCRT
-  	{39} ptOwner,           //FACT, NPC_
-	  {40} ptPackage,         //PACK
-	  {41} ptPerk,            //PERK
-	  {42} ptQuest,           //QUST
-	  {43} ptRace,            //RACE
-	  {44} ptReference,       //REFR, ACHR
-    {45} ptRegion,          //REGN
-    {46} ptScene,           //SCEN
-    {47} ptVoiceType,       //VTYP
-    {48} ptWeather,         //WTHR
-    {49} ptWorldspace       //WRLD
+    {32} ptFactionNull,     //FACT,NULL
+    {33} ptFormList,        //FLST
+    {34} ptFurniture,       //FURN
+    {35} ptGlobal,          //GLOB
+    {36} ptIdleForm,        //IDLE
+    {37} ptKeyword,         //KYWD
+    {38} ptLocation,        //LCTN
+    {39} ptLocationRefType, //LCRT
+    {40} ptOwner,           //FACT, NPC_
+    {41} ptPackage,         //PACK
+    {42} ptPerk,            //PERK
+    {43} ptQuest,           //QUST
+    {44} ptRace,            //RACE
+    {45} ptReference,       //REFR, ACHR
+    {46} ptRegion,          //REGN
+    {47} ptScene,           //SCEN
+    {48} ptVoiceType,       //VTYP
+    {49} ptWeather,         //WTHR
+    {50} ptWorldspace       //WRLD
   );
 
   PConditionFunction = ^TConditionFunction;
@@ -456,8 +457,8 @@ const
     (Index: 370; Name: 'IsTalkingActivatorActor'; Paramtype1: ptActor),
     (Index: 372; Name: 'IsInList'; ParamType1: ptFormList),
     (Index: 373; Name: 'GetStolenItemValue'; Paramtype1: ptFaction),
-    (Index: 375; Name: 'GetCrimeGoldViolent'; ParamType1: ptFaction),
-    (Index: 376; Name: 'GetCrimeGoldNonviolent'; ParamType1: ptFaction),
+    (Index: 375; Name: 'GetCrimeGoldViolent'; ParamType1: ptFactionNull),
+    (Index: 376; Name: 'GetCrimeGoldNonviolent'; ParamType1: ptFactionNull),
     (Index: 378; Name: 'IsOwnedBy'; Paramtype1: ptActor),
     (Index: 380; Name: 'GetCommandDistance'),
     (Index: 381; Name: 'GetCommandLocationDistance'),
@@ -495,7 +496,7 @@ const
     (Index: 453; Name: 'GetPlayerTeammate'),
     (Index: 454; Name: 'GetPlayerTeammateCount'),
     (Index: 458; Name: 'GetActorCrimePlayerEnemy'),
-    (Index: 459; Name: 'GetCrimeGold'; ParamType1: ptFaction),
+    (Index: 459; Name: 'GetCrimeGold'; ParamType1: ptFactionNull),
     (Index: 463; Name: 'IsPlayerGrabbedRef'; ParamType1: ptReference),
     (Index: 465; Name: 'GetKeywordItemCount'; Paramtype1: ptKeyword),
     (Index: 470; Name: 'GetDestructionStage'),
@@ -5586,24 +5587,25 @@ begin
     {29} wbFormIDCkNoReach('Equip Type', [EQUP]),
     {30} wbFormIDCkNoReach('Event Data', [FLST,KYWD,LCTN]),
     {31} wbFormIDCkNoReach('Faction', [FACT]),
-    {32} wbFormIDCkNoReach('Form List', [FLST]),
-    {33} wbFormIDCkNoReach('Furniture', [FLST,FURN]),
-    {34} wbFormIDCkNoReach('Global', [GLOB]),
-    {35} wbFormIDCkNoReach('Idle', [IDLE]),
-    {36} wbFormIDCkNoReach('Keyword', [FLST,KYWD,NULL]),
-    {37} wbFormIDCkNoReach('Location', [LCTN]),
-    {38} wbFormIDCkNoReach('Location Ref Type', [LCRT]),
-    {39} wbFormIDCkNoReach('Owner', [FACT,NPC_]),
-    {40} wbFormIDCkNoReach('Package', [PACK]),
-    {41} wbFormIDCkNoReach('Perk', [PERK]),
-    {42} wbFormIDCkNoReach('Quest', [QUST]).AddOverlay(wbConditionQuestOverlay),
-    {43} wbFormIDCkNoReach('Race', [RACE]),
-    {44} wbFormIDCkNoReach('Reference', [ACHR,PARW,PBAR,PBEA,PCON,PFLA,PGRE,PHZD,PLYR,PMIS,REFR,TRGT], True),
-    {45} wbFormIDCkNoReach('Region', [REGN]),
-    {46} wbFormIDCkNoReach('Scene', [SCEN]),
-    {47} wbFormIDCkNoReach('Voice Type', [VTYP,FLST], [VTYP]),
-    {48} wbFormIDCkNoReach('Weather', [WTHR]),
-    {49} wbFormIDCkNoReach('Worldspace', [WRLD,FLST], [WRLD])
+    {32} wbFormIDCkNoReach('Faction', [FACT,NULL]),
+    {33} wbFormIDCkNoReach('Form List', [FLST]),
+    {34} wbFormIDCkNoReach('Furniture', [FLST,FURN]),
+    {35} wbFormIDCkNoReach('Global', [GLOB]),
+    {36} wbFormIDCkNoReach('Idle', [IDLE]),
+    {37} wbFormIDCkNoReach('Keyword', [FLST,KYWD,NULL]),
+    {38} wbFormIDCkNoReach('Location', [LCTN]),
+    {39} wbFormIDCkNoReach('Location Ref Type', [LCRT]),
+    {40} wbFormIDCkNoReach('Owner', [FACT,NPC_]),
+    {41} wbFormIDCkNoReach('Package', [PACK]),
+    {42} wbFormIDCkNoReach('Perk', [PERK]),
+    {43} wbFormIDCkNoReach('Quest', [QUST]).AddOverlay(wbConditionQuestOverlay),
+    {44} wbFormIDCkNoReach('Race', [RACE]),
+    {45} wbFormIDCkNoReach('Reference', [ACHR,PARW,PBAR,PBEA,PCON,PFLA,PGRE,PHZD,PLYR,PMIS,REFR,TRGT], True),
+    {46} wbFormIDCkNoReach('Region', [REGN]),
+    {47} wbFormIDCkNoReach('Scene', [SCEN]),
+    {48} wbFormIDCkNoReach('Voice Type', [VTYP,FLST], [VTYP]),
+    {49} wbFormIDCkNoReach('Weather', [WTHR]),
+    {50} wbFormIDCkNoReach('Worldspace', [WRLD,FLST], [WRLD])
   ];
 
   wbConditions :=

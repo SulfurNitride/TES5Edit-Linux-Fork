@@ -335,28 +335,29 @@ type
     {39} ptEquipType,           //EQUP
     {40} ptEventData,           //FLST,KYWD,LCTN
     {41} ptFaction,             //FACT
-    {42} ptFormList,            //FLST
-    {43} ptFurniture,           //FURN
-    {44} ptGlobal,              //GLOB
-    {45} ptIdleForm,            //IDLE
-    {46} ptInventoryObject,     //sigBaseObjects
-    {47} ptKeyword,             //FLST,KYWD
-    {48} ptLocation,            //LCTN
-    {49} ptLocationRefType,     //LCRT
-    {50} ptMagicEffect,         //MGEF
-    {51} ptOwner,               //FACT,NPC_
-    {52} ptPackage,             //PACK
-    {53} ptPerk,                //PERK
-    {54} ptPerkCard,            //PCRD
-    {55} ptQuest,               //QUST
-    {56} ptRace,                //RACE
-    {57} ptReference,           //ACHR,REFR
-    {58} ptRegion,              //REGN
-    {59} ptScene,               //SCEN
-    {60} ptSpell,               //SPEL
-    {61} ptVoiceType,           //VTYP
-    {62} ptWeather,             //WTHR
-    {63} ptWorldspace           //WRLD
+    {42} ptFactionNull,         //FACT,NULL
+    {43} ptFormList,            //FLST
+    {44} ptFurniture,           //FURN
+    {45} ptGlobal,              //GLOB
+    {46} ptIdleForm,            //IDLE
+    {47} ptInventoryObject,     //sigBaseObjects
+    {48} ptKeyword,             //FLST,KYWD
+    {49} ptLocation,            //LCTN
+    {50} ptLocationRefType,     //LCRT
+    {51} ptMagicEffect,         //MGEF
+    {52} ptOwner,               //FACT,NPC_
+    {53} ptPackage,             //PACK
+    {54} ptPerk,                //PERK
+    {55} ptPerkCard,            //PCRD
+    {56} ptQuest,               //QUST
+    {57} ptRace,                //RACE
+    {58} ptReference,           //ACHR,REFR
+    {59} ptRegion,              //REGN
+    {60} ptScene,               //SCEN
+    {61} ptSpell,               //SPEL
+    {62} ptVoiceType,           //VTYP
+    {63} ptWeather,             //WTHR
+    {64} ptWorldspace           //WRLD
   );
 
   PConditionFunction = ^TConditionFunction;
@@ -564,8 +565,8 @@ const
     (Index: 371; Name: 'IsOnChems'),
     (Index: 372; Name: 'IsInList'; ParamType1: ptFormList),
     (Index: 373; Name: 'GetStolenItemValue'; ParamType1: ptFaction),
-    (Index: 375; Name: 'GetCrimeGoldViolent'; ParamType1: ptFaction),
-    (Index: 376; Name: 'GetCrimeGoldNonviolent'; ParamType1: ptFaction),
+    (Index: 375; Name: 'GetCrimeGoldViolent'; ParamType1: ptFactionNull),
+    (Index: 376; Name: 'GetCrimeGoldNonviolent'; ParamType1: ptFactionNull),
     (Index: 378; Name: 'IsOwnedBy'; ParamType1: ptActor),
     (Index: 380; Name: 'GetCommandDistance'),
     (Index: 381; Name: 'GetCommandLocationDistance'),
@@ -603,7 +604,7 @@ const
     (Index: 453; Name: 'GetPlayerTeammate'),
     (Index: 454; Name: 'GetPlayerTeammateCount'),
     (Index: 458; Name: 'GetActorCrimePlayerEnemy'),
-    (Index: 459; Name: 'GetCrimeGold'; ParamType1: ptFaction),
+    (Index: 459; Name: 'GetCrimeGold'; ParamType1: ptFactionNull),
     (Index: 463; Name: 'IsPlayerGrabbedRef'; ParamType1: ptReference),
     (Index: 465; Name: 'GetKeywordItemCount'; ParamType1: ptKeyword),
     (Index: 470; Name: 'GetDestructionStage'),
@@ -7088,28 +7089,29 @@ begin
     {39} wbFormIDCkNoReach('Equip Type', [EQUP]),
     {40} wbFormIDCkNoReach('Event Data', [FLST,KYWD,LCTN]),
     {41} wbFormIDCkNoReach('Faction', [FACT]),
-    {42} wbFormIDCkNoReach('Form List', [FLST]),
-    {43} wbFormIDCkNoReach('Furniture', [FURN,FLST]),
-    {44} wbFormIDCkNoReach('Global', [GLOB]),
-    {45} wbFormIDCkNoReach('Idle', [IDLE]),
-    {46} wbFormIDCkNoReach('Inventory Object', sigBaseObjects),
-    {47} wbFormIDCkNoReach('Keyword', [FLST,KYWD,NULL]),
-    {48} wbFormIDCkNoReach('Location', [LCTN]),
-    {49} wbFormIDCkNoReach('Location Ref Type', [LCRT]),
-    {50} wbFormIDCkNoReach('Magic Effect', [MGEF]),
-    {51} wbFormIDCkNoReach('Owner', [FACT,NPC_,NULL]),
-    {52} wbFormIDCkNoReach('Package', [PACK]),
-    {53} wbFormIDCkNoReach('Perk', [PERK]),
-    {54} wbFormIDCkNoReach('Perk Card', [PCRD]),
-    {55} wbFormIDCkNoReach('Quest', [QUST]).AddOverlay(wbConditionQuestOverlay),
-    {56} wbFormIDCkNoReach('Race', [RACE]),
-    {57} wbFormIDCkNoReach('Reference', [ACHR,PARW,PBAR,PBEA,PCON,PFLA,PGRE,PHZD,PLYR,PMIS,REFR,TRGT], True),
-    {58} wbFormIDCkNoReach('Region', [REGN]),
-    {59} wbFormIDCkNoReach('Scene', [SCEN]),
-    {60} wbFormIDCkNoReach('Spell', [SPEL]),
-    {61} wbFormIDCkNoReach('Voice Type', [FLST,VTYP]),
-    {62} wbFormIDCkNoReach('Weather', [WTHR]),
-    {63} wbFormIDCkNoReach('Worldspace', [WRLD,FLST])
+    {42} wbFormIDCkNoReach('Faction', [FACT,NULL]),
+    {43} wbFormIDCkNoReach('Form List', [FLST]),
+    {44} wbFormIDCkNoReach('Furniture', [FURN,FLST]),
+    {45} wbFormIDCkNoReach('Global', [GLOB]),
+    {46} wbFormIDCkNoReach('Idle', [IDLE]),
+    {47} wbFormIDCkNoReach('Inventory Object', sigBaseObjects),
+    {48} wbFormIDCkNoReach('Keyword', [FLST,KYWD,NULL]),
+    {49} wbFormIDCkNoReach('Location', [LCTN]),
+    {50} wbFormIDCkNoReach('Location Ref Type', [LCRT]),
+    {51} wbFormIDCkNoReach('Magic Effect', [MGEF]),
+    {52} wbFormIDCkNoReach('Owner', [FACT,NPC_,NULL]),
+    {53} wbFormIDCkNoReach('Package', [PACK]),
+    {54} wbFormIDCkNoReach('Perk', [PERK]),
+    {55} wbFormIDCkNoReach('Perk Card', [PCRD]),
+    {56} wbFormIDCkNoReach('Quest', [QUST]).AddOverlay(wbConditionQuestOverlay),
+    {57} wbFormIDCkNoReach('Race', [RACE]),
+    {58} wbFormIDCkNoReach('Reference', [ACHR,PARW,PBAR,PBEA,PCON,PFLA,PGRE,PHZD,PLYR,PMIS,REFR,TRGT], True),
+    {59} wbFormIDCkNoReach('Region', [REGN]),
+    {60} wbFormIDCkNoReach('Scene', [SCEN]),
+    {61} wbFormIDCkNoReach('Spell', [SPEL]),
+    {62} wbFormIDCkNoReach('Voice Type', [FLST,VTYP]),
+    {63} wbFormIDCkNoReach('Weather', [WTHR]),
+    {64} wbFormIDCkNoReach('Worldspace', [WRLD,FLST])
   ];
 
   wbConditions :=

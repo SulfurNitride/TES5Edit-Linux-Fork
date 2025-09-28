@@ -114,32 +114,33 @@ type
     {38} ptEquipType,       // EQUP
     {39} ptEventData,       // FLST,LCTN,KYWD
     {40} ptFaction,         // FACT
-    {41} ptFormList,        // FLST
-    {42} ptFurniture,       // FURN
-    {43} ptGamePlayOption,  // GPOF
-    {44} ptGlobal,          // GLOB
-    {45} ptIdleForm,        // IDLE
-    {46} ptInventoryObject, // sigBaseObjects
-    {47} ptKeyword,         // KYWD
-    {48} ptLocation,        // LCTN
-    {49} ptLocationRefType, // LCRT
-    {50} ptMagicEffect,     // MGEF
-    {51} ptOwner,           // FACT, NPC_
-    {52} ptPackage,         // PACK
-    {53} ptPerk,            // PERK
-    {54} ptPlanet,          // PNDT
-    {55} ptQuest,           // QUST
-    {56} ptRace,            // RACE
-    {57} ptReference,       // ACHR,PARW,PBAR,PBEA,PCON,PFLA,PGRE,PHZD,PLYR,PMIS,REFR,TRGT
-    {58} ptRegion,          // REGN
-    {59} ptResearchProject, // RSPJ
-    {60} ptResource,        // IRES
-    {61} ptScene,           // SCEN
-    {62} ptSpeechChallenge, // SPCH
-    {63} ptSnapTemplate,    // STMP
-    {64} ptVoiceType,       // VTYP
-    {65} ptWeather,         // WTHR
-    {66} ptWorldspace       // WRLD
+    {41} ptFactionNull,     // FACT,NULL
+    {42} ptFormList,        // FLST
+    {43} ptFurniture,       // FURN
+    {44} ptGamePlayOption,  // GPOF
+    {45} ptGlobal,          // GLOB
+    {46} ptIdleForm,        // IDLE
+    {47} ptInventoryObject, // sigBaseObjects
+    {48} ptKeyword,         // KYWD
+    {49} ptLocation,        // LCTN
+    {50} ptLocationRefType, // LCRT
+    {51} ptMagicEffect,     // MGEF
+    {52} ptOwner,           // FACT, NPC_
+    {53} ptPackage,         // PACK
+    {54} ptPerk,            // PERK
+    {55} ptPlanet,          // PNDT
+    {56} ptQuest,           // QUST
+    {57} ptRace,            // RACE
+    {58} ptReference,       // ACHR,PARW,PBAR,PBEA,PCON,PFLA,PGRE,PHZD,PLYR,PMIS,REFR,TRGT
+    {59} ptRegion,          // REGN
+    {60} ptResearchProject, // RSPJ
+    {61} ptResource,        // IRES
+    {62} ptScene,           // SCEN
+    {63} ptSpeechChallenge, // SPCH
+    {64} ptSnapTemplate,    // STMP
+    {65} ptVoiceType,       // VTYP
+    {66} ptWeather,         // WTHR
+    {67} ptWorldspace       // WRLD
   );
 
   PConditionFunction = ^TConditionFunction;
@@ -343,8 +344,8 @@ const
     (Index: 370; Name: 'IsTalkingActivatorActor'; ParamType1: ptActor),                                                                                     //   186
     (Index: 372; Name: 'IsInList'; ParamType1: ptFormList),                                                                                                 //   187
     (Index: 373; Name: 'GetStolenItemValue'; ParamType1: ptFaction),                                                                                        //   188
-    (Index: 375; Name: 'GetCrimeGoldViolent'; ParamType1: ptFaction),                                                                                       //   189
-    (Index: 376; Name: 'GetCrimeGoldNonviolent'; ParamType1: ptFaction),                                                                                    //   190
+    (Index: 375; Name: 'GetCrimeGoldViolent'; ParamType1: ptFactionNull),                                                                                       //   189
+    (Index: 376; Name: 'GetCrimeGoldNonviolent'; ParamType1: ptFactionNull),                                                                                    //   190
     (Index: 378; Name: 'IsOwnedBy'; ParamType1: ptActor),                                                                                                   //   191
     (Index: 380; Name: 'GetCommandDistance'),                                                                                                               //   192
     (Index: 381; Name: 'GetCommandLocationDistance'),                                                                                                       //   193
@@ -384,7 +385,7 @@ const
     (Index: 453; Name: 'GetPlayerTeammate'),                                                                                                                //   227
     (Index: 454; Name: 'GetPlayerTeammateCount'),                                                                                                           //   228
     (Index: 458; Name: 'GetActorCrimePlayerEnemy'),                                                                                                         //   229
-    (Index: 459; Name: 'GetCrimeGold'; ParamType1: ptFaction),                                                                                              //   230
+    (Index: 459; Name: 'GetCrimeGold'; ParamType1: ptFactionNull),                                                                                              //   230
     (Index: 463; Name: 'IsPlayerGrabbedRef'; ParamType1: ptReference),                                                                                //   231
     (Index: 465; Name: 'GetKeywordItemCount'; ParamType1: ptKeyword),                                                                                       //   232
     (Index: 470; Name: 'GetDestructionStage'),                                                                                                              //   233
@@ -5573,32 +5574,33 @@ begin
     {38} wbFormIDCkNoReach('Equip Type', [EQUP]),
     {39} wbFormIDCkNoReach('Event Data', [KYWD,LCTN,NULL]),
     {40} wbFormIDCkNoReach('Faction', [FACT]),
-    {41} wbFormIDCkNoReach('Form List', [FLST]),
-    {42} wbFormIDCkNoReach('Furniture', [FURN, FLST], [FURN]),
-    {43} wbFormIDCkNoReach('Gameplay Option', [GPOF]),
-    {44} wbFormIDCkNoReach('Global', [GLOB]),
-    {45} wbFormIDCkNoReach('Idle', [IDLE]),
-    {46} wbFormIDCkNoReach('Inventory Object', sigBaseObjects),
-    {47} wbFormIDCkNoReach('Keyword', [KYWD, FLST, NULL]),
-    {48} wbFormIDCkNoReach('Location', [LCTN]),
-    {49} wbFormIDCkNoReach('Location Ref Type', [LCRT]),
-    {50} wbFormIDCkNoReach('Magic Effect', [MGEF]),
-    {51} wbFormIDCkNoReach('Owner', [FACT, NPC_]),
-    {52} wbFormIDCkNoReach('Package', [PACK]),
-    {53} wbFormIDCkNoReach('Perk', [PERK]),
-    {54} wbFormIDCkNoReach('Planet', [PNDT]),
-    {55} wbFormIDCkNoReach('Quest', [QUST]).AddOverlay(wbConditionQuestOverlay),
-    {56} wbFormIDCkNoReach('Race', [RACE]),
-    {57} wbFormIDCkNoReach('Reference', [ACHR,PARW,PBAR,PBEA,PCON,PFLA,PGRE,PHZD,PLYR,PMIS,REFR,TRGT], True),
-    {58} wbFormIDCkNoReach('Region', [REGN]),
-    {59} wbFormIDCkNoReach('Research Project', [RSPJ]),
-    {60} wbFormIDCkNoReach('Resource', [IRES]),
-    {61} wbFormIDCkNoReach('Scene', [SCEN]),
-    {62} wbFormIDCkNoReach('Speech Challenge', [SPCH]),
-    {63} wbFormIDCkNoReach('Snap Template', [STMP]),
-    {64} wbFormIDCkNoReach('Voice Type', [FLST,VTYP], [VTYP]),
-    {65} wbFormIDCkNoReach('Weather', [WTHR]),
-    {66} wbFormIDCkNoReach('Worldspace', [FLST,WRLD], [WRLD])
+    {41} wbFormIDCkNoReach('Faction', [FACT,NULL]),
+    {42} wbFormIDCkNoReach('Form List', [FLST]),
+    {43} wbFormIDCkNoReach('Furniture', [FURN, FLST], [FURN]),
+    {44} wbFormIDCkNoReach('Gameplay Option', [GPOF]),
+    {45} wbFormIDCkNoReach('Global', [GLOB]),
+    {46} wbFormIDCkNoReach('Idle', [IDLE]),
+    {47} wbFormIDCkNoReach('Inventory Object', sigBaseObjects),
+    {48} wbFormIDCkNoReach('Keyword', [KYWD, FLST, NULL]),
+    {49} wbFormIDCkNoReach('Location', [LCTN]),
+    {50} wbFormIDCkNoReach('Location Ref Type', [LCRT]),
+    {51} wbFormIDCkNoReach('Magic Effect', [MGEF]),
+    {52} wbFormIDCkNoReach('Owner', [FACT, NPC_]),
+    {53} wbFormIDCkNoReach('Package', [PACK]),
+    {54} wbFormIDCkNoReach('Perk', [PERK]),
+    {55} wbFormIDCkNoReach('Planet', [PNDT]),
+    {56} wbFormIDCkNoReach('Quest', [QUST]).AddOverlay(wbConditionQuestOverlay),
+    {57} wbFormIDCkNoReach('Race', [RACE]),
+    {58} wbFormIDCkNoReach('Reference', [ACHR,PARW,PBAR,PBEA,PCON,PFLA,PGRE,PHZD,PLYR,PMIS,REFR,TRGT], True),
+    {59} wbFormIDCkNoReach('Region', [REGN]),
+    {60} wbFormIDCkNoReach('Research Project', [RSPJ]),
+    {61} wbFormIDCkNoReach('Resource', [IRES]),
+    {62} wbFormIDCkNoReach('Scene', [SCEN]),
+    {63} wbFormIDCkNoReach('Speech Challenge', [SPCH]),
+    {64} wbFormIDCkNoReach('Snap Template', [STMP]),
+    {65} wbFormIDCkNoReach('Voice Type', [FLST,VTYP], [VTYP]),
+    {66} wbFormIDCkNoReach('Weather', [WTHR]),
+    {67} wbFormIDCkNoReach('Worldspace', [FLST,WRLD], [WRLD])
   ];
 
   var wbConditions :=
