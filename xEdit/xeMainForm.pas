@@ -783,7 +783,6 @@ type
     vstNavLastChangeNode: Pointer;
 
     vstNavLastCheckedForChanges : UInt64;
-    vstNavReInit : Boolean;
     NavFocusedElement : IwbElement;
 
     HideRemoveMessage : Boolean;
@@ -4457,7 +4456,6 @@ begin
 
     Node := vstNav.GetFirstInitialized;
     while Assigned(Node) do begin
-      vstNavReInit := False;
       NodeData := vstNav.GetNodeData(Node);
       with NodeData^ do begin
         if Assigned(Element) and (Element.ElementGeneration <> ElementGen) or
@@ -4468,26 +4466,22 @@ begin
           OrgConflictAll := caUnknown;
           OrgConflictThis := ctUnknown;
 
-          vstNavReInit := True;
-
-          _File := nil;
+           _File := nil;
 
           if Assigned(Element) then
             _File := Element._File
           else
             _File := Container._File;
 
-          if _File.FileStates * [fsIsGameMaster, fsIsHardcoded] = [] then
-            vstNav.ReinitNode(Node, True);
+          if Assigned(_File) then
+            if _File.FileStates * [fsIsGameMaster, fsIsHardcoded] = [] then
+              vstNav.ReinitNode(Node, True);
 
           vstNav.InvalidateNode(Node);
         end;
       end;
 
-     if vstNavReInit then
-        Node := vstNav.GetNextSiblingNoInit(Node)
-      else
-        Node := vstNav.GetNextInitialized(Node);
+      Node := vstNav.GetNextInitialized(Node);
     end;
 
     NodeData := vstNav.GetNodeData(vstNav.FocusedNode);
@@ -16672,8 +16666,15 @@ begin
             end;
             for I := Low(ActiveRecords) to High(ActiveRecords) do
               with Add do begin
-                Text := ActiveRecords[i].Element._File.Name;
-                Hint := ActiveRecords[i].Element._File.Name;
+                var lElement := ActiveRecords[i].Element;
+                if Assigned(lElement) then begin
+                  var lFile := lElement._File;
+                  if Assigned(lFile) then begin
+                    var lFileName := lFile.Name;
+                    Text := lFileName;
+                    Hint := lFileName;
+                  end;
+                end;
                 Style := vsOwnerDraw;
                 Width := Trunc(ColumnWidth * (GetCurrentPPIScreen / PixelsPerInch));
                 MinWidth := Width div 2;
