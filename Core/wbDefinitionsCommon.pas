@@ -154,11 +154,12 @@ function wbPlacedAddInfo(const aMainRecord: IwbMainRecord): string;
 function wbROADAddInfo(const aMainRecord: IwbMainRecord): string;
 function wbSCENAddInfo(const aMainRecord: IwbMainRecord): string;
 
-{>>> After Load Callbacks <<<} //12
+{>>> After Load Callbacks <<<} //13
 procedure wbACBSLevelMultAfterLoad(const aElement: IwbElement);
 procedure wbAVIFSkillAfterLoad(const aElement: IwbElement);
 procedure wbDialogueTextAfterLoad(const aElement: IwbElement);
 procedure wbDOBJObjectsAfterLoad(const aElement: IwbElement);
+procedure wbLANDLayerAfterLoad(const aElement: IwbElement);
 procedure wbPACKDateAfterLoad(const aElement: IwbElement);
 procedure wbPACKHourAfterLoad(const aElement: IwbElement);
 procedure wbPNDTAfterLoad(const aElement: IwbElement);
@@ -824,7 +825,7 @@ begin
   end;
 end;
 
-{>>> After Load Callbacks <<<} //12
+{>>> After Load Callbacks <<<} //13
 
 procedure wbACBSLevelMultAfterLoad(const aElement: IwbElement);
 begin
@@ -885,6 +886,36 @@ begin
       if Supports(lArray.Elements[i], IwbContainerElementRef, lEntry) then
         if lEntry.ElementNativeValues['Use'] = 0 then
           lArray.RemoveElement(i, True);
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
+procedure wbLANDLayerAfterLoad(const aElement: IwbElement);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    var lContainer : IwbContainerElementRef;
+    if not Supports(aElement, IwbContainerElementRef, lContainer) then
+      Exit;
+
+    var lTexture := lContainer.Elements[0];
+    if not Assigned(lTexture) then
+      Exit;
+
+    if lTexture.NativeValue <> 0 then
+      Exit;
+
+    //Sets null LTEX's on Land Layers to the default that is used by the CK.
+    //Arthmoor helped debug/figure this out.
+    case wbGameMode of
+      gmTES4, gmTES4R:         lTexture.NativeValue := $000008C0; //TerrainHDDirt01dds
+      gmFO3,  gmFNV:           lTexture.NativeValue := $00015457; //LDirtWasteland01
+      gmTES5, gmTES5VR, gmSSE: lTexture.NativeValue := $00000C16; //LDirt02
+      gmFO4,  gmFO4VR:         lTexture.NativeValue := $000AB07D; //LCWDefault01Grass01
+    end;
   finally
     wbEndInternalEdit;
   end;
@@ -7338,7 +7369,7 @@ begin
       wbRUnion('Layer', [
         wbRStructSK([0], 'Base Layer', [
           wbStructSK(BTXT, [1, 3], 'Base Layer', [
-            wbFormIDCk('Texture', [LTEX,NULL]),  //NULL probably Shouldn't be accepted, as the CK doesn't allow you to do that.  But the Game Masters are full of em.
+            wbFormIDCk('Texture', [LTEX]),  //NULL probably Shouldn't be accepted, as the CK doesn't allow you to do that.  But the Game Masters are full of em.
             wbInteger('Quadrant', itU8, wbQuadrantEnum),
             wbUnused(1),
             wbInteger('Layer', itS16)
@@ -7348,11 +7379,12 @@ begin
             .SetSummaryPrefixSuffixOnValue(3, 'on Layer [', ']')
             .IncludeFlagOnValue(dfSummaryMembersNoName)
             .IncludeFlagOnValue(dfSummaryNoSortKey)
+            .SetAfterLoad(wbLANDLayerAfterLoad)
             .IncludeFlag(dfCollapsed, wbCollapseOther)
         ]).IncludeFlag(dfCollapsed, wbCollapseOther),
         wbRStructSK([0], 'Alpha Layer', [
           wbStructSK(ATXT, [1, 3], 'Alpha Layer Header', [
-            wbFormIDCk('Texture', [LTEX,NULL]),  //NULL probably Shouldn't be accepted, as the CK doesn't allow you to do that.  But the Game Masters are full of em.
+            wbFormIDCk('Texture', [LTEX]),  //NULL probably Shouldn't be accepted, as the CK doesn't allow you to do that.  But the Game Masters are full of em.
             wbInteger('Quadrant', itU8, wbQuadrantEnum),
             wbUnused(1),
             wbInteger('Layer', itS16)
@@ -7362,6 +7394,7 @@ begin
             .SetSummaryPrefixSuffixOnValue(3, 'on Layer [', ']')
             .IncludeFlagOnValue(dfSummaryMembersNoName)
             .IncludeFlagOnValue(dfSummaryNoSortKey)
+            .SetAfterLoad(wbLANDLayerAfterLoad)
             .IncludeFlag(dfCollapsed, wbCollapseOther),
           IfThen(wbSimpleRecords,
             wbByteArray(VTXT, 'Alpha Layer Data'),
