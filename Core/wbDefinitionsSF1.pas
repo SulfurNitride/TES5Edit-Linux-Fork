@@ -424,9 +424,9 @@ const
     (Index: 525; Name: 'GetVATSFrontTargetVisible'; ParamType1: ptReference),                                                                         //   266
     (Index: 528; Name: 'IsInCriticalStage'; ParamType1: ptCriticalStage),                                                                                   //   267
     (Index: 530; Name: 'GetXPForNextLevel'),                                                                                                                //   268
-    (Index: 533; Name: 'GetInfamy'; ParamType1: ptFaction),                                                                                                 //   269
-    (Index: 534; Name: 'GetInfamyViolent'; ParamType1: ptFaction),                                                                                          //   270
-    (Index: 535; Name: 'GetInfamyNonViolent'; ParamType1: ptFaction),                                                                                       //   271
+    (Index: 533; Name: 'GetInfamy'; ParamType1: ptFactionNull),                                                                                                 //   269
+    (Index: 534; Name: 'GetInfamyViolent'; ParamType1: ptFactionNull),                                                                                          //   270
+    (Index: 535; Name: 'GetInfamyNonViolent'; ParamType1: ptFactionNull),                                                                                       //   271
     (Index: 536; Name: 'GetTypeCommandPerforming'),                                                                                                         //   272
     (Index: 543; Name: 'GetQuestCompleted'; ParamType1: ptQuest),                                                                                           //   273
     (Index: 544; Name: 'GetSpeechChallengeSuccessScene'),                                                                                                   //   274
