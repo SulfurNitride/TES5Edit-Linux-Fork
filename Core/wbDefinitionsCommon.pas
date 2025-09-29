@@ -7363,13 +7363,21 @@ begin
       33).SetSummaryName('Rows')
          .IncludeFlag(dfCollapsed, wbCollapseVertices));
 
+  var wbLandLayerDefault : variant;
+  case wbGameMode of
+     gmTES4, gmTES4R         : wbLandLayerDefault := $000008C0; //TerrainHDDirt01dds
+     gmFO3,  gmFNV           : wbLandLayerDefault := $00015457; //LDirtWasteland01
+     gmTES5, gmTES5VR, gmSSE : wbLandLayerDefault := $00000C16; //LDirt02
+     gmFO4,  gmFO4VR         : wbLandLayerDefault := $000AB07D; //LCWDefault01Grass01
+  end;
+
   //TES4,FO3,FNV,TES5,FO4,FO76
   wbLandLayers :=
     wbRArrayS('Layers',
       wbRUnion('Layer', [
         wbRStructSK([0], 'Base Layer', [
           wbStructSK(BTXT, [1, 3], 'Base Layer', [
-            wbFormIDCk('Texture', [LTEX]),  //NULL probably Shouldn't be accepted, as the CK doesn't allow you to do that.  But the Game Masters are full of em.
+            wbFormIDCk('Texture', [LTEX]).SetDefaultNativeValue(wbLandLayerDefault),
             wbInteger('Quadrant', itU8, wbQuadrantEnum),
             wbUnused(1),
             wbInteger('Layer', itS16)
@@ -7384,7 +7392,7 @@ begin
         ]).IncludeFlag(dfCollapsed, wbCollapseOther),
         wbRStructSK([0], 'Alpha Layer', [
           wbStructSK(ATXT, [1, 3], 'Alpha Layer Header', [
-            wbFormIDCk('Texture', [LTEX]),  //NULL probably Shouldn't be accepted, as the CK doesn't allow you to do that.  But the Game Masters are full of em.
+            wbFormIDCk('Texture', [LTEX]).SetDefaultNativeValue(wbLandLayerDefault),
             wbInteger('Quadrant', itU8, wbQuadrantEnum),
             wbUnused(1),
             wbInteger('Layer', itS16)
