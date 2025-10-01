@@ -336,13 +336,14 @@ function wbVertexToStr2(aInt: Int64; const aElement: IwbElement; aType: TwbCallb
 function wbVTXTPosition(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbWeatherCloudSpeedToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 
-{>>> To String Callback Procedures <<<} //15
+{>>> To String Callback Procedures <<<} //16
 procedure wbABGRToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbBGRAToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbConditionToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbCrowdPropertyToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbFactionRelationToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbItemToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+procedure wbNPCPackageToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbObjectPropertyToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbRGBAToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbScriptToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
@@ -3585,7 +3586,7 @@ begin
   end;
 end;
 
-{>>> To String Callback Procedures <<<} //15
+{>>> To String Callback Procedures <<<} //16
 
 procedure wbABGRToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 var
@@ -3798,6 +3799,29 @@ begin
     Exit;
 
   aValue := ItemString;
+end;
+
+procedure wbNPCPackageToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  var lPACKRecord : IwbMainRecord;
+  if not Supports(aElement.LinksTo, IwbMainRecord, lPACKRecord) then
+    Exit;
+
+  var lQNAM := lPACKRecord.ElementBySignature[QNAM];
+  if not Assigned(lQNAM) then
+    Exit;
+
+  var lQUSTRecord : IwbMainRecord;
+  if not Supports(lQNAM.LinksTo, IwbMainRecord, lQUSTRecord) then
+    Exit;
+
+  case aType of
+    ctCheck: aValue := '<Error: Package [' + lPACKRecord.EditorID + '] is owned by Quest [' + lQUSTRecord.EditorID + '] and cannot be assigned to an NPC record>';
+    ctToStr: aValue := aElement.EditValue + ' <Error: Package is owned by Quest [' + lQUSTRecord.EditorID + '] and cannot be assigned to an NPC record>';
+  end;
 end;
 
 procedure wbObjectPropertyToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);

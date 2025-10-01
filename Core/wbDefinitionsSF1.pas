@@ -13211,7 +13211,9 @@ begin
     wbNTRM,
     wbContainerItems.SetSummaryKey([1]),
     wbAIDT,
-    wbRArray('Packages', wbFormIDCk(PKID, 'Package', [PACK])),
+    wbRArray('Packages',
+      wbFormIDCk(PKID, 'Package', [PACK]).SetToStr(wbNPCPackageToStr)
+    ),
     wbArray(RDSA, 'Reaction Radius Behavior',
       wbStruct('Entry', [
         {  0} wbInteger('Reaction Type', itU32, wbEnum([

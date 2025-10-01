@@ -13330,7 +13330,9 @@ begin
       wbCNTOs
     ]),
     wbAIDT,
-    wbRArray('Packages', wbFormIDCk(PKID, 'Package', [PACK])),
+    wbRArray('Packages',
+      wbFormIDCk(PKID, 'Package', [PACK]).SetToStr(wbNPCPackageToStr)
+    ),
     wbKeywords,
     wbAPPR,
     wbObjectTemplate,
