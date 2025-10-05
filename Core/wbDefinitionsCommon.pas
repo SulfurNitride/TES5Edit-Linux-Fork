@@ -154,14 +154,13 @@ function wbPlacedAddInfo(const aMainRecord: IwbMainRecord): string;
 function wbROADAddInfo(const aMainRecord: IwbMainRecord): string;
 function wbSCENAddInfo(const aMainRecord: IwbMainRecord): string;
 
-{>>> After Load Callbacks <<<} //13
+{>>> After Load Callbacks <<<} //12
 procedure wbACBSLevelMultAfterLoad(const aElement: IwbElement);
 procedure wbAVIFSkillAfterLoad(const aElement: IwbElement);
 procedure wbDialogueTextAfterLoad(const aElement: IwbElement);
 procedure wbDOBJObjectsAfterLoad(const aElement: IwbElement);
 procedure wbLANDLayerAfterLoad(const aElement: IwbElement);
 procedure wbPACKDateAfterLoad(const aElement: IwbElement);
-procedure wbPACKHourAfterLoad(const aElement: IwbElement);
 procedure wbPNDTAfterLoad(const aElement: IwbElement);
 procedure wbRPLDAfterLoad(const aElement: IwbElement);
 procedure wbScrollCastAfterLoad(const aElement: IwbElement);
@@ -169,7 +168,7 @@ procedure wbScrollTypeAfterLoad(const aElement: IwbElement);
 procedure wbSOUNAfterLoad(const aElement: IwbElement);
 procedure wbWorldAfterLoad(const aElement: IwbElement);
 
-{>>> After Set Callbacks <<<} //34
+{>>> After Set Callbacks <<<} //33
 procedure wbACBSLevelMultAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbATANsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbBODCsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -190,7 +189,6 @@ procedure wbMorphPresetsAfterSet(const aElement: IwbElement; const aOldValue, aN
 procedure wbNPCAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbNPCActorSoundsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbPACKDateAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbPACKHourAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbPERKPRKETypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbPRKRsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbRaceAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -826,7 +824,7 @@ begin
   end;
 end;
 
-{>>> After Load Callbacks <<<} //13
+{>>> After Load Callbacks <<<} //12
 
 procedure wbACBSLevelMultAfterLoad(const aElement: IwbElement);
 begin
@@ -939,21 +937,6 @@ begin
 
     if aElement.NativeValue > lMaxDate then
       aElement.NativeValue := lMaxDate;
-    if aElement.NativeValue < -1 then
-      aElement.NativeValue := -1;
-  finally
-    wbEndInternalEdit;
-  end;
-end;
-
-procedure wbPACKHourAfterLoad(const aElement: IwbElement);
-begin
-  if not Assigned(aElement) then
-    Exit;
-
-  if wbBeginInternalEdit then try
-    if aElement.NativeValue > 23 then
-      aElement.NativeValue := 23;
     if aElement.NativeValue < -1 then
       aElement.NativeValue := -1;
   finally
@@ -1137,7 +1120,7 @@ begin
   end;
 end;
 
-{>>> After Set Callbacks <<<} //34
+{>>> After Set Callbacks <<<} //33
 
 procedure wbACBSLevelMultAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
@@ -1346,25 +1329,6 @@ begin
     if aElement.NativeValue > lMaxDate then
       aElement.NativeValue := lMaxDate;
     if aElement.NativeValue < -1 then
-      aElement.NativeValue := -1;
-  finally
-    wbEndInternalEdit;
-  end;
-end;
-
-procedure wbPACKHourAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  if not Assigned(aElement) then
-    Exit;
-
-  if VarSameValue(aOldValue, aNewValue) then
-    Exit;
-
-  if wbBeginInternalEdit then try
-    if aNewValue > 23 then
-      aElement.NativeValue := 23;
-
-    if aNewValue < -1 then
       aElement.NativeValue := -1;
   finally
     wbEndInternalEdit;

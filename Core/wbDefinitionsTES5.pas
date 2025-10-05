@@ -8801,7 +8801,7 @@ begin
         {1} 'Jog',
         {2} 'Run',
         {3} 'Fast Walk'
-        ])),
+        ])).SetDefaultNativeValue(2),
       wbUnknown(1),
       wbInteger('Interrupt Flags', itU16, wbPKDTInterruptFlags)
         .SetDefaultNativeValue(365)
@@ -8849,9 +8849,14 @@ begin
       wbInteger('Date', itS8)
         .SetAfterLoad(wbPACKDateAfterLoad)
         .SetAfterSet(wbPACKDateAfterSet),
-      wbInteger('Hour', itS8)
-        .SetAfterLoad(wbPACKHourAfterLoad)
-        .SetAfterSet(wbPACKHourAfterSet),
+      wbInteger('Hour', itS8,
+        wbEnum([
+        '0','1','2','3','4','5','6','7','8','9','10',
+        '11','12','13','14','15','16','17','18','19',
+        '20','21','22','23'
+        ], [
+        -1, 'Any'
+        ])).SetDefaultNativeValue(-1),
       wbInteger('Minute', itU8,
         wbEnum([
         {0} '00'
@@ -8868,7 +8873,7 @@ begin
         50,  '50',
         55,  '55',
         255, 'Any'
-        ])),
+        ])).SetDefaultNativeValue(255),
       wbUnused(3),
       wbInteger('Duration', itU32, wbDiv(60))
     ]).SetRequired,
