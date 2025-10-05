@@ -3489,7 +3489,7 @@ begin
   end;
 
   with odModule do begin
-    Title := 'Please select a newer verion of "'+_File.FileName+'" to create a delta patch...';
+    Title := 'Please select a newer version of "'+_File.FileName+'" to create a delta patch...';
     FileName := '';
     InitialDir := Settings.ReadString('CreateDeltaPatch', 'InitialDir', wbDataPath);
     if not Execute then
