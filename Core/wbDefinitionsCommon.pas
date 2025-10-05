@@ -220,7 +220,7 @@ function wbFlagNavmeshGroundDontSHow(const aElement: IwbElement): Boolean;
 function wbFlagPartialFormDontShow(const aElement: IwbElement): Boolean;
 function wbFlagREFRSkyMarkerDontShow(const aElement: IwbElement): Boolean;
 
-{>>> Don't Show Callbacks <<<} //17
+{>>> Don't Show Callbacks <<<} //18
 function wbAlwaysDontShow(const aElement: IwbElement): Boolean;
 function wbCellInteriorDontShow(const aElement: IwbElement): Boolean;
 function wbCellExteriorDontShow(const aElement: IwbElement): Boolean;
@@ -228,6 +228,7 @@ function wbIdleMarkerPNAMDontShow(const aElement: IwbElement): Boolean;
 function wbIdleMarkerQNAMDontShow(const aElement: IwbElement): Boolean;
 function wbModelInfoDontShow(const aElement: IwbElement): Boolean;
 function wbLCTNCellDontShow(const aElement: IwbElement): Boolean;
+function wbPACKTemplateDontShow(const aElement: IwbElement): Boolean;
 function wbREGNGrassDontShow(const aElement: IwbElement): Boolean;
 function wbREGNImposterDontShow(const aElement: IwbElement): Boolean;
 function wbREGNLandDontShow(const aElement: IwbElement): Boolean;
@@ -1833,6 +1834,20 @@ begin
     Exit;
 
   Result := lMainRecord.Signature = CELL;
+end;
+
+function wbPACKTemplateDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := False;
+  if not Assigned(aElement) then
+    Exit;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  if lMainRecord.ElementNativeValues['PKCU\Package Template'] <> 0 then
+    Result := True;
 end;
 
 function wbREGNGrassDontShow(const aElement: IwbElement): Boolean;

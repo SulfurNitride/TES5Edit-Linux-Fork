@@ -8961,13 +8961,14 @@ begin
             ])),
           wbRArray('Unknown', wbUnknown(PFOR), cpIgnore)
         ]))
-    ]),
+    ]).SetDontShow(wbPACKTemplateDontShow),
     wbRArray('Data Inputs',
       wbRStruct('Data Input', [
         wbInteger(UNAM, 'Index', itS8),
         wbString(BNAM, 'Name'),
         wbInteger(PNAM, 'Public', itU32, wbBoolEnum)
-      ])),
+      ])
+    ).SetDontShow(wbPACKTemplateDontShow),
     wbRStruct('OnBegin', [
       wbEmpty(POBA, 'OnBegin Marker').SetRequired,
       wbFormIDCk(INAM, 'Idle', [IDLE, NULL]).SetRequired,
