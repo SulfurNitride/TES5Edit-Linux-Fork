@@ -8764,24 +8764,18 @@ begin
       ]))
   ], False, nil, cpNormal, False, nil, wbNPCAfterSet);
 
-  wbPKDTInterruptFlags := wbFlags([
-    {0x0001}'Hellos to player',
-    {0x0002}'Random conversations',
-    {0x0004}'Observe combat behavior',
-    {0x0008}'Greet corpse behavior',
-    {0x0010}'Reaction to player actions',
-    {0x0020}'Friendly fire comments',
-    {0x0040}'Aggro Radius Behavior',
-    {0x0080}'Allow Idle Chatter',
-    {0x0100}'Unknown 9',
-    {0x0200}'World Interactions',
-    {0x0400}'Unknown 11',
-    {0x0800}'Unknown 12',
-    {0x1000}'Unknown 13',
-    {0x2000}'Unknown 14',
-    {0x4000}'Unknown 15',
-    {0x8000}'Unknown 16'
-  ]);
+  wbPKDTInterruptFlags :=
+    wbFlags(wbSparseFlags([
+    0, 'Hellos to player',
+    1, 'Random conversations',
+    2, 'Observe combat behavior',
+    3, 'Greet corpse behavior',
+    4, 'Reaction to player actions',
+    5, 'Friendly fire comments',
+    6, 'Aggro Radius Behavior',
+    7, 'Allow Idle Chatter',
+    9, 'World Interactions'
+  ], False, 10), True);
 
   wbRecord(PACK, 'Package', [
     wbEDID,
@@ -8809,7 +8803,9 @@ begin
         {3} 'Fast Walk'
         ])),
       wbUnknown(1),
-      wbInteger('Interrupt Flags', itU16, wbPKDTInterruptFlags).IncludeFlag(dfCollapsed, wbCollapseFlags),
+      wbInteger('Interrupt Flags', itU16, wbPKDTInterruptFlags)
+        .SetDefaultNativeValue(365)
+        .IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbUnknown(2)
     ]).SetRequired,
     wbStruct(PSDT, 'Schedule', [
