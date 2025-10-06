@@ -13,12 +13,13 @@ object frmFilterOptions: TfrmFilterOptions
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
   OnShow = FormShow
-  TextHeight = 15
+  PixelsPerInch = 96
+  TextHeight = 13
   object pnlOptions: TPanel
     Left = 0
     Top = 0
     Width = 935
-    Height = 709
+    Height = 715
     Align = alClient
     BevelOuter = bvNone
     ParentColor = True
@@ -26,8 +27,8 @@ object frmFilterOptions: TfrmFilterOptions
     object Label1: TLabel
       Left = 12
       Top = 10
-      Width = 32
-      Height = 15
+      Width = 31
+      Height = 13
       Caption = 'Preset'
     end
     object cbAssignPersWrldChild: TCheckBox
@@ -278,7 +279,6 @@ object frmFilterOptions: TfrmFilterOptions
       Width = 258
       Height = 466
       Color = clBtnFace
-      ItemHeight = 13
       PopupMenu = pmuSelection
       TabOrder = 34
       OnKeyPress = clbKeyPress
@@ -289,7 +289,6 @@ object frmFilterOptions: TfrmFilterOptions
       Width = 318
       Height = 92
       Color = clBtnFace
-      ItemHeight = 13
       PopupMenu = pmuSelection
       TabOrder = 35
       OnKeyPress = clbKeyPress
@@ -300,7 +299,6 @@ object frmFilterOptions: TfrmFilterOptions
       Width = 318
       Height = 163
       Color = clBtnFace
-      ItemHeight = 13
       PopupMenu = pmuSelection
       TabOrder = 36
       OnKeyPress = clbKeyPress
@@ -311,7 +309,6 @@ object frmFilterOptions: TfrmFilterOptions
       Width = 258
       Height = 560
       Color = clBtnFace
-      ItemHeight = 13
       PopupMenu = pmuSelection
       TabOrder = 37
       OnKeyPress = clbKeyPress
@@ -415,7 +412,7 @@ object frmFilterOptions: TfrmFilterOptions
   end
   object pnlBottom: TPanel
     Left = 0
-    Top = 709
+    Top = 715
     Width = 935
     Height = 41
     Align = alBottom

@@ -154,9 +154,6 @@ begin
     end;
   clbRecordSignatures.Sorted := True;
   clbBaseRecordSignatures.Sorted := True;
-
-  //Forces scroll bar to appear correctly
-  wbTwiddleHeight(clbBaseRecordSignatures);
 end;
 
 procedure TfrmFilterOptions.FormKeyDown(Sender: TObject; var Key: Word;
