@@ -19992,6 +19992,7 @@ begin
       InvalidateParentStorage;
       BeforeActualRemove;
       lContainer.RemoveElement(SelfRef, True);
+      ResetConflict;
     finally
       lContainer.EndUpdate;
     end;
