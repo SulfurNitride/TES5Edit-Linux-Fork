@@ -13,13 +13,12 @@ object frmFilterOptions: TfrmFilterOptions
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
   OnShow = FormShow
-  PixelsPerInch = 96
-  TextHeight = 13
+  TextHeight = 15
   object pnlOptions: TPanel
     Left = 0
     Top = 0
     Width = 935
-    Height = 715
+    Height = 709
     Align = alClient
     BevelOuter = bvNone
     ParentColor = True
@@ -27,8 +26,8 @@ object frmFilterOptions: TfrmFilterOptions
     object Label1: TLabel
       Left = 12
       Top = 10
-      Width = 31
-      Height = 13
+      Width = 32
+      Height = 15
       Caption = 'Preset'
     end
     object cbAssignPersWrldChild: TCheckBox
@@ -416,7 +415,7 @@ object frmFilterOptions: TfrmFilterOptions
   end
   object pnlBottom: TPanel
     Left = 0
-    Top = 715
+    Top = 709
     Width = 935
     Height = 41
     Align = alBottom
