@@ -2476,7 +2476,7 @@ begin
 
   wbSPCT := wbInteger(SPCT, 'Count', itU32, nil, cpBenign);
   wbSPLO := wbFormIDCk(SPLO, 'Actor Effect', [SPEL, SHOU, LVSP]);
-  wbSPLOs := wbRArrayS('Actor Effects', wbSPLO, cpNormal, False, nil, wbSPLOsAfterSet);
+  wbSPLOs := wbRArrayS('Actor Effects', wbSPLO).SetCountPath(SPCT);
 
   wbCOED := wbStructExSK(COED, [2], [0, 1], 'Extra Data', [
     {00} wbFormIDCkNoReach('Owner', [NPC_, FACT, NULL]),
@@ -8443,7 +8443,7 @@ begin
       ], cpNormal, False, nil, wbMGEFAssocItemAfterSet),
       wbInteger('Magic Skill', itS32, wbActorValueEnum),
       wbInteger('Resist Value', itS32, wbActorValueEnum),
-      wbInteger('Counter Effect count', itU16),
+      wbInteger('Counter Effect Count', itU16),
       wbUnused(2),
       wbFormIDCk('Casting Light', [LIGH, NULL]),
       wbFloat('Taper Weight'),
@@ -8493,11 +8493,13 @@ begin
     wbMDOB,
     wbKeywords,
     wbMGEFData,
-    wbRArrayS('Counter Effects', wbFormIDCk(ESCE, 'Effect', [MGEF]), cpNormal, False, nil, wbCounterEffectsAfterSet),
+    wbRArrayS('Counter Effects',
+      wbFormIDCk(ESCE, 'Effect', [MGEF])
+    ).SetCountPath('DATA\Counter Effect Count'),
     wbMagicEffectSounds,
     wbLStringKC(DNAM, 'Magic Item Description', 0, cpTranslate),
     wbConditions
-  ], False, nil, cpNormal, False, nil {wbMGEFAfterLoad}, wbMGEFAfterSet);
+  ]);
 
   wbRecord(MISC, 'Misc. Item',
     wbFlags(wbFlagsList([
@@ -8645,8 +8647,7 @@ begin
         .SetSummaryPrefixSuffixOnValue(1, '{Rank: ', '}')
         .IncludeFlagOnValue(dfSummaryMembersNoName)
         .IncludeFlag(dfCollapsed, wbCollapsePerk)
-        , cpNormal, False, nil, wbPRKRsAfterSet
-    ),
+    ).SetCountPath(PRKZ),
     wbCOCT,
     wbCNTOs,
     wbAIDT,
@@ -8759,7 +8760,7 @@ begin
         wbInteger(TINV, 'Interpolation Value', itU32, wbDiv(100)),
         wbInteger(TIAS, 'Preset', itS16)
       ]))
-  ], False, nil, cpNormal, False, nil, wbNPCAfterSet);
+  ]);
 
   wbPKDTInterruptFlags :=
     wbFlags(wbSparseFlags([
@@ -9803,7 +9804,7 @@ begin
     // End Head Data
     wbFormIDCk(NAM8, 'Morph race', [RACE, NULL]),
     wbFormIDCk(RNAM, 'Armor race', [RACE, NULL])
-  ], False, nil, cpNormal, False, wbRACEAfterLoad, wbRACEAfterSet);
+  ]).SetAfterLoad(wbRACEAfterLoad);
 
   wbRefRecord(REFR, 'Placed Object', wbFormaterUnion(wbREFRRecordFlagsDecider, [
     wbFlags(wbFlagsList([
@@ -10534,9 +10535,7 @@ begin
               {0x02} 'Shrinks When Occluded'
             ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
           ])
-        ]),
-        cpNormal, False, nil, wbLENSAfterSet
-      )
+        ])).SetCountPath(LFSP)
     ]);
 
   end;

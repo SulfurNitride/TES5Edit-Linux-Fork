@@ -3438,40 +3438,6 @@ begin
     end;
 end;
 
-procedure wbOMODpropertyAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('Property Count', aElement);
-end;
-
-procedure wbOMODincludeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('Include Count', aElement);
-end;
-
-procedure wbOMODdataAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterContainerAfterSet('Property Count', 'Properties', aElement);
-  wbCounterContainerAfterSet('Include Count', 'Includes', aElement);
-end;
-
-function wbOMODDataIncludeCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
-var
-  Container       : IwbContainer;
-begin
-  Result := 0;
-  if Supports(aElement.Container, IwbContainer, Container) then
-    Result := Container.ElementNativeValues['Include Count'];
-end;
-
-function wbOMODDataPropertyCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
-var
-  Container       : IwbContainer;
-begin
-  Result := 0;
-  if Supports(aElement.Container, IwbContainer, Container) then
-    Result := Container.ElementNativeValues['Property Count'];
-end;
-
 function GetObjectModPropertyEnum(const aElement: IwbElement): IwbEnumDef;
 var
   MainRecord: IwbMainRecord;
@@ -3610,30 +3576,6 @@ begin
     4: Result := 1;
     6: Result := 2;
   end;
-end;
-
-procedure wbOBTSCombinationsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('OBTE - Count', aElement);
-end;
-
-procedure wbINNRAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('VNAM - Count', aElement);
-end;
-
-function wbCELLCombinedMeshesCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
-var
-  Container       : IwbContainer;
-begin
-  Result := 0;
-  if Supports(aElement.Container, IwbContainer, Container) then
-    Result := Container.ElementNativeValues['Meshes Count'];
-end;
-
-procedure wbCELLCombinedMeshesAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('Meshes Count', aElement);
 end;
 
 function wbCELLCombinedRefsCounter(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Cardinal;
@@ -4357,9 +4299,7 @@ end;
               wbString(MPPM, 'Morph Type'),
               wbFormIDCk(MPPT, 'Texture', [TXST]),
               wbInteger(MPPF, 'Playable', itU8, wbBoolEnum)
-            ]),
-            cpNormal, False, nil, wbMorphPresetsAfterSet
-          ),
+            ])).SetCountPath(MPPC),
           wbInteger(MPPK, 'Tint Layer Face Region Index', itU16),
           wbArray(MPGS, 'Morph Value Indexs', wbInteger('Index', itU32, wbIntToHexStr, wbHexStrToInt))
         ])
@@ -4565,7 +4505,7 @@ begin
 
   wbSPCT := wbInteger(SPCT, 'Count', itU32, nil, cpBenign);
   wbSPLO := wbFormIDCk(SPLO, 'Actor Effect', [SPEL, LVSP]);
-  wbSPLOs := wbRArrayS('Actor Effects', wbSPLO, cpNormal, False, nil, wbSPLOsAfterSet);
+  wbSPLOs := wbRArrayS('Actor Effects', wbSPLO).SetCountPath(SPCT);
 
   wbXPCK := wbFormIDCk(XPCK, 'Reference Group', [RFGP]);
 
@@ -4608,7 +4548,7 @@ begin
       wbCOED
     ]).SetToStr(wbItemToStr).IncludeFlag(dfCollapsed, wbCollapseItems);
   wbCOCT := wbInteger(COCT, 'Count', itU32, nil, cpBenign);
-  wbCNTOs := wbRArrayS('Items', wbCNTO, cpNormal, False, nil, wbCNTOsAfterSet);
+  wbCNTOs := wbRArrayS('Items', wbCNTO).SetCountPath(COCT);
 
   {>>> When NAME is user defined these will be incorrect <<<}
   wbBipedObjectEnum := wbEnum([
@@ -7703,7 +7643,8 @@ begin
         wbFloat('Step'),
         wbFormIDCk('Curve Table', [CURV, NULL])
       ])
-    ]), wbOMODDataPropertyCounter, cpNormal, False, nil, wbOMODpropertyAfterSet);
+    ])
+  ).SetCountPath('Property Count', False);
 
   wbOBTSReq := wbStruct(OBTS, 'Object Mod Template Item', [
     wbInteger('Include Count', itU32),  // fixed name for wbOMOD* handlers
@@ -7722,7 +7663,7 @@ begin
       wbInteger('Attach Point Index', itU8),
       wbInteger('Optional', itU8, wbBoolEnum),
       wbInteger('Don''t Use All', itU8, wbBoolEnum)
-    ]), wbOMODDataIncludeCounter, cpNormal, False, nil, wbOMODincludeAfterSet),
+    ])).SetCountPath('Include Count', True),
     wbObjectModProperties
   ], cpNormal, True);
 
@@ -7733,8 +7674,8 @@ begin
         wbEmpty(OBTF, 'Editor Only'),
         wbFULL,
         wbOBTSReq
-      ], [], cpNormal, False, nil, True),
-      cpNormal, False, nil, wbOBTSCombinationsAfterSet),
+      ], [], cpNormal, False, nil, True)
+    ).SetCountPath(OBTE),
     wbEmpty(STOP, 'Marker', cpNormal, True)
   ]);
 
@@ -8460,7 +8401,7 @@ begin
       wbArrayS('Meshes', wbStruct('Mesh', [
         wbInteger('Combined Mesh', itU32, wbCombinedMeshIDToStr, wbCombinedMeshIDToInt),
         wbByteArray('Unknown', 4)
-      ]), wbCELLCombinedMeshesCounter, cpNormal, False, nil, wbCELLCombinedMeshesAfterSet),
+      ])).SetCountPath('Meshes Count', True),
       wbArrayS('References',  wbStructSK([0], 'Reference', [
         wbFormIDCk('Reference', [REFR, PGRE, PHZD, PMIS, PARW, PBAR, PBEA, PCON, PFLA]),
         wbByteArray('Unknown', 4),
@@ -8608,14 +8549,14 @@ begin
     ], cpNormal, True),
     wbKeywords,
     wbFTYP,
-    wbPRPS,
     wbNTRM,
+    wbPRPS,
     wbFormIDCk(SNAM, 'Sound - Open', [SNDR]),
     wbFormIDCk(QNAM, 'Sound - Close', [SNDR]),
     wbFormIDCk(TNAM, 'Sound - Take All', [SNDR]),
     wbFormIDCk(ONAM, 'Filter List', [FLST]),
     wbUnknown(CMIC)
-  ], True, nil, cpNormal, False, nil, wbContainerAfterSet);
+  ]);
 
   wbAIDT :=
     wbStruct(AIDT, 'AI Data', [
@@ -9167,7 +9108,7 @@ begin
     ),
     wbCITC,
     wbConditions
-  ], False, nil, cpNormal, False, nil {wbFACTAfterLoad}, wbConditionsAfterSet);
+  ]);
 
   wbRecord(FISH, 'Fish',
     //wbFlags(wb
@@ -11344,7 +11285,7 @@ begin
       ])
     ).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbInteger(XNAM, 'Max concurrent quests', itU32)
-  ], False, nil, cpNormal, False, nil, wbConditionsAfterSet);
+  ]);
 
   wbRecord(SMQN, 'Story Manager Quest Node', [
     wbEDID,
@@ -11372,7 +11313,7 @@ begin
         wbInteger(UNAM, 'Priority', itU32)
       ])
     ).SetCountPath(QNAM)
-  ], False, nil, cpNormal, False, nil, wbConditionsAfterSet);
+  ]);
 
   wbRecord(SMEN, 'Story Manager Event Node', [
     wbEDID,
@@ -11388,8 +11329,7 @@ begin
     ).IncludeFlag(dfCollapsed, wbCollapseFlags),
     wbInteger(XNAM, 'Max concurrent quests', itU32),
     wbInteger(ENAM, 'Type', itU32, wbQuestEventEnum)
-  ], False, nil, cpNormal, False, nil, wbConditionsAfterSet)
-    .SetSummaryKey([7]);
+  ]).SetSummaryKey([7]);
 
   wbRecord(DLBR, 'Dialog Branch', [
     wbEDID,
@@ -11426,7 +11366,7 @@ begin
     wbCITC,
     wbConditions,
     wbArray(SNAM, 'Tracks', wbFormIDCk('Track', [MUST, NULL]))
-  ], False, nil, cpNormal, False, nil, wbConditionsAfterSet);
+  ]);
 
   //still exists in game code, but not in Fallout76.esm
   wbRecord(DLVW, 'Dialog View', []);
@@ -12066,9 +12006,8 @@ begin
         wbInteger(INTV, 'RoF (RPM)', itU32),
         wbRArray('Files', wbString(FNAM, 'File')),
         wbEmpty(ITME, 'Marker End')
-      ]),
-      cpNormal, False, nil, wbSNDRRatesOfFireAfterSet
-    ),
+      ])
+    ).SetCountPath(ITMC),
     wbUnknown(PNAM),
     wbUnknown(QNAM)
   ]);
@@ -13037,7 +12976,7 @@ begin
       ], cpNormal, False, nil, wbMGEFAssocItemAfterSet),
       wbByteArray('Magic Skill (unused)', 4),
       wbFormIDCk('Resist Value', [AVIF, NULL]),
-      wbInteger('Counter Effect count', itU16),
+      wbInteger('Counter Effect Count', itU16),
       wbUnused(2),
       wbFormIDCk('Casting Light', [LIGH, NULL]),
       wbFloat('Taper Weight'),
@@ -13088,11 +13027,13 @@ begin
     wbMDOB,
     wbKeywords,
     wbMGEFData,
-    wbRArrayS('Counter Effects', wbFormIDCk(ESCE, 'Effect', [MGEF]), cpNormal, False, nil, wbCounterEffectsAfterSet),
+    wbRArrayS('Counter Effects',
+      wbFormIDCk(ESCE, 'Effect', [MGEF])
+    ).SetCountPath('DATA\Couner Effect Count'),
     wbMagicEffectSounds,
     wbLStringKC(DNAM, 'Magic Item Description', 0, cpTranslate),
     wbConditions
-  ], False, nil, cpNormal, False, nil {wbMGEFAfterLoad}, wbMGEFAfterSet);
+  ]);
 
   wbRecord(MISC, 'Misc. Item',
     wbFlags(wbFlagsList([
@@ -13329,8 +13270,7 @@ begin
         .SetSummaryPrefixSuffixOnValue(1, '{Rank: ', '}')
         .IncludeFlagOnValue(dfSummaryMembersNoName)
         .IncludeFlag(dfCollapsed, wbCollapsePerk)
-        , cpNormal, False, nil, wbPRKRsAfterSet
-    ),
+    ).SetCountPath(PRKZ),
     wbPRPS,
     wbFTYP,
     wbNTRM,
@@ -13438,7 +13378,7 @@ begin
     wbFormIDCk(CVT2, 'XP Curve Table', [CURV]),
     wbFormIDCk(CVT3, 'EWS Actor Cost Curve Table', [CURV]),
     wbFormIDCk(UNWP, 'Unarmed Weapon', [WEAP])
-  ], False, nil, cpNormal, False, wbNPCAfterLoad, wbNPCAfterSet);
+  ]).SetAfterLoad(wbNPCAfterLoad);
 
   wbPKDTInterruptFlags := wbFlags([
     {0x0001} 'Hellos to player',
@@ -13781,7 +13721,7 @@ begin
             wbInteger('Clear Interrupt Flags', itU16, wbPKDTInterruptFlags).IncludeFlag(dfCollapsed, wbCollapseFlags)
           ])
         )
-      ], [], cpNormal, False, nil, False, nil, wbConditionsAfterSet))
+      ]))
     ]),
     wbUNAMs,
     wbRStruct('OnBegin', [
@@ -14197,8 +14137,7 @@ begin
           wbString(SCCM, 'Comments'),
           wbFormIDCk(VTCK, 'Voice Types', [NPC_, FACT, FLST, VTYP, NULL]),
           wbEmpty(ALED, 'Alias End', cpNormal, True)
-        ], [], cpNormal, False, nil, False, nil, wbContainerAfterSet)
-          .SetSummaryKey([1, 2])
+        ]).SetSummaryKey([1, 2])
           .SetSummaryDelimiter(' ')
           .SetSummaryMemberPrefixSuffix(0, 'Ref [', ']')
           .SetSummaryMemberPrefixSuffix(1, '', '')
@@ -14716,7 +14655,7 @@ begin
     wbBSMPSequence,
     wbLString(SNAM, 'Comments'),
     wbUnknown(TSLT)
-  ], False, nil, cpNormal, False, nil, wbRACEAfterSet);
+  ]);
 
 
   wbRefRecord(REFR, 'Placed Object', wbFormaterUnion(wbREFRRecordFlagsDecider, [
@@ -16003,9 +15942,8 @@ begin
               ]))
             ]),
             wbInteger(YNAM, 'Priority', itU16)
-          ]),
-          cpNormal, False, nil, wbINNRAfterSet
-        )
+          ])
+        ).SetCountPath(VNAM)
       ])
     )
   ]);
@@ -16054,9 +15992,7 @@ begin
             {0x02} 'Shrinks When Occluded'
           ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
         ])
-      ]),
-      cpNormal, False, nil, wbLENSAfterSet
-    )
+      ])).SetCountPath(LFSP)
   ]);
 
   {wbRecord(LSPR, 'LSPR', [
@@ -16256,9 +16192,9 @@ begin
         wbInteger('Minimum Level', itU8),
         wbInteger('Optional', itU8, wbBoolEnum),
         wbInteger('Don''t Use All', itU8, wbBoolEnum)
-      ]), wbOMODDataIncludeCounter, cpNormal, False, nil, wbOMODincludeAfterSet),
+      ])).SetCountPath('Include Count', True),
       wbObjectModProperties
-    ], cpNormal, False, nil, -1, nil, wbOMODdataAfterSet),
+    ]),
     wbArray(MNAM, 'Target OMOD Keywords', wbFormIDCk('Keyword', [KYWD])).IncludeFlag(dfCollapsed, wbCollapseKeywords),
     wbArray(FNAM, 'Filter Keywords', wbFormIDCk('Keyword', [KYWD])).IncludeFlag(dfCollapsed, wbCollapseKeywords),
     wbFormIDCk(LNAM, 'Loose Mod', sigBaseObjects),
@@ -16468,9 +16404,8 @@ begin
       wbStruct(CNTO, 'Holotape', [
         wbFormIDCk('Item', [NULL, NOTE]),
         wbInteger('Count', itS32, nil, cpNormal, False, nil, nil, 1)
-      ]),
-      cpNormal, False, nil, wbTERMCNTOsAfterSet
-    ),
+      ])
+    ).SetCountPath(COCT),
     wbMNAMFurnitureMarker,
     wbByteArray(WBDT, 'Workbench Data (unused)', 0),
     wbString(XMRK, 'Marker Model'),
@@ -16482,9 +16417,8 @@ begin
       wbRStruct('Item', [
         wbLStringKC(BTXT, 'Text', 0, cpTranslate),
         wbConditions
-      ]),
-      cpNormal, False, nil, wbTERMDisplayItemsAfterSet
-    ),
+      ])
+    ).SetCountPath(BSIZ),
     wbFormIDCk(QNAM, 'Quest', [QUST]),
     wbUnknown(TDAT),
     wbInteger(ISIZ, 'Count', itU32, nil, cpBenign),
@@ -16521,9 +16455,8 @@ begin
         wbString(VNAM, 'Show Image'),
         wbFormIDCk(TNAM, 'Submenu', [TERM]),
         wbConditions
-      ]),
-      cpNormal, False, nil, wbTERMMenuItemsAfterSet
-    ),
+      ])
+    ).SetCountPath(ISIZ),
     wbString(SCFC, 'Comments')
   ]);
 

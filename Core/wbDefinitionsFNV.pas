@@ -1457,16 +1457,6 @@ begin
   end;
 end;
 
-procedure wbCounterEffectsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterByPathAfterSet('DATA - Data\Counter effect count', aElement);
-end;
-
-procedure wbMGEFAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterContainerByPathAfterSet('DATA - Data\Counter effect count', 'Counter Effects', aElement);
-end;
-
 function wbNAVINVMIDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
 var
   Container: IwbContainer;
@@ -6865,7 +6855,7 @@ begin
         -1, 'None'
       ])),
       {16} wbInteger('Resistance Type', itS32, wbActorValueEnum),
-      {20} wbInteger('Counter effect count', itU16),
+      {20} wbInteger('Counter Effect Count', itU16),
       {22} wbUnused(2),
       {24} wbFormIDCk('Light', [LIGH, NULL]),
       {28} wbFloat('Projectile speed'),
@@ -6880,8 +6870,10 @@ begin
       {64} wbInteger('Archtype', itU32, wbArchtypeEnum, cpNormal, False, nil, wbMGEFArchtypeAfterSet),
       {68} wbActorValue
     ], cpNormal, True),
-    wbRArrayS('Counter Effects', wbFormIDCk(ESCE, 'Effect', [MGEF]), cpNormal, False, nil, wbCounterEffectsAfterSet)
-  ], False, nil, cpNormal, False, wbMGEFAfterLoad, wbMGEFAfterSet);
+    wbRArrayS('Counter Effects',
+      wbFormIDCk(ESCE, 'Effect', [MGEF])
+    ).SetCountPath('DATA\Counter Effect Count')
+  ], False, nil, cpNormal, False, wbMGEFAfterLoad);
 
   wbRecord(MISC, 'Misc. Item',
     wbFlags(wbFlagsList([

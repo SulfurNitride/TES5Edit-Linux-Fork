@@ -2558,12 +2558,6 @@ begin
   end;
 end;
 
-procedure wbINNRAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('VNAM - Count', aElement);
-end;
-
-
 function wbREFRRecordFlagsDecider(const aElement: IwbElement): Integer;
 var
   MainRecord : IwbMainRecord;
@@ -2876,7 +2870,7 @@ begin
 
   var wbSPCT := wbInteger(SPCT, 'Count', itU32, nil, cpBenign);
   var wbSPLO := wbFormIDCk(SPLO, 'Actor Effect', [SPEL, LVSP]);
-  var wbSPLOs := wbRArrayS('Actor Effects', wbSPLO, cpNormal, False, nil, wbSPLOsAfterSet);
+  var wbSPLOs := wbRArrayS('Actor Effects', wbSPLO).SetCountPath(SPCT);
 
   var wbCVPA := wbArray(CVPA,'Components',
     wbStruct('Component', [
@@ -2943,7 +2937,7 @@ begin
     .IncludeFlag(dfCollapsed, wbCollapseItems);
 
   var wbCOCT := wbInteger(COCT, 'Count', itU32, nil, cpBenign);
-  var wbCNTOs := wbRArrayS('Items', wbCNTO, cpNormal, False, nil, wbCNTOsAfterSet);
+  var wbCNTOs := wbRArrayS('Items', wbCNTO).SetCountPath(COCT);
 
   var wbContainerItems := wbRStructSK([1], 'Container Items', [
     wbCOCT,
@@ -5727,31 +5721,30 @@ begin
     'Take Actor Damage',
     'Take Hit Damage'
     ];
-  var wbATCP := wbInteger(ATCP, 'Activity Count', itU32, nil, cpBenign).IncludeFlag(dfSkipImplicitEdit);
-  var wbATCPReq := wbInteger(ATCP, 'Activity Count', itU32, nil, cpBenign, True).IncludeFlag(dfSkipImplicitEdit);
-  var wbATAN := wbRStruct('Activity', [
-      wbString(ATAN, 'Activity Type')
-        .SetFormaterOnValue(wbStringEnum(wbPerkActivityTypes))
-        .SetRequired,
-      wbFULL,
-      wbDESC.SetRequired,
-      wbRStructs('Progression Evaluator', 'Argument', [
-        wbString(DNAM, 'Name').SetRequired,
-        wbCITCReq,
-        wbConditions
-      ]).SetRequired,
-      wbRStruct('Progression Configuration', [
-        wbString(ANAM).SetRequired,
-        wbString(ATAV, 'Configuration')
-          .IncludeFlag(dfNoZeroTerminator)
-          .SetRequired,
-        wbEmpty(ATAF, 'Unknown').SetRequired // always empty
-      ]).SetRequired]);
-  var wbATANs := wbRArray('Activities', wbATAN, cpNormal, False);
-  var wbATANsCount := wbRArray('Activities', wbATAN).SetCountPath(ATCP);
+
   var wbActivityTracker := wbRStruct('Activity Tracker', [
-    wbATCPReq,
-    wbATANsCount.SetRequired
+    wbInteger(ATCP, 'Activity Count', itU32, nil, cpBenign, True).IncludeFlag(dfSkipImplicitEdit),
+    wbRArray('Activities',
+      wbRStruct('Activity', [
+        wbString(ATAN, 'Activity Type')
+          .SetFormaterOnValue(wbStringEnum(wbPerkActivityTypes))
+          .SetRequired,
+        wbFULL,
+        wbDESC.SetRequired,
+        wbRStructs('Progression Evaluator', 'Argument', [
+          wbString(DNAM, 'Name').SetRequired,
+          wbCITCReq,
+          wbConditions
+        ]).SetRequired,
+        wbRStruct('Progression Configuration', [
+          wbString(ANAM).SetRequired,
+          wbString(ATAV, 'Configuration')
+            .IncludeFlag(dfNoZeroTerminator)
+            .SetRequired,
+          wbEmpty(ATAF, 'Unknown').SetRequired // always empty
+        ]).SetRequired])
+      ).SetCountPath(ATCP)
+      .SetRequired
   ]);
 
   var wbICON := wbString(ICON, 'Inventory Image');
@@ -6299,22 +6292,26 @@ begin
           ),
           wbRStruct('Component Configurations', [
             wbInteger(BODM, 'Count', itU32).SetRequired,  // count for the following array of struct BODC+BODS/BODV
-            wbRArray('Unknown', wbRStruct('Unknown', [
-              wbInteger(BODC, 'Count', itU32).SetRequired, // count for the follow array of struct BODS/BODV
-              wbRArrayS('Unknown', wbRStructSK([0], 'Unknown', [
-                wbString(BODS, 'Name'),
-                wbStruct(BODV, 'Configuration', [
-                  wbFloatColors('Color 1'),
-                  wbFloatColors('Color 2'),
-                  wbFloatColors('Color 3'),
-                  wbInteger('Unknown', itU32) // known values 0 - 7, possible enum?
-                ])
-                .SetSummaryKeyOnValue([0, 1, 2, 3])
-                .IncludeFlag(dfSummaryMembersNoName)
-                .IncludeFlag(dfHideText)
-                .IncludeFlag(dfCollapsed, wbCollapseBaseFormComponent)
-              ]), cpNormal, False, nil, wbBODSsAfterSet)
-            ]), cpNormal, False, nil, wbBODCsAfterSet).SetRequired
+            wbRArray('Unknown',
+              wbRStruct('Unknown', [
+                wbInteger(BODC, 'Count', itU32).SetRequired, // count for the follow array of struct BODS/BODV
+                wbRArrayS('Unknown',
+                  wbRStructSK([0], 'Unknown', [
+                    wbString(BODS, 'Name'),
+                    wbStruct(BODV, 'Configuration', [
+                      wbFloatColors('Color 1'),
+                      wbFloatColors('Color 2'),
+                      wbFloatColors('Color 3'),
+                      wbInteger('Unknown', itU32) // known values 0 - 7, possible enum?
+                    ]).SetSummaryKeyOnValue([0, 1, 2, 3])
+                      .IncludeFlag(dfSummaryMembersNoName)
+                      .IncludeFlag(dfHideText)
+                      .IncludeFlag(dfCollapsed, wbCollapseBaseFormComponent)
+                  ])
+                ).SetCountPath(BODC)
+              ])
+            ).SetCountPath(BODM)
+             .SetRequired
           ]).SetRequired,
           wbInteger(BLUF, 'Unknown', itU8),
           wbInteger(BOID, 'Next Part ID', itU32)
@@ -8288,7 +8285,7 @@ begin
     wbSoundReference(WED0, 'Open Sound'),
     wbSoundReference(WED1, 'Close Sound'),
     wbFormIDCk(ONAM, 'Contains Only Filter', [FLST])
-  ], False, nil, cpNormal, False, nil, wbContainerAfterSet);
+  ]);
 
   var wbAIDT :=
     wbStruct(AIDT, 'AI Data', [
@@ -12840,7 +12837,7 @@ begin
     wbFormIDCk(MDOB, 'Menu Display Object', [STAT]),
     wbKeywords,
     wbMGEFData,
-    wbRArrayS('Counter Effects', wbFormIDCk(ESCE, 'Effect', [MGEF]){, cpNormal, False, nil, wbCounterEffectsAfterSet}),
+    wbRArrayS('Counter Effects', wbFormIDCk(ESCE, 'Effect', [MGEF])),
     wbRArray('Sounds', wbStructSK(ESSH, [0], 'Sound Reference', [
       wbInteger('Type', itU8, wbEnum([
         {00} 'Draw/Sheathe',
@@ -12855,7 +12852,7 @@ begin
     ),
     wbLStringKC(DNAM, 'Magic Item Description', 0, cpTranslate),
     wbConditions
-  ], False, nil, cpNormal, False, nil {wbMGEFAfterLoad}, wbMGEFAfterSet);
+  ]);
 
   {subrecords checked against Starfield.esm}
   wbRecord(MISC, 'Misc. Item',
@@ -13215,8 +13212,8 @@ begin
           .SetSummaryPrefixSuffixOnValue(1, '{Rank: ', '}')
           .IncludeFlagOnValue(dfSummaryMembersNoName)
           .IncludeFlag(dfCollapsed, wbCollapsePerk)
-          , cpNormal, False, nil, wbPRKRsAfterSet
-      ).SetRequired
+      ).SetCountPath(PRKZ)
+       .SetRequired
     ]).SetSummaryKey([1]),
     wbPRPS,
     wbFTYP,
@@ -13989,9 +13986,7 @@ begin
               wbString(MPPM, 'Unknown'),
               wbFormIDCk(MPPT, 'Texture', [TXST]),
               wbUnknown(MPPF)
-            ]),
-            cpNormal, False, nil, wbMorphPresetsAfterSet
-          ),
+            ])).SetCountPath(MPPC),
           wbUnknown(MPPK),
           wbArray(MPGS, 'Unknown', wbInteger('Index', itU32, wbIntToHexStr, wbHexStrToInt))
           }
@@ -14488,8 +14483,7 @@ begin
       wbFormIDCk(VTCK, 'Voice Types', [NPC_, FACT, FLST, VTYP, NULL]).SetRequired,
       wbRArrayS('Alias Terminals', wbFormIDCk(ALTM, 'Terminal Menu', [TMLM])),
       wbEmpty(ALED, 'Alias End Marker', cpNormal, True)
-    ], [], cpNormal, False, nil, False, nil, wbContainerAfterSet)
-      .SetSummaryKey([1, 2])
+    ]).SetSummaryKey([1, 2])
       .SetSummaryDelimiter(' ')
       .SetSummaryMemberPrefixSuffix(0, 'Ref [', ']')
       .SetSummaryMemberPrefixSuffix(1, '', '')
@@ -16386,9 +16380,8 @@ begin
               ]))
             ]),
             wbInteger(YNAM, 'Index', itU16)
-          ]),
-          cpNormal, False, nil, wbINNRAfterSet
-        )
+          ])
+        ).SetCountPath(VNAM)
       ])
     , 10).SetRequired
   ]);
@@ -19117,7 +19110,9 @@ begin
       wbRStruct('Secondary Damage', [
         wbFormIDCk(DAMA, 'Damage Type', [DMGT], False, cpNormal, True),
         wbFormIDCk(ACTV, 'Actor Value', [AVIF], False, cpNormal, True)
-      ]), cpNormal, False, nil, wbSDLTListAfterSet).SetRequired
+      ])
+    ).SetCountPath(ITMC)
+     .SetRequired
   ]);
 
   {subrecords checked against Starfield.esm}

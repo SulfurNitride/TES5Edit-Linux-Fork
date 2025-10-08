@@ -168,37 +168,16 @@ procedure wbScrollTypeAfterLoad(const aElement: IwbElement);
 procedure wbSOUNAfterLoad(const aElement: IwbElement);
 procedure wbWorldAfterLoad(const aElement: IwbElement);
 
-{>>> After Set Callbacks <<<} //33
+{>>> After Set Callbacks <<<} //12
 procedure wbACBSLevelMultAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbATANsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbBODCsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbBODSsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbCNTOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbConditionsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbConditionTypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbContainerAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbCounterEffectsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbCTDAsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbConditionRunOnAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbDialogueTextAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbIdleMarkerPNAMAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbIdleMarkerQNAMAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbLENSAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbMGEFAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbMorphPresetsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbNPCAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbNPCActorSoundsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbPACKDateAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbPERKPRKETypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbPRKRsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbRaceAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbSceneActionTypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbSDLTListAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbSNDRRatesOfFireAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbSPLOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbTERMCNTOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbTERMDisplayItemsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbTERMMenuItemsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbUpdateSameParentUnions(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbWorldAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbWwiseKeywordMappingTemplateAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -1121,7 +1100,7 @@ begin
   end;
 end;
 
-{>>> After Set Callbacks <<<} //33
+{>>> After Set Callbacks <<<} //12
 
 procedure wbACBSLevelMultAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
@@ -1142,31 +1121,6 @@ begin
   finally
     wbEndInternalEdit;
   end;
-end;
-
-procedure wbATANsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('ATCP - Activity Count', aElement);
-end;
-
-procedure wbBODCsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('BODM - Count', aElement);
-end;
-
-procedure wbBODSsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('BODC - Count', aElement);
-end;
-
-procedure wbCNTOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('COCT - Count', aElement);
-end;
-
-procedure wbConditionsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterContainerAfterSet('CITC - Condition Count', 'Conditions', aElement);
 end;
 
 procedure wbConditionTypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -1196,22 +1150,6 @@ begin
   finally
     wbEndInternalEdit;
   end;
-end;
-
-procedure wbContainerAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterContainerAfterSet('COCT - Count', 'Items', aElement);
-end;
-
-procedure wbCounterEffectsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  // if it is really possible to have both counter effects and multiple data, this is going to be tricky.
-  wbCounterByPathAfterSet('Magic Effect Data\DATA - Data\Counter effect count', aElement);
-end;
-
-procedure wbCTDAsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('CITC - Condition Count', aElement);
 end;
 
 procedure wbConditionRunOnAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -1281,34 +1219,6 @@ begin
   end;
 end;
 
-procedure wbLENSAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('LFSP - Count', aElement);
-end;
-
-procedure wbMGEFAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterContainerByPathAfterSet('Magic Effect Data\DATA - Data\Counter effect count', 'Counter Effects', aElement);
-end;
-
-procedure wbMorphPresetsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('MPPC - Count', aElement);
-end;
-
-procedure wbNPCAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterContainerAfterSet('COCT - Count', 'Items', aElement);
-  wbCounterContainerAfterSet('SPCT - Count', 'Actor Effects', aElement);
-  wbCounterContainerAfterSet('LLCT - Count', 'Leveled List Entries', aElement);
-  wbCounterContainerAfterSet('PRKZ - Perk Count', 'Perks', aElement);
-end;
-
-procedure wbNPCActorSoundsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('CS2H - Count', aElement);
-end;
-
 procedure wbPACKDateAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
   if not Assigned(aElement) then
@@ -1367,16 +1277,6 @@ begin
   end;
 end;
 
-procedure wbPRKRsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('PRKZ - Perk Count', aElement);
-end;
-
-procedure wbRaceAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterContainerAfterSet('SPCT - Count', 'Actor Effects', aElement);
-end;
-
 procedure wbSceneActionTypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
   if not Assigned(aElement) then
@@ -1395,36 +1295,6 @@ begin
   var lDataElement := lContainer.ElementBySortOrder[8]; //'Type Specific Action'
   if Assigned(lDataElement) and (lDataElement.Name <> aElement.Value) then
     lDataElement.Remove;
-end;
-
-procedure wbSDLTListAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('ITMC - Secondary List Count', aElement);
-end;
-
-procedure wbSNDRRatesOfFireAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('ITMC - Count', aElement);
-end;
-
-procedure wbSPLOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('SPCT - Count', aElement);
-end;
-
-procedure wbTERMCNTOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('COCT - Holds Holotape (Count)', aElement);
-end;
-
-procedure wbTERMDisplayItemsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('BSIZ - Count', aElement);
-end;
-
-procedure wbTERMMenuItemsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('ISIZ - Count', aElement);
 end;
 
 procedure wbUpdateSameParentUnions(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -7147,7 +7017,7 @@ begin
         .IncludeFlag(dfCollapsed, wbCollapseSounds)
         .IncludeFlag(dfSummaryMembersNoName)
         .IncludeFlag(dfSummaryNoSortKey)
-      ).SetAfterSet(wbNPCActorSoundsAfterSet);
+      ).SetCountPath(CS2H);
 
   wbMagicEffectSounds :=
     wbArrayS(SNDD, 'Sounds',
