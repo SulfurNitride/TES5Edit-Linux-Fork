@@ -4634,30 +4634,34 @@ begin
 
   wbRecord(DIAL, 'Dialog Topic', [
     wbEDIDReqKC,
-    wbRArrayS('Added Quests', wbRStructSK([0], 'Added Quest', [
-      wbFormIDCkNoReach(QSTI, 'Quest', [QUST], False, cpBenign),
-      wbRArray('Shared Infos', wbRStruct('Shared Info', [
-        wbFormIDCk(INFC, 'Info Connection', [INFO], False, cpBenign),
-        wbInteger(INFX, 'Info Index', itS32, nil, cpBenign)
-      ]))
-    ])),
+    wbRArrayS('Added Quests',
+      wbRStructSK([0], 'Added Quest', [
+        wbFormIDCkNoReach(QSTI, 'Quest', [QUST], False, cpBenign),
+        wbRArray('Shared Infos',
+          wbRStruct('Shared Info', [
+            wbFormIDCk(INFC, 'Info Connection', [INFO], False, cpBenign),
+            wbInteger(INFX, 'Info Index', itS32, nil, cpBenign)
+          ]))
+      ])),
     // no QSTR in FNV, but keep it just in case
-    wbRArrayS('Removed Quests', wbRStructSK([0], 'Removed Quest', [
-      wbFormIDCkNoReach(QSTR, 'Quest', [QUST], False, cpBenign)
-    ])),
+    wbQSTR,
     // some records have INFC INFX (with absent formids) but no QSTI, probably error in GECK
     // i.e. [DIAL:001287C6] and [DIAL:000E9084]
-    wbRArray('Unused', wbRStruct('Unused', [
-      wbUnknown(INFC, cpIgnore),
-      wbUnknown(INFX, cpIgnore)
-    ]), cpIgnore, False, nil, nil, wbNeverShow),
+    wbRArray('Unused',
+      wbRStruct('Unused', [
+        wbUnknown(INFC, cpIgnore),
+        wbUnknown(INFX, cpIgnore)
+      ]), cpIgnore).SetDontShow(wbNeverShow),
     wbFULL
       .SetAfterLoad(wbDialogueTextAfterLoad)
       .SetAfterSet(wbDialogueTextAfterSet),
-    wbFloat(PNAM, 'Priority', cpNormal, True, 1, -1, nil, nil, 50.0),
+    wbFloat(PNAM, 'Priority')
+      .SetDefaultNativeValue(50)
+      .SetRequired,
     wbStringKC(TDUM, 'Dumb Response'),
     wbStruct(DATA, '', [
-      wbInteger('Type', itU8, wbEnum([
+      wbInteger('Type', itU8,
+        wbEnum([
         {0} 'Topic',
         {1} 'Conversation',
         {2} 'Combat',
@@ -4666,15 +4670,16 @@ begin
         {5} 'Service',
         {6} 'Miscellaneous',
         {7} 'Radio'
-      ])),
-      wbInteger('Flags', itU8, wbFlags([
-        'Rumors',
-        'Top-level'
-      ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
+        ])),
+      wbInteger('Flags', itU8,
+        wbFlags([
+        {0} 'Rumors',
+        {1} 'Top-level'
+        ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ], cpNormal, True, nil, 1),
     wbINOM,
     wbINOA
-  ], True);
+  ]);
 
   wbRecord(DOOR, 'Door',
     wbFlags(wbFlagsList([
@@ -6480,10 +6485,11 @@ begin
 
   wbRecord(INFO, 'Dialog response',
     wbFlags(wbFlagsList([
-      13, 'Unknown 13'
+    13, 'Unknown 13'
     ])), [
-    wbStruct(DATA, '', [
-      wbInteger('Type', itU8, wbEnum([
+    wbStruct(DATA, 'Data', [
+      wbInteger('Type', itU8,
+        wbEnum([
         {0} 'Topic',
         {1} 'Conversation',
         {2} 'Combat',
@@ -6492,35 +6498,40 @@ begin
         {5} 'Service',
         {6} 'Miscellaneous',
         {7} 'Radio'
-      ])),
+        ])),
       wbNextSpeaker,
-      wbInteger('Flags 1', itU8, wbFlags([
-        {0x01} 'Goodbye',
-        {0x02} 'Random',
-        {0x04} 'Say Once',
-        {0x08} 'Run Immediately',
-        {0x10} 'Info Refusal',
-        {0x20} 'Random End',
-        {0x40} 'Run for Rumors',
-        {0x80} 'Speech Challenge'
-      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
-      wbInteger('Flags 2', itU8, wbFlags([
-        {0x01} 'Say Once a Day',
-        {0x02} 'Always Darken',
-        {0x04} 'Unknown 2',
-        {0x08} 'Unknown 3',
-        {0x10} 'Low Intelligence',
-        {0x20} 'High Intelligence'
-      ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
+      wbInteger('Flags 1', itU8,
+        wbFlags([
+        {0} 'Goodbye',
+        {1} 'Random',
+        {2} 'Say Once',
+        {3} 'Run Immediately',
+        {4} 'Info Refusal',
+        {5} 'Random End',
+        {6} 'Run for Rumors',
+        {7} 'Speech Challenge'
+        ])
+      ).IncludeFlag(dfCollapsed, wbCollapseFlags),
+      wbInteger('Flags 2', itU8,
+        wbFlags([
+        {0} 'Say Once a Day',
+        {1} 'Always Darken',
+        {2} 'Unknown 2',
+        {3} 'Unknown 3',
+        {4} 'Low Intelligence',
+        {5} 'High Intelligence'
+        ])
+      ).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ], cpNormal, True, nil, 3),
-    wbFormIDCkNoReach(QSTI, 'Quest', [QUST], False, cpNormal, True),
-    wbFormIDCk(TPIC, 'Topic', [DIAL]),  // The GECK ignores it for ESM
-    wbFormIDCkNoReach(PNAM, 'Previous INFO', [INFO, NULL]),
+    wbFormIDCkNoReach(QSTI, 'Quest', [QUST]).SetRequired,
+    wbFormIDCkNoReach(TPIC, 'Previous Topic', [DIAL]),  // The GECK ignores it for ESM
+    wbFormIDCkNoReach(PNAM, 'Previous INFO', [INFO,NULL]),
     wbRArray('Add Topics', wbFormIDCk(NAME, 'Topic', [DIAL])),
     wbRArray('Responses',
       wbRStruct('Response', [
         wbStruct(TRDT, 'Response Data', [
-          wbInteger('Emotion Type', itU32, wbEnum([
+          wbInteger('Emotion Type', itU32,
+            wbEnum([
             {0} 'Neutral',
             {1} 'Anger',
             {2} 'Disgust',
@@ -6529,52 +6540,52 @@ begin
             {5} 'Happy',
             {6} 'Surprise',
             {7} 'Pained'
-          ])),
+            ])),
           wbInteger('Emotion Value', itS32),
           wbUnused(4),
           wbInteger('Response number', itU8),
           wbUnused(3),
           wbFormIDCk('Sound', [SOUN, NULL]),
-          wbInteger('Flags', itU8, wbFlags([
-            'Use Emotion Animation'
-          ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
+          wbInteger('Use Emotion Animation', itU8, wbBoolEnum),
           wbUnused(3)
         ], cpNormal, False, nil, 5),
         wbStringKC(NAM1, 'Response Text', 0, cpTranslate)
           .SetAfterLoad(wbDialogueTextAfterLoad)
           .SetAfterSet(wbDialogueTextAfterSet)
           .SetRequired,
-        wbString(NAM2, 'Script Notes', 0, cpTranslate, True),
+        wbString(NAM2, 'Script Notes', 0, cpTranslate).SetRequired,
         wbString(NAM3, 'Edits'),
         wbFormIDCk(SNAM, 'Speaker Animation', [IDLE]),
         wbFormIDCk(LNAM, 'Listener Animation', [IDLE])
-      ])
+      ]).SetSummaryKey([1])
+        .IncludeFlag(dfCollapsed)
     ),
     wbConditions,
-    wbRArray('Choices', wbFormIDCk(TCLT, 'Choice', [DIAL])),
+    wbRArray('Link To', wbFormIDCk(TCLT, 'Topic', [DIAL])),
     wbRArray('Link From', wbFormIDCk(TCLF, 'Topic', [DIAL])),
     wbRArray('Follow Up', wbFormIDCk(TCFU, 'Info', [INFO] )),
     wbRStruct('Script (Begin)', [
       wbEmbeddedScriptReq
-    ], [], cpNormal, True),
+    ]).SetRequired,
     wbRStruct('Script (End)', [
-      wbEmpty(NEXT, 'Marker', cpNormal, True),
+      wbEmpty(NEXT, 'Marker').SetRequired,
       wbEmbeddedScriptReq
-    ], [], cpNormal, True),
+    ]).SetRequired,
     wbFormIDCk(SNDD, 'Unused', [SOUN]),
     wbStringKC(RNAM, 'Prompt', 0, cpTranslate)
       .SetAfterLoad(wbDialogueTextAfterLoad)
       .SetAfterSet(wbDialogueTextAfterSet),
-    wbFormIDCk(ANAM, 'Speaker', [CREA, NPC_]),
-    wbFormIDCk(KNAM, 'ActorValue/Perk', [AVIF, PERK]),
-    wbInteger(DNAM, 'Speech Challenge', itU32, wbEnum([
-      '---',
-      'Very Easy',
-      'Easy',
-      'Average',
-      'Hard',
-      'Very Hard'
-    ]))
+    wbFormIDCk(ANAM, 'Speaker', [CREA,NPC_]),
+    wbFormIDCk(KNAM, 'ActorValue/Perk', [AVIF,PERK]),
+    wbInteger(DNAM, 'Speech Challenge', itU32,
+      wbEnum([
+      {0} '---',
+      {1} 'Very Easy',
+      {2} 'Easy',
+      {3} 'Average',
+      {4} 'Hard',
+      {5} 'Very Hard'
+      ]))
   ]).SetAddInfo(wbINFOAddInfo)
     .SetAfterLoad(wbINFOAfterLoad);
 

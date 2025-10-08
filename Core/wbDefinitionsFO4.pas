@@ -6720,25 +6720,30 @@ begin
 
   wbRecord(DIAL, 'Dialog Topic',
     wbFlags(wbFlagsList([
-      {0x00004000} 14, 'Partial Form'
+    14, 'Partial Form'
     ]), [14]), [
     wbEDID,
     wbFULL
       .SetAfterLoad(wbDialogueTextAfterLoad)
       .SetAfterSet(wbDialogueTextAfterSet),
-    wbFloat(PNAM, 'Priority', cpNormal, True, 1, -1, nil, nil, 50.0),
+    wbFloat(PNAM, 'Priority')
+      .SetDefaultNativeValue(50)
+      .SetRequired,
     wbFormIDCkNoReach(BNAM, 'Branch', [DLBR]),
-    wbFormIDCkNoReach(QNAM, 'Quest', [QUST], False, cpNormal, False),
+    wbFormIDCkNoReach(QNAM, 'Quest', [QUST]),
     wbFormIDCk(KNAM, 'Keyword', [KYWD]),
     wbStruct(DATA, 'Data', [
       // this should not be named Flags since TwbFile.BuildReachable
       // expects Top-Level flag here from FNV
-      wbInteger('Topic Flags', itU8, wbFlags([
-        'Do All Before Repeating',
-        'Unknown 1',
-        'Unknown 2'
-      ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
-      wbInteger('Category', itU8, wbEnum([
+      wbInteger('Topic Flags', itU8,
+        wbFlags([
+        {0} 'Do All Before Repeating',
+        {1} 'Unknown 1',
+        {2} 'Unknown 2'
+        ])
+      ).IncludeFlag(dfCollapsed, wbCollapseFlags),
+      wbInteger('Category', itU8,
+        wbEnum([
         {0} 'Player',
         {1} 'Command',
         {2} 'Scene',
@@ -6747,134 +6752,135 @@ begin
         {5} 'Detection',
         {6} 'Service',
         {7} 'Miscellaneous'
-      ])),
-      wbInteger('Subtype', itU16, wbEnum([
-        { 0} 'Custom',
-        { 1} 'ForceGreet',
-        { 2} 'Rumors',
-        { 3} 'Custom',
-        { 4} 'Call',
-        { 5} 'Follow',
-        { 6} 'Move',
-        { 7} 'Attack',
-        { 8} 'Inspect',
-        { 9} 'Retrieve',
-        {10} 'Stay',
-        {11} 'Release',
-        {12} 'ShowRelationships',
-        {13} 'Reject',
-        {14} 'Heal',
-        {15} 'Assign',
-        {16} 'Enter',
-        {17} 'Custom',
-        {18} 'Show',
-        {19} 'Agree',
-        {20} 'Refuse',
-        {21} 'ExitFavorState',
-        {22} 'MoralRefusal',
-        {23} 'Trade',
-        {24} 'PathingRefusal',
-        {25} 'Attack',
-        {26} 'PowerAttack',
-        {27} 'Bash',
-        {28} 'Hit',
-        {29} 'Flee',
-        {30} 'BleedOut',
-        {31} 'AvoidThreat',
-        {32} 'Death',
-        {33} 'Block',
-        {34} 'Taunt',
-        {35} 'ThrowGrenade',
-        {36} 'AllyKilled',
-        {37} 'OrderFallback',
-        {38} 'OrderMoveUp',
-        {39} 'OrderFlank',
-        {40} 'OrderTakeCover',
-        {41} 'Retreat',
-        {42} 'CoverMe',
-        {43} 'SuppressiveFire',
-        {44} 'CrippledLimb',
-        {45} 'PairedAttack',
-        {46} 'Steal',
-        {47} 'Yield',
-        {48} 'AcceptYield',
-        {49} 'PickpocketCombat',
-        {50} 'Assault',
-        {51} 'Murder',
-        {52} 'AssaultNC',
-        {53} 'MurderNC',
-        {54} 'PickpocketNC',
-        {55} 'StealFromNC',
-        {56} 'TrespassAgainstNC',
-        {57} 'Trespass',
-        {58} 'UNUSED01',
-        {59} 'VoicePowerStartShort',
-        {60} 'VoicePowerStartLong',
-        {61} 'VoicePowerEndShort',
-        {62} 'VoicePowerEndLong',
-        {63} 'AlertIdle',
-        {64} 'LostIdle',
-        {65} 'NormalToAlert',
-        {66} 'NormalToCombat',
-        {67} 'NormalToLost',
-        {68} 'AlertToNormal',
-        {69} 'AlertToCombat',
-        {70} 'CombatToNormal',
-        {71} 'CombatToLost',
-        {72} 'LostToNormal',
-        {73} 'LostToCombat',
-        {74} 'DetectFriendDie',
-        {75} 'ServiceRefusal',
-        {76} 'Repair',
-        {77} 'Travel',
-        {78} 'Training',
-        {79} 'BarterExit',
-        {80} 'RepairExit',
-        {81} 'Recharge',
-        {82} 'RechargeExit',
-        {83} 'TrainingExit',
-        {84} 'ObserveCombat',
-        {85} 'NoticeCorpse',
-        {86} 'TimeToGo',
-        {87} 'Goodbye',
-        {88} 'Hello',
-        {89} 'SwingMeleeWeapon',
-        {90} 'ShootBow',
-        {91} 'ZKeyObject',
-        {92} 'Jump',
-        {93} 'KnockOverObject',
-        {94} 'DestroyObject',
-        {95} 'StandonFurniture',
-        {96} 'LockedObject',
-        {97} 'PickpocketTopic',
-        {98} 'PursueIdleTopic',
-        {99} 'SharedInfo',
-       {100} 'SceneChoice',
-       {101} 'PlayerCastProjectileSpell',
-       {102} 'PlayerCastSelfSpell',
-       {103} 'PlayerShout',
-       {104} 'Idle',
-       {105} 'EnterSprintBreath',
-       {106} 'EnterBowZoomBreath',
-       {107} 'ExitBowZoomBreath',
-       {108} 'ActorCollidewithActor',
-       {109} 'PlayerinIronSights',
-       {110} 'OutofBreath',
-       {111} 'CombatGrunt',
-       {112} 'LeaveWaterBreath',
-       {113} 'ImpatientPositive',
-       {114} 'ImpatientNegative',
-       {115} 'ImpatientNeutral',
-       {116} 'ImpatientQuestion',
-       {117} 'WaitingForPlayerInput',
-       {118} 'Greeting',
-       {119} 'PlayerActivateDoor',
-       {120} 'PlayerActivateTerminals',
-       {121} 'PlayerActivateFurniture',
-       {122} 'PlayerActivateActivators',
-       {123} 'PlayerActivateContainer',
-       {124} 'PlayerAquireFeaturedItem'
-      ]))
+        ])),
+      wbInteger('Subtype', itU16,
+        wbEnum([
+        {0}   'Custom',
+        {1}   'ForceGreet',
+        {2}   'Rumors',
+        {3}   'Custom',
+        {4}   'Call',
+        {5}   'Follow',
+        {6}   'Move',
+        {7}   'Attack',
+        {8}   'Inspect',
+        {9}   'Retrieve',
+        {10}  'Stay',
+        {11}  'Release',
+        {12}  'ShowRelationships',
+        {13}  'Reject',
+        {14}  'Heal',
+        {15}  'Assign',
+        {16}  'Enter',
+        {17}  'Custom',
+        {18}  'Show',
+        {19}  'Agree',
+        {20}  'Refuse',
+        {21}  'ExitFavorState',
+        {22}  'MoralRefusal',
+        {23}  'Trade',
+        {24}  'PathingRefusal',
+        {25}  'Attack',
+        {26}  'PowerAttack',
+        {27}  'Bash',
+        {28}  'Hit',
+        {29}  'Flee',
+        {30}  'BleedOut',
+        {31}  'AvoidThreat',
+        {32}  'Death',
+        {33}  'Block',
+        {34}  'Taunt',
+        {35}  'ThrowGrenade',
+        {36}  'AllyKilled',
+        {37}  'OrderFallback',
+        {38}  'OrderMoveUp',
+        {39}  'OrderFlank',
+        {40}  'OrderTakeCover',
+        {41}  'Retreat',
+        {42}  'CoverMe',
+        {43}  'SuppressiveFire',
+        {44}  'CrippledLimb',
+        {45}  'PairedAttack',
+        {46}  'Steal',
+        {47}  'Yield',
+        {48}  'AcceptYield',
+        {49}  'PickpocketCombat',
+        {50}  'Assault',
+        {51}  'Murder',
+        {52}  'AssaultNC',
+        {53}  'MurderNC',
+        {54}  'PickpocketNC',
+        {55}  'StealFromNC',
+        {56}  'TrespassAgainstNC',
+        {57}  'Trespass',
+        {58}  'UNUSED01',
+        {59}  'VoicePowerStartShort',
+        {60}  'VoicePowerStartLong',
+        {61}  'VoicePowerEndShort',
+        {62}  'VoicePowerEndLong',
+        {63}  'AlertIdle',
+        {64}  'LostIdle',
+        {65}  'NormalToAlert',
+        {66}  'NormalToCombat',
+        {67}  'NormalToLost',
+        {68}  'AlertToNormal',
+        {69}  'AlertToCombat',
+        {70}  'CombatToNormal',
+        {71}  'CombatToLost',
+        {72}  'LostToNormal',
+        {73}  'LostToCombat',
+        {74}  'DetectFriendDie',
+        {75}  'ServiceRefusal',
+        {76}  'Repair',
+        {77}  'Travel',
+        {78}  'Training',
+        {79}  'BarterExit',
+        {80}  'RepairExit',
+        {81}  'Recharge',
+        {82}  'RechargeExit',
+        {83}  'TrainingExit',
+        {84}  'ObserveCombat',
+        {85}  'NoticeCorpse',
+        {86}  'TimeToGo',
+        {87}  'Goodbye',
+        {88}  'Hello',
+        {89}  'SwingMeleeWeapon',
+        {90}  'ShootBow',
+        {91}  'ZKeyObject',
+        {92}  'Jump',
+        {93}  'KnockOverObject',
+        {94}  'DestroyObject',
+        {95}  'StandonFurniture',
+        {96}  'LockedObject',
+        {97}  'PickpocketTopic',
+        {98}  'PursueIdleTopic',
+        {99}  'SharedInfo',
+        {100} 'SceneChoice',
+        {101} 'PlayerCastProjectileSpell',
+        {102} 'PlayerCastSelfSpell',
+        {103} 'PlayerShout',
+        {104} 'Idle',
+        {105} 'EnterSprintBreath',
+        {106} 'EnterBowZoomBreath',
+        {107} 'ExitBowZoomBreath',
+        {108} 'ActorCollidewithActor',
+        {109} 'PlayerinIronSights',
+        {110} 'OutofBreath',
+        {111} 'CombatGrunt',
+        {112} 'LeaveWaterBreath',
+        {113} 'ImpatientPositive',
+        {114} 'ImpatientNegative',
+        {115} 'ImpatientNeutral',
+        {116} 'ImpatientQuestion',
+        {117} 'WaitingForPlayerInput',
+        {118} 'Greeting',
+        {119} 'PlayerActivateDoor',
+        {120} 'PlayerActivateTerminals',
+        {121} 'PlayerActivateFurniture',
+        {122} 'PlayerActivateActivators',
+        {123} 'PlayerActivateContainer',
+        {124} 'PlayerAquireFeaturedItem'
+        ]))
     ]),
     wbString(SNAM, 'Subtype Name', 4),
     wbInteger(TIFC, 'Info Count', itU32, nil, cpIgnore),
@@ -10066,84 +10072,87 @@ begin
 
   wbRecord(INFO, 'Dialog response',
     wbFlags(wbFlagsList([
-      {0x00000040}  6, 'Info Group',
-      {0x00000080}  7, 'Exclude From Export',
-      {0x00002000} 13, 'Actor Changed'
+    6, 'Info Group',
+    7, 'Exclude From Export',
+    13, 'Actor Changed'
     ])), [
     wbEDID,
     wbVMADFragmentedINFO,
     wbStruct(ENAM, 'Response flags', [
       wbUnion('Flags', wbINFOGroupDecider,[
-        wbInteger('Flags', itU16, wbFlags([
-          {0x0001} 'Start Scene on End',
-          {0x0002} 'Random',
-          {0x0004} 'Say Once',
-          {0x0008} 'Requires Player Activation',
-          {0x0010} 'Unknown 4',
-          {0x0020} 'Random End',
-          {0x0040} 'End Running Scene',
-          {0x0080} 'ForceGreet Hello',
-          {0x0100} 'Player Address',
-          {0x0200} 'Force Subtitle',
-          {0x0400} 'Can Move While Greeting',
-          {0x0800} 'No LIP File',
-          {0x1000} 'Requires post-processing',
-          {0x2000} 'Audio Output Override',
-          {0x4000} 'Has Capture',
-          {0x8000} 'Unknown 15'
-        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
-        wbInteger('Flags', itU16, wbFlags([   //Info groups
-          {0x0001} 'Unknown 0', // Any changes to the idle group removes this flag
-          {0x0002} 'Random',
-          {0x0004} 'Unknown 2', // Any changes to the idle group removes this flag
-          {0x0008} 'Force all children player activate only',
-          {0x0010} 'Unknown 4',
-          {0x0020} 'Random End',
-          {0x0040} 'Unknown 6', // Any changes to the idle group removes this flag
-          {0x0080} 'Unknown 7', // Any changes to the idle group removes this flag
-          {0x0100} 'Child infos don''t inherit reset data',
-          {0x0200} 'Force All Children Random',
-          {0x0400} 'Unknown 10', // Any changes to the idle group removes this flag
-          {0x0800} 'Don''t do all before repeating',
-          {0x1000} 'Unknown 12', // Any changes to the idle group removes this flag
-          {0x2000} 'Unknown 13', // Any changes to the idle group removes this flag
-          {0x4000} 'Unknown 14', // Any changes to the idle group removes this flag
-          {0x8000} 'Unknown 15'
-        ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
+        wbInteger('Flags', itU16,
+          wbFlags([
+          {0}  'Start Scene on End',
+          {1}  'Random',
+          {2}  'Say Once',
+          {3}  'Requires Player Activation',
+          {4}  'Unknown 4',
+          {5}  'Random End',
+          {6}  'End Running Scene',
+          {7}  'ForceGreet Hello',
+          {8}  'Player Address',
+          {9}  'Force Subtitle',
+          {10} 'Can Move While Greeting',
+          {11} 'No LIP File',
+          {12} 'Requires post-processing',
+          {13} 'Audio Output Override',
+          {14} 'Has Capture',
+          {15} 'Unknown 15'
+          ])
+        ).IncludeFlag(dfCollapsed, wbCollapseFlags),
+        wbInteger('Flags', itU16,
+          wbFlags([   //Info groups
+          {0} 'Unknown 0', // Any changes to the idle group removes this flag
+          {1} 'Random',
+          {2} 'Unknown 2', // Any changes to the idle group removes this flag
+          {3} 'Force all children player activate only',
+          {4} 'Unknown 4',
+          {5} 'Random End',
+          {6} 'Unknown 6', // Any changes to the idle group removes this flag
+          {7} 'Unknown 7', // Any changes to the idle group removes this flag
+          {8} 'Child infos don''t inherit reset data',
+          {9} 'Force All Children Random',
+          {10} 'Unknown 10', // Any changes to the idle group removes this flag
+          {11} 'Don''t do all before repeating',
+          {12} 'Unknown 12', // Any changes to the idle group removes this flag
+          {13} 'Unknown 13', // Any changes to the idle group removes this flag
+          {14} 'Unknown 14', // Any changes to the idle group removes this flag
+          {15} 'Unknown 15'
+          ])
+        ).IncludeFlag(dfCollapsed, wbCollapseFlags)
       ]),
       wbInteger('Reset Hours', itU16, wbDiv(2730))
     ]),
-    wbFormIDCk(TPIC, 'Topic', [DIAL]),
-    wbFormIDCkNoReach(PNAM, 'Previous INFO', [INFO, NULL], False, cpBenign),
+    wbFormIDCkNoReach(TPIC, 'Previous Topic', [DIAL]),
+    wbFormIDCkNoReach(PNAM, 'Previous INFO', [INFO,NULL], False, cpBenign),
     wbFormIDCk(DNAM, 'Shared INFO', [INFO]),
     wbFormIDCk(GNAM, 'INFO group', [INFO]),
     wbString(IOVR, 'Override FileName'),
-
-    wbRArray('Responses', wbRStruct('Response', [
-      wbStruct(TRDA, 'Response Data', [
-        wbFormIDCk('Emotion', [KYWD, FFFF]),
-        wbInteger('Response number', itU8),
-        wbFormIDCk('Sound File', [SNDR, NULL]),
-        wbByteArray('Unknown', 1),
-        wbInteger('Interrupt Percentage', itU16),
-        wbInteger('Camera Target Alias', itS32),
-        wbInteger('Camera Location Alias', itS32)
-      ]),
-      wbLStringKC(NAM1, 'Response Text', 0, cpTranslate)
-        .SetAfterLoad(wbDialogueTextAfterLoad)
-        .SetAfterSet(wbDialogueTextAfterSet)
-        .SetRequired,
-      wbString(NAM2, 'Script Notes', 0, cpNormal, True),
-      wbString(NAM3, 'Edits', 0, cpNormal, True),
-      wbString(NAM4, 'Alternate LIP Text', 0, cpNormal, True),
-      wbFormIDCk(SNAM, 'Idle Animations: Speaker', [IDLE]),
-      wbFormIDCk(LNAM, 'Idle Animations: Listener', [IDLE]),
-      wbInteger(TNAM, 'Interrupt Percentage', itU16),
-      wbByteArray(NAM9, 'Text Hash'),
-      wbFormIDCk(SRAF, 'Camera Path', [CPTH]),
-      wbEmpty(WZMD, 'Stop on Scene End')
-    ])),
-
+    wbRArray('Responses',
+      wbRStruct('Response', [
+        wbStruct(TRDA, 'Response Data', [
+          wbFormIDCk('Emotion', [KYWD,FFFF]),
+          wbInteger('Response number', itU8),
+          wbFormIDCk('Sound File', [SNDR,NULL]),
+          wbByteArray('Unknown', 1),
+          wbInteger('Interrupt Percentage', itU16),
+          wbInteger('Camera Target Alias', itS32),
+          wbInteger('Camera Location Alias', itS32)
+        ]),
+        wbLStringKC(NAM1, 'Response Text', 0, cpTranslate)
+          .SetAfterLoad(wbDialogueTextAfterLoad)
+          .SetAfterSet(wbDialogueTextAfterSet)
+          .SetRequired,
+        wbString(NAM2, 'Script Notes').SetRequired,
+        wbString(NAM3, 'Edits').SetRequired,
+        wbString(NAM4, 'Alternate LIP Text').SetRequired,
+        wbFormIDCk(SNAM, 'Idle Animations: Speaker', [IDLE]),
+        wbFormIDCk(LNAM, 'Idle Animations: Listener', [IDLE]),
+        wbInteger(TNAM, 'Interrupt Percentage', itU16),
+        wbByteArray(NAM9, 'Text Hash'),
+        wbFormIDCk(SRAF, 'Camera Path', [CPTH]),
+        wbEmpty(WZMD, 'Stop on Scene End')
+      ])),
     wbConditions,
     wbLStringKC(RNAM, 'Prompt', 0, cpTranslate)
       .SetAfterLoad(wbDialogueTextAfterLoad)
@@ -10155,11 +10164,12 @@ begin
     wbFormIDCk(ONAM, 'Audio Output Override', [SOPM]),
     wbInteger(GREE, 'Greet Distance', itU32),
     wbStruct(TIQS, 'Set Parent Quest Stage', [
-      wbInteger('On Begin', itS16),
-      wbInteger('On End', itS16)
+      wbInteger('On Begin', itU16),
+      wbInteger('On End', itU16)
     ]),
     wbString(NAM0, 'Start Scene Phase'),
-    wbInteger(INCC, 'Challenge', itU32, wbEnum([
+    wbInteger(INCC, 'Challenge', itU32,
+      wbEnum([
       {0} 'None',
       {1} 'Easy',
       {2} 'Medium',
@@ -10168,14 +10178,15 @@ begin
       {5} 'Easy Repeatable',
       {6} 'Medium Repeatable',
       {7} 'Hard Repeatable'
-    ])),
+      ])),
     wbFormIDCk(MODQ, 'Reset Global', [GLOB]),
-    wbInteger(INAM, 'Subtitle Priority', itU32, wbEnum([
-      'Low',
-      'Normal',
-      'Unknown 2',
-      'Force'
-    ]))
+    wbInteger(INAM, 'Subtitle Priority', itU32,
+      wbEnum([
+      {0} 'Low',
+      {1} 'Normal',
+      {2} 'Unknown 2',
+      {3} 'Force'
+      ]))
   ]).SetAddInfo(wbINFOAddInfo);
 
   wbRecord(INGR, 'Ingredient', [
