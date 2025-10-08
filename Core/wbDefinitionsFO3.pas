@@ -5932,7 +5932,7 @@ begin
     wbFormIDCk(KNAM, 'ActorValue/Perk', [AVIF,PERK]),
     wbInteger(DNAM, 'Speech Challenge', itU32,
       wbEnum([
-      {0} '---',
+      {0} 'None',
       {1} 'Very Easy',
       {2} 'Easy',
       {3} 'Average',
