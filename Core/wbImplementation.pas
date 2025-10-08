@@ -2807,6 +2807,10 @@ begin
   if Assigned(Group) then
     for i := 0 to Pred(Group.ElementCount) do
       (Group.Elements[i] as IwbElementInternal).Reached;
+  Group := GetGroupBySignature('DLVW');
+  if Assigned(Group) then
+    for i := 0 to Pred(Group.ElementCount) do
+      (Group.Elements[i] as IwbElementInternal).Reached;
   Group := GetGroupBySignature('DOBJ');
   if Assigned(Group) then
     for i := 0 to Pred(Group.ElementCount) do
