@@ -205,6 +205,10 @@ function wbCellInteriorDontShow(const aElement: IwbElement): Boolean;
 function wbCellExteriorDontShow(const aElement: IwbElement): Boolean;
 function wbIdleMarkerPNAMDontShow(const aElement: IwbElement): Boolean;
 function wbIdleMarkerQNAMDontShow(const aElement: IwbElement): Boolean;
+function wbLIGHCarryDontShow(const aElement: IwbElement): Boolean;
+function wbLIGHFalloffDontShow(const aElement: IwbElement): Boolean;
+function wbLIGHFlickerDontShow(const aElement: IwbElement): Boolean;
+function wbLIGHShadowSpotDontShow(const aElement: IwbElement): Boolean;
 function wbModelInfoDontShow(const aElement: IwbElement): Boolean;
 function wbLCTNCellDontShow(const aElement: IwbElement): Boolean;
 function wbPACKTemplateDontShow(const aElement: IwbElement): Boolean;
@@ -1665,6 +1669,106 @@ end;
 function wbIdleMarkerQNAMDontShow(const aElement: IwbElement): Boolean;
 begin
   Result := Assigned(aElement.ContainingMainRecord.ElementBySignature[PNAM]);
+end;
+
+function wbLIGHCarryDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := False;
+  if not Assigned(aElement) then
+    Exit;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  var lDATA := lMainRecord.ElementBySignature[DATA] as IwbContainerElementRef;
+  if not Assigned(lData) then
+    Exit;
+
+  var lFlags := lDATA.ElementByName['Flags'];
+  if not Assigned(lFlags) then
+    Exit;
+
+     {Can Be Carried}
+  if (lFlags.NativeValue and $2) = 0 then
+    Result := True;
+end;
+
+function wbLIGHFalloffDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := False;
+  if not Assigned(aElement) then
+    Exit;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  var lDATA := lMainRecord.ElementBySignature[DATA] as IwbContainerElementRef;
+  if not Assigned(lData) then
+    Exit;
+
+  var lFlags := lDATA.ElementByName['Flags'];
+  if not Assigned(lFlags) then
+    Exit;
+
+  var lFlagsValue := lFlags.NativeValue;
+      {Shadow Spotlight}              {Shadow Hemisphere}
+  if (((lFlagsValue and $400) = 0) and ((lFlagsValue and $800) = 0)) then
+    if ((wbCS = False) or ((lFlagsValue and $4000) = 0)) then
+      Result := True;
+end;
+
+function wbLIGHFlickerDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := False;
+  if not Assigned(aElement) then
+    Exit;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  var lDATA := lMainRecord.ElementBySignature[DATA] as IwbContainerElementRef;
+  if not Assigned(lData) then
+    Exit;
+
+  var lFlags := lDATA.ElementByName['Flags'];
+  if not Assigned(lFlags) then
+    Exit;
+
+  var lFlagsValue := lFlags.NativeValue;
+  if ((lFlagsValue and   $8) = 0) and
+     ((lFlagsValue and  $40) = 0) and
+     ((lFlagsValue and  $80) = 0) and
+     ((lFlagsValue and $100) = 0)
+  then
+    Result := True;
+end;
+
+function wbLIGHShadowSpotDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := False;
+  if not Assigned(aElement) then
+    Exit;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  var lDATA := lMainRecord.ElementBySignature[DATA] as IwbContainerElementRef;
+  if not Assigned(lData) then
+    Exit;
+
+  var lFlags := lDATA.ElementByName['Flags'];
+  if not Assigned(lFlags) then
+    Exit;
+
+  var lFlagsValue := lFlags.NativeValue;
+     {Shadow Spotlight}
+  if (lFlagsValue and $400) = 0 then
+    if ((wbCS = False) or ((lFlagsValue and $4000) = 0)) then
+      Result := True;
 end;
 
 function wbModelInfoDontShow(const aElement: IwbElement): Boolean;

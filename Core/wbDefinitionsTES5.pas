@@ -2386,21 +2386,55 @@ begin
     Move(a[0], Result[0], SizeOf(TVarRec) * Length(a));
 end;
 
-function wbLIGHFalloffDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
+procedure wbLIGHDataFlagsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if VarSameValue(aOldValue, aNewValue) then
+    Exit;
+
+  if not wbCS then
+    Exit;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    if ((aOldValue and $4000) <> (aNewValue and $4000)) then begin
+      var lFNAMValue := lMainRecord.ElementNativeValues['FNAM'];
+      lMainRecord.RemoveElement('FNAM');
+      lMainRecord.Add('FNAM', True);
+      lMainRecord.ElementBySignature[FNAM].NativeValue := lFNAMValue;
+    end;
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
+function wbLIGHInverseSquareDecider(aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement): Integer;
 begin
   Result := 0;
   if not Assigned(aElement) then
-    Exit(0);
+    Exit;
 
   if not wbCS then
-    Exit(0);
+    Exit;
 
-  var lContainer : IwbContainer;
-  if not wbTryGetContainerFromUnion(aElement, lContainer) then
-    Exit(0);
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
 
-  var lFlags := lContainer.Elements[3].NativeValue;
-  if (lFlags and $4000) <> 0 then
+  var lDATA := lMainRecord.ElementBySignature[DATA] as IwbContainerElementRef;
+  if not Assigned(lDATA) then
+    Exit;
+
+  var lFlags := lDATA.ElementByName['Flags'];
+  if not Assigned(lFlags) then
+    Exit;
+
+  if (lFlags.NativeValue and $4000) <> 0 then
     Exit(1);
 end;
 
@@ -8188,20 +8222,22 @@ begin
 
   wbRecord(LIGH, 'Light',
     wbFlags(wbFlagsList([
-      16, 'Random Anim Start',
-      17, 'Portal-strict',
-      25, 'Obstacle'
+    16, 'Random Anim Start',
+    17, 'Portal-strict',
+    25, 'Obstacle'
     ])), [
     wbEDID,
     wbVMAD,
     wbOBND(True),
     wbGenericModel,
     wbDEST,
-    wbFULL,
+    wbFULL.SetDontShow(wbLIGHCarryDontShow),
     wbICON,
-    wbStruct(DATA, '', [
-      wbInteger('Time', itS32),
-      wbInteger('Radius', itU32),
+    wbStruct(DATA, 'Data', [
+      wbInteger('Time', itS32)
+        .SetDefaultNativeValue(-1)
+        .SetDontShow(wbLIGHCarryDontShow),
+      wbInteger('Radius', itU32).SetDefaultNativeValue(16),
       wbByteColors,
       wbInteger('Flags', itU32,
         wbFlags([
@@ -8220,28 +8256,38 @@ begin
         {12} 'Shadow Omnidirectional',
         {13} 'Portal-strict',
         {14} IsCS('Inverse Square', '')
-      ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
-      wbUnion('', wbLIGHFalloffDecider, [
-        wbFloat('Falloff Exponent').SetDefaultNativeValue(1),
-        wbFloat('Inverse Square Falloff').SetDefaultNativeValue(1)
-      ]).IncludeFlag(dfCollapsed),
-      wbFloat('FOV')
-        .SetDefaultNativeValue(90),
-      wbFloat('Near Clip'),
+        ])
+      ).SetAfterSet(wbLIGHDataFlagsAfterSet)
+       .IncludeFlag(dfCollapsed, wbCollapseFlags),
+      wbUnion('', wbLIGHInverseSquareDecider, [
+        wbFloat('Falloff Exponent', cpNormal, True, 1, 4),
+        wbFloat('Inverse Square Falloff', cpNormal, True, 1, 4)
+      ]).SetDontShow(wbLIGHFalloffDontShow),
+      wbUnion('', wbLIGHInverseSquareDecider, [
+        wbFloat('FOV', cpNormal, True, 1, 4, nil, wbNormalizeToRange(0.001, 160), 90),
+        wbFloat('Size', cpNormal, True, 1, 4, nil, wbNormalizeToRange(0.001, 160), 90)
+      ]).SetDontShow(wbLIGHShadowSpotDontShow),
+      wbFloat('Near Clip', cpNormal, True, 1, 4)
+        .SetDefaultNativeValue(1)
+        .SetDontShow(wbLIGHShadowSpotDontShow),
       wbStruct('Flicker Effect', [
-        wbFloat('Period', cpNormal, False, 0.01),
-        wbFloat('Intensity Amplitude'),
-        wbFloat('Movement Amplitude')
-      ]),
-      wbInteger('Value', itU32),
-      wbFloat('Weight')
-    ], cpNormal, True),
-    wbFloat(FNAM, 'Fade value')
-      .SetDefaultNativeValue(1.0)
+        wbFloat('Period', cpNormal, True, 0.01, 4),
+        wbFloat('Intensity Amplitude', cpNormal, True, 1, 4),
+        wbFloat('Movement Amplitude', cpNormal, True, 1, 4)
+      ]).SetDontShow(wbLIGHFlickerDontShow),
+      wbInteger('Value', itU32).SetDontShow(wbLIGHCarryDontShow),
+      wbFloat('Weight', cpNormal, True, 1, 4).SetDontShow(wbLIGHCarryDontShow)
+    ]).SetRequired,
+    wbUnion(FNAM, '', wbLIGHInverseSquareDecider, [
+      wbFloat('Fade Value', cpNormal, True, 1, 4, nil, wbNormalizeToRange(0, 10), 1),
+      wbFloat('Intensity', cpNormal, True, 1, 4, nil, wbNormalizeToRange(0, 10), 1)
+    ]).IncludeFlagOnValue(dfUnionStaticResolve)
       .SetRequired,
     wbFormIDCk(SNAM, 'Sound', [SNDR]),
-    // SSE
-    wbFormIDCk(LNAM, 'Lens', [LENS])
+    IsSSE(
+      wbFormIDCk(LNAM, 'Lens Flare', [LENS]),
+      nil
+    )
   ]);
 
   wbRecord(LSCR, 'Load Screen',
