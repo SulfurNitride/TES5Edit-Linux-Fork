@@ -9882,7 +9882,7 @@ begin
        .SetFlagHasDontShow(28, wbFlagREFRInteriorDontShow),
     wbFlags(wbFlagsList([ //ALCH AMMO APPA ARMO BOOK INGR KEYM MISC SCRL SLGM WEAP
     10, 'Persistent',
-    11, 'Initially Disable',
+    11, 'Initially Disabled',
     16, 'Is Full LOD',
     25, 'No AI Acquire',
     28, 'Reflected By Auto Water',
