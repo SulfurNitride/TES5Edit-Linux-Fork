@@ -18032,8 +18032,13 @@ begin
       end;
       with ComboLink.Properties do begin
         with Items do begin
-          Clear;
-          AddStrings(EditInfoCache);
+          BeginUpdate;
+          try
+            Clear;
+            AddStrings(EditInfoCache);
+          finally
+            EndUpdate;
+          end;
         end;
         if LookupItems.Count > 1000 then
           {Bound to be a FormID list, they are guaranteed to be sorted already}

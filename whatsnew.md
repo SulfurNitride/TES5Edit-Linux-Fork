@@ -4,6 +4,256 @@ If you share your mods on Nexus Mods and use xEdit as a major component in devel
 
 xEdit is crucial to our shared modding community and your contribution - no matter the size - is invaluable and deeply appreciated.
 
+# What's New in xEdit 4.1.5p?
+
+## TL;DR
+
+This is one of the largest xEdit releases ever with **~700+ commits from 10+ contributors**.
+
+**Key highlights:**
+* Fixed several critical bugs (#1276 nav tree staleness, #1379 OMOD reference null, #1437 deep copy injection failure)
+* Massive definition updates across **all supported games** (TES3/TES4/FO3/FNV/TES5/FO4/FO76/SF1)
+* **FaceGen data decoded** for TES4/FO3/FNV - FGGS/FGGA/FGTS now properly handled
+* **FO76**: Added complete FISH record definition, updated for latest game version
+* **Starfield**: Preliminary reflection support, extensive form flags and subrecords, blueprint load order handling
+* **TES5**: Community Shaders detection, water current velocity updates, package improvements
+* **SNIFF**: Major updates from Zilav (16-bit float handling, FO4 BSVersion > 130 support, new operations)
+* Scripts improved (Assets Manager overhaul, Weather Editor fixes)
+* Performance: Speedup for ReportRequiredMasters
+
+**Contributors:** ElminsterAU, robertgk2017, Zilav, Jonathan Ostrus, Kuroitsune, eckserah, FalloutCascadia, Bobbyclue, and special thanks to Arthmoor, Sibir, Wall, Cobb, and Aers for assistance.
+
+## Bugfixes
+
+* #1276 - Stale nav tree after override removal
+* #1379 - Reference of copied property in OMOD record becomes null when double-clicked
+* #1437 - Deep copy as override fails to copy when a record is injected in another plugin
+* #1369 - FileByLoadOrderFileID now accepts string argument (contributed by Jonathan Ostrus)
+  - Takes format expected as result from GetLoadOrderFileID
+  - Pass 'FE 001' for modules showing `[FE 001]`, or '08' for '[08]'
+  - Use IntToHex programmatically for simple integer values
+* (contributed) - Fix external compare button failing if tab is detected as modified
+* (contributed) - Fix Lite Mode dropdowns not selecting existing values position in compiled list
+* (contributed) - Fix typo in delta patch message
+* (contributed) - Add NULL back to landscape layers (technically wrong, but prevents thousands of errors in Game Masters)
+* [TES4/TES4R] Fixed sorting by date issue (internal, not in a published release)
+* [TES4R] QuickAutoClean - Fix not setting UDR'd references enable parent to Opposite State
+* [Common] wbLandLayers - AfterLoad to fix NULL textures (credit to Arthmoor for helping figure it out)
+* [Implementation] TwbFile.BuildReachable - DLVW Records should always be marked as reachable
+* [Implementation] TwbMainRecord.Init - Move AfterLoad Execution to After Required Sub-Record processing
+
+## Major Features
+
+* [SF1] Proper support for BluePrint load order handling
+* [TES4/TES4R] Don't force ESM before ESP in load order
+* Support multiple CountPath
+* xEdit - Automatically add game master as a Master when creating new files
+* xEdit - Add Detection/Handling for SkyrimVRESL adding support for ESL and Update flags
+* xEdit - Prevent removing the Game Master in Clean Masters
+* Speedup ReportRequiredMasters
+* Documentation: ModGroups Support for Load Order Rule Derivation
+
+## Definition Updates
+
+### All Games
+* Remove wbCounter AfterSets in favor of SetCountPath
+* DIAL/INFO - Add response summary key, misc cleanup
+* DIAL/INFO - Add AfterLoad/AfterSet to Trim Leading/Trailing whitespace from dialogue prompts/responses
+* wbLandLayers - Texture signature does not accept NULL
+* NAVI/NAVM - Made more consistent across games, decoded bounds and approx location
+* MSTT/DATA - Updated handling/Decoded for FO3/FNV
+* ADDN/COLL - Add NamedIndex support (TES5/FO4/FO76/SF1)
+* SCEN - Housekeeping, move functions to Common (TES5/FO4/FO76/SF1)
+* Moved many duplicate functions to shared Common definitions unit
+* Conditions - Fix Alignment Sort Keys for CIS1/CIS2
+
+### Common
+* wbFloatColors - Add DefaultValue and Range Constraint handling
+* wbByteColors - Add ability to set Default values
+* wbVec3 - Fix summary key
+* wbNavmeshCoverFlags - Starfield has an additional flag
+* Move wbFurnitureEntryTypeFlags to Common
+* Move wbFacegen to Common
+* Move wbDOBJObjectsAfterLoad to Common
+* wbClmtTime - Fix out of range error loop
+* wbModelInfo - Update NewModelInfo handling, drop unneeded counter callbacks
+* wbNavmeshTriangleFlags - FO76 has a new flag
+
+### TES3
+* WTFEIN - Definition update
+
+### TES4
+* CELL\XCLL - Updated float handling/range constraints (credit to Sibir)
+* PACK/PSDT - Update Month names to match CK
+* SOUN - Add AfterLoad
+* TREE - Add missing Record Flag and update names to match CK
+* WATR - Add ByteColors Defaults and Missing Record Flag
+* EFSH/DATA - Fix OptionalFrom
+
+### TES4R
+* CELL - Add wbSimpleRecords check for XLRL
+
+### TES5
+* LIGH - Update Community Shaders support for Inverse Square Lighting, and some DontShows to match CK
+* Add detection for Community Shaders flags in CELL/LIGH
+* STAT - Enforce Has Distant LOD flag when adding LOD models
+* STAT\DNAM - Set Default Value on Max Angle
+* WTHR - Define Old Cloud Textures, clean up
+* WATR - Clean up, add defaults and required per CK
+* PACK - General cleanup, define enums for schedule data
+* PACK - Update Hour handling and set defaults
+* PACK - Package Target/Location FormID references do not accept NULL
+* PACK\PKDT\Interrupt Flags - Set Default Value and hide Unknowns
+* PACK\Procedure Tree/Data Inputs - Add DontShow if a Package Template is set
+* PACK\XNAM - Set Size to 1 Byte
+* RGDL - Initial implementation from FO3/FNV
+* EFSH - Decode DATA from Cobb
+* SOPM - Updated handling from Cobb
+* SNDR - Update FNAM/LNAM Handling, add GNAM FormID Signature check
+* MOVT\SPED/INAM - Update Float Handling
+* FURN\MNAM - Flag decoding from Cobb
+* COBJ\CNAM - Add FormID Reference Signature checks
+* wbXSCL - Normalize to range 0.0 through 10.0
+* PERK\wbPerkEffects - Tweak Alignment Sort Keys
+* QUST\Aliases - Cleaned wrong sub-records from Location Alias and other misc cleanup
+* REFR - Update Record Flags
+* CELL/REFR - Update Water Current Velocity data
+* NPC_ - Update Template Actor handling (also FO4/FO76/SF1)
+* NPC_\Packages - Add error detection for Quest owned Packages (also FO4/FO76/SF1)
+* wbConditions - Update Parameter Types and Defs (also SF1)
+* wbConditions - Correct special handling of GetCrimeGold parameter (also FO4/FO76/SF1)
+* wbConditions - GetInfamy condition functions have the same special handling as GetCrimeGold (also FO4/FO76/SF1)
+* wbConditions - Add TRGT signature support for Reference parameters (also SF1)
+* FSTS - Update Counters/Arrays from Cobb (also FO4/FO76/SF1)
+* REGN\RGDS - Decode 2nd Unknown as a FormID pointing to an LTEX
+
+### FO3
+* WATR - Set Default Values and Adjust required sub-record handling
+* WTHR\Cloud Textures - Fix default value handling
+
+### FO3/FNV
+* INFO\INCC - Correction to None display
+* wbIdleAnam - "Loose File" flag identified by Wall
+* MSTT/WEAP/CELL - Decode and confirm unused fields
+* WEAP\DNAM - 2 Fields confirmed as Unused
+* CELL\XCET - Confirmed as Unused
+* DOBJ/DATA - Add FormID signature checks
+
+### FO4
+* Multiple ACHR subrecords defined (happens when swapping base)
+* STAT - Add VMAD (set on one record in vanilla master)
+* Update map markers from Nuka World DLC (contributed by FalloutCascadia)
+
+### FO4/FO76
+* CVPA - Fix Sorting/Alignment
+* NAVI/NVMI - Category changed to Flags
+* MGEF\SNDD - Add Alignment Sort Key
+
+### FO4/FO76/SF1
+* ARMO/WEAP\DAMA - Move wbDamageTypeArray to Common, adjust for FO4
+
+### FO76
+* Update Form and HEDR Version
+* NPC_\QNAM - Fix Colors type
+* Add FISH record with complete definition (contributed by eckserah)
+* Update hardcoded AVIF for latest version (contributed by eckserah)
+* Multiple updates for LIVE/PTS including new condition functions (contributed by eckserah)
+* NAVI/NVMI - New condition functions and record types
+* wbNVNM - Fix union size check
+
+### SF1
+* Updated basic Reflection support/organization
+* Preliminary Reflection Support - Editing still blocked
+* Extensive form flags and subrecords across many record types
+* LCTN - Mark unknowns as benign, add BaseFormComponents
+* PNDT - Fix CNAM/EOVR handling, remove Required from CNAM, decode EOVR\Worldspace\[2], add NULL to INAM\Atmosphere Valid Sigs
+* QUST\Aliases\ALCO - Add Project to list of valid FormIDs
+* ReferenceRecord - Added XALG Sub-Record
+
+## Scripting
+
+* [Assets Manager] - Major overhaul
+  - Add detection of texture paths in Book Descriptions
+  - Add TES3 Support
+  - Add TControl ScaleValue Support
+  - Only do generic Model checks for games that haven't made it redundant
+  - Fix reading LOD .nifs on STATs
+  - ARMA Check for Weight Slider Flag
+* [Weather Editor]
+  - Fix Color Panels not showing when Themes applied
+  - Add TControl ScaleValue Support and StyleElements
+* [Apply Custom Scripted Filter] - Add missing options from Apply Filter Form, and organization
+* [Find ESP Plugins which could be turned into ESL] - Add ESM check for New Cells warning
+* General - Add TControl StyleElements options and ScaleValue function
+* Expose CreateHashTES3 and CreateHashTES4 functions
+
+## SNIFF
+
+* Update to version 1.7/1.8 with file structure reorganization
+* Major updates from Zilav including:
+  - Better handling of 16-bit float numbers
+  - Minimal support for FO4 meshes with BSVersion > 130
+  - New operations added
+  - Updated existing operations
+  - Removed obsolete operations
+* Move MSHeap to first Uses unit in project file
+* Move Proc units to Sub-Folder
+* [Check For Errors]
+  - Expanded Shader Types/Flags checks
+  - Check BSEffect/BSLighting controllers on wrong shader type
+  - Check BSTriShapes in facegen (should be BSDynamicTriShape)
+  - Check texture slots being set but not used
+  - Skip Parallax shaders for white vertex colors
+  - Check mismatched partition counts
+* [Universal Fixer]
+  - Expanded Shader fixes including Own_Emit, EnvMap_Light_Fade
+  - Remove empty BSXFlags
+  - Update Motion System for collision layers
+  - Add MultiLayer Parallax checks
+  - FixAnim - Detect and fix mismatched names on Object Palette entries
+  - FixShaderProperty - Add MultiLayer Parallax Shader Type/Flag checks
+  - Fix handling of Vertex_Alpha flag when removing Tree_Anim
+* [Vertex Color Painting] - Skip Parallax and Tree_Anim shaders for Remove
+
+## FaceGen Standardization
+
+* [TES4/FO3/FNV] Decoded FGGS/FGGA/FGTS for FaceGen data (contributed by Kuroitsune)
+  - Note: The sliders in the official tools simply amplify the effect; the actual data stored are just the movement of the morph keys
+  - The EGM/EGT store the associated rigging
+
+## Additional Changes
+
+* Forms - Add wbTwiddleHeight helper procedure to make UI Scrollbars appear correctly
+* Feature - Hold shift when adding to record group to add multiple
+* Fix Script window Line/Col reporting wrong values
+* Prevent file saving if "Optimized" File Flag is set
+* Expanded "Filter for Unnecessary Persistent Refs" handling
+* Temporarily disable flagging all UDR'd ACHR/ACREs as persistent
+* Update SEQ File message in MainForm
+* [Implementation] Change DIAL/DLBR/SCEN reachability check
+* BSArch - Allow .fuz files to be compressed (ship compressed from Bethesda)
+* NIF - Add basic UserVersion2 = 132 Support (not fully tested)
+* LOD/SNIFF - Update wbNormalizeResourceName
+* Various fixes for previous merge
+* Move Argument for those that know what they are doing
+
+## Contributors
+
+This release includes contributions from:
+* ElminsterAU
+* robertgk2017
+* Zilav (major SNIFF updates)
+* Jonathan Ostrus (jbostrus)
+* Kuroitsune
+* eckserah
+* FalloutCascadia
+* Bobbyclue
+* Arthmoor (assistance)
+* Sibir (assistance)
+* Wall (information)
+* Cobb (decoding work)
+* Aers (information)
+
 # What's New in xEdit 4.1.5o?
 
 ## Bugfixes / Minor Changes
