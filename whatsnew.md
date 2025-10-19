@@ -8,20 +8,21 @@ xEdit is crucial to our shared modding community and your contribution - no matt
 
 ## TL;DR
 
-This is one of the largest xEdit releases ever with **~700+ commits from 10+ contributors**.
+This is one of the largest xEdit releases ever with ~700+ commits from 10+ contributors.
 
-**Key highlights:**
+### Key highlights
 * Fixed several critical bugs (#1276 nav tree staleness, #1379 OMOD reference null, #1437 deep copy injection failure)
-* Massive definition updates across **all supported games** (TES3/TES4/FO3/FNV/TES5/FO4/FO76/SF1)
-* **FaceGen data decoded** for TES4/FO3/FNV - FGGS/FGGA/FGTS now properly handled
-* **FO76**: Added complete FISH record definition, updated for latest game version
-* **Starfield**: Preliminary reflection support, extensive form flags and subrecords, blueprint load order handling
-* **TES5**: Community Shaders detection, water current velocity updates, package improvements
-* **SNIFF**: Major updates from Zilav (16-bit float handling, FO4 BSVersion > 130 support, new operations)
+* Massive definition updates across all supported games (TES3/TES4/FO3/FNV/TES5/FO4/FO76/SF1)
+* FaceGen data decoded for TES4/FO3/FNV - FGGS/FGGA/FGTS now properly handled
+* FO76: Added complete FISH record definition, updated for latest game version
+* Starfield: Preliminary reflection support, extensive form flags and subrecords, blueprint load order handling
+* TES5: Community Shaders detection, water current velocity updates, package improvements
+* SNIFF: Major updates from Zilav (16-bit float handling, FO4 BSVersion > 130 support, new operations)
 * Scripts improved (Assets Manager overhaul, Weather Editor fixes)
 * Performance: Speedup for ReportRequiredMasters
 
-**Contributors:** ElminsterAU, robertgk2017, Zilav, Jonathan Ostrus, Kuroitsune, eckserah, FalloutCascadia, Bobbyclue, and special thanks to Arthmoor, Sibir, Wall, Cobb, and Aers for assistance.
+### Contributors
+ElminsterAU, robertgk2017, Zilav, Jonathan Ostrus, Kuroitsune, eckserah, FalloutCascadia, Bobbyclue, and special thanks to Arthmoor, Sibir, Wall, Cobb, and Aers for assistance.
 
 ## Bugfixes
 
@@ -734,11 +735,11 @@ For Starfield, we stand at a unique juncture where a unified effort can set the 
 
 #### Technical Justifications:
 
-1. **Loading Sequence and Conflict Resolution**: The game engine necessitates that all `ESM`-flagged modules load before non-`ESM` modules. When mods are released in mixed formats (`ESM` and non-`ESM`), it creates two distinct categories that cannot intermingle. Consequently, this severely limits the ability to resolve conflicts through load order adjustments.
+1. Loading Sequence and Conflict Resolution: The game engine necessitates that all `ESM`-flagged modules load before non-`ESM` modules. When mods are released in mixed formats (`ESM` and non-`ESM`), it creates two distinct categories that cannot intermingle. Consequently, this severely limits the ability to resolve conflicts through load order adjustments.
 
-2. **Resource Limitations**: Temporary references like `REFR`, `ACHR`, etc., are treated differently in `ESM` and non-`ESM` modules. In `ESM` modules, these records are loaded into memory only when the player approaches them (within the `uGrid` range), offering a more efficient use of resources. In contrast, non-`ESM` modules load all these temporary references at the start of the program, keeping them in memory throughout the game's runtime. The game engine only has a fixed, finite number of reference handles available for use, regardless of the system on which it is running. Every loaded reference will use one of these handles, hence it is imperative that all modules with temporary references are `ESM` modules, to prevent issues from running out of reference handles.
+2. Resource Limitations: Temporary references like `REFR`, `ACHR`, etc., are treated differently in `ESM` and non-`ESM` modules. In `ESM` modules, these records are loaded into memory only when the player approaches them (within the `uGrid` range), offering a more efficient use of resources. In contrast, non-`ESM` modules load all these temporary references at the start of the program, keeping them in memory throughout the game's runtime. The game engine only has a fixed, finite number of reference handles available for use, regardless of the system on which it is running. Every loaded reference will use one of these handles, hence it is imperative that all modules with temporary references are `ESM` modules, to prevent issues from running out of reference handles.
 
-3. **Consistency and Debugging**: Non-`ESM` mods are always loaded as persistent, which might not reveal certain bugs during testing. If a user later attempts to convert such a mod to `ESM`, unforeseen issues may emerge. Hence, both the development and testing phases for mods with temporary references should occur in the `ESM` environment.
+3. Consistency and Debugging: Non-`ESM` mods are always loaded as persistent, which might not reveal certain bugs during testing. If a user later attempts to convert such a mod to `ESM`, unforeseen issues may emerge. Hence, both the development and testing phases for mods with temporary references should occur in the `ESM` environment.
 
 Combining these factors leads to a logical conclusion: all mods, especially those with temporary references, should be released as `.esm` modules. The `.esm` file extension ensures that the game engine sets the `ESM` flag, providing users with the assurance that their entire load order is compatible and can be freely adjusted.
 
@@ -2615,7 +2616,7 @@ Renumber FormIDs from will change all FormIDs of records belonging to that file 
 
 This is useful if you have multiple modules that you plan to update in the future, but also want to always provide a merged version (e.g. using FO3Plugin). By assigning non overlapping FormIDs to the different modules, you can make sure that no FormID reassignment of conflicting FormIDs has to take place when merging.
 
-**WARNING:** changing the FormIDs of an existing module will make it savegame incompatible and will break any other module that uses this module as master. If you have any dependant modules, you need to have them all loaded into FO3Edit at the time you change to FormIDs so that they will all be updated accordingly.
+WARNING: changing the FormIDs of an existing module will make it savegame incompatible and will break any other module that uses this module as master. If you have any dependant modules, you need to have them all loaded into FO3Edit at the time you change to FormIDs so that they will all be updated accordingly.
 
 Also, this version has been compiled with the "large address aware" flag and will be able to use up to 4GB when running under a 64bit version of Windows.
 
