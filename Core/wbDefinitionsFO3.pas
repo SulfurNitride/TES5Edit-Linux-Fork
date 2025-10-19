@@ -6051,10 +6051,17 @@ begin
     wbEDIDReq,
     wbICONReq,
     wbDESCReq,
-    wbRArrayS('Locations', wbStructSK(LNAM, [0, 1], 'Location', [
-      wbFormIDCkNoReach('Cell', [CELL, WRLD]),
-      wbUnused(8)
-    ]))
+    wbRArrayS('Locations',
+      wbStructSK(LNAM, [0, 1], 'Location', [
+        wbFormIDCkNoReach('Direct', [CELL, WRLD, NULL]),
+        wbStructSK([0, 1], 'Indirect', [
+          wbFormIDCkNoReach('World', [WRLD, NULL]),
+          wbStructSK([0,1], 'Grid', [
+            wbInteger('Y', itS16),
+            wbInteger('X', itS16)
+          ])
+        ])
+      ]))
   ]);
 
   wbRecord(LTEX, 'Landscape Texture', [
