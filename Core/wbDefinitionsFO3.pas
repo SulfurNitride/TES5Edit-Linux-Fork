@@ -4131,27 +4131,28 @@ begin
     wbFloat(PNAM, 'Priority')
       .SetDefaultNativeValue(50)
       .SetRequired,
-    wbStruct(DATA, '', [
+    wbStruct(DATA, 'Data', [
       wbInteger('Type', itU8,
         wbEnum([
-          {0} 'Topic',
-          {1} 'Conversation',
-          {2} 'Combat',
-          {3} 'Persuasion',
-          {4} 'Detection',
-          {5} 'Service',
-          {6} 'Miscellaneous',
-          {7} 'Radio'
+        {0} 'Topic',
+        {1} 'Conversation',
+        {2} 'Combat',
+        {3} 'Persuasion',
+        {4} 'Detection',
+        {5} 'Service',
+        {6} 'Miscellaneous',
+        {7} 'Radio'
         ])),
       wbInteger('Flags', itU8,
         wbFlags([
-          {0} 'Rumors',
-          {1} 'Top-level'
-        ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
+        {0} 'Rumors',
+        {1} 'Top-level'
+        ])
+      ).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ], cpNormal, True, nil, 1),
     wbINOM,
     wbINOA
-  ], True);
+  ]);
 
   wbRecord(DOOR, 'Door',
     wbFlags(wbFlagsList([
@@ -5842,61 +5843,63 @@ begin
 
   wbRecord(INFO, 'Dialog response',
     wbFlags(wbFlagsList([
-      13, 'Unknown 13'
+    13, 'Unknown 13'
     ])), [
-    wbStruct(DATA, '', [
+    wbStruct(DATA, 'Data', [
       wbInteger('Type', itU8,
         wbEnum([
-          {0} 'Topic',
-          {1} 'Conversation',
-          {2} 'Combat',
-          {3} 'Persuasion',
-          {4} 'Detection',
-          {5} 'Service',
-          {6} 'Miscellaneous',
-          {7} 'Radio'
-      ])),
+        {0} 'Topic',
+        {1} 'Conversation',
+        {2} 'Combat',
+        {3} 'Persuasion',
+        {4} 'Detection',
+        {5} 'Service',
+        {6} 'Miscellaneous',
+        {7} 'Radio'
+        ])),
       wbNextSpeaker,
       wbInteger('Flags 1', itU8,
         wbFlags([
-          {0} 'Goodbye',
-          {1} 'Random',
-          {2} 'Say Once',
-          {3} 'Run Immediately',
-          {4} 'Info Refusal',
-          {5} 'Random End',
-          {6} 'Run for Rumors',
-          {7} 'Speech Challenge'
-        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
+        {0} 'Goodbye',
+        {1} 'Random',
+        {2} 'Say Once',
+        {3} 'Run Immediately',
+        {4} 'Info Refusal',
+        {5} 'Random End',
+        {6} 'Run for Rumors',
+        {7} 'Speech Challenge'
+        ])
+      ).IncludeFlag(dfCollapsed, wbCollapseFlags),
       wbInteger('Flags 2', itU8,
         wbFlags([
-          {0} 'Say Once a Day',
-          {1} 'Always Darken'
-        ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
+        {0} 'Say Once a Day',
+        {1} 'Always Darken'
+        ])
+      ).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ], cpNormal, True, nil, 3),
     wbFormIDCkNoReach(QSTI, 'Quest', [QUST]).SetRequired,
-    wbFormIDCk(TPIC, 'Topic', [DIAL]),
-    wbFormIDCkNoReach(PNAM, 'Previous INFO', [INFO, NULL]),
+    wbFormIDCkNoReach(TPIC, 'Previous Topic', [DIAL]),
+    wbFormIDCkNoReach(PNAM, 'Previous INFO', [INFO,NULL]),
     wbRArray('Add Topics', wbFormIDCk(NAME, 'Topic', [DIAL])),
     wbRArray('Responses',
       wbRStruct('Response', [
         wbStruct(TRDT, 'Response Data', [
           wbInteger('Emotion Type', itU32,
             wbEnum([
-              {0} 'Neutral',
-              {1} 'Anger',
-              {2} 'Disgust',
-              {3} 'Fear',
-              {4} 'Sad',
-              {5} 'Happy',
-              {6} 'Surprise',
-              {7} 'Pained'
+            {0} 'Neutral',
+            {1} 'Anger',
+            {2} 'Disgust',
+            {3} 'Fear',
+            {4} 'Sad',
+            {5} 'Happy',
+            {6} 'Surprise',
+            {7} 'Pained'
             ])),
           wbInteger('Emotion Value', itS32),
           wbUnused(4),
           wbInteger('Response number', itU8),
           wbUnused(3),
-          wbFormIDCk('Sound', [SOUN, NULL]),
+          wbFormIDCk('Sound', [SOUN,NULL]),
           wbInteger('Use Emotion Animation', itU8, wbBoolEnum),
           wbUnused(3)
         ], cpNormal, False, nil, 5),
@@ -5908,7 +5911,8 @@ begin
         wbString(NAM3, 'Edits'),
         wbFormIDCk(SNAM, 'Speaker Animation', [IDLE]),
         wbFormIDCk(LNAM, 'Listener Animation', [IDLE])
-      ])
+      ]).SetSummaryKey([1])
+        .IncludeFlag(dfCollapsed)
     ),
     wbConditions,
     wbRArray('Choices', wbFormIDCk(TCLT, 'Choice', [DIAL])),
@@ -5924,15 +5928,16 @@ begin
     wbStringKC(RNAM, 'Prompt', 0, cpTranslate)
       .SetAfterLoad(wbDialogueTextAfterLoad)
       .SetAfterSet(wbDialogueTextAfterSet),
-    wbFormIDCk(ANAM, 'Speaker', [CREA, NPC_]),
-    wbFormIDCk(KNAM, 'ActorValue/Perk', [AVIF, PERK]),
+    wbFormIDCk(ANAM, 'Speaker', [CREA,NPC_]),
+    wbFormIDCk(KNAM, 'ActorValue/Perk', [AVIF,PERK]),
     wbInteger(DNAM, 'Speech Challenge', itU32,
-      wbEnum([], [
-        1, 'Very Easy',
-        2, 'Easy',
-        3, 'Average',
-        4, 'Hard',
-        5, 'Very Hard'
+      wbEnum([
+      {0} 'None',
+      {1} 'Very Easy',
+      {2} 'Easy',
+      {3} 'Average',
+      {4} 'Hard',
+      {5} 'Very Hard'
       ]))
   ]).SetAddInfo(wbINFOAddInfo)
     .SetAfterLoad(wbINFOAfterLoad);

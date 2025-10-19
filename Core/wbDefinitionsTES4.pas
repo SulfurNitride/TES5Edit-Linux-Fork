@@ -2293,7 +2293,7 @@ begin
     wbInteger(DATA, 'Type', itU8, wbDialogueTypeEnum).SetRequired,
     wbINOM,
     wbINOA
-  ], True);
+  ]);
 
   wbRecord(DOOR, 'Door',
     wbFlags(wbFlagsList([
@@ -2563,31 +2563,32 @@ begin
       wbNextSpeaker,
       wbInteger('Flags', itU8,
         wbFlags([
-          {0} 'Goodbye',
-          {1} 'Random',
-          {2} 'Say Once',
-          {3} 'Run Immediately',
-          {4} 'Info Refusal',
-          {5} 'Random End',
-          {6} 'Run for Rumors'
-        ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
+        {0} 'Goodbye',
+        {1} 'Random',
+        {2} 'Say Once',
+        {3} 'Run Immediately',
+        {4} 'Info Refusal',
+        {5} 'Random End',
+        {6} 'Run for Rumors'
+        ])
+      ).IncludeFlag(dfCollapsed, wbCollapseFlags)
     ], cpNormal, True, nil, 2),
     wbFormIDCkNoReach(QSTI, 'Quest', [QUST]).SetRequired,
-    wbFormIDCk(TPIC, 'Topic', [DIAL]),
-    wbFormIDCkNoReach(PNAM, 'Previous Info', [INFO, NULL]),
+    wbFormIDCkNoReach(TPIC, 'Previous Topic', [DIAL]),
+    wbFormIDCkNoReach(PNAM, 'Previous Info', [INFO,NULL]),
     wbRArray('Add Topics', wbFormIDCk(NAME, 'Topic', [DIAL])),
     wbRArray('Responses',
       wbRStruct('Response', [
         wbStruct(TRDT, 'Response Data', [
           wbInteger('Emotion Type', itU32,
             wbEnum([
-              {0} 'Neutral',
-              {1} 'Anger',
-              {2} 'Disgust',
-              {3} 'Fear',
-              {4} 'Sad',
-              {5} 'Happy',
-              {6} 'Surprise'
+            {0} 'Neutral',
+            {1} 'Anger',
+            {2} 'Disgust',
+            {3} 'Fear',
+            {4} 'Sad',
+            {5} 'Happy',
+            {6} 'Surprise'
             ])),
           wbInteger('Emotion Value', itS32),
           wbUnused(4),
@@ -2596,9 +2597,12 @@ begin
         ]),
         wbStringKC(NAM1, 'Response Text', 0, cpTranslate)
           .SetAfterLoad(wbDialogueTextAfterLoad)
-          .SetAfterSet(wbDialogueTextAfterSet),
+          .SetAfterSet(wbDialogueTextAfterSet)
+          .SetRequired,
         wbString(NAM2, 'Actor Notes', 0, cpTranslate)
-      ])),
+      ]).SetSummaryKey([1])
+        .IncludeFlag(dfCollapsed)
+    ),
     wbConditions,
     wbRArray('Choices', wbFormIDCk(TCLT, 'Choice', [DIAL])),
     wbRArray('Link From', wbFormIDCk(TCLF, 'Topic', [DIAL])),

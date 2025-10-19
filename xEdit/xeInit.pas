@@ -1153,6 +1153,9 @@ begin
     if FindCmdLineSwitch('AllowMasterFilesEdit') then
       wbAllowMasterFilesEdit := True;
 
+    if FindCmdLineSwitch('AllowEditHEDRVersion') then
+      wbAllowEditHEDRVersion := True;
+
     if FindCmdLineSwitch('StripEmptyMasters') then
       wbStripEmptyMasters := True;
 
@@ -1261,9 +1264,6 @@ begin
     wbShowInternalEdit := True
   else if FindCmdLineSwitch('hidefixup') then
     wbShowInternalEdit := False;
-
-  if FindCmdLineSwitch('AllowEditHEDRVersion') then
-    wbAllowEditHEDRVersion := True;
 
   if xeQuickClean then begin
     wbFixupPGRD := True;

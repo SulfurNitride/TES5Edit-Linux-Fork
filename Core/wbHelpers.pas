@@ -19,6 +19,7 @@ uses
   System.AnsiStrings,
   SysUtils,
   Graphics,
+  Controls,
   Forms,
   ShellAPI,
   ShlObj,
@@ -169,6 +170,8 @@ type
 procedure wbCodeBlock(const aProc: TProc);
 
 function wbVarArray(const aElements: array of Variant): Variant;
+
+procedure wbTwiddleHeight(aControl: TControl);
 
 implementation
 
@@ -1581,6 +1584,13 @@ begin
   for i := Low(aElements) to High(aElements) do
     Elements[i] := aElements[i];
   Result := Elements;
+end;
+
+procedure wbTwiddleHeight(aControl: TControl);
+begin
+  var lHeight := aControl.Height;
+  aControl.Height := Succ(lHeight);
+  aControl.Height := lHeight;
 end;
 
 initialization

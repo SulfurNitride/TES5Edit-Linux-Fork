@@ -117,7 +117,8 @@ implementation
 uses
   xeMainForm,
   TypInfo,
-  wbInterface;
+  wbInterface,
+  wbHelpers;
 
 procedure TfrmFilterOptions.FormCreate(Sender: TObject);
 var

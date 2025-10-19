@@ -279,7 +279,6 @@ object frmFilterOptions: TfrmFilterOptions
       Width = 258
       Height = 466
       Color = clBtnFace
-      ItemHeight = 13
       PopupMenu = pmuSelection
       TabOrder = 34
       OnKeyPress = clbKeyPress
@@ -290,7 +289,6 @@ object frmFilterOptions: TfrmFilterOptions
       Width = 318
       Height = 92
       Color = clBtnFace
-      ItemHeight = 13
       PopupMenu = pmuSelection
       TabOrder = 35
       OnKeyPress = clbKeyPress
@@ -301,7 +299,6 @@ object frmFilterOptions: TfrmFilterOptions
       Width = 318
       Height = 163
       Color = clBtnFace
-      ItemHeight = 13
       PopupMenu = pmuSelection
       TabOrder = 36
       OnKeyPress = clbKeyPress
@@ -312,7 +309,6 @@ object frmFilterOptions: TfrmFilterOptions
       Width = 258
       Height = 560
       Color = clBtnFace
-      ItemHeight = 13
       PopupMenu = pmuSelection
       TabOrder = 37
       OnKeyPress = clbKeyPress

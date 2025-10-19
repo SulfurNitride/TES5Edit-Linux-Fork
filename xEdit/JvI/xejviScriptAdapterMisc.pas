@@ -60,7 +60,7 @@ begin
   CallFunction(nil, [O2V(Sender)]);
 end;}
 
-function TStringList_IndexStr(const AText: AnsiString; const AValues: TStringList): Integer;
+function TStringList_IndexStr(const AText: String; const AValues: TStringList): Integer;
 begin
   Result := -1;
   for var i := 0 to Pred(AValues.Count) do
@@ -562,7 +562,7 @@ end;
 
 procedure JvInterpreter_DirectoryExists(var Value: Variant; Args: TJvInterpreterArgs);
 begin
-  Value := DirectoryExists(Args.Values[0]);
+  Value := SysUtils.DirectoryExists(Args.Values[0]);
 end;
 
 procedure JvInterpreter_FileExists(var Value: Variant; Args: TJvInterpreterArgs);
@@ -572,7 +572,7 @@ end;
 
 procedure JvInterpreter_ForceDirectories(var Value: Variant; Args: TJvInterpreterArgs);
 begin
-  Value := ForceDirectories(Args.Values[0]);
+  Value := SysUtils.ForceDirectories(Args.Values[0]);
 end;
 
 procedure JvInterpreter_IncludeTrailingBackslash(var Value: Variant; Args: TJvInterpreterArgs);

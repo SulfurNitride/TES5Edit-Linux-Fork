@@ -114,32 +114,33 @@ type
     {38} ptEquipType,       // EQUP
     {39} ptEventData,       // FLST,LCTN,KYWD
     {40} ptFaction,         // FACT
-    {41} ptFormList,        // FLST
-    {42} ptFurniture,       // FURN
-    {43} ptGamePlayOption,  // GPOF
-    {44} ptGlobal,          // GLOB
-    {45} ptIdleForm,        // IDLE
-    {46} ptInventoryObject, // sigBaseObjects
-    {47} ptKeyword,         // KYWD
-    {48} ptLocation,        // LCTN
-    {49} ptLocationRefType, // LCRT
-    {50} ptMagicEffect,     // MGEF
-    {51} ptOwner,           // FACT, NPC_
-    {52} ptPackage,         // PACK
-    {53} ptPerk,            // PERK
-    {54} ptPlanet,          // PNDT
-    {55} ptQuest,           // QUST
-    {56} ptRace,            // RACE
-    {57} ptReference,       // ACHR,PARW,PBAR,PBEA,PCON,PFLA,PGRE,PHZD,PLYR,PMIS,REFR,TRGT
-    {58} ptRegion,          // REGN
-    {59} ptResearchProject, // RSPJ
-    {60} ptResource,        // IRES
-    {61} ptScene,           // SCEN
-    {62} ptSpeechChallenge, // SPCH
-    {63} ptSnapTemplate,    // STMP
-    {64} ptVoiceType,       // VTYP
-    {65} ptWeather,         // WTHR
-    {66} ptWorldspace       // WRLD
+    {41} ptFactionNull,     // FACT,NULL
+    {42} ptFormList,        // FLST
+    {43} ptFurniture,       // FURN
+    {44} ptGamePlayOption,  // GPOF
+    {45} ptGlobal,          // GLOB
+    {46} ptIdleForm,        // IDLE
+    {47} ptInventoryObject, // sigBaseObjects
+    {48} ptKeyword,         // KYWD
+    {49} ptLocation,        // LCTN
+    {50} ptLocationRefType, // LCRT
+    {51} ptMagicEffect,     // MGEF
+    {52} ptOwner,           // FACT, NPC_
+    {53} ptPackage,         // PACK
+    {54} ptPerk,            // PERK
+    {55} ptPlanet,          // PNDT
+    {56} ptQuest,           // QUST
+    {57} ptRace,            // RACE
+    {58} ptReference,       // ACHR,PARW,PBAR,PBEA,PCON,PFLA,PGRE,PHZD,PLYR,PMIS,REFR,TRGT
+    {59} ptRegion,          // REGN
+    {60} ptResearchProject, // RSPJ
+    {61} ptResource,        // IRES
+    {62} ptScene,           // SCEN
+    {63} ptSpeechChallenge, // SPCH
+    {64} ptSnapTemplate,    // STMP
+    {65} ptVoiceType,       // VTYP
+    {66} ptWeather,         // WTHR
+    {67} ptWorldspace       // WRLD
   );
 
   PConditionFunction = ^TConditionFunction;
@@ -343,8 +344,8 @@ const
     (Index: 370; Name: 'IsTalkingActivatorActor'; ParamType1: ptActor),                                                                                     //   186
     (Index: 372; Name: 'IsInList'; ParamType1: ptFormList),                                                                                                 //   187
     (Index: 373; Name: 'GetStolenItemValue'; ParamType1: ptFaction),                                                                                        //   188
-    (Index: 375; Name: 'GetCrimeGoldViolent'; ParamType1: ptFaction),                                                                                       //   189
-    (Index: 376; Name: 'GetCrimeGoldNonviolent'; ParamType1: ptFaction),                                                                                    //   190
+    (Index: 375; Name: 'GetCrimeGoldViolent'; ParamType1: ptFactionNull),                                                                                       //   189
+    (Index: 376; Name: 'GetCrimeGoldNonviolent'; ParamType1: ptFactionNull),                                                                                    //   190
     (Index: 378; Name: 'IsOwnedBy'; ParamType1: ptActor),                                                                                                   //   191
     (Index: 380; Name: 'GetCommandDistance'),                                                                                                               //   192
     (Index: 381; Name: 'GetCommandLocationDistance'),                                                                                                       //   193
@@ -384,7 +385,7 @@ const
     (Index: 453; Name: 'GetPlayerTeammate'),                                                                                                                //   227
     (Index: 454; Name: 'GetPlayerTeammateCount'),                                                                                                           //   228
     (Index: 458; Name: 'GetActorCrimePlayerEnemy'),                                                                                                         //   229
-    (Index: 459; Name: 'GetCrimeGold'; ParamType1: ptFaction),                                                                                              //   230
+    (Index: 459; Name: 'GetCrimeGold'; ParamType1: ptFactionNull),                                                                                              //   230
     (Index: 463; Name: 'IsPlayerGrabbedRef'; ParamType1: ptReference),                                                                                //   231
     (Index: 465; Name: 'GetKeywordItemCount'; ParamType1: ptKeyword),                                                                                       //   232
     (Index: 470; Name: 'GetDestructionStage'),                                                                                                              //   233
@@ -423,9 +424,9 @@ const
     (Index: 525; Name: 'GetVATSFrontTargetVisible'; ParamType1: ptReference),                                                                         //   266
     (Index: 528; Name: 'IsInCriticalStage'; ParamType1: ptCriticalStage),                                                                                   //   267
     (Index: 530; Name: 'GetXPForNextLevel'),                                                                                                                //   268
-    (Index: 533; Name: 'GetInfamy'; ParamType1: ptFaction),                                                                                                 //   269
-    (Index: 534; Name: 'GetInfamyViolent'; ParamType1: ptFaction),                                                                                          //   270
-    (Index: 535; Name: 'GetInfamyNonViolent'; ParamType1: ptFaction),                                                                                       //   271
+    (Index: 533; Name: 'GetInfamy'; ParamType1: ptFactionNull),                                                                                                 //   269
+    (Index: 534; Name: 'GetInfamyViolent'; ParamType1: ptFactionNull),                                                                                          //   270
+    (Index: 535; Name: 'GetInfamyNonViolent'; ParamType1: ptFactionNull),                                                                                       //   271
     (Index: 536; Name: 'GetTypeCommandPerforming'),                                                                                                         //   272
     (Index: 543; Name: 'GetQuestCompleted'; ParamType1: ptQuest),                                                                                           //   273
     (Index: 544; Name: 'GetSpeechChallengeSuccessScene'),                                                                                                   //   274
@@ -2557,12 +2558,6 @@ begin
   end;
 end;
 
-procedure wbINNRAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('VNAM - Count', aElement);
-end;
-
-
 function wbREFRRecordFlagsDecider(const aElement: IwbElement): Integer;
 var
   MainRecord : IwbMainRecord;
@@ -2875,7 +2870,7 @@ begin
 
   var wbSPCT := wbInteger(SPCT, 'Count', itU32, nil, cpBenign);
   var wbSPLO := wbFormIDCk(SPLO, 'Actor Effect', [SPEL, LVSP]);
-  var wbSPLOs := wbRArrayS('Actor Effects', wbSPLO, cpNormal, False, nil, wbSPLOsAfterSet);
+  var wbSPLOs := wbRArrayS('Actor Effects', wbSPLO).SetCountPath(SPCT);
 
   var wbCVPA := wbArray(CVPA,'Components',
     wbStruct('Component', [
@@ -2942,7 +2937,7 @@ begin
     .IncludeFlag(dfCollapsed, wbCollapseItems);
 
   var wbCOCT := wbInteger(COCT, 'Count', itU32, nil, cpBenign);
-  var wbCNTOs := wbRArrayS('Items', wbCNTO, cpNormal, False, nil, wbCNTOsAfterSet);
+  var wbCNTOs := wbRArrayS('Items', wbCNTO).SetCountPath(COCT);
 
   var wbContainerItems := wbRStructSK([1], 'Container Items', [
     wbCOCT,
@@ -5573,32 +5568,33 @@ begin
     {38} wbFormIDCkNoReach('Equip Type', [EQUP]),
     {39} wbFormIDCkNoReach('Event Data', [KYWD,LCTN,NULL]),
     {40} wbFormIDCkNoReach('Faction', [FACT]),
-    {41} wbFormIDCkNoReach('Form List', [FLST]),
-    {42} wbFormIDCkNoReach('Furniture', [FURN, FLST], [FURN]),
-    {43} wbFormIDCkNoReach('Gameplay Option', [GPOF]),
-    {44} wbFormIDCkNoReach('Global', [GLOB]),
-    {45} wbFormIDCkNoReach('Idle', [IDLE]),
-    {46} wbFormIDCkNoReach('Inventory Object', sigBaseObjects),
-    {47} wbFormIDCkNoReach('Keyword', [KYWD, FLST, NULL]),
-    {48} wbFormIDCkNoReach('Location', [LCTN]),
-    {49} wbFormIDCkNoReach('Location Ref Type', [LCRT]),
-    {50} wbFormIDCkNoReach('Magic Effect', [MGEF]),
-    {51} wbFormIDCkNoReach('Owner', [FACT, NPC_]),
-    {52} wbFormIDCkNoReach('Package', [PACK]),
-    {53} wbFormIDCkNoReach('Perk', [PERK]),
-    {54} wbFormIDCkNoReach('Planet', [PNDT]),
-    {55} wbFormIDCkNoReach('Quest', [QUST]).AddOverlay(wbConditionQuestOverlay),
-    {56} wbFormIDCkNoReach('Race', [RACE]),
-    {57} wbFormIDCkNoReach('Reference', [ACHR,PARW,PBAR,PBEA,PCON,PFLA,PGRE,PHZD,PLYR,PMIS,REFR,TRGT], True),
-    {58} wbFormIDCkNoReach('Region', [REGN]),
-    {59} wbFormIDCkNoReach('Research Project', [RSPJ]),
-    {60} wbFormIDCkNoReach('Resource', [IRES]),
-    {61} wbFormIDCkNoReach('Scene', [SCEN]),
-    {62} wbFormIDCkNoReach('Speech Challenge', [SPCH]),
-    {63} wbFormIDCkNoReach('Snap Template', [STMP]),
-    {64} wbFormIDCkNoReach('Voice Type', [FLST,VTYP], [VTYP]),
-    {65} wbFormIDCkNoReach('Weather', [WTHR]),
-    {66} wbFormIDCkNoReach('Worldspace', [FLST,WRLD], [WRLD])
+    {41} wbFormIDCkNoReach('Faction', [FACT,NULL]),
+    {42} wbFormIDCkNoReach('Form List', [FLST]),
+    {43} wbFormIDCkNoReach('Furniture', [FURN, FLST], [FURN]),
+    {44} wbFormIDCkNoReach('Gameplay Option', [GPOF]),
+    {45} wbFormIDCkNoReach('Global', [GLOB]),
+    {46} wbFormIDCkNoReach('Idle', [IDLE]),
+    {47} wbFormIDCkNoReach('Inventory Object', sigBaseObjects),
+    {48} wbFormIDCkNoReach('Keyword', [KYWD, FLST, NULL]),
+    {49} wbFormIDCkNoReach('Location', [LCTN]),
+    {50} wbFormIDCkNoReach('Location Ref Type', [LCRT]),
+    {51} wbFormIDCkNoReach('Magic Effect', [MGEF]),
+    {52} wbFormIDCkNoReach('Owner', [FACT, NPC_]),
+    {53} wbFormIDCkNoReach('Package', [PACK]),
+    {54} wbFormIDCkNoReach('Perk', [PERK]),
+    {55} wbFormIDCkNoReach('Planet', [PNDT]),
+    {56} wbFormIDCkNoReach('Quest', [QUST]).AddOverlay(wbConditionQuestOverlay),
+    {57} wbFormIDCkNoReach('Race', [RACE]),
+    {58} wbFormIDCkNoReach('Reference', [ACHR,PARW,PBAR,PBEA,PCON,PFLA,PGRE,PHZD,PLYR,PMIS,REFR,TRGT], True),
+    {59} wbFormIDCkNoReach('Region', [REGN]),
+    {60} wbFormIDCkNoReach('Research Project', [RSPJ]),
+    {61} wbFormIDCkNoReach('Resource', [IRES]),
+    {62} wbFormIDCkNoReach('Scene', [SCEN]),
+    {63} wbFormIDCkNoReach('Speech Challenge', [SPCH]),
+    {64} wbFormIDCkNoReach('Snap Template', [STMP]),
+    {65} wbFormIDCkNoReach('Voice Type', [FLST,VTYP], [VTYP]),
+    {66} wbFormIDCkNoReach('Weather', [WTHR]),
+    {67} wbFormIDCkNoReach('Worldspace', [FLST,WRLD], [WRLD])
   ];
 
   var wbConditions :=
@@ -5725,31 +5721,30 @@ begin
     'Take Actor Damage',
     'Take Hit Damage'
     ];
-  var wbATCP := wbInteger(ATCP, 'Activity Count', itU32, nil, cpBenign).IncludeFlag(dfSkipImplicitEdit);
-  var wbATCPReq := wbInteger(ATCP, 'Activity Count', itU32, nil, cpBenign, True).IncludeFlag(dfSkipImplicitEdit);
-  var wbATAN := wbRStruct('Activity', [
-      wbString(ATAN, 'Activity Type')
-        .SetFormaterOnValue(wbStringEnum(wbPerkActivityTypes))
-        .SetRequired,
-      wbFULL,
-      wbDESC.SetRequired,
-      wbRStructs('Progression Evaluator', 'Argument', [
-        wbString(DNAM, 'Name').SetRequired,
-        wbCITCReq,
-        wbConditions
-      ]).SetRequired,
-      wbRStruct('Progression Configuration', [
-        wbString(ANAM).SetRequired,
-        wbString(ATAV, 'Configuration')
-          .IncludeFlag(dfNoZeroTerminator)
-          .SetRequired,
-        wbEmpty(ATAF, 'Unknown').SetRequired // always empty
-      ]).SetRequired]);
-  var wbATANs := wbRArray('Activities', wbATAN, cpNormal, False);
-  var wbATANsCount := wbRArray('Activities', wbATAN).SetCountPath(ATCP);
+
   var wbActivityTracker := wbRStruct('Activity Tracker', [
-    wbATCPReq,
-    wbATANsCount.SetRequired
+    wbInteger(ATCP, 'Activity Count', itU32, nil, cpBenign, True).IncludeFlag(dfSkipImplicitEdit),
+    wbRArray('Activities',
+      wbRStruct('Activity', [
+        wbString(ATAN, 'Activity Type')
+          .SetFormaterOnValue(wbStringEnum(wbPerkActivityTypes))
+          .SetRequired,
+        wbFULL,
+        wbDESC.SetRequired,
+        wbRStructs('Progression Evaluator', 'Argument', [
+          wbString(DNAM, 'Name').SetRequired,
+          wbCITCReq,
+          wbConditions
+        ]).SetRequired,
+        wbRStruct('Progression Configuration', [
+          wbString(ANAM).SetRequired,
+          wbString(ATAV, 'Configuration')
+            .IncludeFlag(dfNoZeroTerminator)
+            .SetRequired,
+          wbEmpty(ATAF, 'Unknown').SetRequired // always empty
+        ]).SetRequired])
+      ).SetCountPath(ATCP)
+      .SetRequired
   ]);
 
   var wbICON := wbString(ICON, 'Inventory Image');
@@ -6297,22 +6292,26 @@ begin
           ),
           wbRStruct('Component Configurations', [
             wbInteger(BODM, 'Count', itU32).SetRequired,  // count for the following array of struct BODC+BODS/BODV
-            wbRArray('Unknown', wbRStruct('Unknown', [
-              wbInteger(BODC, 'Count', itU32).SetRequired, // count for the follow array of struct BODS/BODV
-              wbRArrayS('Unknown', wbRStructSK([0], 'Unknown', [
-                wbString(BODS, 'Name'),
-                wbStruct(BODV, 'Configuration', [
-                  wbFloatColors('Color 1'),
-                  wbFloatColors('Color 2'),
-                  wbFloatColors('Color 3'),
-                  wbInteger('Unknown', itU32) // known values 0 - 7, possible enum?
-                ])
-                .SetSummaryKeyOnValue([0, 1, 2, 3])
-                .IncludeFlag(dfSummaryMembersNoName)
-                .IncludeFlag(dfHideText)
-                .IncludeFlag(dfCollapsed, wbCollapseBaseFormComponent)
-              ]), cpNormal, False, nil, wbBODSsAfterSet)
-            ]), cpNormal, False, nil, wbBODCsAfterSet).SetRequired
+            wbRArray('Unknown',
+              wbRStruct('Unknown', [
+                wbInteger(BODC, 'Count', itU32).SetRequired, // count for the follow array of struct BODS/BODV
+                wbRArrayS('Unknown',
+                  wbRStructSK([0], 'Unknown', [
+                    wbString(BODS, 'Name'),
+                    wbStruct(BODV, 'Configuration', [
+                      wbFloatColors('Color 1'),
+                      wbFloatColors('Color 2'),
+                      wbFloatColors('Color 3'),
+                      wbInteger('Unknown', itU32) // known values 0 - 7, possible enum?
+                    ]).SetSummaryKeyOnValue([0, 1, 2, 3])
+                      .IncludeFlag(dfSummaryMembersNoName)
+                      .IncludeFlag(dfHideText)
+                      .IncludeFlag(dfCollapsed, wbCollapseBaseFormComponent)
+                  ])
+                ).SetCountPath(BODC)
+              ])
+            ).SetCountPath(BODM)
+             .SetRequired
           ]).SetRequired,
           wbInteger(BLUF, 'Unknown', itU8),
           wbInteger(BOID, 'Next Part ID', itU32)
@@ -8286,7 +8285,7 @@ begin
     wbSoundReference(WED0, 'Open Sound'),
     wbSoundReference(WED1, 'Close Sound'),
     wbFormIDCk(ONAM, 'Contains Only Filter', [FLST])
-  ], False, nil, cpNormal, False, nil, wbContainerAfterSet);
+  ]);
 
   var wbAIDT :=
     wbStruct(AIDT, 'AI Data', [
@@ -8515,27 +8514,30 @@ begin
   {subrecords checked against Starfield.esm}
   wbRecord(DIAL, 'Dialog Topic',
     wbFlags(wbFlagsList([
-      {0x00004000} 14, 'Partial Form'
+    14, 'Partial Form'
     ]), [14]), [
     wbEDID,
     wbBaseFormComponents, // unknown if before or after FULL
     wbFULL
       .SetAfterLoad(wbDialogueTextAfterLoad)
       .SetAfterSet(wbDialogueTextAfterSet),
-    wbFloat(PNAM, 'Priority', cpNormal, True, 1, -1, nil, nil, 50.0),
+    wbFloat(PNAM, 'Priority')
+      .SetDefaultNativeValue(50)
+      .SetRequired,
     wbFormIDCkNoReach(BNAM, 'Branch', [DLBR]),
-    wbFormIDCkNoReach(QNAM, 'Quest', [QUST], False, cpNormal, False),
+    wbFormIDCkNoReach(QNAM, 'Quest', [QUST]),
     wbFormIDCk(KNAM, 'Keyword', [KYWD]),
     wbFormIDCk(ANAM, 'Affinity Event', [AFFE]),
     wbStruct(DATA, 'Data', [
-      // this should not be named Flags since TwbFile.BuildReachable
-      // expects Top-Level flag here from FNV
-      wbInteger('Topic Flags', itU8, wbFlags([
-        'Do All Before Repeating',
-        'Unknown 1',
-        'Unknown 2'
-      ]), cpNormal, True).IncludeFlag(dfCollapsed, wbCollapseFlags),
-      wbInteger('Category', itU8, wbEnum([
+      wbInteger('Topic Flags', itU8,
+        wbFlags([
+        {0} 'Do All Before Repeating',
+        {1} 'Unknown 1',
+        {2} 'Unknown 2'
+        ])
+      ).IncludeFlag(dfCollapsed, wbCollapseFlags),
+      wbInteger('Category', itU8,
+        wbEnum([
         {0} 'Player',
         {1} 'Command',
         {2} 'Scene',
@@ -8544,191 +8546,192 @@ begin
         {5} 'Detection',
         {6} 'Service',
         {7} 'Miscellaneous'
-      ])),
-      wbInteger('Subtype', itU16, wbEnum([
-        { 0} 'Custom',
-        { 1} 'ForceGreet',
-        { 2} 'Rumors',
-        { 3} 'Custom (Command)',
-        { 4} 'Call',
-        { 5} 'Follow',
-        { 6} 'Move',
-        { 7} 'Attack (Command)',
-        { 8} 'Inspect',
-        { 9} 'Retrieve',
-        {10} 'Stay',
-        {11} 'Release',
-        {12} 'Show Relationships',
-        {13} 'Reject',
-        {14} 'Heal',
-        {15} 'Assign',
-        {16} 'Enter',
-        {17} 'Custom Scene',
-        {18} 'Show',
-        {19} 'Agree',
-        {20} 'Refuse',
-        {21} 'Exit Favor State',
-        {22} 'Moral Refusal',
-        {23} 'Trade',
-        {24} 'Pathing Refusal',
-        {25} 'Melee Attack',
-        {26} 'Power Attack',
-        {27} 'Bash',
-        {28} 'Hit',
-        {29} 'Flee',
-        {30} 'Bleed Out',
-        {31} 'ElectromagneticShocked',
-        {32} 'Avoid Threat',
-        {33} 'Death',
-        {34} 'Block',
-        {35} 'Taunt',
-        {36} 'Throw Grenade',
-        {37} 'Use Magic',
-        {38} 'Ally Killed',
-        {39} 'Enemy Killed',
-        {40} 'Order Fallback',
-        {41} 'Order Move Up',
-        {42} 'Order Flank',
-        {43} 'Order Take Cover',
-        {44} 'Fallback',
-        {45} 'Cover Me',
-        {46} 'Suppressive Fire',
-        {47} 'Crippled Limb',
-        {48} 'Paired Attack',
-        {49} 'Take Suppressive Fire',
-        {50} 'Ranged Attack',
-        {51} 'Reload',
-        {52} 'Ship Engines Down',
-        {53} 'Ship Thrusters Down',
-        {54} 'Ship Shields Down',
-        {55} 'Ship Grav Drive Down',
-        {56} 'Ship Weapons Down',
-        {57} 'Ship Engines Repaired',
-        {58} 'Ship Grav Drive Repaired',
-        {59} 'Ship Thrusters Repaired',
-        {60} 'Ship Shields Repaired',
-        {61} 'Ship Weapons Repaired',
-        {62} 'Ship Enemy Engine Down',
-        {63} 'Ship Enemy Grav Jump Down',
-        {64} 'Ship Enemy Shields Down',
-        {65} 'Ship Enemy Thrusters Down',
-        {66} 'Ship Enemy Weapons Down',
-        {67} 'Ship Enemy Engine Repaired',
-        {68} 'Ship Enemy Grav Jump Repaired',
-        {69} 'Ship Enemy Shields Repaired',
-        {70} 'Ship Enemy Thrusters Repaired',
-        {71} 'Ship Enemy Weapons Repaired',
-        {72} 'Ship Shields ZeroHealth',
-        {73} 'Ship Enter Combat',
-        {74} 'Ship Leave Combat',
-        {75} 'Steal',
-        {76} 'Yield',
-        {77} 'Accept Yield',
-        {78} 'Pickpocket Combat',
-        {79} 'Assault',
-        {80} 'Murder',
-        {81} 'Assault NC',
-        {82} 'Murder NC',
-        {83} 'Pickpocket NC',
-        {84} 'Steal From NC',
-        {85} 'Trespass Against NC',
-        {86} 'Trespass',
-        {87} 'Tresspass No Visual',
-        {88} 'Curious',
-        {89} 'Threat Backdown',
-        {90} 'Steal Takeback',
-        {91} 'Steal Takeback Success',
-        {92} 'Piracy',
-        {93} 'Smuggling NC',
-        {94} 'Smuggling',
-        {95} 'React To Warn',
-        {96} 'Voice Power Start Short',
-        {97} 'Voice Power Start Long',
-        {98} 'Voice Power End Short',
-        {99} 'Voice Power End Long',
-       {100} 'Alert Idle',
-       {101} 'Lost Idle',
-       {102} 'Normal To Alert',
-       {103} 'Normal To Combat',
-       {104} 'Normal To Lost',
-       {105} 'Alert To Normal',
-       {106} 'Alert To Combat',
-       {107} 'Combat To Normal',
-       {108} 'Combat To Lost',
-       {109} 'Lost To Normal',
-       {110} 'Lost To Combat',
-       {111} 'Detect Friend Die',
-       {112} 'Service Refusal',
-       {113} 'Repair',
-       {114} 'Travel',
-       {115} 'Training',
-       {116} 'Barter Exit',
-       {117} 'Repair Exit',
-       {118} 'Recharge',
-       {119} 'Recharge Exit',
-       {120} 'Training Exit',
-       {121} 'Observe Combat',
-       {122} 'Notice Corpse',
-       {123} 'Time To Go',
-       {124} 'Goodbye',
-       {125} 'Hello',
-       {126} 'Swing Melee Weapon',
-       {127} 'Shoot Bow',
-       {128} 'Z Key Object',
-       {129} 'Jump',
-       {130} 'Knock Over Object',
-       {131} 'Destroy Object',
-       {132} 'Standon Furniture',
-       {133} 'Locked Object',
-       {134} 'Pickpocket Topic',
-       {135} 'Ship Crew Grav Jump Calculation Complete',
-       {136} 'Ship Crew Landing Start',
-       {137} 'Ship Crew Return To Orbit',
-       {138} 'Ship Crew Docking Complete',
-       {139} 'Ship Undocking Complete',
-       {140} 'Ship Crew Enemy Docking Initiated',
-       {141} 'Ship Crew Grav Jump Completed',
-       {142} 'Ship Crew Take Off Initiated',
-       {143} 'Pursue Idle Topic',
-       {144} 'Shared Info',
-       {145} 'Scene Choice',
-       {146} 'Player Cast Projectile Spell',
-       {147} 'Player Cast Self Spell',
-       {148} 'Player Shout',
-       {149} 'Idle',
-       {150} 'Enter Sprint Breath',
-       {151} 'Enter Bow Zoom Breath',
-       {152} 'Exit Bow Zoom Breath',
-       {153} 'Actor Collidewith Actor',
-       {154} 'Playerin Iron Sights',
-       {155} 'Outof Breath',
-       {156} 'Combat Grunt',
-       {157} 'Leave Water Breath',
-       {158} 'Impatient Positive',
-       {159} 'Impatient Negative',
-       {160} 'Impatient Neutral',
-       {161} 'Impatient Question',
-       {162} 'Waiting For Player Input',
-       {163} 'Greeting',
-       {164} 'Player Activate Door',
-       {165} 'Player Activate Terminals',
-       {166} 'Player Activate Furniture',
-       {167} 'Player Activate Activators',
-       {168} 'Player Activate Container',
-       {169} 'Player Aquire Featured Item',
-       {170} 'Max Carbon Dioxide',
-       {171} 'Blocking Hellos',
-       {172} 'Vehicle Passenger Enter Vehicle',
-       {173} 'Vehicle Passenger Engage Boost',
-       {174} 'Vehicle Passenger Horizontal Collision',
-       {175} 'Vehicle Passenger Vertical Collision',
-       {176} 'Vehicle Passenger Enter Water',
-       {177} 'Vehicle Passenger Non Moving Idle',
-       {178} 'Vehicle Passenger Trigger Mine',
-       {179} 'Vehicle Passenger Aim Mounted Weapon',
-       {180} 'Vehicle Passenger Kill With Collision',
-       {181} 'Vehicle Passenger Kill With Weapon',
-       {182} 'Vehicle Passenger Vertical Collision Low Velocity'
+        ])),
+      wbInteger('Subtype', itU16,
+        wbEnum([
+        {0}   'Custom',
+        {1}   'ForceGreet',
+        {2}   'Rumors',
+        {3}   'Custom (Command)',
+        {4}   'Call',
+        {5}   'Follow',
+        {6}   'Move',
+        {7}   'Attack (Command)',
+        {8}   'Inspect',
+        {9}   'Retrieve',
+        {10}  'Stay',
+        {11}  'Release',
+        {12}  'Show Relationships',
+        {13}  'Reject',
+        {14}  'Heal',
+        {15}  'Assign',
+        {16}  'Enter',
+        {17}  'Custom Scene',
+        {18}  'Show',
+        {19}  'Agree',
+        {20}  'Refuse',
+        {21}  'Exit Favor State',
+        {22}  'Moral Refusal',
+        {23}  'Trade',
+        {24}  'Pathing Refusal',
+        {25}  'Melee Attack',
+        {26}  'Power Attack',
+        {27}  'Bash',
+        {28}  'Hit',
+        {29}  'Flee',
+        {30}  'Bleed Out',
+        {31}  'ElectromagneticShocked',
+        {32}  'Avoid Threat',
+        {33}  'Death',
+        {34}  'Block',
+        {35}  'Taunt',
+        {36}  'Throw Grenade',
+        {37}  'Use Magic',
+        {38}  'Ally Killed',
+        {39}  'Enemy Killed',
+        {40}  'Order Fallback',
+        {41}  'Order Move Up',
+        {42}  'Order Flank',
+        {43}  'Order Take Cover',
+        {44}  'Fallback',
+        {45}  'Cover Me',
+        {46}  'Suppressive Fire',
+        {47}  'Crippled Limb',
+        {48}  'Paired Attack',
+        {49}  'Take Suppressive Fire',
+        {50}  'Ranged Attack',
+        {51}  'Reload',
+        {52}  'Ship Engines Down',
+        {53}  'Ship Thrusters Down',
+        {54}  'Ship Shields Down',
+        {55}  'Ship Grav Drive Down',
+        {56}  'Ship Weapons Down',
+        {57}  'Ship Engines Repaired',
+        {58}  'Ship Grav Drive Repaired',
+        {59}  'Ship Thrusters Repaired',
+        {60}  'Ship Shields Repaired',
+        {61}  'Ship Weapons Repaired',
+        {62}  'Ship Enemy Engine Down',
+        {63}  'Ship Enemy Grav Jump Down',
+        {64}  'Ship Enemy Shields Down',
+        {65}  'Ship Enemy Thrusters Down',
+        {66}  'Ship Enemy Weapons Down',
+        {67}  'Ship Enemy Engine Repaired',
+        {68}  'Ship Enemy Grav Jump Repaired',
+        {69}  'Ship Enemy Shields Repaired',
+        {70}  'Ship Enemy Thrusters Repaired',
+        {71}  'Ship Enemy Weapons Repaired',
+        {72}  'Ship Shields ZeroHealth',
+        {73}  'Ship Enter Combat',
+        {74}  'Ship Leave Combat',
+        {75}  'Steal',
+        {76}  'Yield',
+        {77}  'Accept Yield',
+        {78}  'Pickpocket Combat',
+        {79}  'Assault',
+        {80}  'Murder',
+        {81}  'Assault NC',
+        {82}  'Murder NC',
+        {83}  'Pickpocket NC',
+        {84}  'Steal From NC',
+        {85}  'Trespass Against NC',
+        {86}  'Trespass',
+        {87}  'Tresspass No Visual',
+        {88}  'Curious',
+        {89}  'Threat Backdown',
+        {90}  'Steal Takeback',
+        {91}  'Steal Takeback Success',
+        {92}  'Piracy',
+        {93}  'Smuggling NC',
+        {94}  'Smuggling',
+        {95}  'React To Warn',
+        {96}  'Voice Power Start Short',
+        {97}  'Voice Power Start Long',
+        {98}  'Voice Power End Short',
+        {99}  'Voice Power End Long',
+        {100} 'Alert Idle',
+        {101} 'Lost Idle',
+        {102} 'Normal To Alert',
+        {103} 'Normal To Combat',
+        {104} 'Normal To Lost',
+        {105} 'Alert To Normal',
+        {106} 'Alert To Combat',
+        {107} 'Combat To Normal',
+        {108} 'Combat To Lost',
+        {109} 'Lost To Normal',
+        {110} 'Lost To Combat',
+        {111} 'Detect Friend Die',
+        {112} 'Service Refusal',
+        {113} 'Repair',
+        {114} 'Travel',
+        {115} 'Training',
+        {116} 'Barter Exit',
+        {117} 'Repair Exit',
+        {118} 'Recharge',
+        {119} 'Recharge Exit',
+        {120} 'Training Exit',
+        {121} 'Observe Combat',
+        {122} 'Notice Corpse',
+        {123} 'Time To Go',
+        {124} 'Goodbye',
+        {125} 'Hello',
+        {126} 'Swing Melee Weapon',
+        {127} 'Shoot Bow',
+        {128} 'Z Key Object',
+        {129} 'Jump',
+        {130} 'Knock Over Object',
+        {131} 'Destroy Object',
+        {132} 'Standon Furniture',
+        {133} 'Locked Object',
+        {134} 'Pickpocket Topic',
+        {135} 'Ship Crew Grav Jump Calculation Complete',
+        {136} 'Ship Crew Landing Start',
+        {137} 'Ship Crew Return To Orbit',
+        {138} 'Ship Crew Docking Complete',
+        {139} 'Ship Undocking Complete',
+        {140} 'Ship Crew Enemy Docking Initiated',
+        {141} 'Ship Crew Grav Jump Completed',
+        {142} 'Ship Crew Take Off Initiated',
+        {143} 'Pursue Idle Topic',
+        {144} 'Shared Info',
+        {145} 'Scene Choice',
+        {146} 'Player Cast Projectile Spell',
+        {147} 'Player Cast Self Spell',
+        {148} 'Player Shout',
+        {149} 'Idle',
+        {150} 'Enter Sprint Breath',
+        {151} 'Enter Bow Zoom Breath',
+        {152} 'Exit Bow Zoom Breath',
+        {153} 'Actor Collidewith Actor',
+        {154} 'Playerin Iron Sights',
+        {155} 'Outof Breath',
+        {156} 'Combat Grunt',
+        {157} 'Leave Water Breath',
+        {158} 'Impatient Positive',
+        {159} 'Impatient Negative',
+        {160} 'Impatient Neutral',
+        {161} 'Impatient Question',
+        {162} 'Waiting For Player Input',
+        {163} 'Greeting',
+        {164} 'Player Activate Door',
+        {165} 'Player Activate Terminals',
+        {166} 'Player Activate Furniture',
+        {167} 'Player Activate Activators',
+        {168} 'Player Activate Container',
+        {169} 'Player Aquire Featured Item',
+        {170} 'Max Carbon Dioxide',
+        {171} 'Blocking Hellos',
+        {172} 'Vehicle Passenger Enter Vehicle',
+        {173} 'Vehicle Passenger Engage Boost',
+        {174} 'Vehicle Passenger Horizontal Collision',
+        {175} 'Vehicle Passenger Vertical Collision',
+        {176} 'Vehicle Passenger Enter Water',
+        {177} 'Vehicle Passenger Non Moving Idle',
+        {178} 'Vehicle Passenger Trigger Mine',
+        {179} 'Vehicle Passenger Aim Mounted Weapon',
+        {180} 'Vehicle Passenger Kill With Collision',
+        {181} 'Vehicle Passenger Kill With Weapon',
+        {182} 'Vehicle Passenger Vertical Collision Low Velocity'
       ]))
     ]),
     wbInteger(SNAM, 'Subtype Name', itU32, wbDialogueSubtypeEnum),
@@ -12094,89 +12097,95 @@ begin
   {subrecords checked against Starfield.esm}
   wbRecord(INFO, 'Dialog response',
     wbFlags(wbFlagsList([
-      {0x00000040}  6, 'Info Group',
-      {0x00000080}  7, 'Exclude From Export',
-      {0x00002000} 13, 'Actor Changed'
+    6, 'Info Group',
+    7, 'Exclude From Export',
+    13, 'Actor Changed'
     ])), [
     wbEDID,
     wbVMADFragmentedINFO,
     wbBaseFormComponents,
     wbStruct(ENAM, 'Response flags', [
       wbUnion('Flags', wbINFOGroupDecider,[
-        wbInteger('Flags', itU16, wbFlags([
-          {0x0001} 'Start Scene on End',
-          {0x0002} 'Random',
-          {0x0004} 'Say Once',
-          {0x0008} 'Requires Player Activation',
-          {0x0010} 'Unknown 4',
-          {0x0020} 'Random End',
-          {0x0040} 'End Running Scene',
-          {0x0080} 'Needs Review',
-          {0x0100} 'Player Address',
-          {0x0200} 'Unknown 9',
-          {0x0400} 'Can Move While Greeting',
-          {0x0800} 'No LIP File',
-          {0x1000} 'Don''t Gray Out',
-          {0x2000} 'Audio Output Override',
-          {0x4000} 'Has Capture',
-          {0x8000} 'Unknown 15'
-        ])).IncludeFlag(dfCollapsed, wbCollapseFlags),
+        wbInteger('Flags', itU16,
+          wbFlags([
+          {0}  'Start Scene on End',
+          {1}  'Random',
+          {2}  'Say Once',
+          {3}  'Requires Player Activation',
+          {4}  'Unknown 4',
+          {5}  'Random End',
+          {6}  'End Running Scene',
+          {7}  'Needs Review',
+          {8}  'Player Address',
+          {9}  'Unknown 9',
+          {10} 'Can Move While Greeting',
+          {11} 'No LIP File',
+          {12} 'Don''t Gray Out',
+          {13} 'Audio Output Override',
+          {14} 'Has Capture',
+          {15} 'Unknown 15'
+          ])
+        ).IncludeFlag(dfCollapsed, wbCollapseFlags),
         wbInteger('Flags', itU16, wbFlags([   //Info groups
-          {0x0001} 'Unknown 0', // Any changes to the idle group removes this flag
-          {0x0002} 'Random',
-          {0x0004} 'Unknown 2', // Any changes to the idle group removes this flag
-          {0x0008} 'Force all children player activate only',
-          {0x0010} 'Unknown 4',
-          {0x0020} 'Random End',
-          {0x0040} 'Unknown 6', // Any changes to the idle group removes this flag
-          {0x0080} 'Unknown 7', // Any changes to the idle group removes this flag
-          {0x0100} 'Child infos don''t inherit reset data',
-          {0x0200} 'Force All Children Random',
-          {0x0400} 'Unknown 10', // Any changes to the idle group removes this flag
-          {0x0800} 'Don''t do all before repeating',
-          {0x1000} 'Unknown 12', // Any changes to the idle group removes this flag
-          {0x2000} 'Unknown 13', // Any changes to the idle group removes this flag
-          {0x4000} 'Unknown 14', // Any changes to the idle group removes this flag
-          {0x8000} 'Unknown 15'
-        ])).IncludeFlag(dfCollapsed, wbCollapseFlags)
+          {0}  'Unknown 0', // Any changes to the idle group removes this flag
+          {1}  'Random',
+          {2}  'Unknown 2', // Any changes to the idle group removes this flag
+          {3}  'Force all children player activate only',
+          {4}  'Unknown 4',
+          {5}  'Random End',
+          {6}  'Unknown 6', // Any changes to the idle group removes this flag
+          {7}  'Unknown 7', // Any changes to the idle group removes this flag
+          {8}  'Child infos don''t inherit reset data',
+          {9}  'Force All Children Random',
+          {10} 'Unknown 10', // Any changes to the idle group removes this flag
+          {11} 'Don''t do all before repeating',
+          {12} 'Unknown 12', // Any changes to the idle group removes this flag
+          {13} 'Unknown 13', // Any changes to the idle group removes this flag
+          {14} 'Unknown 14', // Any changes to the idle group removes this flag
+          {15} 'Unknown 15'
+          ])
+        ).IncludeFlag(dfCollapsed, wbCollapseFlags)
       ]),
       wbInteger('Reset Hours', itU16, wbDiv(2730))
     ]),
-    wbFormIDCk(TPIC, 'Topic', [DIAL]),
+    wbFormIDCkNoReach(TPIC, 'Previous Topic', [DIAL]),
     wbFormIDCk(DNAM, 'Shared INFO', [INFO]),
     wbFormIDCk(GNAM, 'INFO group', [INFO]),
-
-    wbRArray('Responses', wbRStruct('Response', [
-      wbStruct(TRDA, 'Response Data', [
-        wbFormIDCk('Emotion', [KYWD, FFFF]),
-        wbInteger('WEM File', itU32, wbIntToHexStr, wbHexStrToInt),
-        wbFloat('Emotion Out') // Interrupt Percentage?
-      ]),
-      wbRArray('Unknown', wbStruct(TROT, 'Unknown', [
-        wbFormIDCk('Voice Type', [VTYP]),
-        wbFloat('Emotion Out')
-      ])),
-      wbFormIDCk(TROI, 'Original INFO', [INFO]),
-      wbLStringKC(NAM1, 'Response Text', 0, cpTranslate)
-        .SetAfterLoad(wbDialogueTextAfterLoad)
-        .SetAfterSet(wbDialogueTextAfterSet)
-        .SetRequired,
-      wbString(NAM2, 'Script Notes', 0, cpNormal, True),
-      wbString(NAM3, 'Edits', 0, cpNormal, True),
-      wbString(NAM4, 'Alternate LIP Text', 0, cpNormal, True),
-      wbByteArray(NAM9, 'Text Hash'),
-      wbBNAMAnimation,
-      wbRStruct('Head Tracking', [
-        wbMarker(HNAM).SetRequired,
-        wbArray(HTID, ' Aliases',
-          wbInteger('Actor ID', itS32, wbINFOAliasToStr, wbAliasToInt)
-            .SetDefaultNativeValue(-1)),
-        wbEmpty(FNAM, 'Force Rotate'),
-        wbEmpty(PNAM, 'Force Rotate Must Complete'),
-        wbMarker(HNAM).SetRequired
-      ]).IncludeFlag(dfTemplate),
-      wbSoundReference(RVSH)
-    ])),
+    wbRArray('Responses',
+      wbRStruct('Response', [
+        wbStruct(TRDA, 'Response Data', [
+          wbFormIDCk('Emotion', [KYWD, FFFF]),
+          wbInteger('WEM File', itU32, wbIntToHexStr, wbHexStrToInt),
+          wbFloat('Emotion Out') // Interrupt Percentage?
+        ]),
+        wbRArray('Unknown',
+          wbStruct(TROT, 'Unknown', [
+            wbFormIDCk('Voice Type', [VTYP]),
+            wbFloat('Emotion Out')
+          ])),
+        wbFormIDCk(TROI, 'Original INFO', [INFO]),
+        wbLStringKC(NAM1, 'Response Text', 0, cpTranslate)
+          .SetAfterLoad(wbDialogueTextAfterLoad)
+          .SetAfterSet(wbDialogueTextAfterSet)
+          .SetRequired,
+        wbString(NAM2, 'Script Notes').SetRequired,
+        wbString(NAM3, 'Edits').SetRequired,
+        wbString(NAM4, 'Alternate LIP Text').SetRequired,
+        wbByteArray(NAM9, 'Text Hash'),
+        wbBNAMAnimation,
+        wbRStruct('Head Tracking', [
+          wbMarker(HNAM).SetRequired,
+          wbArray(HTID, ' Aliases',
+            wbInteger('Actor ID', itS32, wbINFOAliasToStr, wbAliasToInt)
+              .SetDefaultNativeValue(-1)),
+          wbEmpty(FNAM, 'Force Rotate'),
+          wbEmpty(PNAM, 'Force Rotate Must Complete'),
+          wbMarker(HNAM).SetRequired
+        ]).IncludeFlag(dfTemplate),
+        wbSoundReference(RVSH)
+      ]).SetSummaryKey([3])
+        .IncludeFlag(dfCollapsed)
+    ),
     wbConditions,
     wbLStringKC(RNAM, 'Prompt', 0, cpTranslate)
       .SetAfterLoad(wbDialogueTextAfterLoad)
@@ -12186,12 +12195,13 @@ begin
     wbUnknown(INTV),
     wbSoundReference(WED0),
     wbStruct(TIQS, 'Set Parent Quest Stage', [
-      wbInteger('On Begin', itS16),
-      wbInteger('On End', itS16)
+      wbInteger('On Begin', itU16),
+      wbInteger('On End', itU16)
     ]),
     wbString(NAM0, 'Start Scene Phase').SetRequired,
     (*
-    wbInteger(INCC, 'Challenge', itU32, wbEnum([
+    wbInteger(INCC, 'Challenge', itU32,
+      wbEnum([
       {0} 'None',
       {1} 'Easy',
       {2} 'Medium',
@@ -12200,14 +12210,15 @@ begin
       {5} 'Easy Repeatable',
       {6} 'Medium Repeatable',
       {7} 'Hard Repeatable'
-    ])),
+      ])),
     *)
     wbFormIDCk(MODQ, 'Reset Global', [GLOB]),
-    wbInteger(INAM, 'Subtitle Priority', itU32, wbEnum([
-      'Low',
-      'Normal',
-      'High',
-      'Force'
+    wbInteger(INAM, 'Subtitle Priority', itU32,
+      wbEnum([
+      {0} 'Low',
+      {1} 'Normal',
+      {2} 'High',
+      {3} 'Force'
     ])),
     wbEmpty(COCT, 'Unknown'), // container count? never followed by CNTO in Starfield.esm
     wbFormIDCk(NAM8, 'Affinity Event', [AFFE]),
@@ -12826,7 +12837,7 @@ begin
     wbFormIDCk(MDOB, 'Menu Display Object', [STAT]),
     wbKeywords,
     wbMGEFData,
-    wbRArrayS('Counter Effects', wbFormIDCk(ESCE, 'Effect', [MGEF]){, cpNormal, False, nil, wbCounterEffectsAfterSet}),
+    wbRArrayS('Counter Effects', wbFormIDCk(ESCE, 'Effect', [MGEF])),
     wbRArray('Sounds', wbStructSK(ESSH, [0], 'Sound Reference', [
       wbInteger('Type', itU8, wbEnum([
         {00} 'Draw/Sheathe',
@@ -12841,7 +12852,7 @@ begin
     ),
     wbLStringKC(DNAM, 'Magic Item Description', 0, cpTranslate),
     wbConditions
-  ], False, nil, cpNormal, False, nil {wbMGEFAfterLoad}, wbMGEFAfterSet);
+  ]);
 
   {subrecords checked against Starfield.esm}
   wbRecord(MISC, 'Misc. Item',
@@ -13201,15 +13212,17 @@ begin
           .SetSummaryPrefixSuffixOnValue(1, '{Rank: ', '}')
           .IncludeFlagOnValue(dfSummaryMembersNoName)
           .IncludeFlag(dfCollapsed, wbCollapsePerk)
-          , cpNormal, False, nil, wbPRKRsAfterSet
-      ).SetRequired
+      ).SetCountPath(PRKZ)
+       .SetRequired
     ]).SetSummaryKey([1]),
     wbPRPS,
     wbFTYP,
     wbNTRM,
     wbContainerItems.SetSummaryKey([1]),
     wbAIDT,
-    wbRArray('Packages', wbFormIDCk(PKID, 'Package', [PACK])),
+    wbRArray('Packages',
+      wbFormIDCk(PKID, 'Package', [PACK]).SetToStr(wbNPCPackageToStr)
+    ),
     wbArray(RDSA, 'Reaction Radius Behavior',
       wbStruct('Entry', [
         {  0} wbInteger('Reaction Type', itU32, wbEnum([
@@ -13973,9 +13986,7 @@ begin
               wbString(MPPM, 'Unknown'),
               wbFormIDCk(MPPT, 'Texture', [TXST]),
               wbUnknown(MPPF)
-            ]),
-            cpNormal, False, nil, wbMorphPresetsAfterSet
-          ),
+            ])).SetCountPath(MPPC),
           wbUnknown(MPPK),
           wbArray(MPGS, 'Unknown', wbInteger('Index', itU32, wbIntToHexStr, wbHexStrToInt))
           }
@@ -14085,7 +14096,14 @@ begin
         -1, 'Any'
       ])),
       wbInteger('Date', itU8),
-      wbInteger('Hour', itS8),
+      wbInteger('Hour', itS8,
+        wbEnum([
+        '0','1','2','3','4','5','6','7','8','9','10',
+        '11','12','13','14','15','16','17','18','19',
+        '20','21','22','23'
+        ], [
+        -1, 'Any'
+        ])),
       wbInteger('Minute', itS8),
       wbUnused(3),
       wbInteger('Duration (minutes)', itS32)
@@ -14465,8 +14483,7 @@ begin
       wbFormIDCk(VTCK, 'Voice Types', [NPC_, FACT, FLST, VTYP, NULL]).SetRequired,
       wbRArrayS('Alias Terminals', wbFormIDCk(ALTM, 'Terminal Menu', [TMLM])),
       wbEmpty(ALED, 'Alias End Marker', cpNormal, True)
-    ], [], cpNormal, False, nil, False, nil, wbContainerAfterSet)
-      .SetSummaryKey([1, 2])
+    ]).SetSummaryKey([1, 2])
       .SetSummaryDelimiter(' ')
       .SetSummaryMemberPrefixSuffix(0, 'Ref [', ']')
       .SetSummaryMemberPrefixSuffix(1, '', '')
@@ -16363,9 +16380,8 @@ begin
               ]))
             ]),
             wbInteger(YNAM, 'Index', itU16)
-          ]),
-          cpNormal, False, nil, wbINNRAfterSet
-        )
+          ])
+        ).SetCountPath(VNAM)
       ])
     , 10).SetRequired
   ]);
@@ -19094,7 +19110,9 @@ begin
       wbRStruct('Secondary Damage', [
         wbFormIDCk(DAMA, 'Damage Type', [DMGT], False, cpNormal, True),
         wbFormIDCk(ACTV, 'Actor Value', [AVIF], False, cpNormal, True)
-      ]), cpNormal, False, nil, wbSDLTListAfterSet).SetRequired
+      ])
+    ).SetCountPath(ITMC)
+     .SetRequired
   ]);
 
   {subrecords checked against Starfield.esm}

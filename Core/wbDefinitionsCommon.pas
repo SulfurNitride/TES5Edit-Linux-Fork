@@ -159,8 +159,8 @@ procedure wbACBSLevelMultAfterLoad(const aElement: IwbElement);
 procedure wbAVIFSkillAfterLoad(const aElement: IwbElement);
 procedure wbDialogueTextAfterLoad(const aElement: IwbElement);
 procedure wbDOBJObjectsAfterLoad(const aElement: IwbElement);
+procedure wbLANDLayerAfterLoad(const aElement: IwbElement);
 procedure wbPACKDateAfterLoad(const aElement: IwbElement);
-procedure wbPACKHourAfterLoad(const aElement: IwbElement);
 procedure wbPNDTAfterLoad(const aElement: IwbElement);
 procedure wbRPLDAfterLoad(const aElement: IwbElement);
 procedure wbScrollCastAfterLoad(const aElement: IwbElement);
@@ -168,38 +168,16 @@ procedure wbScrollTypeAfterLoad(const aElement: IwbElement);
 procedure wbSOUNAfterLoad(const aElement: IwbElement);
 procedure wbWorldAfterLoad(const aElement: IwbElement);
 
-{>>> After Set Callbacks <<<} //34
+{>>> After Set Callbacks <<<} //12
 procedure wbACBSLevelMultAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbATANsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbBODCsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbBODSsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbCNTOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbConditionsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbConditionTypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbContainerAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbCounterEffectsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbCTDAsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbConditionRunOnAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbDialogueTextAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbIdleMarkerPNAMAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbIdleMarkerQNAMAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbLENSAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbMGEFAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbMorphPresetsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbNPCAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbNPCActorSoundsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbPACKDateAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbPACKHourAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbPERKPRKETypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbPRKRsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbRaceAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbSceneActionTypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbSDLTListAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbSNDRRatesOfFireAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbSPLOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbTERMCNTOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbTERMDisplayItemsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-procedure wbTERMMenuItemsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbUpdateSameParentUnions(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbWorldAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 procedure wbWwiseKeywordMappingTemplateAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -221,14 +199,19 @@ function wbFlagNavmeshGroundDontSHow(const aElement: IwbElement): Boolean;
 function wbFlagPartialFormDontShow(const aElement: IwbElement): Boolean;
 function wbFlagREFRSkyMarkerDontShow(const aElement: IwbElement): Boolean;
 
-{>>> Don't Show Callbacks <<<} //17
+{>>> Don't Show Callbacks <<<} //18
 function wbAlwaysDontShow(const aElement: IwbElement): Boolean;
 function wbCellInteriorDontShow(const aElement: IwbElement): Boolean;
 function wbCellExteriorDontShow(const aElement: IwbElement): Boolean;
 function wbIdleMarkerPNAMDontShow(const aElement: IwbElement): Boolean;
 function wbIdleMarkerQNAMDontShow(const aElement: IwbElement): Boolean;
+function wbLIGHCarryDontShow(const aElement: IwbElement): Boolean;
+function wbLIGHFalloffDontShow(const aElement: IwbElement): Boolean;
+function wbLIGHFlickerDontShow(const aElement: IwbElement): Boolean;
+function wbLIGHShadowSpotDontShow(const aElement: IwbElement): Boolean;
 function wbModelInfoDontShow(const aElement: IwbElement): Boolean;
 function wbLCTNCellDontShow(const aElement: IwbElement): Boolean;
+function wbPACKTemplateDontShow(const aElement: IwbElement): Boolean;
 function wbREGNGrassDontShow(const aElement: IwbElement): Boolean;
 function wbREGNImposterDontShow(const aElement: IwbElement): Boolean;
 function wbREGNLandDontShow(const aElement: IwbElement): Boolean;
@@ -335,13 +318,14 @@ function wbVertexToStr2(aInt: Int64; const aElement: IwbElement; aType: TwbCallb
 function wbVTXTPosition(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 function wbWeatherCloudSpeedToStr(aInt: Int64; const aElement: IwbElement; aType: TwbCallbackType): string;
 
-{>>> To String Callback Procedures <<<} //15
+{>>> To String Callback Procedures <<<} //16
 procedure wbABGRToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbBGRAToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbConditionToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbCrowdPropertyToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbFactionRelationToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbItemToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+procedure wbNPCPackageToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbObjectPropertyToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbRGBAToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 procedure wbScriptToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
@@ -890,6 +874,36 @@ begin
   end;
 end;
 
+procedure wbLANDLayerAfterLoad(const aElement: IwbElement);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  if wbBeginInternalEdit then try
+    var lContainer : IwbContainerElementRef;
+    if not Supports(aElement, IwbContainerElementRef, lContainer) then
+      Exit;
+
+    var lTexture := lContainer.Elements[0];
+    if not Assigned(lTexture) then
+      Exit;
+
+    if lTexture.NativeValue <> 0 then
+      Exit;
+
+    //Sets null LTEX's on Land Layers to the default that is used by the CK.
+    //Arthmoor helped debug/figure this out.
+    case wbGameMode of
+      gmTES4, gmTES4R:         lTexture.NativeValue := $000008C0; //TerrainHDDirt01dds
+      gmFO3,  gmFNV:           lTexture.NativeValue := $00015457; //LDirtWasteland01
+      gmTES5, gmTES5VR, gmSSE: lTexture.NativeValue := $00000C16; //LDirt02
+      gmFO4,  gmFO4VR:         lTexture.NativeValue := $000AB07D; //LCWDefault01Grass01
+    end;
+  finally
+    wbEndInternalEdit;
+  end;
+end;
+
 procedure wbPACKDateAfterLoad(const aElement: IwbElement);
 begin
   if not Assigned(aElement) then
@@ -907,21 +921,6 @@ begin
 
     if aElement.NativeValue > lMaxDate then
       aElement.NativeValue := lMaxDate;
-    if aElement.NativeValue < -1 then
-      aElement.NativeValue := -1;
-  finally
-    wbEndInternalEdit;
-  end;
-end;
-
-procedure wbPACKHourAfterLoad(const aElement: IwbElement);
-begin
-  if not Assigned(aElement) then
-    Exit;
-
-  if wbBeginInternalEdit then try
-    if aElement.NativeValue > 23 then
-      aElement.NativeValue := 23;
     if aElement.NativeValue < -1 then
       aElement.NativeValue := -1;
   finally
@@ -1105,7 +1104,7 @@ begin
   end;
 end;
 
-{>>> After Set Callbacks <<<} //34
+{>>> After Set Callbacks <<<} //12
 
 procedure wbACBSLevelMultAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
@@ -1126,31 +1125,6 @@ begin
   finally
     wbEndInternalEdit;
   end;
-end;
-
-procedure wbATANsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('ATCP - Activity Count', aElement);
-end;
-
-procedure wbBODCsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('BODM - Count', aElement);
-end;
-
-procedure wbBODSsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('BODC - Count', aElement);
-end;
-
-procedure wbCNTOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('COCT - Count', aElement);
-end;
-
-procedure wbConditionsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterContainerAfterSet('CITC - Condition Count', 'Conditions', aElement);
 end;
 
 procedure wbConditionTypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -1180,22 +1154,6 @@ begin
   finally
     wbEndInternalEdit;
   end;
-end;
-
-procedure wbContainerAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterContainerAfterSet('COCT - Count', 'Items', aElement);
-end;
-
-procedure wbCounterEffectsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  // if it is really possible to have both counter effects and multiple data, this is going to be tricky.
-  wbCounterByPathAfterSet('Magic Effect Data\DATA - Data\Counter effect count', aElement);
-end;
-
-procedure wbCTDAsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('CITC - Condition Count', aElement);
 end;
 
 procedure wbConditionRunOnAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -1265,34 +1223,6 @@ begin
   end;
 end;
 
-procedure wbLENSAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('LFSP - Count', aElement);
-end;
-
-procedure wbMGEFAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterContainerByPathAfterSet('Magic Effect Data\DATA - Data\Counter effect count', 'Counter Effects', aElement);
-end;
-
-procedure wbMorphPresetsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('MPPC - Count', aElement);
-end;
-
-procedure wbNPCAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterContainerAfterSet('COCT - Count', 'Items', aElement);
-  wbCounterContainerAfterSet('SPCT - Count', 'Actor Effects', aElement);
-  wbCounterContainerAfterSet('LLCT - Count', 'Leveled List Entries', aElement);
-  wbCounterContainerAfterSet('PRKZ - Perk Count', 'Perks', aElement);
-end;
-
-procedure wbNPCActorSoundsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('CS2H - Count', aElement);
-end;
-
 procedure wbPACKDateAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
   if not Assigned(aElement) then
@@ -1314,25 +1244,6 @@ begin
     if aElement.NativeValue > lMaxDate then
       aElement.NativeValue := lMaxDate;
     if aElement.NativeValue < -1 then
-      aElement.NativeValue := -1;
-  finally
-    wbEndInternalEdit;
-  end;
-end;
-
-procedure wbPACKHourAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  if not Assigned(aElement) then
-    Exit;
-
-  if VarSameValue(aOldValue, aNewValue) then
-    Exit;
-
-  if wbBeginInternalEdit then try
-    if aNewValue > 23 then
-      aElement.NativeValue := 23;
-
-    if aNewValue < -1 then
       aElement.NativeValue := -1;
   finally
     wbEndInternalEdit;
@@ -1370,16 +1281,6 @@ begin
   end;
 end;
 
-procedure wbPRKRsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('PRKZ - Perk Count', aElement);
-end;
-
-procedure wbRaceAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterContainerAfterSet('SPCT - Count', 'Actor Effects', aElement);
-end;
-
 procedure wbSceneActionTypeAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
 begin
   if not Assigned(aElement) then
@@ -1398,36 +1299,6 @@ begin
   var lDataElement := lContainer.ElementBySortOrder[8]; //'Type Specific Action'
   if Assigned(lDataElement) and (lDataElement.Name <> aElement.Value) then
     lDataElement.Remove;
-end;
-
-procedure wbSDLTListAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('ITMC - Secondary List Count', aElement);
-end;
-
-procedure wbSNDRRatesOfFireAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('ITMC - Count', aElement);
-end;
-
-procedure wbSPLOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('SPCT - Count', aElement);
-end;
-
-procedure wbTERMCNTOsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('COCT - Holds Holotape (Count)', aElement);
-end;
-
-procedure wbTERMDisplayItemsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('BSIZ - Count', aElement);
-end;
-
-procedure wbTERMMenuItemsAfterSet(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
-begin
-  wbCounterAfterSet('ISIZ - Count', aElement);
 end;
 
 procedure wbUpdateSameParentUnions(const aElement: IwbElement; const aOldValue, aNewValue: Variant);
@@ -1800,6 +1671,106 @@ begin
   Result := Assigned(aElement.ContainingMainRecord.ElementBySignature[PNAM]);
 end;
 
+function wbLIGHCarryDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := False;
+  if not Assigned(aElement) then
+    Exit;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  var lDATA := lMainRecord.ElementBySignature[DATA] as IwbContainerElementRef;
+  if not Assigned(lData) then
+    Exit;
+
+  var lFlags := lDATA.ElementByName['Flags'];
+  if not Assigned(lFlags) then
+    Exit;
+
+     {Can Be Carried}
+  if (lFlags.NativeValue and $2) = 0 then
+    Result := True;
+end;
+
+function wbLIGHFalloffDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := False;
+  if not Assigned(aElement) then
+    Exit;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  var lDATA := lMainRecord.ElementBySignature[DATA] as IwbContainerElementRef;
+  if not Assigned(lData) then
+    Exit;
+
+  var lFlags := lDATA.ElementByName['Flags'];
+  if not Assigned(lFlags) then
+    Exit;
+
+  var lFlagsValue := lFlags.NativeValue;
+      {Shadow Spotlight}              {Shadow Hemisphere}
+  if (((lFlagsValue and $400) = 0) and ((lFlagsValue and $800) = 0)) then
+    if ((wbCS = False) or ((lFlagsValue and $4000) = 0)) then
+      Result := True;
+end;
+
+function wbLIGHFlickerDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := False;
+  if not Assigned(aElement) then
+    Exit;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  var lDATA := lMainRecord.ElementBySignature[DATA] as IwbContainerElementRef;
+  if not Assigned(lData) then
+    Exit;
+
+  var lFlags := lDATA.ElementByName['Flags'];
+  if not Assigned(lFlags) then
+    Exit;
+
+  var lFlagsValue := lFlags.NativeValue;
+  if ((lFlagsValue and   $8) = 0) and
+     ((lFlagsValue and  $40) = 0) and
+     ((lFlagsValue and  $80) = 0) and
+     ((lFlagsValue and $100) = 0)
+  then
+    Result := True;
+end;
+
+function wbLIGHShadowSpotDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := False;
+  if not Assigned(aElement) then
+    Exit;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  var lDATA := lMainRecord.ElementBySignature[DATA] as IwbContainerElementRef;
+  if not Assigned(lData) then
+    Exit;
+
+  var lFlags := lDATA.ElementByName['Flags'];
+  if not Assigned(lFlags) then
+    Exit;
+
+  var lFlagsValue := lFlags.NativeValue;
+     {Shadow Spotlight}
+  if (lFlagsValue and $400) = 0 then
+    if ((wbCS = False) or ((lFlagsValue and $4000) = 0)) then
+      Result := True;
+end;
+
 function wbModelInfoDontShow(const aElement: IwbElement): Boolean;
 begin
   if wbGameMode < gmTES5 then
@@ -1837,6 +1808,20 @@ begin
     Exit;
 
   Result := lMainRecord.Signature = CELL;
+end;
+
+function wbPACKTemplateDontShow(const aElement: IwbElement): Boolean;
+begin
+  Result := False;
+  if not Assigned(aElement) then
+    Exit;
+
+  var lMainRecord := aElement.ContainingMainRecord;
+  if not Assigned(lMainRecord) then
+    Exit;
+
+  if lMainRecord.ElementNativeValues['PKCU\Package Template'] <> 0 then
+    Result := True;
 end;
 
 function wbREGNGrassDontShow(const aElement: IwbElement): Boolean;
@@ -3554,7 +3539,7 @@ begin
   end;
 end;
 
-{>>> To String Callback Procedures <<<} //15
+{>>> To String Callback Procedures <<<} //16
 
 procedure wbABGRToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
 var
@@ -3767,6 +3752,29 @@ begin
     Exit;
 
   aValue := ItemString;
+end;
+
+procedure wbNPCPackageToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
+begin
+  if not Assigned(aElement) then
+    Exit;
+
+  var lPACKRecord : IwbMainRecord;
+  if not Supports(aElement.LinksTo, IwbMainRecord, lPACKRecord) then
+    Exit;
+
+  var lQNAM := lPACKRecord.ElementBySignature[QNAM];
+  if not Assigned(lQNAM) then
+    Exit;
+
+  var lQUSTRecord : IwbMainRecord;
+  if not Supports(lQNAM.LinksTo, IwbMainRecord, lQUSTRecord) then
+    Exit;
+
+  case aType of
+    ctCheck: aValue := '<Error: Package [' + lPACKRecord.EditorID + '] is owned by Quest [' + lQUSTRecord.EditorID + '] and cannot be assigned to an NPC record>';
+    ctToStr: aValue := aElement.EditValue + ' <Error: Package is owned by Quest [' + lQUSTRecord.EditorID + '] and cannot be assigned to an NPC record>';
+  end;
 end;
 
 procedure wbObjectPropertyToStr(var aValue: string; aBasePtr: Pointer; aEndPtr: Pointer; const aElement: IwbElement; aType: TwbCallbackType);
@@ -7113,7 +7121,7 @@ begin
         .IncludeFlag(dfCollapsed, wbCollapseSounds)
         .IncludeFlag(dfSummaryMembersNoName)
         .IncludeFlag(dfSummaryNoSortKey)
-      ).SetAfterSet(wbNPCActorSoundsAfterSet);
+      ).SetCountPath(CS2H);
 
   wbMagicEffectSounds :=
     wbArrayS(SNDD, 'Sounds',
@@ -7332,13 +7340,21 @@ begin
       33).SetSummaryName('Rows')
          .IncludeFlag(dfCollapsed, wbCollapseVertices));
 
+  var wbLandLayerDefault : variant;
+  case wbGameMode of
+     gmTES4, gmTES4R         : wbLandLayerDefault := $000008C0; //TerrainHDDirt01dds
+     gmFO3,  gmFNV           : wbLandLayerDefault := $00015457; //LDirtWasteland01
+     gmTES5, gmTES5VR, gmSSE : wbLandLayerDefault := $00000C16; //LDirt02
+     gmFO4,  gmFO4VR         : wbLandLayerDefault := $000AB07D; //LCWDefault01Grass01
+  end;
+
   //TES4,FO3,FNV,TES5,FO4,FO76
   wbLandLayers :=
     wbRArrayS('Layers',
       wbRUnion('Layer', [
         wbRStructSK([0], 'Base Layer', [
           wbStructSK(BTXT, [1, 3], 'Base Layer', [
-            wbFormIDCk('Texture', [LTEX,NULL]),  //NULL probably Shouldn't be accepted, as the CK doesn't allow you to do that.  But the Game Masters are full of em.
+            wbFormIDCk('Texture', [LTEX]).SetDefaultNativeValue(wbLandLayerDefault),
             wbInteger('Quadrant', itU8, wbQuadrantEnum),
             wbUnused(1),
             wbInteger('Layer', itS16)
@@ -7348,11 +7364,12 @@ begin
             .SetSummaryPrefixSuffixOnValue(3, 'on Layer [', ']')
             .IncludeFlagOnValue(dfSummaryMembersNoName)
             .IncludeFlagOnValue(dfSummaryNoSortKey)
+            .SetAfterLoad(wbLANDLayerAfterLoad)
             .IncludeFlag(dfCollapsed, wbCollapseOther)
         ]).IncludeFlag(dfCollapsed, wbCollapseOther),
         wbRStructSK([0], 'Alpha Layer', [
           wbStructSK(ATXT, [1, 3], 'Alpha Layer Header', [
-            wbFormIDCk('Texture', [LTEX,NULL]),  //NULL probably Shouldn't be accepted, as the CK doesn't allow you to do that.  But the Game Masters are full of em.
+            wbFormIDCk('Texture', [LTEX]).SetDefaultNativeValue(wbLandLayerDefault),
             wbInteger('Quadrant', itU8, wbQuadrantEnum),
             wbUnused(1),
             wbInteger('Layer', itS16)
@@ -7362,6 +7379,7 @@ begin
             .SetSummaryPrefixSuffixOnValue(3, 'on Layer [', ']')
             .IncludeFlagOnValue(dfSummaryMembersNoName)
             .IncludeFlagOnValue(dfSummaryNoSortKey)
+            .SetAfterLoad(wbLANDLayerAfterLoad)
             .IncludeFlag(dfCollapsed, wbCollapseOther),
           IfThen(wbSimpleRecords,
             wbByteArray(VTXT, 'Alpha Layer Data'),
