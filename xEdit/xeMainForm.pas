@@ -17946,6 +17946,16 @@ end;
 
 Type
   TwbComboEditLink = class(TComboEditLink)
+  private
+    FCachedIndex: Integer;
+    FIndexMap: TDictionary<string, Integer>;
+    procedure ComboEnter(Sender: TObject);
+  protected
+    procedure PrepareEditControl; override;
+    procedure SetEditText(const Value: WideString); override;
+  public
+    constructor Create(AOwner: TPersistent); override;
+    destructor Destroy; override;
     procedure SetBounds(R: TRect); override;
   end;
 
@@ -18064,8 +18074,13 @@ begin
         EditInfoCache := aElement.EditInfo;
       end;
       with ComboLink.PickList do begin
-        Clear;
-        AddStrings(EditInfoCache);
+        BeginUpdate;
+        try
+          Clear;
+          AddStrings(EditInfoCache);
+        finally
+          EndUpdate;
+        end;
       end;
     end;
     etCheckComboBox: begin
@@ -18076,8 +18091,13 @@ begin
         EditInfoCache := aElement.EditInfo;
       end;
       with CheckComboLink.PickList do begin
-        Clear;
-        AddStrings(EditInfoCache);
+        BeginUpdate;
+        try
+          Clear;
+          AddStrings(EditInfoCache);
+        finally
+          EndUpdate;
+        end;
       end;
     end;
   {$ENDIF}
@@ -21759,19 +21779,75 @@ end;
 
 { TwbComboEditLink }
 
+procedure TwbComboEditLink.ComboEnter(Sender: TObject);
+begin
+  var lCombo := TComboBox(Sender);
+  if (FCachedIndex >= 0) and (FCachedIndex < lCombo.Items.Count) then begin
+    lCombo.ItemIndex := FCachedIndex;
+    lCombo.Perform(CB_SETCURSEL, FCachedIndex, 0);
+  end;
+end;
+
+constructor TwbComboEditLink.Create(AOwner: TPersistent);
+begin
+  inherited Create(AOwner);
+  FCachedIndex := -1;
+  FIndexMap := TDictionary<string, Integer>.Create;
+end;
+
+destructor TwbComboEditLink.Destroy;
+begin
+  FIndexMap.Free;
+  inherited;
+end;
+
+procedure TwbComboEditLink.PrepareEditControl;
+begin
+  inherited;
+
+  with TComboBox(EditControl) do begin
+    Items.BeginUpdate;
+    try
+      FIndexMap.Clear;
+      for var lIdx := 0 to Pred(Items.Count) do
+        FIndexMap.AddOrSetValue(Items[lIdx], lIdx);
+    finally
+      Items.EndUpdate;
+    end;
+
+    OnEnter := ComboEnter;
+  end;
+end;
+
 procedure TwbComboEditLink.SetBounds(R: TRect);
-var
-  H : Integer;
 begin  // Let's show from 1 to 32 lines to pick from
-  H := PickList.Count;
+  var H := PickList.Count;
   if H > 32 then
     H := 32
-   else if H < 1 then
+  else if H < 1 then
      H := 1;
-  H := H * TComboBox(FEdit).Font.Height ;
+
+  H := H * TComboBox(EditControl).Font.Height ;
   R.Bottom := R.Bottom + Abs(H);
 
   inherited;
+end;
+
+procedure TwbComboEditLink.SetEditText(const Value: WideString);
+begin
+  inherited;
+
+  var lCombo := TComboBox(EditControl);
+  if lCombo.Style <> csDropDownList then begin
+    if FIndexMap.TryGetValue(Value, FCachedIndex) then begin
+      lCombo.ItemIndex := FCachedIndex;
+      lCombo.Perform(CB_SETCURSEL, FCachedIndex, 0);
+    end else begin
+      FCachedIndex := -1;
+      lCombo.Text := Value;
+    end;
+  end else
+    lCombo.Text := Value;
 end;
 
 type
