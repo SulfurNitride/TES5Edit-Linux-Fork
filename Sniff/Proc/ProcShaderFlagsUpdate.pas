@@ -24,6 +24,7 @@ type
     rbAdd: TRadioButton;
     rbSet: TRadioButton;
     rbRemove: TRadioButton;
+    chkReport: TCheckBox;
     procedure cmbGameSelect(Sender: TObject);
   private
     { Private declarations }
@@ -37,6 +38,7 @@ type
   TProcShaderFlagsUpdate = class(TProcBase)
   private
     Frame: TFrameShaderFlagsUpdate;
+    fReportOnly: Boolean;
     fMode: Integer;
     fFlags: Cardinal;
     fFlags2: Cardinal;
@@ -120,6 +122,8 @@ begin
   try Frame.cmbGame.ItemIndex := StorageGetInteger('iGame', 0); except Frame.cmbGame.ItemIndex := 0; end;
   Frame.cmbGameSelect(nil);
 
+  Frame.chkReport.Checked := StorageGetBool('bReportOnly', Frame.chkReport.Checked);
+
   fMode := StorageGetInteger('iMode', 0);
   Frame.rbAdd.Checked := (fMode = Frame.rbAdd.Tag) or (fMode < 0) or (fMode > 2);
   Frame.rbSet.Checked := fMode = Frame.rbSet.Tag;
@@ -132,6 +136,7 @@ end;
 procedure TProcShaderFlagsUpdate.OnHide;
 begin
   StorageSetInteger('iGame', Frame.cmbGame.ItemIndex);
+  StorageSetBool('bReportOnly', Frame.chkReport.Checked);
 
   if Frame.rbAdd.Checked then fMode := Frame.rbAdd.Tag;
   if Frame.rbSet.Checked then fMode := Frame.rbSet.Tag;
@@ -144,6 +149,9 @@ end;
 
 procedure TProcShaderFlagsUpdate.OnStart;
 begin
+  fReportOnly := Frame.chkReport.Checked;
+  fNoOutput := fReportOnly;
+
   fFlags := Frame.CheckListBoxToInt32(Frame.clbFlags1);
   fFlags2 := Frame.CheckListBoxToInt32(Frame.clbFlags2);
 
@@ -200,6 +208,7 @@ var
   i: Integer;
   shader: TwbNifBlock;
   bChanged: Boolean;
+  Log: TStringList;
 
   procedure UpdateFlags(el: TdfElement; aFlags: Cardinal);
   var
@@ -214,7 +223,14 @@ var
     if fMode = 2 then f := f and not aFlags;
 
     if el.NativeValue <> f then begin
+      var old := el.EditValue;
       el.NativeValue := f;
+
+      if fReportOnly then begin
+        if Log.Count = 0 then Log.Add(#13#10 + aFileName);
+        Log.Add(#9 + el.Path + #13#10#9#9'"' + old + '"'#13#10#9#9'"' + el.EditValue + '"');
+      end;
+
       bChanged := True;
     end;
   end;
@@ -222,26 +238,29 @@ var
 begin
   bChanged := False;
   nif := TwbNifFile.Create;
+  Log := TStringList.Create;
   try
     nif.LoadFromFile(aInputDirectory + aFileName);
 
     for i := 0 to Pred(nif.BlocksCount) do begin
       shader := nif.Blocks[i];
 
-      //if (shader.BlockType <> 'BSShaderPPLightingProperty') and
-      //   (shader.BlockType <> 'BSLightingShaderProperty')
       if not shader.IsNiObject('BSShaderProperty') then
         Continue;
 
-      //UpdateFlags(shader.Elements['Shader Flags'], fFlags);
       UpdateFlags(shader.Elements['Shader Flags 1'], fFlags);
       UpdateFlags(shader.Elements['Shader Flags 2'], fFlags2);
     end;
 
-    if bChanged then
-      nif.SaveToData(Result);
+    if bChanged then begin
+      if not fReportOnly then
+        nif.SaveToData(Result)
+      else
+        fManager.AddMessages(Log);
+    end;
 
   finally
+    Log.Free;
     nif.Free;
   end;
 

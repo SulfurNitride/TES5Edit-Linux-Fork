@@ -13,14 +13,18 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, SniffProcessor,
-  Vcl.StdCtrls, Vcl.Grids, Vcl.ValEdit;
+  Vcl.StdCtrls, Vcl.Grids, Vcl.ValEdit, Vcl.Mask, Vcl.ExtCtrls;
 
 type
   TFrameInertiaUpdate = class(TFrame)
     StaticText1: TStaticText;
-    chkCenterUpdate: TCheckBox;
+    chkCenter: TCheckBox;
     edMult: TValueListEditor;
     Label1: TLabel;
+    chkPenetration: TCheckBox;
+    chkInertia: TCheckBox;
+    edDepthMult: TLabeledEdit;
+    chkPenetrationStatics: TCheckBox;
   private
     { Private declarations }
   public
@@ -30,7 +34,11 @@ type
   TProcInertiaUpdate = class(TProcBase)
   private
     Frame: TFrameInertiaUpdate;
-    fCenterUpdate: Boolean;
+    fInertia: Boolean;
+    fCenter: Boolean;
+    fPenetration: Boolean;
+    fPenetrationStatics: Boolean;
+    fDepthMult: Single;
     fMult: array of record Part: Integer; Mult: Single; end;
   public
     constructor Create(aManager: TProcManager); override;
@@ -50,6 +58,7 @@ implementation
 uses
   wbDataFormat,
   wbDataFormatNif,
+  wbNifMath,
   Math;
 
 constructor TProcInertiaUpdate.Create(aManager: TProcManager);
@@ -69,13 +78,21 @@ end;
 
 procedure TProcInertiaUpdate.OnShow;
 begin
-  Frame.chkCenterUpdate.Checked := StorageGetBool('bCenterUpdate', Frame.chkCenterUpdate.Checked);
+  Frame.chkInertia.Checked := StorageGetBool('bInertiaUpdate', Frame.chkInertia.Checked);
+  Frame.chkCenter.Checked := StorageGetBool('bCenterUpdate', Frame.chkCenter.Checked);
+  Frame.chkPenetration.Checked := StorageGetBool('bPenetrationUpdate', Frame.chkPenetration.Checked);
+  Frame.chkPenetrationStatics.Checked := StorageGetBool('bPenetrationStaticsUpdate', Frame.chkPenetrationStatics.Checked);
+  Frame.edDepthMult.Text := StorageGetString('sDepthMult', Frame.edDepthMult.Text);
   Frame.edMult.Strings.CommaText := StorageGetString('sMult', Frame.edMult.Strings.CommaText);
 end;
 
 procedure TProcInertiaUpdate.OnHide;
 begin
-  StorageSetBool('bCenterUpdate', Frame.chkCenterUpdate.Checked);
+  StorageSetBool('bInertiaUpdate', Frame.chkInertia.Checked);
+  StorageSetBool('bCenterUpdate', Frame.chkCenter.Checked);
+  StorageSetBool('bPenetrationUpdate', Frame.chkPenetration.Checked);
+  StorageSetBool('bPenetrationStaticsUpdate', Frame.chkPenetrationStatics.Checked);
+  StorageSetString('sDepthMult', Frame.edDepthMult.Text);
   StorageSetString('sMult', Frame.edMult.Strings.CommaText);
 end;
 
@@ -85,7 +102,15 @@ var
   i, k: Integer;
   v: Extended;
 begin
-  fCenterUpdate := Frame.chkCenterUpdate.Checked;
+  fInertia := Frame.chkInertia.Checked;
+  fCenter := Frame.chkCenter.Checked;
+  fPenetration := Frame.chkPenetration.Checked;
+  fPenetrationStatics := Frame.chkPenetrationStatics.Checked;
+  if not (fInertia or fCenter or fPenetration) then
+    raise Exception.Create('No update options selected');
+
+  fDepthMult := StrToFloatDef(Frame.edDepthMult.Text, 0.2);
+  if SameValue(fDepthMult, 0) then fDepthMult := 0.2;
 
   SetLength(fMult, 0);
   for i := 0 to Pred(Frame.edMult.Strings.Count) do begin
@@ -110,12 +135,21 @@ begin
 end;
 
 function TProcInertiaUpdate.ProcessFile(const aInputDirectory, aOutputDirectory: string; var aFileName: string): TBytes;
+var
+  nif: TwbNifFile;
+  bodypart: Integer;
+  Inertia, Center, Depth: TdfElement;
+  mult, m, x, y, z, r, lx, ly, lz, m11, m22, m33: Single;
+  tx, ty, tz: Single;
+  v1, v2, c: TVector3;
+  rmin: Double;
+  bDynamic, bChanged: Boolean;
 
   function SetInertia(Inertia: TdfElement; m11, m22, m33: Single): Boolean;
   begin
     Result := False;
 
-    if not Assigned(Inertia) then
+    if not bDynamic or not Assigned(Inertia) then
       Exit;
 
     Result :=
@@ -134,7 +168,7 @@ function TProcInertiaUpdate.ProcessFile(const aInputDirectory, aOutputDirectory:
   begin
     Result := False;
 
-    if not Assigned(Center) then
+    if not bDynamic or not Assigned(Center) then
       Exit;
 
     Result :=
@@ -149,29 +183,32 @@ function TProcInertiaUpdate.ProcessFile(const aInputDirectory, aOutputDirectory:
     end;
   end;
 
-var
-  nif: TwbNifFile;
-  i, bodypart: Integer;
-  rigid, shape: TwbNifBlock;
-  Inertia, Center: TdfElement;
-  mult, m, x, y, z, r, lx, ly, lz, m11, m22, m33: Single;
-  tx, ty, tz: Single;
-  bChanged: Boolean;
+  function SetPenetration(Depth: TdfElement; d: Single): Boolean;
+  begin
+    Result := False;
+
+    if (not bDynamic and not fPenetrationStatics) or not Assigned(Depth) then
+      Exit;
+
+    if SameValue(d, 0) then d := 0.04;
+    Result := not SameValue(Depth.NativeValue, d);
+
+    if Result then
+      Depth.NativeValue := d;
+  end;
+
 begin
   bChanged := False;
   nif := TwbNifFile.Create;
   try
     nif.LoadFromFile(aInputDirectory + aFileName);
 
-    for i := 0 to Pred(nif.BlocksCount) do begin
-      rigid := nif.Blocks[i];
-
-      if (rigid.BlockType <> 'bhkRigidBody') and (rigid.BlockType <> 'bhkRigidBodyT') then
-        Continue;
-
-      shape := TwbNifBlock(rigid.Elements['Shape'].LinksTo);
+    for var rigid in nif.BlocksByType('bhkRigidBody', True) do begin
+      var shape := TwbNifBlock(rigid.Elements['Shape'].LinksTo);
       if not Assigned(shape) then
         Continue;
+
+      bDynamic := rigid.IsDynamicRigidBody;
 
       // intermediate transform shapes
       tx := 0; ty := 0; tz := 0;
@@ -189,6 +226,7 @@ begin
 
       Inertia := rigid.Elements['Inertia Tensor'];
       Center := rigid.Elements['Center'];
+      Depth := rigid.Elements['Penetration Depth'];
       m := rigid.NativeValues['Mass'];
       bodypart := rigid.NativeValues['Havok Filter\Flags and Part Number'];
       mult := 1;
@@ -207,9 +245,12 @@ begin
         m22 := m * (x*x + z*z) / 12;
         m33 := m * (x*x + y*y) / 12;
         m11 := m11 * mult; m22 := m22 * mult; m33 := m33 * mult;
-        bChanged := SetInertia(Inertia, m11, m22, m33) or bChanged;
-        if fCenterUpdate then
-          bChanged:= SetCenter(Center, tx, ty, tz) or bChanged;
+        if fInertia then
+          bChanged := SetInertia(Inertia, m11, m22, m33) or bChanged;
+        if fCenter then
+          bChanged := SetCenter(Center, tx, ty, tz) or bChanged;
+        if fPenetration then
+          bChanged := SetPenetration(Depth, MinValue([x, y, z]) * fDepthMult) or bChanged;
       end
 
       // sphere
@@ -217,9 +258,12 @@ begin
         r := shape.NativeValues['Radius'];
         m11 := 2 * m * r*r / 5;
         m11 := m11 * mult;
-        bChanged := SetInertia(Inertia, m11, m11, m11) or bChanged;
-        if fCenterUpdate then
-          bChanged:= SetCenter(Center, tx, ty, tz) or bChanged;
+        if fInertia then
+          bChanged := SetInertia(Inertia, m11, m11, m11) or bChanged;
+        if fCenter then
+          bChanged := SetCenter(Center, tx, ty, tz) or bChanged;
+        if fPenetration then
+          bChanged := SetPenetration(Depth, 2*r * fDepthMult) or bChanged;
       end
 
       // capsule
@@ -244,15 +288,95 @@ begin
           m33 := m * r*r / 2;
         end;
         m11 := m11 * mult; m22 := m22 * mult; m33 := m33 * mult;
-        bChanged := SetInertia(Inertia, m11, m22, m33) or bChanged;
-
-        if fCenterUpdate then begin
+        if fInertia then
+          bChanged := SetInertia(Inertia, m11, m22, m33) or bChanged;
+        if fCenter then begin
           x := (shape.NativeValues['First Point\X'] + shape.NativeValues['Second Point\X']) / 2;
           y := (shape.NativeValues['First Point\Y'] + shape.NativeValues['Second Point\Y']) / 2;
           z := (shape.NativeValues['First Point\Z'] + shape.NativeValues['Second Point\Z']) / 2;
-          bChanged:= SetCenter(Center, x + tx, y + ty, z + tz) or bChanged;
+          bChanged := SetCenter(Center, x + tx, y + ty, z + tz) or bChanged;
+        end;
+        if fPenetration then
+          bChanged := SetPenetration(Depth, {MinValue([2*r, Abs(lx), Abs(ly), Abs(lz)])} 2*r * fDepthMult) or bChanged;
+      end
+
+      // convex or MOPP shape
+      else if (shape.BlockType = 'bhkConvexVerticesShape') or (shape.BlockType = 'bhkMoppBvTreeShape') then begin
+        var dm := fDepthMult;
+        var verts: TVector3Array;
+
+        if shape.BlockType = 'bhkConvexVerticesShape' then
+          verts := shape.GetVertices
+
+        else if shape.BlockType = 'bhkMoppBvTreeShape' then begin
+          shape := TwbNifBlock(shape.Elements['Shape'].LinksTo);
+          if not Assigned(shape) then Continue;
+          if shape.Elements['Data'] = nil then Continue;
+          shape := TwbNifBlock(shape.Elements['Data'].LinksTo);
+          if not Assigned(shape) then Continue;
+
+          if shape.BlockType = 'hkPackedNiTriStripsData' then begin
+            verts := shape.GetVertices;
+            // strips data vertices are in game units, need to convert to Havok
+            dm := dm / HK2GU[nif.NifVersion];
+          end
+
+          else if shape.BlockType = 'bhkCompressedMeshShapeData' then begin
+            var bigverts := shape.Elements['Big Verts'];
+            for var i := 0 to Pred(bigverts.Count) do begin
+              var v: TVector3;
+              v.x := bigverts[i].NativeValues['X'];
+              v.y := bigverts[i].NativeValues['Y'];
+              v.z := bigverts[i].NativeValues['Z'];
+              verts := verts + [v];
+            end;
+            var transforms := shape.Elements['Chunk Transforms'];
+            var chunks := shape.Elements['Chunks'];
+            for var i := 0 to Pred(chunks.Count) do begin
+              var el := chunks[i].Elements['Vertices'];
+              if el.Count < 3 then Continue;
+              var chunkt := transforms[chunks.NativeValues['Transform Index']];
+              var t: TTransform;
+              t.Translation.x := chunkt.NativeValues['Translation\X'] + chunks[i].NativeValues['Translation\X'];
+              t.Translation.y := chunkt.NativeValues['Translation\Y'] + chunks[i].NativeValues['Translation\Y'];
+              t.Translation.z := chunkt.NativeValues['Translation\Z'] + chunks[i].NativeValues['Translation\Z'];
+              t.Rotation.x := chunkt.NativeValues['Rotation\X'];
+              t.Rotation.y := chunkt.NativeValues['Rotation\Y'];
+              t.Rotation.z := chunkt.NativeValues['Rotation\Z'];
+              t.Rotation.w := chunkt.NativeValues['Rotation\W'];
+              t.Scale := 1.0;
+              for var j := 0 to Pred(el.Count div 3) do begin
+                var v: TVector3;
+                v.x := el[3*j].NativeValue;
+                v.y := el[3*j + 1].NativeValue;
+                v.z := el[3*j + 2].NativeValue;
+                v := v / 1000.0;
+                verts := verts + [v * t];
+              end;
+            end;
+          end;
+
         end;
 
+        if Length(verts) = 0 then
+          Continue;
+
+        // treating as a box for inertia
+        CalculateMinMax(verts, v1, v2);
+        x := v2.x - v1.x;
+        y := v2.y - v1.y;
+        z := v2.z - v1.z;
+        m11 := m * (y*y + z*z) / 12;
+        m22 := m * (x*x + z*z) / 12;
+        m33 := m * (x*x + y*y) / 12;
+        m11 := m11 * mult; m22 := m22 * mult; m33 := m33 * mult;
+        CalculateCenterRadius(verts, c, rmin, True, False);
+        if fInertia then
+          bChanged := SetInertia(Inertia, m11, m22, m33) or bChanged;
+        if fCenter then
+          bChanged := SetCenter(Center, tx + c.x, ty + c.y, tz + c.z) or bChanged;
+        if fPenetration then
+          bChanged := SetPenetration(Depth, 2*rmin * dm) or bChanged;
       end;
     end;
 

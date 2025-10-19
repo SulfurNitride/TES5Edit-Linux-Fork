@@ -122,7 +122,6 @@ uses
   ProcAnimQuadraticToLinear,
   ProcAnimSkeletonDeath,
   ProcShaderFlagsUpdate,
-  ProcParallaxUpdate,
   ProcInertiaUpdate,
   ProcRagdollConstraintUpdate,
   ProcMoppUpdate,
@@ -130,6 +129,7 @@ uses
   ProcFindSeveralStrips,
   ProcFindDrawCalls,
   ProcFindUVs,
+  ProcHavokInfo,
   ProcHavokSettingsUpdate,
   ProcHavokSearchMaterial,
   ProcCopyGeometryBlocks,
@@ -143,10 +143,8 @@ uses
   ProcConvertRootNode,
   ProcUnskinMesh,
   ProcMergeShapes,
-  ProcConvertFO3Collision,
-  ProcConvertShader30,
   ProcWallsReflectionFlag,
-  ProcDismemberSkin,
+  ProcSoftParticles,
   ProcUniversalTweaker,
   ProcUniversalFixer,
   ProcAddHeadtrackingAnim,
@@ -154,7 +152,6 @@ uses
   ProcAddBoundingBox,
   ProcAddLODNode,
   ProcAddRootCollisionNode,
-  ProcUpdateAuthor,
   ProcSetMissingNames;
 
 
@@ -225,7 +222,7 @@ begin
   with TTaskDialog.Create(Self) do try
     Text := aText;
     Caption := Application.Title;
-    Flags := [tfUseHiconMain];
+    Flags := [tfUseHiconMain, tfPositionRelativeToWindow, tfAllowDialogCancellation];
     CustomMainIcon := Application.Icon;
     CommonButtons := [tcbClose];
     Execute;
@@ -326,15 +323,14 @@ begin
   AddProc('NIF', TProcConvertRootNode.Create(Manager));
   AddProc('NIF', TProcUnskinMesh.Create(Manager));
   AddProc('NIF', TProcChangePartitionSlot.Create(Manager));
-  AddProc('NIF', TProcDismemberSkin.Create(Manager));
   AddProc('NIF', TProcAddLODNode.Create(Manager));
   AddProc('NIF', TProcAddRootCollisionNode.Create(Manager));
   AddProc('NIF', TProcAddBoundingBox.Create(Manager));
   AddProc('NIF', TProcSetMissingNames.Create(Manager));
-  AddProc('NIF', TProcUpdateAuthor.Create(Manager));
 
   AddProc('Report', TProcCheckForErrors.Create(Manager));
   AddProc('Report', TProcAnalyzeMesh.Create(Manager));
+  AddProc('Report', TProcHavokInfo.Create(Manager));
   AddProc('Report', TProcUnweldedVertices.Create(Manager));
   AddProc('Report', TProcFindSeveralStrips.Create(Manager));
   AddProc('Report', TProcFindDrawCalls.Create(Manager));
@@ -359,12 +355,10 @@ begin
   AddProc('Collision', TProcInertiaUpdate.Create(Manager));
   AddProc('Collision', TProcRagdollConstraintUpdate.Create(Manager));
   AddProc('Collision', TProcHavokSearchMaterial.Create(Manager));
-  AddProc('Collision', TProcConvertFO3Collision.Create(Manager));
 
   AddProc('Shader', TProcShaderFlagsUpdate.Create(Manager));
-  AddProc('Shader', TProcParallaxUpdate.Create(Manager));
-  AddProc('Shader', TProcConvertShader30.Create(Manager));
   AddProc('Shader', TProcWallsReflectionFlag.Create(Manager));
+  AddProc('Shader', TProcSoftParticles.Create(Manager));
 
   //ShowScrollBar(lvProcs.Handle, SB_HORZ, False);
 
@@ -641,6 +635,29 @@ begin
       AddToHistory(edOutput);
     end;
   end;
+
+  if not bAutoMode and Settings.ReadBool('Main', 'PopupWarning', True) then
+    with TTaskDialog.Create(Self) do try
+      Text := 'You are about to run:'#13 + Proc.Title;
+      FooterText := '"Always Yes" to never show this warning again';
+      Caption := Application.Title;
+      Flags := [tfUseHiconMain, tfPositionRelativeToWindow, tfAllowDialogCancellation];
+      CustomMainIcon := Application.Icon;
+      CommonButtons := [tcbYes, tcbNo];
+      var b := Buttons.Add;
+      b.Caption := 'Always Yes';
+      b.ModalResult := mrOk;
+      ModalResult := mrOk;
+
+      if not Execute or (ModalResult in [mrNo, mrCancel]) then
+        Exit;
+
+      if ModalResult = mrOk then
+        Settings.WriteBool('Main', 'PopupWarning', False);
+    finally
+      Free;
+    end;
+
 
   Manager.InitializeProcessing(Proc);
   Manager.CopyAll := chkOutputAll.Checked;

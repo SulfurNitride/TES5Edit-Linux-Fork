@@ -85,9 +85,6 @@ function TProcRemoveUnusedNodes.ProcessFile(const aInputDirectory, aOutputDirect
     if not Assigned(aBlock) then
       Exit;
 
-    //if aBlock.Index = 10 then
-    //  fManager.AddMessage('10 is HERE!');
-
     Inc(aUsage[aBlock.Index]);
 
     // scan our refs only once

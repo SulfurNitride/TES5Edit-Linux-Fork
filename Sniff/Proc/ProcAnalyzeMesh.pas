@@ -21,6 +21,7 @@ type
     edATVR: TLabeledEdit;
     chkThreshold: TCheckBox;
     chkPerShape: TCheckBox;
+    edVertices: TLabeledEdit;
     procedure lblInfoMetricsClick(Sender: TObject);
     procedure lblInfoCacheClick(Sender: TObject);
   private
@@ -35,6 +36,7 @@ type
     fCacheSize: Integer;
     fPerShape: Boolean;
     fThreshold: Boolean;
+    fVertices: Integer;
     fACMR, fATVR: Double;
   public
     constructor Create(aManager: TProcManager); override;
@@ -91,6 +93,7 @@ begin
   Frame.chkThreshold.Checked := StorageGetBool('bThreshold', Frame.chkThreshold.Checked);
   Frame.edACMR.Text := StorageGetString('sACMR', Frame.edACMR.Text);
   Frame.edATVR.Text := StorageGetString('sATVR', Frame.edATVR.Text);
+  Frame.edVertices.Text := StorageGetString('sVertices', Frame.edVertices.Text);
 end;
 
 procedure TProcAnalyzeMesh.OnHide;
@@ -100,6 +103,7 @@ begin
   StorageSetBool('bThreshold', Frame.chkThreshold.Checked);
   StorageSetString('sACMR', Frame.edACMR.Text);
   StorageSetString('sATVR', Frame.edATVR.Text);
+  StorageSetString('sVertices', Frame.edVertices.Text);
 end;
 
 procedure TProcAnalyzeMesh.OnStart;
@@ -112,6 +116,7 @@ begin
   fThreshold := Frame.chkThreshold.Checked;
   if Frame.edACMR.Text = '' then fACMR := 0 else fACMR := dfStrToFloat(Frame.edACMR.Text);
   if Frame.edATVR.Text = '' then fATVR := 0 else fATVR := dfStrToFloat(Frame.edATVR.Text);
+  if Frame.edVertices.Text = '' then fVertices := 0 else fVertices := StrToIntDef(Frame.edVertices.Text, 0);
 end;
 
 function TProcAnalyzeMesh.ProcessFile(const aInputDirectory, aOutputDirectory: string; var aFileName: string): TBytes;
@@ -119,12 +124,12 @@ var
   nif: TwbNifFile;
   Log: TStringList;
   Stats: array of record
-    s_tris: Integer;
+    s_verts, s_tris: Integer;
     s_acmr, s_atvr: Double;
     s_overfetch: Double;
   end;
 
-  procedure Analyze(const aName: string; const tris: TTriangleArray; numtris: Integer = -1);
+  procedure Analyze(const aName: string; const tris: TTriangleArray; numverts: Integer; numtris: Integer = -1);
   begin
     if Length(tris) = 0 then
       Exit;
@@ -138,12 +143,13 @@ var
       var _acmr := RoundTo(vc.acmr, -1);
       var _atvr := RoundTo(vc.atvr, -1);
       var _overfetch := RoundTo(vf.overfetch, -1);
-      if not fThreshold or ( (_acmr > fACMR) or (_atvr > fATVR) ) then
-        Log.Add(#9 + aName + ': ' + Format('Triangles: %d    ACMR: %.1f    ATVR: %.1f    Overfetch: %.1f', [numtris, _acmr, _atvr, _overfetch]));
+      if not fThreshold or ( (_acmr > fACMR) or (_atvr > fATVR) or (numverts > fVertices) ) then
+        Log.Add(#9 + aName + ': ' + Format('Vertices: %d    Triangles: %d    ACMR: %.1f    ATVR: %.1f    Overfetch: %.1f', [numverts, numtris, _acmr, _atvr, _overfetch]));
     end;
 
     SetLength(Stats, Succ(Length(Stats)));
     with Stats[Pred(Length(Stats))] do begin
+      s_verts := numverts;
       s_tris := numtris;
       s_acmr := vc.acmr;
       s_atvr := vc.atvr;
@@ -164,31 +170,35 @@ begin
         var data := TwbNifBlock(b.Elements['Data'].LinksTo);
         // Skinned shapes are not rendered, they only store vertices. Rendered tris are in skin partitions.
         if Assigned(data) and (b.GetSkin = nil) then
-          Analyze(data.Name, data.GetTriangles{, data.NativeValues['Num Triangles']});
+          Analyze(data.Name, data.GetTriangles, data.NativeValues['Num Vertices']);
       end
 
       else if b.IsNiObject('BSTriShape') then begin
         // FO4 skins don't have partitions
         if (nif.NifVersion >= nfFO4) or (b.GetSkin = nil) then
-          Analyze(b.Name, b.GetTriangles);
+          Analyze(b.Name, b.GetTriangles, b.NativeValues['Num Vertices']);
       end
 
       else if b.BlockType = 'NiSkinPartition' then begin
         var Parts := b.Elements['Partitions'];
         for var p := 0 to Pred(Parts.Count) do begin
           var Part := Parts[p];
-          Analyze(Part.Path, b.GetTriangles(Part){, Part.NativeValues['Num Triangles']});
+          Analyze(Part.Path, b.GetTriangles(Part), Part.NativeValues['Num Vertices']{, Part.NativeValues['Num Triangles']});
         end;
       end;
     end;
 
     // summary for the mesh
+    var verts: Integer := 0;
     var tris: Integer := 0;
     var acmr: Double := 0;
     var atvr: Double := 0;
     var overfetch: Double := 0;
 
-    for var s in Stats do Inc(tris, s.s_tris);
+    for var s in Stats do begin
+      Inc(verts, s.s_verts);
+      Inc(tris, s.s_tris);
+    end;
 
     for var s in Stats do begin
       acmr := acmr + s.s_tris / tris * s.s_acmr;
@@ -199,8 +209,8 @@ begin
     var _acmr := RoundTo(acmr, -1);
     var _atvr := RoundTo(atvr, -1);
     var _overfetch := RoundTo(overfetch, -1);
-    if not fThreshold or ( (_acmr > fACMR) or (_atvr > fATVR) ) then
-      Log.Add(Format(#9'Triangles: %d    ACMR: %.1f    ATVR: %.1f    Overfetch: %.1f', [tris, _acmr, _atvr, _overfetch]));
+    if not fThreshold or ( (_acmr > fACMR) or (_atvr > fATVR) or (verts > fVertices) ) then
+      Log.Add(Format(#9'Vertices: %d    Triangles: %d    ACMR: %.1f    ATVR: %.1f    Overfetch: %.1f', [verts, tris, _acmr, _atvr, _overfetch]));
 
     if Log.Count > 0 then begin
       fManager.AddMessage(aFileName);

@@ -14,9 +14,6 @@ uses
   Types, SysUtils, StrUtils, Classes, Variants, wbDataFormat, JsonDataObjects,
   wbNifMath, wbMeshOptimize;
 
-const
-  sTES4TangentsExtraDataName = 'Tangent space (binormal & tangent vectors)';
-
 type
   TwbNifVersion = (nfUnknown, nfTES3, nfTES4, nfFO3, nfTES5, nfSSE, nfFO4);
 
@@ -29,7 +26,12 @@ type
   TwbMeshOptimizeOption = (moVertexCache, moOverdraw, moVertexFetch, moTriangulate, moStripify);
   TwbMeshOptimizeOptions = set of TwbMeshOptimizeOption;
 
+const
+  sTES4TangentsExtraDataName = 'Tangent space (binormal & tangent vectors)';
+  // Havok units to Game units ratio
+  HK2GU: array [TwbNifVersion] of Single = (1, 1, 6.999125, 6.999125, 69.99125, 69.99125, 69.99125);
 
+type
   TwbNiRefDef = class(TdfIntegerDef)
   private
     FTemplate: string;
@@ -115,7 +117,7 @@ type
     function SetBoundSphere(aSphere: TBoundSphere): Boolean;
     function GetSkin: TwbNifBlock;
     function GetCollision: TwbNifBlock;
-    function GetController: TwbNifBlock;
+    function GetController(const aBlockType: string = ''; aChained: Boolean = False): TwbNifBlock;
     function GetAssetsList: TStringDynArray; // deprecated, use TwbNifFile.GetAssetsList
     function GetStringPaletteString(aIndex: Integer): string;
     function ApplyTransform(aRecursive: Boolean = False; aOptions: TwbApplyTransformOptions = []): Boolean;
@@ -1065,7 +1067,17 @@ begin
   if not Assigned(aElement) then
     aElement := Self;
 
-  if IsNiObject('BSTriShape') or IsNiObject('NiSkinPartition') then begin
+  if BLockType = 'BSDynamicTriShape' then begin
+    Entries := aElement.Elements['Dynamic Vertices'];
+    if not Assigned(Entries) then
+      Exit;
+
+    SetLength(Result, Entries.Count);
+    for i := 0 to Pred(Entries.Count) do
+      wbGetVector3(Result[i], Entries[i]);
+  end
+
+  else if IsNiObject('BSTriShape') or IsNiObject('NiSkinPartition') then begin
     if not aElement.NativeValues['VertexDesc\VF\VF_VERTEX'] then
       Exit;
 
@@ -1078,7 +1090,10 @@ begin
       wbGetVector3(Result[i], Entries[i][0], True); // Elements['Vertex'];
   end
 
-  else if IsNiObject('NiTriBasedGeomData') then begin
+  else if IsNiObject('NiTriBasedGeomData') or
+    (BlockType = 'hkPackedNiTriStripsData') or
+    (BlockType = 'bhkConvexVerticesShape')
+  then begin
     Entries := aElement.Elements['Vertices'];
     if not Assigned(Entries) then
       Exit;
@@ -1205,7 +1220,7 @@ begin
   if NumTriangles.DataSize = SizeOf(Cardinal) then
     MaxTris := High(Cardinal);
 
-  if Length(aTris) > MaxTris then
+  if Cardinal(Length(aTris)) > MaxTris then
     raise Exception.Create(Self.Name + ': Num Triangles ' + Length(aTris).ToString + ' > ' + MaxTris.ToString);
 
   Entries := aElement.Elements['Triangles'];
@@ -1421,18 +1436,29 @@ begin
     Result := TwbNifBlock(e.LinksTo);
 end;
 
-function TwbNifBlock.GetController: TwbNifBlock;
-var
-  e: TdfElement;
+function TwbNifBlock.GetController(const aBlockType: string = ''; aChained: Boolean = False): TwbNifBlock;
 begin
   Result := nil;
 
   if not IsNiObject('NiObjectNET') then
     Exit;
 
-  e := Elements['Controller'];
-  if Assigned(e) then
-    Result := TwbNifBlock(e.LinksTo);
+  Result := TwbNifBlock(Elements['Controller'].LinksTo);
+  repeat
+    if not Assigned(Result) then
+      Exit;
+
+    if (aBlockType = '') or (Result.BlockType = aBlockType) then
+      Exit;
+
+    if not aChained then
+      Exit;
+
+    if not Result.IsNiObject('NiTimeController') then
+      Exit;
+
+    Result := TwbNifBlock(Result.Elements['Next Controller'].LinksTo);
+  until not Assigned(Result);
 end;
 
 function TwbNifBlock.GetAssetsList: TStringDynArray;
@@ -1704,7 +1730,8 @@ begin
 
   CalculateCenterRadius(verts, center, r,
     // Oblivion and volatile meshes require a different center algorithm
-    (NifFile.NifVersion = nfTES4) or (EditValues['Consistency Flags'] = 'CT_VOLATILE')
+    //(NifFile.NifVersion = nfTES4) or (EditValues['Consistency Flags'] = 'CT_VOLATILE')
+    True
   );
 
   var s: TBoundSphere;
@@ -2754,7 +2781,7 @@ var
     SetLength(newtanbin, Length(tanbin));
     for var i := 0 to Pred(Length(map)) do begin
       System.Move(tanbin[i * SizeOf(TSingleVector3)], newtanbin[map[i] * SizeOf(TSingleVector3)], SizeOf(TSingleVector3));
-      System.Move(tanbin[(Length(map) + i) * SizeOf(TSingleVector3)], newtanbin[(Length(map) + map[i]) * SizeOf(TSingleVector3)], SizeOf(TSingleVector3));
+      System.Move(tanbin[(Length(map) + i) * SizeOf(TSingleVector3)], newtanbin[(Length(map) + Integer(map[i])) * SizeOf(TSingleVector3)], SizeOf(TSingleVector3));
     end;
 
     exdata.NativeValues['Data'] := newtanbin;
@@ -2817,6 +2844,10 @@ begin
       if ( (NifVersion <= nfTES4) and not Assigned(Blocks[i].PropertyByType('NiMaterialProperty')) ) or
          ( (NifVersion >= nfFO3) and not Assigned(Blocks[i].PropertyByType('BSShaderProperty', True)) )
       then
+        Continue;
+
+      // skip shapes with NiGeomMorpherController
+      if Blocks[i].GetController('NiGeomMorpherController', True) <> nil then
         Continue;
 
       opt := aOptions;
@@ -2885,6 +2916,10 @@ begin
       if ( (NifVersion <= nfTES4) and not Assigned(Blocks[i].PropertyByType('NiMaterialProperty')) ) or
          ( (NifVersion >= nfFO3) and not Assigned(Blocks[i].PropertyByType('BSShaderProperty', True)) )
       then
+        Continue;
+
+      // skip shapes with NiGeomMorpherController
+      if Blocks[i].GetController('NiGeomMorpherController', True) <> nil then
         Continue;
 
       opt := aOptions;

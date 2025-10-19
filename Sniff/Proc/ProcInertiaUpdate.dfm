@@ -1,11 +1,11 @@
 object FrameInertiaUpdate: TFrameInertiaUpdate
   Left = 0
   Top = 0
-  Width = 434
+  Width = 526
   Height = 329
   TabOrder = 0
   DesignSize = (
-    434
+    526
     329)
   object Label1: TLabel
     Left = 16
@@ -17,24 +17,25 @@ object FrameInertiaUpdate: TFrameInertiaUpdate
   object StaticText1: TStaticText
     Left = 0
     Top = 0
-    Width = 434
+    Width = 526
     Height = 65
     Align = alTop
     AutoSize = False
     Caption = 
-      'Calculate inertia tensor matrix in simple collision shapes: box,' +
-      ' sphere, capsule. Optionally calculate collision center. Inertia' +
+      'Calculate inertia tensor matrix, collision center and penetratio' +
+      'n depth of dynamic Havok rigid bodies with single shape. Inertia' +
       ' multipliers list is editable: "Body Part" field must have an in' +
       'teger value before the space (the rest is ignored), "Multiplier"' +
       ' field has to be a valid float number (empty is equal to 1).'
     TabOrder = 0
+    ExplicitWidth = 518
   end
-  object chkCenterUpdate: TCheckBox
-    Left = 257
-    Top = 71
-    Width = 161
+  object chkCenter: TCheckBox
+    Left = 241
+    Top = 127
+    Width = 263
     Height = 17
-    Caption = 'Update collision center'
+    Caption = 'Update collision center (dynamic only)'
     Checked = True
     State = cbChecked
     TabOrder = 1
@@ -92,5 +93,43 @@ object FrameInertiaUpdate: TFrameInertiaUpdate
     ColWidths = (
       100
       78)
+  end
+  object chkPenetration: TCheckBox
+    Left = 241
+    Top = 158
+    Width = 168
+    Height = 17
+    Caption = 'Update penetration depth'
+    TabOrder = 3
+  end
+  object chkInertia: TCheckBox
+    Left = 241
+    Top = 96
+    Width = 263
+    Height = 17
+    Caption = 'Update inertia tensor (dynamic only)'
+    Checked = True
+    State = cbChecked
+    TabOrder = 4
+  end
+  object edDepthMult: TLabeledEdit
+    Left = 264
+    Top = 181
+    Width = 41
+    Height = 23
+    EditLabel.Width = 60
+    EditLabel.Height = 23
+    EditLabel.Caption = 'Depth mult'
+    LabelPosition = lpRight
+    TabOrder = 5
+    Text = '0.2'
+  end
+  object chkPenetrationStatics: TCheckBox
+    Left = 415
+    Top = 158
+    Width = 108
+    Height = 17
+    Caption = 'on statics too'
+    TabOrder = 6
   end
 end

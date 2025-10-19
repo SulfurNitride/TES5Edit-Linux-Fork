@@ -101,4 +101,16 @@ object FrameAnalyzeMesh: TFrameAnalyzeMesh
     Caption = 'Per shape statistics'
     TabOrder = 5
   end
+  object edVertices: TLabeledEdit
+    Left = 208
+    Top = 141
+    Width = 49
+    Height = 23
+    EditLabel.Width = 40
+    EditLabel.Height = 23
+    EditLabel.Caption = 'Vertices'
+    LabelPosition = lpRight
+    TabOrder = 6
+    Text = ''
+  end
 end
