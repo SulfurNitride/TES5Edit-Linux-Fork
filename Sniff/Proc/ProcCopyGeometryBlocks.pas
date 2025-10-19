@@ -20,6 +20,8 @@ type
     StaticText1: TStaticText;
     edSourceDirectory: TLabeledEdit;
     btnBrowse: TButton;
+    chkCopyGeom: TCheckBox;
+    chkCopyTransform: TCheckBox;
     procedure btnBrowseClick(Sender: TObject);
   private
     { Private declarations }
@@ -31,6 +33,8 @@ type
   private
     Frame: TFrameCopyGeometryBlocks;
     fSourceDirectory: string;
+    fCopyTransform: Boolean;
+    fCopyGeom: Boolean;
   public
     constructor Create(aManager: TProcManager); override;
     function GetFrame(aOwner: TComponent): TFrame; override;
@@ -80,15 +84,25 @@ end;
 procedure TProcCopyGeometryBlocks.OnShow;
 begin
   Frame.edSourceDirectory.Text := StorageGetString('sSourceDirectory', Frame.edSourceDirectory.Text);
+  Frame.chkCopyGeom.Checked := StorageGetBool('bCopyGeom', Frame.chkCopyGeom.Checked);
+  Frame.chkCopyTransform.Checked := StorageGetBool('bCopyTransform', Frame.chkCopyTransform.Checked);
 end;
 
 procedure TProcCopyGeometryBlocks.OnHide;
 begin
   StorageSetString('sSourceDirectory', Frame.edSourceDirectory.Text);
+  StorageSetBool('bCopyGeom', Frame.chkCopyGeom.Checked);
+  StorageSetBool('bCopyTransform', Frame.chkCopyTransform.Checked);
 end;
 
 procedure TProcCopyGeometryBlocks.OnStart;
 begin
+  fCopyGeom := Frame.chkCopyGeom.Checked;
+  fCopyTransform := Frame.chkCopyTransform.Checked;
+
+  if not fCopyGeom and not fCopyTransform then
+    raise Exception.Create('Nothing to copy');
+
   fSourceDirectory := Frame.edSourceDirectory.Text;
 
   if (fSourceDirectory = '') or not DirectoryExists(fSourceDirectory) then
@@ -100,7 +114,7 @@ end;
 function TProcCopyGeometryBlocks.ProcessFile(const aInputDirectory, aOutputDirectory: string; var aFileName: string): TBytes;
 var
   Nif, SrcNif: TwbNifFile;
-  i, j: Integer;
+  j: Integer;
   Block, SrcBlock: TwbNifBlock;
   bChanged: Boolean;
   links, extras: array of Integer;
@@ -116,21 +130,29 @@ begin
     Nif.LoadFromFile(aInputDirectory + aFileName);
     SrcNif.LoadFromFile(fSourceDirectory + aFileName);
 
-    for i := 0 to Pred(Nif.BlocksCount) do begin
-      Block := Nif.Blocks[i];
+    for Block in Nif.BlocksByType('NiAVObject', True) do begin
       var name := Block.EditValues['Name'];
       if name = '' then
         Continue;
 
+      // find the same block to copy from
+      SrcBlock := SrcNif.BlockByName(name);
+      if not Assigned(SrcBlock) then
+        Continue;
+
+      if Block.BlockType <> SrcBlock.BlockType then
+        Continue;
+
+      // copy Transform
+      if fCopyTransform then begin
+        Block.Elements['Transform'].Assign(SrcBlock.Elements['Transform']);
+        // always force copy
+        bChanged := True;
+      end;
+
+      // copy geometry
+      if fCopyGeom then
       if Block.IsNiObject('NiTriBasedGeom') then begin
-        // find the same block to copy from
-        SrcBlock := SrcNif.BlockByName(name);
-        if not Assigned(SrcBlock) then
-          Continue;
-
-        if Block.BlockType <> SrcBlock.BlockType then
-          Continue;
-
         // get the Data
         var SrcData := TwbNifBlock(SrcBlock.Elements['Data'].LinksTo);
         var DstData := TwbNifBlock(Block.Elements['Data'].LinksTo);
@@ -165,13 +187,6 @@ begin
       end
 
       else if Block.IsNiObject('BSTriShape') then begin
-        SrcBlock := SrcNif.BlockByName(name);
-        if not Assigned(SrcBlock) then
-          Continue;
-
-        if Block.BlockType <> SrcBlock.BlockType then
-          Continue;
-
         SetLength(links, 5);
         links[0] := Block.NativeValues['Controller'];
         links[1] := Block.NativeValues['Collision Object'];

@@ -41,7 +41,7 @@ type
 const
   // embedded value size
   // values that fit don't allocate memory (for optimization)
-  dfEmbeddedValueSize = 12;
+  dfEmbeddedValueSize = {$IFDEF WIN64} 16 {$ELSE} 12 {$ENDIF};
 
   DefSizes: array [TdfDataType] of integer = (
     0,  // dtNone
@@ -1439,6 +1439,13 @@ begin
       Result := nil;
   end else
     Result := ElementByName(aPath, aEnabledOnly);
+
+  // try to traverse into linked element
+  if not Assigned(Result) and Assigned(Def.OnLinksTo) then begin
+    Element := LinksTo;
+    if Assigned(Element) then
+      Result := Element.ElementByPath(aPath, aEnabledOnly);
+  end;
 end;
 
 function TdfElement.EnabledElementByPath(const aPath: string): TdfElement;
@@ -2835,7 +2842,7 @@ begin
   end else
     with TdfMergeDef(FDef) do
     for i := Low(Defs) to High(Defs) do
-      if aPath = Defs[i].Name then begin
+      if SameText(aPath, Defs[i].Name) then begin
         Defs[i].GetElementNativeValue(Self, FDataStart + ValueOffset[i], FDataStart + ValueOffset[i] + ValueDataSize[i], Result);
         Exit;
       end;
@@ -2859,7 +2866,7 @@ begin
   end else
     with TdfMergeDef(FDef) do
     for i := Low(Defs) to High(Defs) do
-      if aPath = Defs[i].Name then begin
+      if SameText(aPath, Defs[i].Name) then begin
         Value := aValue;
         Defs[i].SetElementNativeValue(Self, FDataStart + ValueOffset[i], FDataStart + ValueOffset[i] + ValueDataSize[i], Value);
         Exit;
@@ -2882,7 +2889,7 @@ begin
   end else
     with TdfMergeDef(FDef) do
     for i := Low(Defs) to High(Defs) do
-      if (aPath = Defs[i].Name) or (aPath = IntToStr(i)) then begin
+      if SameText(aPath, Defs[i].Name) or (aPath = IntToStr(i)) then begin
         Defs[i].GetElementEditValue(Self, FDataStart + ValueOffset[i], FDataStart + ValueOffset[i] + ValueDataSize[i], Result);
         Exit;
       end;
@@ -2906,7 +2913,7 @@ begin
   end else
     with TdfMergeDef(FDef) do
     for i := Low(Defs) to High(Defs) do
-      if (aPath = Defs[i].Name) or (aPath = IntToStr(i)) then begin
+      if SameText(aPath, Defs[i].Name) or (aPath = IntToStr(i)) then begin
         Value := aValue;
         Defs[i].SetElementEditValue(Self, FDataStart + ValueOffset[i], FDataStart + ValueOffset[i] + ValueDataSize[i], Value);
         Exit;
@@ -3071,7 +3078,7 @@ var
 begin
   Result := -1;
   for i := Low(FValuesMap) to High(FValuesMap) do
-    if FValuesMap[i].Value = aValue then begin
+    if SameText(FValuesMap[i].Value, aValue) then begin
       Result := i;
       Break;
     end;

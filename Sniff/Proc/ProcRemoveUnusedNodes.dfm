@@ -8,7 +8,7 @@ object FrameRemoveUnusedNodes: TFrameRemoveUnusedNodes
     Left = 0
     Top = 0
     Width = 445
-    Height = 17
+    Height = 19
     Align = alTop
     Caption = 
       'Remove unused blocks which are not referenced by root nodes and ' +

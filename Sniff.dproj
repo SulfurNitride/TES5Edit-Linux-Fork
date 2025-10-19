@@ -65,7 +65,7 @@
         <DCC_DcuOutput>.\Temp\Sniff\$(Platform)\$(Config)</DCC_DcuOutput>
         <DCC_ExeOutput>.\Build</DCC_ExeOutput>
         <DCC_Namespace>System;Xml;Data;Datasnap;Web;Soap;Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;$(DCC_Namespace)</DCC_Namespace>
-        <DCC_UnitSearchPath>.\Core;.\Sniff;.\External\ZLibEx;.\External\lz4\lib\delphi;.\External\TForge\Source\Include;.\External\TForge\Source\Shared;.\External\TForge\Source\Engine\Forge;.\External\TForge\Source\Engine\Hashes;.\External\JsonDataObjects\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>.\Core;.\Sniff;.\External\libdeflate;.\External\lz4-delphi;.\External\TForge\Source\Include;.\External\TForge\Source\Shared;.\External\TForge\Source\Engine\Forge;.\External\TForge\Source\Engine\Hashes;.\External\JsonDataObjects\Source;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <VerInfo_Debug>true</VerInfo_Debug>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
@@ -81,7 +81,7 @@
         <DCC_UsePackage>DBXSqliteDriver;IndyIPCommon;RESTComponents;bindcompdbx;DBXInterBaseDriver;vcl;IndyIPServer;vclactnband;vclFireDAC;IndySystem;tethering;svnui;dsnapcon;FireDACADSDriver;FireDACMSAccDriver;fmxFireDAC;vclimg;FireDAC;vcltouch;vcldb;bindcompfmx;svn;FireDACSqliteDriver;FireDACPgDriver;inetdb;soaprtl;DbxCommonDriver;fmx;FireDACIBDriver;fmxdae;xmlrtl;soapmidas;fmxobj;vclwinx;rtl;DbxClientDriver;CustomIPTransport;vcldsnap;dbexpress;IndyCore;vclx;bindcomp;appanalytics;dsnap;FireDACCommon;IndyIPClient;bindcompvcl;RESTBackendComponents;VCLRESTComponents;soapserver;dbxcds;VclSmp;adortl;vclie;bindengine;DBXMySQLDriver;CloudService;dsnapxml;FireDACMySQLDriver;dbrtl;IndyProtocols;inetdbxpress;FireDACCommonODBC;FireDACCommonDriver;inet;fmxase;$(DCC_UsePackage)</DCC_UsePackage>
         <Icon_MainIcon>Sniff_Icon.ico</Icon_MainIcon>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
-        <PF_KeyStorePass>853C0DA36405559EA3757169D17BE32C819C055DA057979397B50FF08E723CD8DB05A38FE3431C4DC1CC572EFA9CC37ABAF83612047422E0166545C2E5F1228CC90AB922EE8CA8C4D3C63B05722F8597F7D7</PF_KeyStorePass>
+        <PF_KeyStorePass>853C47DE5F92078FCF65E527A45EE36281C30502A02B979B97EE0FB48E3E3C9EDB56A384E34A1C6BC1AE577CFA9CC360BAE1367E044B22801678459DE5E522CEC91BF36FD558FAD0BFAFAF1107028597F7D7</PF_KeyStorePass>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
@@ -96,15 +96,13 @@
         <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
         <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
-        <DCC_RemoteDebug>true</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
-        <DCC_ExeOutput>.</DCC_ExeOutput>
         <DCC_Optimize>true</DCC_Optimize>
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
         <Icon_MainIcon>Sniff_Icon.ico</Icon_MainIcon>
-        <PF_KeyStorePass>853C47DE5F92078FCF65E527A45E7BAF819E0544A01C97EF97BC0FF08E723CD8DB42A384E34B1C30C1EA5730FA9DC338BAE2360A044B22FC162B45DFE5E522CFC948F34CD576FAD0BFE4AF4607021D58F7D7</PF_KeyStorePass>
+        <PF_KeyStorePass>853C47DE645855D8A342711DD129E36881D0051BA043979397B40FAB8E363C94DB04A3D7E3401C39C1CC5752FACFC338BAF83613042722C3164B45C2E5BA22DBC90AF35DEE8CA8C4D3C63B05722F8597F7D7</PF_KeyStorePass>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
@@ -221,18 +219,8 @@
             <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
-        <DCCReference Include="Sniff\Proc\ProcConvertFO3Collision.pas">
-            <Form>FrameConvertFO3Collision</Form>
-            <FormType>dfm</FormType>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcConvertRootNode.pas">
             <Form>FrameConvertRootNode</Form>
-            <FormType>dfm</FormType>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
-        <DCCReference Include="Sniff\Proc\ProcConvertShader30.pas">
-            <Form>FrameConvertShader30</Form>
             <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
@@ -248,11 +236,6 @@
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcCopyPriorities.pas">
             <Form>FrameCopyPriorities</Form>
-            <FormType>dfm</FormType>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
-        <DCCReference Include="Sniff\Proc\ProcDismemberSkin.pas">
-            <Form>FrameDismemberSkin</Form>
             <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
@@ -281,154 +264,124 @@
             <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
+        <DCCReference Include="Sniff\Proc\ProcHavokInfo.pas">
+            <Form>FrameHavokInfo</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcHavokSearchMaterial.pas">
             <Form>FrameHavokMaterial</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcHavokSettingsUpdate.pas">
             <Form>FrameHavokSettings</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcInertiaUpdate.pas">
             <Form>Frame1</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcJamAnim.pas">
             <Form>FrameJamAnim</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcJsonConverter.pas">
             <Form>FrameJsonConverter</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcMergeShapes.pas">
             <Form>FrameMergeShapes</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcMoppUpdate.pas">
             <Form>FrameMoppUpdate</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcOptimize.pas">
             <Form>FrameOptimize</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcOptimizeKF.pas">
             <Form>FrameOptimizeKF</Form>
-            <FormType>dfm</FormType>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
-        <DCCReference Include="Sniff\Proc\ProcParallaxUpdate.pas">
-            <Form>FrameParallaxUpdate</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcPriorityControlledBlocks.pas">
             <Form>FramePriorityControlledBlocks</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcRagdollConstraintUpdate.pas">
             <Form>FrameRagdollConstraintUpdate</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcRemoveControlledBlocks.pas">
             <Form>FrameRemoveControlledBlocks</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcRemoveNodes.pas">
             <Form>FrameRemoveNodes</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcRemoveUnusedNodes.pas">
             <Form>FrameRemoveUnusedNodes</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcRenameControlledBlocks.pas">
             <Form>FrameRenameControlledBlocks</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcRenameStrings.pas">
             <Form>FrameRenameStrings</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcReplaceAssets.pas">
             <Form>FrameReplaceAssets</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcSetMissingNames.pas">
             <Form>FrameSetMissingNames</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcShaderFlagsUpdate.pas">
             <Form>FrameShaderFlagsUpdate</Form>
-            <FormType>dfm</FormType>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
+        <DCCReference Include="Sniff\Proc\ProcSoftParticles.pas">
+            <Form>FrameSoftParticles</Form>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcTangents.pas">
             <Form>FrameTangents</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcUniversalFixer.pas">
             <Form>FrameUniversalFixer</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcUniversalTweaker.pas">
             <Form>FrameUniversalTweaker</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcUnskinMesh.pas">
             <Form>FrameUnskinMesh</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcUnweldedVertices.pas">
             <Form>FrameUnweldedVertices</Form>
-            <FormType>dfm</FormType>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
-        <DCCReference Include="Sniff\Proc\ProcUpdateAuthor.pas">
-            <Form>FrameUpdateAuthor</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcUpdateBounds.pas">
             <Form>FrameUpdateBounds</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcVertexPaint.pas">
             <Form>FrameVertexPaint</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcWallsReflectionFlag.pas">
             <Form>FrameWallsReflectionFlag</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <DCCReference Include="Sniff\Proc\ProcWeiExplosion.pas">
             <Form>FrameWeiExplosion</Form>
-            <FormType>dfm</FormType>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
         <BuildConfiguration Include="Base">

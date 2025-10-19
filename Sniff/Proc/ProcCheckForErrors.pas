@@ -81,7 +81,7 @@ uses
   wbDataFormat,
   wbDataFormatNif,
   wbNifMath,
-  wbBSArchive;
+  wbDDS;
 
 
 //==============================================================================
@@ -149,6 +149,45 @@ begin
   for var b in nif.BlocksByType('bhkCollisionObject') do
     RecursiveIndexCheck(b);
 end;
+
+
+//==============================================================================
+procedure CheckUnusedBlocks(aObj: Pointer; Log: TStrings);
+
+  procedure CountBlocksUsage(aBlock: TwbNifBlock; var aUsage: array of Integer);
+  begin
+    if not Assigned(aBlock) then
+      Exit;
+
+    Inc(aUsage[aBlock.Index]);
+
+    // scan our refs only once
+    if aUsage[aBlock.Index] = 1 then
+      for var i: Integer := 0 to Pred(aBlock.RefsCount) do
+        CountBlocksUsage(TwbNifBlock(aBlock.Refs[i].LinksTo), aUsage);
+  end;
+
+begin
+  var nif: TwbNifFile := aObj;
+
+  var roots := nif.RootNodes;
+
+  if Length(roots) = 0 then
+    Log.Add(#9 + nif.Footer.Name + ': No root node');
+
+  if Length(roots) > 1 then
+    Log.Add(#9 + nif.Footer.Name + ': Multiple root nodes');
+
+  var BlocksUsage: array of Integer;
+  SetLength(BlocksUsage, nif.BlocksCount);
+  for var root in roots do
+    CountBlocksUsage(root, BlocksUsage);
+
+  for var i := Low(BlocksUsage) to High(BlocksUsage) do
+    if BlocksUsage[i] = 0 then
+      Log.Add(#9 + nif.Blocks[i].Name + ': Unused block not referenced from the root scenegparh');
+end;
+
 
 //==============================================================================
 procedure CheckInvalidRepeatedChildrenNames(aObj: Pointer; Log: TStrings);
@@ -343,6 +382,14 @@ begin
     if (ms = 'MO_SYS_FIXED') and (mq <> 'MO_QUAL_FIXED') then
       Log.Add(#9 + block.Name + ': Motion System is MO_SYS_FIXED but Motion Quality is not MO_QUAL_FIXED');
 
+    if (nif.NifVersion < nfTES5) then begin
+      if (ms <> 'MO_SYS_FIXED') and (mq = 'MO_QUAL_FIXED') then
+        Log.Add(#9 + block.Name + ': Motion System is not MO_SYS_FIXED but Motion Quality is MO_QUAL_FIXED');
+
+      if ms.EndsWith('STABILIZED') then
+        Log.Add(#9 + block.Name + ': ' + ms + ' Motion System is not supported pre Skyrim');
+    end;
+
     //if (ms = 'MO_SYS_INVALID') and (mq <> 'MO_QUAL_INVALID') then
     //  Log.Add(#9 + block.Name + ': Motion System is MO_SYS_INVALID but Motion Quality is not MO_QUAL_INVALID');
 
@@ -351,6 +398,12 @@ begin
 
     //if (layer = 2) and (ms <> 'MO_SYS_KEYFRAMED') then
     //  Log.Add(#9 + block.Name + ': Uses animstatic layer but Motion System is not MO_SYS_KEYFRAMED');
+
+    var minpen: Single;
+    if nif.NifVersion < nfTES5 then minpen := 0.01 else minpen := 0.002;
+    var pen: Single := block.NativeValues['Penetration Depth'];
+    if (pen > 0.0) and (pen < minpen) then
+      Log.Add(#9 + block.Name + ': Penetration Depth < ' + dfFloatToStr(minpen) + ' causes Havok issues due to precision loss');
 
     if bDynamic then begin
       if SameValue(mass, 0.0) then
@@ -368,6 +421,15 @@ begin
 
       if block.NativeValues['Max Angular Velocity'] < 1.0 then
         Log.Add(#9 + block.Name + ': Max Angular Velocity < 1.0 causes sinking through the terrain');
+
+      if (nif.NifVersion >= nfTES5) and (block.EditValues['Enable Deactivation'] = 'no') then
+        Log.Add(#9 + block.Name + ': Enable Deactivation=no causes performance issues on dynamic bodies');
+
+      if (nif.NifVersion < nfTES5) and (block.EditValues['Deactivator Type'] = 'DEACTIVATOR_NEVER') then
+        Log.Add(#9 + block.Name + ': DEACTIVATOR_NEVER causes performance issues on dynamic bodies');
+
+      if block.EditValues['Solver Deactivation'] = 'SOLVER_DEACTIVATION_OFF' then
+        Log.Add(#9 + block.Name + ': SOLVER_DEACTIVATION_OFF causes performance issues on dynamic bodies');
     end;
 
   end;
@@ -406,7 +468,7 @@ procedure CheckSkinningIssues(aObj: Pointer; Log: TStrings);
 begin
   var nif: TwbNifFile := aObj;
 
-  if (nif.NifVersion in [nfTES5, nfSSE]) and (nif.RootNode.BlockType = 'NiNode') then
+  if (nif.NifVersion in [nfFO3, nfTES5, nfSSE]) and (nif.RootNode.BlockType = 'NiNode') then
     for var skin in nif.BlocksByType('NiSkinInstance', True) do begin
 
       if skin.BlockType <> 'BSDismemberSkinInstance' then begin
@@ -414,20 +476,36 @@ begin
         Continue;
       end;
 
+      var skeleton := TwbNifBlock(skin.Elements['Skeleton root'].LinksTo);
+      if not Assigned(skeleton) or (skeleton.Index <> 0) then
+        Log.Add(#9 + skin.Name + ': Invalid Skeleton Root');
+
       var parts := skin.Elements['Partitions'];
-      for var i := 0 to Pred(parts.Count) do begin
-        var num := Integer(parts[i].NativeValues['Body Part']);
-        if (num < 30) or (num > 62) then
-          Log.Add(#9 + parts[i].Path + ': Invalid body part ' + parts[i].EditValues['Body Part']);
+      with TStringList.Create do try
+        for var i := 0 to Pred(parts.Count) do begin
+          var num := Integer(parts[i].NativeValues['Body Part']);
+          var p := parts[i].EditValues['Body Part'];
+          if (nif.NifVersion in [nfTES5, nfSSE]) and ( (num < 30) or (num > 62) ) then
+            Log.Add(#9 + parts[i].Path + ': Invalid body part ' + p);
+
+          if IndexOf(p) <> -1 then
+            Log.Add(#9 + parts[i].Path + ': Repeated body part ' + p)
+          else
+            Add(p);
+        end;
+      finally
+        Free;
       end;
 
-      if Skin.BlockType = 'BSDismemberSkinInstance' then begin
-        var PartCount := Skin.Elements['Partitions'].Count;
-        var SkinPartition := Skin.Elements['Skin Partition'].LinksTo;
-        if Assigned(SkinPartition) and (PartCount < SkinPartition.NativeValues['Num Partitions']) then
-          Log.Add(#9 + Skin.Name + ': Has lower Num Partitions than in ' + TwbNifBlock(SkinPartition).Name);
-      end;
+      var SkinPartition := Skin.Elements['Skin Partition'].LinksTo;
+      if Assigned(SkinPartition) and (parts.Count < SkinPartition.NativeValues['Num Partitions']) then
+        Log.Add(#9 + skin.Name + ': Has lower Num Partitions than in ' + TwbNifBlock(SkinPartition).Name);
     end;
+
+  if nif.NifVersion in [nfTES5, nfSSE, nfFO4] then
+    for var shape in nif.BlocksByType('BSDynamicTriShape', True) do
+      if shape.GetSkin = nil then
+        Log.Add(#9 + shape.Name + ': Missing skin instance (acceptable only in headparts and facegen)');
 end;
 
 //==============================================================================
@@ -483,13 +561,11 @@ begin
   end;
 
   // Num Subtexture Offsets
-  var S:= 16;
-  if Nif.NifVersion >= nfTES5 then
-    S := 256;
-
+  var num := 16;
+  if Nif.NifVersion >= nfTES5 then num := 256;
   for var Block in Nif.BlocksByType('NiParticlesData', True) do
-    if Block.NativeValues['Num Subtexture Offsets'] > S then
-      Log.Add(#9 + Block.Name + ': Num Subtexture Offsets cannot be higher than ' + IntToStr(S));
+    if Block.NativeValues['Num Subtexture Offsets'] > num then
+      Log.Add(#9 + Block.Name + ': Num Subtexture Offsets cannot be higher than ' + IntToStr(num));
 
   // mesh emitters
   if nif.NifVersion >= nfSSE then
@@ -654,6 +730,7 @@ procedure CheckAnimStopTime(aObj: Pointer; Log: TStrings);
       Exit;
 
     var t := keys[Pred(keys.Count)].EditValues['Time'];
+    //Log.Add(keys.Path + #9 + t);
     if t <> aStopTime then
       Log.Add(#9 + data.Name + ': Time ' + t + ' of the last key in ' + keys.Path + ' doesn''t match Stop Time ' + aStopTime);
   end;
@@ -842,11 +919,6 @@ begin
         Log.Add(#9 + textures[i].Path + ': Absolute path ' + textures[i].EditValue);
 
     if nif.NifVersion = nfFO3 then begin
-      if ( (textures[4].EditValue = '')  and (textures[5].EditValue <> '') ) or
-         ( (textures[4].EditValue <> '') and (textures[5].EditValue = '') )
-      then
-        Log.Add(#9 + texset.Name + ': 6th texture (counting from 1) should be used if 5th is set in FO3/FNV meshes otherwise the game uses the gloss map from the normal map');
-
       if (textures[4].EditValue <> '') and not (
          shader.NativeValues['Shader Flags 1\Environment_Mapping'] or
          shader.NativeValues['Shader Flags 1\Eye_Environment_Mapping'] or
@@ -855,7 +927,7 @@ begin
         Log.Add(#9 + shader.Name + ': Has assigned envmap texture in ' + texset.Name + ' but missing envmap flag');
     end;
 
-    if nif.NifVersion in [nfTES5,nfSSE] then begin
+    if nif.NifVersion in [nfTES5, nfSSE] then begin
       var ShaderType := Shader.EditValues['Shader Type'];
       if (Textures.Count > 2) and (Textures[2].EditValue <> '') then
         if  (ShaderType <> 'Glow Shader') and
@@ -939,9 +1011,10 @@ begin
     var flags: Cardinal := prop.NativeValues['Flags'];
     var alpha_blend := flags and 1 = 1;
 
-    var Shader : TwbNifBlock := shape.PropertyByType('BSShaderProperty', True);
-    if alpha_blend and not Shader.NativeValues['Shader Flags 2\Assume_Shadowmask'] then
-      Log.Add(#9 + prop.Name + ': Blend alpha forces the object to be in single-pass mode, and can cause lighting issues if multiple lights are illuminating the object');
+    var shader := shape.PropertyByType('BSShaderProperty', True);
+    if Assigned(shader) then
+      if alpha_blend and not shader.NativeValues['Shader Flags 2\Assume_Shadowmask'] then
+        Log.Add(#9 + prop.Name + ': Blend alpha forces the object to be in single-pass mode, and can cause lighting issues if multiple lights are illuminating the object');
 
     //var src_blend_mode := flags shr 1 and $f;
     //var dst_blend_mode := flags shr 5 and $f;
@@ -1015,15 +1088,14 @@ begin
       EmitShader := shader.Name;
     end;
 
-    if shader.NativeValues['Shader Flags 1'] = 0 then
-      Log.Add(#9 + shader.Name + ': Empty shader flags');
-
+    // Fallout 3, New Vegas
     if nif.NifVersion = nfFO3 then begin
-      if shader.NativeValues['Shader Flags 1\Environment_Mapping'] and not shader.NativeValues['Shader Flags 2\Envmap_Light_Fade'] then
-        Log.Add(#9 + shader.Name + ': Environment_Mapping flag is set but no Envmap_Light_Fade flag');
+      if (shader.EditValues['Shader Type'] = 'SHADER_SKIN') xor shader.NativeValues['Shader Flags 1\FaceGen'] then
+        Log.Add(#9 + shader.Name + ': SHADER_SKIN shader type and FaceGen shader flag must be set together');
     end;
 
-    if (nif.NifVersion in [nfTES5, nfSSE]) then begin
+    // Skyrim
+    if nif.NifVersion in [nfTES5, nfSSE] then begin
 
       // Tangents are required on BSTriShapes
       if Shape.IsNiObject('BSTriShape') then
@@ -1134,7 +1206,7 @@ begin
           Log.Add(#9 + Shader.Name + ': Facegen shader flag is set but shader type is not Facegen');
 
         // skin tint shader + flags + textures
-        if (ShaderType = 'Skin Tint') then begin
+        if ShaderType = 'Skin Tint' then begin
           if not Shader.NativeValues['Shader Flags 1\Skin_Tint'] then
             Log.Add(#9 + Shader.Name + ': Skin Tint shader type is used but missing Skin_Tint shader flag');
 
@@ -1280,6 +1352,7 @@ begin
       end;
     end;
 
+    // Fallout 4
     if nif.NifVersion = nfFO4 then begin
       // external material file is used, shader settings are unused
       if shader.EditValues['Name'] <> '' then
@@ -1529,11 +1602,8 @@ begin
   // TriShapes in Facegen .nifs must be of type BSDynamicTriShape
   var bFaceGen := Assigned(nif.BlockByName('BSFaceGenNiNodeSkinned', 'NiNode'));
   if (nif.NifVersion = nfSSE) and bFaceGen then
-    for var i := 0 to Pred(nif.BlocksCount) do begin
-      var shape := nif.Blocks[i];
-      if Shape.BlockType = 'BSTriShape' then
-        Log.Add(#9 + Shape.Name + ': Shapes must be of type BSDynamicTriShape in Facegen nifs');
-    end;
+    for var shape in nif.BlocksByType('BSTriShape') do
+      Log.Add(#9 + shape.Name + ': Shapes must be of type BSDynamicTriShape in Facegen nifs');
 
   // NiSpecularProperty in TES4 and later games
   if nif.NifVersion >= nfTES4 then
@@ -1544,16 +1614,49 @@ begin
   for var Shader in nif.BlocksByType('BSEffectShaderProperty') do begin
     var Controller := Shader.GetController;
     if Assigned(Controller) and Controller.BlockType.StartsWith('BSLighting') then
-      Log.Add(#9 + Shader.Name + ': Has Lighting Shader Controllers attached, which crashes the game');
+      Log.Add(#9 + Shader.Name + ': Attached controller ' + Controller.BlockType + ' is invalid for this shader property');
   end;
 
   for var Shader in nif.BlocksByType('BSLightingShaderProperty') do begin
     var Controller := Shader.GetController;
-    if Assigned(Controller) and Controller.BlockType.StartsWith('BSEffect')
-    then
-      Log.Add(#9 + Shader.Name + ': Has Effect Shader Controllers attached, which crashes the game');
+    if Assigned(Controller) and Controller.BlockType.StartsWith('BSEffect') then
+      Log.Add(#9 + Shader.Name + ': Attached controller ' + Controller.BlockType + ' is invalid for this shader property');
   end;
 end;
+
+
+//==============================================================================
+procedure CheckOptional(aObj: Pointer; Log: TStrings);
+begin
+  var nif: TwbNifFile := aObj;
+
+  for var shader in nif.BlocksByType('BSShaderProperty', True) do begin
+    if shader.NativeValues['Shader Flags 1'] = 0 then
+      Log.Add(#9 + shader.Name + ': Empty shader flags');
+
+    if shader.BlockType = 'BSShaderPPLightingProperty' then begin
+      if shader.NativeValues['Shader Flags 1\Environment_Mapping'] and not shader.NativeValues['Shader Flags 2\Envmap_Light_Fade'] then
+        Log.Add(#9 + shader.Name + ': Environment_Mapping flag is set but no Envmap_Light_Fade flag');
+
+      var texset := TwbNifBlock(shader.Elements['Texture Set'].LinksTo);
+      if not Assigned(texset) then
+        Continue;
+
+      var textures := texset.Elements['Textures'];
+      if not Assigned(textures) then
+        Continue;
+
+      if textures.Count > 5 then begin
+        if ( (textures[4].EditValue = '')  and (textures[5].EditValue <> '') ) or
+           ( (textures[4].EditValue <> '') and (textures[5].EditValue = '') )
+        then
+          Log.Add(#9 + texset.Name + ': 6th texture (counting from 1) should be used if 5th is set in FO3/FNV meshes otherwise the game uses the gloss map from the normal map');
+      end;
+    end;
+
+  end;
+end;
+
 
 //==============================================================================
 procedure CheckHDRVertexColors(aObj: Pointer; Log: TStrings);
@@ -1787,108 +1890,116 @@ begin
   fNoOutput := True;
 
   AddCheck('Invalid string index', 'Meshes', ['.nif', '.kf'],
-   'String index used in blocks for meshes with strings table (Fallout 3 and later games) is out of range, always crashes the game',
-   CheckStringIndex);
+    'String index used in blocks for meshes with strings table (Fallout 3 and later games) is out of range, always crashes the game',
+    CheckStringIndex);
 
   AddCheck('Invalid blocks order', 'Meshes', ['.nif', '.kf'],
-   'Wrong order of bhkCollisionObject children when child has larger index than its parent, always crashes the game',
-   CheckBlocksOrder);
+    'Wrong order of bhkCollisionObject children when child has larger index than its parent, always crashes the game',
+    CheckBlocksOrder);
+
+  AddCheck('Unused blocks', 'Meshes', ['.nif'],
+    'Multiple root nodes or blocks not referenced from the root scenegraph, could crash the game',
+    CheckUnusedBlocks);
 
   AddCheck('Repeated NiNode childen names', 'Meshes', ['.nif'],
-   'Invalid names or the same named blocks (or the same block) is used several times in NiNode children, might cause issues or even crash the game depending on usage context',
-   CheckInvalidRepeatedChildrenNames);
+    'Invalid names or the same named blocks (or the same block) is used several times in NiNode children, might cause issues or even crash the game depending on usage context',
+    CheckInvalidRepeatedChildrenNames);
 
   AddCheck('Wrong link types', 'Meshes', ['.nif'],
-   'References to blocks of wrong type',
-   CheckWrongLinkTypes);
+    'References to blocks of wrong type. Always crashes the game',
+    CheckWrongLinkTypes);
 
   AddCheck('Invalid array links', 'Meshes', ['.nif'],
-   'Links in arrays (children, extradatas, properties, etc.) are either empty, point to nonexisting blocks or repeated',
-   CheckInvalidArrayLinks);
+    'Links in arrays (children, extradatas, properties, etc.) are either empty, point to nonexisting blocks or repeated. Could crash the game',
+    CheckInvalidArrayLinks);
 
   AddCheck('Invalid geometry', 'Meshes', ['.nif'],
-   'Triangles or strips reference invalid vertices. Unused vertices in geometry. Duplicate vertices in BSTriShape',
-   CheckGeometry);
+    'Triangles or strips reference invalid vertices. Unused vertices in geometry. Duplicate vertices in BSTriShape',
+    CheckGeometry);
 
   AddCheck('Hardcoded block names', 'Meshes', ['.nif'],
-   'Some blocks must have specific name to work properly (BSX for BSXFlags, INV for BsInvMarker, etc.), "Weapon" nodes in non-skeletons, [TES4] unnamed NiMaterialProperty',
-   CheckHardcodedBlockNames);
+    'Some blocks must have specific name to work properly (BSX for BSXFlags, INV for BsInvMarker, etc.), "Weapon" nodes in non-skeletons, [TES4] unnamed NiMaterialProperty',
+    CheckHardcodedBlockNames);
 
   AddCheck('Zero mass or inertia in collision', 'Meshes', ['.nif'],
-   'Moveable collision has zero mass or uses inertia system without inertia tensor matrix set (will break the physics not only for that object, but other objects using totally different meshes as well), Havok layer and motion settings',
-   CheckHavokMassInertia);
+    'Moveable collision has zero mass or uses inertia system without inertia tensor matrix set (will break the physics not only for that object, but other objects using totally different meshes as well), Havok layer and motion settings',
+    CheckHavokMassInertia);
 
   AddCheck('Check BSXFlags', 'Meshes', ['.nif'],
-   'Check for invalid BSXFlags: Animated, Havok, Ragdoll, Complex, Addon, Editor Marker and Dynamic. Emittance flag is checked by "Invalid shader types and flags". Complex and Articulated affect grabbing behaviour only',
-   CheckBSXFlags);
+    'Check for invalid BSXFlags: Animated, Havok, Ragdoll, Complex, Addon, Editor Marker and Dynamic. Emittance flag is checked by "Invalid shader types and flags". Complex and Articulated affect grabbing behaviour only',
+    CheckBSXFlags);
 
   AddCheck('Check consistency flags', 'Meshes', ['.nif'],
-   'Check for invalid consistency flags value. CT_MUTABLE when shape is controlled by NiGeomMorpherController or NiUVController, CT_STATIC for the rest. CT_VOLATILE isn''t used',
-   CheckConsistencyFlags);
+    'Check for invalid consistency flags value. CT_MUTABLE when shape is controlled by NiGeomMorpherController or NiUVController, CT_STATIC for the rest. CT_VOLATILE isn''t used. Affects performance',
+    CheckConsistencyFlags);
 
   AddCheck('Check texture set slots', 'Meshes', ['.nif'],
-   'Check for absolute paths and invalid combinations of textures in BSShaderTextureSet',
-   CheckTextureSetSlots);
+    'Check for absolute paths and invalid combinations of textures in BSShaderTextureSet',
+    CheckTextureSetSlots);
 
   AddCheck('Check NiAlphaProperty', 'Meshes', ['.nif'],
-   'Check for enabled Blending in NiAlphaProperty except NoLighting shader',
-   CheckNiAlphaProperty, False);
+    'Check for enabled Blending in NiAlphaProperty except NoLighting shader',
+    CheckNiAlphaProperty, False);
 
   AddCheck('Invalid shader types and flags', 'Meshes', ['.nif'],
-   'Check for invalid combinations of shader type and shader flags: environment mapping, eye envmapping, glow, external emittance, glow + treeanim. etc.',
-   CheckShaderTypeFlags);
+    'Check for invalid combinations of shader type and shader flags: environment mapping, eye envmapping, glow, external emittance, glow + treeanim. etc. Could crash the game',
+    CheckShaderTypeFlags);
 
   AddCheck('Particle system checks', 'Meshes', ['.nif'],
-   'Check for the invalid Modifier Name in descendants of NiPSysModifierCtlr, too long Life Span in NiPSysEmitter, Emitter nodes without NiParticleSystem, mesh emitters without Particle Data',
-   CheckParticleSystem);
+    'Check for the invalid Modifier Name in descendants of NiPSysModifierCtlr, too long Life Span in NiPSysEmitter, Emitter nodes without NiParticleSystem, mesh emitters without Particle Data. Could crash the game',
+    CheckParticleSystem);
 
   AddCheck('Invalid Target field', 'Meshes', ['.nif'],
-   'Check for the invalid Target field in NiCollisionObject, bhkCompressedMeshShape, NiTimeController, NiControllerSequence',
-   CheckTargetField);
+    'Check for the invalid Target field in NiCollisionObject, bhkCompressedMeshShape, NiTimeController, NiControllerSequence. Always crashes the game',
+    CheckTargetField);
 
   AddCheck('Animation stop time', 'Meshes', ['.nif', '.kf'],
-   'Check for the incorrect end key not matching the animation stop time',
-   CheckAnimStopTime);
+    'Check for the incorrect End key not matching the animation Stop time. Could cause animation issues',
+    CheckAnimStopTime);
 
   AddCheck('Skinning issues', 'Meshes', ['.nif'],
-   '[SSE] BSDismemberSkinInstance and Body Parts',
-   CheckSkinningIssues);
+    'BSDismemberSkinInstance and Body Parts checks, missing Skin in BSDynamicTriShape',
+    CheckSkinningIssues);
 
   AddCheck('Invalid subshapes material order', 'Meshes', ['.nif'],
-   'Sub Shapes material in hkPackedNiTriStripsData must be in ascending order, otherwise the first one will be used for all shapes in game',
-   CheckSubShapesCollisionOrder);
+    'Sub Shapes material in hkPackedNiTriStripsData must be in ascending order, otherwise the first one will be used for all shapes in game',
+    CheckSubShapesCollisionOrder);
 
   AddCheck('Miscellaneous checks', 'Meshes', ['.nif', '.kf'],
-   'Root node is a NiNode/NiSequence descendant and the first block, Invalid subshapes in bhkListShape, [TES4] Tangents size not matching the vertices count, Unsupported NiSpecularPropertry in post Oblivion meshes',
-   CheckMiscellaneous);
+    'Root node is a NiNode/NiSequence descendant and the first block, Invalid subshapes in bhkListShape, [TES4] Tangents size not matching the vertices count, Unsupported NiSpecularPropertry in post Oblivion meshes',
+    CheckMiscellaneous);
+
+  AddCheck('Optional checks', 'Meshes', ['.nif'],
+    'Potential false positives, could be done on purpose: Empty shader flags, Envmap + Light_fade flags and 5th + 6th slots in textureset for BSShaderPPLightingProperty',
+    CheckOptional);
 
   AddCheck('Redundant white vertex colors', 'Meshes', ['.nif'],
-   'Check for possibly redundant all white vertex colors except for leaf animations where they are required',
-   CheckAllWhiteVertexColors);
+    'Check for possibly redundant all white vertex colors except for grass/leaf animations where they are required',
+    CheckAllWhiteVertexColors);
 
   AddCheck('HDR vertex colors', 'Meshes', ['.nif'],
-   'Check for HDR vertex colors (outside of 0..1 range) which sometimes are not intended and lead to rendering issues in Oblivion, Fallout 3, New Vegas and Skyrim LE',
-   CheckHDRVertexColors, False);
+    'Check for HDR vertex colors (outside of 0..1 range) which sometimes are not intended and lead to rendering issues in Oblivion, Fallout 3, New Vegas and Skyrim LE',
+    CheckHDRVertexColors, False);
 
   AddCheck('Clamped tiling UVs', 'Meshes', ['.nif'],
-   'Check for tiling UVs outside of 0..1 range while using CLAMP mode',
-   CheckUVs, False);
+    'Check for tiling UVs outside of 0..1 range in CLAMP mode. Causes texture stretching',
+    CheckUVs, False);
 
   AddCheck('Repeated denegerate tris in strips', 'Meshes', ['.nif'],
-   'Check for strips with repeated degenerate triangles',
-   CheckStripsDegenerate, False);
+    'Check for strips with repeated degenerate triangles',
+    CheckStripsDegenerate, False);
 
   AddCheck('Invalid texture size', 'Textures', ['.dds'],
-   'Texture size is not power of 2, always crashes the game',
-   CheckDdsSize);
+    'Texture size is not power of 2, always crashes the game',
+    CheckDdsSize);
 
   AddCheck('Unsupported mesh formats', 'Skyrim SE', ['.nif'],
-   'Unsupported nif blocks which crash Skyrim SE: NiTriStrips, stripified NiSkipPartition and bhkMultiSphereShape',
-   CheckSSENifFormat, False);
+    'Unsupported nif blocks which crash Skyrim SE: NiTriStrips, stripified NiSkipPartition and bhkMultiSphereShape',
+    CheckSSENifFormat, False);
 
   AddCheck('Unsupported texture formats', 'Skyrim SE', ['.dds'],
-   'Uncompressed formats which crash Skyrim SE in Windows 7: R5G6B5, A1R5G5B5, A4R4G4B4 and other reduced bits formats',
-   CheckSSEDdsFormat, False);
+    'Uncompressed formats which crash Skyrim SE in Windows 7: R5G6B5, A1R5G5B5, A4R4G4B4 and other reduced bits formats',
+    CheckSSEDdsFormat, False);
 end;
 
 
@@ -2020,7 +2131,7 @@ begin
           Checks[i].Proc(obj, Log);
 
     if Log.Count > 0 then begin
-      fManager.AddMessage(aFileName);
+      Log.Insert(0, aFileName);
       Log.Add('');
       fManager.AddMessages(Log);
     end;

@@ -22,6 +22,7 @@ type
     Label1: TLabel;
     chkFixAbsolute: TCheckBox;
     chkReport: TCheckBox;
+    chkRegExp: TCheckBox;
   private
     { Private declarations }
   public
@@ -32,6 +33,7 @@ type
   private
     Frame: TFrameReplaceAssets;
     fFixAbsolute: Boolean;
+    fRegExp: Boolean;
     fReportOnly: Boolean;
     fSearch, fReplace: array of string;
   public
@@ -49,6 +51,8 @@ implementation
 {$R *.dfm}
 
 uses
+  System.NetEncoding,
+  System.RegularExpressionsCore,
   wbDataFormat,
   wbDataFormatNif,
   wbDataFormatMaterial;
@@ -71,15 +75,19 @@ end;
 procedure TProcReplaceAssets.OnShow;
 begin
   Frame.chkFixAbsolute.Checked := StorageGetBool('bFixAbsolute', Frame.chkFixAbsolute.Checked);
+  Frame.chkRegExp.Checked := StorageGetBool('bRegExp', Frame.chkRegExp.Checked);
   Frame.chkReport.Checked := StorageGetBool('bReportOnly', Frame.chkReport.Checked);
-  Frame.memoPairs.Lines.CommaText := StorageGetString('sReplacements', Frame.memoPairs.Lines.CommaText);
+  var s := StorageGetString('sReplacements', '');
+  if s <> '' then
+    Frame.memoPairs.Lines.Text := TBase64Encoding.Base64String.Decode(s);
 end;
 
 procedure TProcReplaceAssets.OnHide;
 begin
   StorageSetBool('bFixAbsolute', Frame.chkFixAbsolute.Checked);
+  StorageSetBool('bRegExp', Frame.chkRegExp.Checked);
   StorageSetBool('bReportOnly', Frame.chkReport.Checked);
-  StorageSetString('sReplacements', Frame.memoPairs.Lines.CommaText);
+  StorageSetString('sReplacements', TBase64Encoding.Base64String.Encode(Frame.memoPairs.Lines.Text));
 end;
 
 procedure TProcReplaceAssets.OnStart;
@@ -88,6 +96,7 @@ var
 begin
   fFixAbsolute := Frame.chkFixAbsolute.Checked;
   fReportOnly := Frame.chkReport.Checked;
+  fRegExp := Frame.chkRegExp.Checked;
   fNoOutput := fReportOnly;
 
   SetLength(fSearch, 0);
@@ -115,13 +124,18 @@ var
   Nif: TwbNifFile;
   BGSM: TwbBGSMFile;
   BGEM: TwbBGEMFile;
+  regexp: TPerlRegEx;
   ext, s, s2: string;
   bChanged: Boolean;
 begin
+  Nif := nil; BGSM := nil; BGEM := nil; regexp := nil; // suppress compiler warning
   Elements := TList.Create;
   Log := TStringList.Create;
+  if fRegExp then begin
+    regexp := TPerlRegEx.Create;
+    regexp.Options := [preCaseLess];
+  end;
   bChanged := False;
-  Nif := nil; BGSM := nil; BGEM := nil; // suppress compiler warning
 
   ext := ExtractFileExt(aFileName);
 
@@ -173,10 +187,18 @@ begin
       // perform replacements, trim whitespaces just in case
       s2 := Trim(s);
       for k := Low(fSearch) to High(fSearch) do begin
-        if fSearch[k] <> '' then
+        if fSearch[k] <> '' then begin
           // replace if text to find is not empty
-          s2 := StringReplace(s2, fSearch[k], fReplace[k], [rfIgnoreCase, rfReplaceAll])
-        else
+          if not fRegExp then
+            s2 := StringReplace(s2, fSearch[k], fReplace[k], [rfIgnoreCase, rfReplaceAll])
+          else begin
+            regexp.Subject := s2;
+            regexp.RegEx := fSearch[k];
+            regexp.Replacement := fReplace[k];
+            regexp.ReplaceAll;
+            s2 := regexp.Subject;
+          end;
+        end else
           // prepend if empty
           s2 := fReplace[k] + s2;
       end;
@@ -222,6 +244,7 @@ begin
   finally
     Elements.Free;
     Log.Free;
+    if fRegExp then regexp.Free;
     if Assigned(Nif) then Nif.Free;
     if Assigned(BGSM) then BGSM.Free;
     if Assigned(BGEM) then BGEM.Free;

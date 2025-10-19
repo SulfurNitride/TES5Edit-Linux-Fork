@@ -101,7 +101,7 @@ begin
     Add('- Remove empty and invalid links from link arrays (children, extradatas, properties, etc.)');
     Add('- Remove absolute path from asset names');
     Add('- Remove useless redundant blocks including empty geometry shapes');
-    Add('- Add Hidden flag to EditorMarker blocks');
+    //Add('- Add Hidden flag to EditorMarker blocks in Skyrim meshes');
     Add('- Update BSXFlags, add if missing when needed');
     Add('- Update shaders types and flags');
     Add('- Enforce hardcoded block names like BSX for BSXFlags, assign name for unnamed NiMaterialProperty');
@@ -274,13 +274,23 @@ end;
 function FixEditorMarker(const nif: TwbNifFile; const Log: TStrings): Boolean;
 begin
   Result := False;
+
+  if nif.NifVersion < nfFO3 then
+    Exit;
+
   for var i: Integer := 0 to Pred(nif.BlocksCount) do begin
     var block := nif.Blocks[i];
-    if block.IsEditorMarker and Assigned(block.Elements['Flags']) and not block.Hidden then begin
-      block.NativeValues['Flags'] := block.NativeValues['Flags'] or 1;
-      Log.Add(#9 + block.Name + ': Added Hidden flag to EditorMarker');
-      Result := True;
-    end;
+    if block.IsEditorMarker and Assigned(block.Elements['Flags']) then
+      if (nif.NifVersion in [nfTES5, nfSSE]) and not block.Hidden then begin
+        block.NativeValues['Flags'] := block.NativeValues['Flags'] or 1;
+        Log.Add(#9 + block.Name + ': Added Hidden flag to EditorMarker');
+        Result := True;
+      end else
+      if (nif.NifVersion in [nfFO3]) and block.Hidden then begin
+        block.NativeValues['Flags'] := block.NativeValues['Flags'] and not 1;
+        Log.Add(#9 + block.Name + ': Removed Hidden flag from EditorMarker');
+        Result := True;
+      end
   end;
 end;
 
@@ -490,7 +500,9 @@ begin
         blocks.Delete(j);
         Result := True;
       end;
+
       seq.NativeValues['Num Controlled Blocks'] := blocks.Count;
+
       // sorting controlled blocks by target block index
       if blocks.Sort(SortByUserData) then begin
         Log.Add(#9 + seq.Name + ': Sorted Controlled Blocks by Target node index');
@@ -501,8 +513,8 @@ begin
       for var j := 0 to Pred(blocks.Count) do begin
         var target := GetControlledBlockTarget(blocks[j]);
         // adding to the list of targets to later update NiMultiTargetTransformController
-        if slNew.IndexOf(target.Name) = -1 then
-          slNew.AddObject(target.Name, target);
+        if slNew.IndexOf(target.Name + target.EditValues['Name']) = -1 then
+          slNew.AddObject(target.Name + target.EditValues['Name'], target);
       end;
     end;
 
@@ -514,10 +526,10 @@ begin
       for var i := 0 to Pred(objs.Count) do begin
         var obj := TwbNifBlock(objs[i].Elements['AV Object'].LinksTo);
         if Assigned(obj) then
-          slOld.AddObject(obj.Name, obj);
+          slOld.AddObject(obj.Name + obj.EditValues['Name'], obj);
       end;
-      // update objects palette if different
-      if slOld.Text <> slNew.Text then begin
+      // update if different
+      if (objs.Count <> slNew.Count) or (slOld.Text <> slNew.Text) then begin
         objs.Count := slNew.Count;
         for var i := 0 to Pred(slNew.Count) do begin
           var obj := TwbNifBlock(slNew.Objects[i]);
@@ -543,11 +555,11 @@ begin
     for var i := 0 to Pred(extratargets.Count) do begin
       var target := TwbNifBlock(extratargets[i].LinksTo);
       if Assigned(target) then
-        slOld.Add(target.Name);
+        slOld.Add(target.Name + target.EditValues['Name']);
     end;
 
     // update extra targets if different
-    if slOld.Text <> slNew.Text then begin
+    if (extratargets.Count <> slNew.Count) or (slOld.Text <> slNew.Text) then begin
       extratargets.Count := slNew.Count;
       for var i := 0 to Pred(slNew.Count) do begin
         extratargets[i].NativeValue := TwbNifBlock(slNew.Objects[i]).Index;
@@ -701,21 +713,10 @@ begin
   if nif.NifVersion in [nfFO3, nfTES5, nfSSE] then
   for var rigid in nif.BlocksByType('bhkRigidBody', True) do begin
     var layer: Integer := rigid.NativeValues['Havok Filter\Layer'];
-
-    var S: string;
-    case layer of
-      1:  S := 'Static';
-      2:  S := 'Animstatic';
-      4:  S := 'Clutter';
-      5:  S := 'Weapon';
-      9:  S := 'Tree';
-      10: S := 'Weapon';
-      15: S := 'Non-Collidable';
-    end;
+    var S := rigid.EditValues['Havok Filter\Layer'];
 
     // static, tree and noncollidable layer
-    if (layer in  [1,9,15])
-    then begin
+    if layer in  [1, 9, 15] then begin
       Result := UpdateElement(rigid, 'Motion System', 'MO_SYS_FIXED') or Result;
       Result := UpdateElement(rigid, 'Motion Quality', 'MO_QUAL_FIXED') or Result;
       Result := UpdateElement(rigid, 'Deactivator Type', 'DEACTIVATOR_NEVER') or Result;
@@ -740,7 +741,7 @@ begin
     end
 
     // animstatic layer
-    else if (layer = 2) then begin
+    else if (nif.NifVersion >= nfTES5) and (layer = 2) and (rigid.EditValues['Motion System'] <> 'MO_SYS_KEYFRAMED') then begin
       Result := UpdateElement(rigid, 'Motion System', 'MO_SYS_BOX_STABILIZED', 'MO_SYS_BOX_INERTIA') or Result;
       Result := UpdateElement(rigid, 'Motion Quality', 'MO_QUAL_FIXED') or Result;
       Result := UpdateElement(rigid, 'Deactivator Type', 'DEACTIVATOR_NEVER') or Result;
@@ -764,8 +765,8 @@ begin
       end;
     end
 
-    // clutter, props, or weapon layer and defined mass
-    else if (layer in [4,5,10]) then begin
+    // clutter, props, or weapon layer
+    else if layer in [4, 5, 10] then begin
       if nif.NifVersion >= nfTES5 then begin
         Result := UpdateElement(rigid, 'Motion System', 'MO_SYS_SPHERE_STABILIZED', 'MO_SYS_SPHERE_INERTIA') or Result;
         Result := UpdateElement(rigid, 'Motion Quality', 'MO_QUAL_MOVING') or Result;
@@ -1440,7 +1441,7 @@ begin
     bChanged := FixRedundantBlocks(nif, Log) or bChanged;
     bChanged := FixAbsolutePaths(nif, Log) or bChanged;
     // hiding markers before anims because they check hidden flag
-    bChanged := FixEditorMarker(nif, Log) or bChanged;
+    //bChanged := FixEditorMarker(nif, Log) or bChanged;
     // shaders before BSXFlags because External_Emittance flag depends on shaders
     bChanged := FixShaderProperty(nif, Log) or bChanged;
     bChanged := FixBSXFlags(nif, Log) or bChanged;

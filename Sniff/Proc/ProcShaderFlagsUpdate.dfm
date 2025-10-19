@@ -22,18 +22,18 @@ object FrameShaderFlagsUpdate: TFrameShaderFlagsUpdate
   end
   object clbFlags1: TCheckListBox
     Left = 16
-    Top = 72
+    Top = 88
     Width = 234
-    Height = 248
+    Height = 232
     Anchors = [akLeft, akTop, akBottom]
-    ItemHeight = 13
+    ItemHeight = 17
     TabOrder = 1
   end
   object cmbGame: TComboBox
     Left = 16
-    Top = 45
+    Top = 59
     Width = 234
-    Height = 21
+    Height = 23
     Style = csDropDownList
     TabOrder = 2
     OnSelect = cmbGameSelect
@@ -44,16 +44,16 @@ object FrameShaderFlagsUpdate: TFrameShaderFlagsUpdate
   end
   object clbFlags2: TCheckListBox
     Left = 263
-    Top = 72
+    Top = 88
     Width = 234
-    Height = 248
+    Height = 232
     Anchors = [akLeft, akTop, akBottom]
-    ItemHeight = 13
+    ItemHeight = 17
     TabOrder = 3
   end
   object rbAdd: TRadioButton
     Left = 263
-    Top = 49
+    Top = 63
     Width = 58
     Height = 17
     Caption = 'Add'
@@ -62,7 +62,7 @@ object FrameShaderFlagsUpdate: TFrameShaderFlagsUpdate
   object rbSet: TRadioButton
     Tag = 1
     Left = 343
-    Top = 49
+    Top = 63
     Width = 58
     Height = 17
     Caption = 'Set'
@@ -71,10 +71,18 @@ object FrameShaderFlagsUpdate: TFrameShaderFlagsUpdate
   object rbRemove: TRadioButton
     Tag = 2
     Left = 423
-    Top = 49
+    Top = 63
     Width = 74
     Height = 17
     Caption = 'Remove'
     TabOrder = 6
+  end
+  object chkReport: TCheckBox
+    Left = 16
+    Top = 40
+    Width = 257
+    Height = 17
+    Caption = 'Report only, don'#39't save anything'
+    TabOrder = 7
   end
 end

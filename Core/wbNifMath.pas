@@ -115,11 +115,18 @@ function TriangulateStrip(const strip: TStrip): TTriangleArray;
 function TriangulateStrips(const strips: TStripArray): TTriangleArray;
 function StripifyTriangles(const tris: TTriangleArray): TStrip;
 
+procedure CalculateMinMax(
+  const verts: TVector3Array;
+  var vmin: TVector3;
+  var vmax: TVector3
+);
+
 procedure CalculateCenterRadius(
   const verts: TVector3Array;
   var center: TVector3;
   var r: Double;
-  aFromMinMax: Boolean = False
+  aFromMinMax: Boolean = False;
+  aMaxRadius: Boolean = True
 );
 
 procedure CalculateFaceNormals(
@@ -622,17 +629,31 @@ begin
   Result := Indices2Strip(meshopt_stripify(indices));
 end;
 
+procedure CalculateMinMax(
+  const verts: TVector3Array;
+  var vmin: TVector3;
+  var vmax: TVector3
+);
+begin
+  vmin.x := MaxSingle; vmin.y := MaxSingle; vmin.z := MaxSingle;
+  vmax.x := -MaxSingle; vmax.y := -MaxSingle; vmax.z := -MaxSingle;
+  for var v in verts do begin
+    if v.x < vmin.x then vmin.x := v.x;
+    if v.x > vmax.x then vmax.x := v.x;
+    if v.y < vmin.y then vmin.y := v.y;
+    if v.y > vmax.y then vmax.y := v.y;
+    if v.z < vmin.z then vmin.z := v.z;
+    if v.z > vmax.z then vmax.z := v.z;
+  end;
+end;
 
 procedure CalculateCenterRadius(
   const verts: TVector3Array;
   var center: TVector3;
   var r: Double;
-  aFromMinMax: Boolean = False
+  aFromMinMax: Boolean = False;
+  aMaxRadius: Boolean = True
 );
-var
-  i: integer;
-  d: Double;
-  xMin, xMax, yMin, yMax, zMin, zMax: Double;
 begin
   center.x := 0; center.y := 0; center.z := 0;
   r := 0;
@@ -641,39 +662,23 @@ begin
     Exit;
 
   if aFromMinMax then begin
-    xMin := MaxSingle; xMax := -MaxSingle;
-    yMin := MaxSingle; yMax := -MaxSingle;
-    zMin := MaxSingle; zMax := -MaxSingle;
-
-    for i := Low(verts) to High(verts) do with verts[i] do begin
-      if v[0] < xMin then
-        xMin := v[0]
-      else if v[0] > xMax then
-        xMax := v[0];
-      if v[1] < yMin then
-        yMin := v[1]
-      else if v[1] > yMax then
-        yMax := v[1];
-      if v[2] < zMin then
-        zMin := v[2]
-      else if v[2] > zMax then
-        zMax := v[2];
-    end;
-    center.x := (xMin + xMax) / 2;
-    center.y := (yMin + yMax) / 2;
-    center.z := (zMin + zMax) / 2;
+    var vmin, vmax: TVector3;
+    CalculateMinMax(verts, vmin, vmax);
+    center.x := (vmin.x + vmax.x) / 2;
+    center.y := (vmin.y + vmax.y) / 2;
+    center.z := (vmin.z + vmax.z) / 2;
   end
 
   else begin
-    for i := Low(verts) to High(verts) do
-      center := center + verts[i];
+    for var v in verts do center := center + v;
     center := center / Length(verts);
   end;
 
-  for i := Low(verts) to High(verts) do begin
-    d := ( center - verts[i] ).Length;
-    if d > r then
-      r := d;
+  if not aMaxRadius then r := MaxSingle;
+  for var v in verts do begin
+    var rv := (center - v).Length;
+    if (aMaxRadius and (rv > r)) or (not aMaxRadius and (rv < r)) then
+      r := rv;
   end;
 end;
 
