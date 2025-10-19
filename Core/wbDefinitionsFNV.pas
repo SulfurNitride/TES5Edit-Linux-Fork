@@ -6689,16 +6689,17 @@ begin
     wbEDIDReq,
     wbICONReq,
     wbDESCReq,
-    wbRArrayS('Locations', wbStructSK(LNAM, [0, 1], 'Location', [
-      wbFormIDCk('Direct', [CELL, WRLD, NULL]),
-      wbStructSK([0, 1], 'Indirect', [
-        wbFormIDCk('World', [NULL, WRLD]),
-        wbStructSK([0,1], 'Grid', [
-          wbInteger('Y', itS16),
-          wbInteger('X', itS16)
+    wbRArrayS('Locations',
+      wbStructSK(LNAM, [0, 1], 'Location', [
+        wbFormIDCkNoReach('Direct', [CELL, WRLD, NULL]),
+        wbStructSK([0, 1], 'Indirect', [
+          wbFormIDCkNoReach('World', [WRLD, NULL]),
+          wbStructSK([0,1], 'Grid', [
+            wbInteger('Y', itS16),
+            wbInteger('X', itS16)
+          ])
         ])
-      ])
-    ])),
+      ])),
     wbFormIDCk(WMI1, 'Load Screen Type', [LSCT])
   ]);
 

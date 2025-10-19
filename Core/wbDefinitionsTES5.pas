@@ -8295,7 +8295,6 @@ begin
       10, 'Displays In Main Menu'
     ])), [
     wbEDID,
-    wbICON,
     wbDESCReq,
     wbConditions,
     wbFormIDCk(NNAM, 'Loading Screen NIF', [STAT, NULL], False, cpNormal, True),
