@@ -864,11 +864,16 @@ begin
     if not Supports(aElement, IwbContainerElementRef, lArray) then
       Exit;
 
-    var lEntry : IwbContainerElementRef;
-    for var i := Pred(lArray.ElementCount) downto 0 do
-      if Supports(lArray.Elements[i], IwbContainerElementRef, lEntry) then
-        if lEntry.ElementNativeValues['Use'] = 0 then
-          lArray.RemoveElement(i, True);
+    lArray.BeginUpdate;
+    try
+      var lEntry : IwbContainerElementRef;
+      for var i := Pred(lArray.ElementCount) downto 0 do
+        if Supports(lArray.Elements[i], IwbContainerElementRef, lEntry) then
+          if lEntry.ElementNativeValues['Use'] = 0 then
+            lArray.RemoveElement(i, True);
+    finally
+      lArray.EndUpdate;
+    end;
   finally
     wbEndInternalEdit;
   end;
