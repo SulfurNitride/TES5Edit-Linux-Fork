@@ -864,7 +864,7 @@ var
 
 function wbCRC32App: TwbCRC32;
 begin
-  if (DebugHook <> 0) or wbDevMode then
+  if IsDebuggerPresent or (DebugHook <> 0) or wbDevMode then
     Exit(wbDevCRC32App);
 
   Result := _CRC32App;
