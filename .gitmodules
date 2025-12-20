@@ -46,3 +46,15 @@
 	path = External/SynEdit
 	url = https://github.com/ElminsterAU/SynEdit.git
 	branch = xEdit-4.1.x
+[submodule "External/XXHASH4Delphi"]
+	path = External/XXHASH4Delphi
+	url = https://github.com/ElminsterAU/XXHASH4Delphi
+	branch = xedit-4.1.x
+[submodule "External/libdeflate-pas"]
+	path = External/libdeflate-pas
+	url = https://github.com/ElminsterAU/libdeflate-pas.git
+	branch = xedit-4.1.x
+[submodule "External/lz4-delphi"]
+	path = External/lz4-delphi
+	url = https://github.com/ElminsterAU/lz4-delphi.git
+	branch = xedit-4.1.x
