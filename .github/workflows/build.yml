@@ -1,8 +1,7 @@
 # =============================================================================
 # xEdit Rust Port - CI Build Workflow
 # =============================================================================
-# Builds Linux AppImage and Windows zip from an Ubuntu runner using
-# cross-compilation for the Windows target.
+# Builds Linux AppImage from an Ubuntu runner.
 
 name: Build
 
@@ -53,6 +52,14 @@ jobs:
         run: cargo build --release -p xedit_ffi
 
       # -- nifly (NIF file support) --
+      - name: Cache nifly build
+        uses: actions/cache@v4
+        with:
+          path: |
+            rust-core/xedit_nif/nifly/build
+            rust-core/xedit_nif/nifly_wrapper/build
+          key: nifly-${{ hashFiles('rust-core/xedit_nif/nifly/src/**', 'rust-core/xedit_nif/nifly/include/**', 'rust-core/xedit_nif/nifly_wrapper/*.cpp', 'rust-core/xedit_nif/nifly_wrapper/*.h') }}
+
       - name: Build nifly and nifly_wrapper
         run: |
           # Build nifly static library
@@ -77,7 +84,15 @@ jobs:
             lazarus fpc \
             qt6-base-dev libgl1-mesa-dev
 
+      - name: Cache Qt6Pas build
+        id: cache-qt6pas
+        uses: actions/cache@v4
+        with:
+          path: /tmp/qt6pas-installed
+          key: qt6pas-${{ hashFiles('patches/qt6pas-wayland-menu-transient-parent.patch') }}-${{ runner.os }}
+
       - name: Build patched libQt6Pas.so
+        if: steps.cache-qt6pas.outputs.cache-hit != 'true'
         run: |
           # Find the qt6pas cbindings source from the Lazarus installation
           QT6PAS_SRC=$(find /usr -type d -name cbindings -path '*/qt6/*' 2>/dev/null | head -1)
@@ -97,14 +112,25 @@ jobs:
           qmake6 Qt6Pas.pro
           make -j$(nproc)
 
-          # Install so Lazarus can link against it
-          sudo make install
-          sudo ldconfig
+          # Save built artifacts for caching
+          mkdir -p /tmp/qt6pas-installed
+          make INSTALL_ROOT=/tmp/qt6pas-installed install
 
-          # Apply Pascal patch to LCL qtwidgets.pas (remove _q_returnPressed disconnect)
-          QT6_IFACE_DIR=$(dirname "$QT6PAS_SRC")
-          cd "$QT6_IFACE_DIR"
-          sudo patch -p1 < "$GITHUB_WORKSPACE/patches/qt6pas-remove-returnpressed-disconnect.patch" || true
+      - name: Install patched libQt6Pas.so
+        run: |
+          # Install from cache or fresh build
+          if [ -d /tmp/qt6pas-installed ]; then
+            sudo cp -r /tmp/qt6pas-installed/* /
+            sudo ldconfig
+          fi
+
+          # Apply Pascal patch to LCL qtwidgets.pas
+          QT6PAS_SRC=$(find /usr -type d -name cbindings -path '*/qt6/*' 2>/dev/null | head -1)
+          if [ -n "$QT6PAS_SRC" ]; then
+            QT6_IFACE_DIR=$(dirname "$QT6PAS_SRC")
+            cd "$QT6_IFACE_DIR"
+            sudo patch -p1 < "$GITHUB_WORKSPACE/patches/qt6pas-remove-returnpressed-disconnect.patch" || true
+          fi
 
       - name: Build Lazarus GUI (Qt6)
         run: |
@@ -131,12 +157,22 @@ jobs:
           chmod +x AppDir/usr/bin/xEditLaz
 
           # Bundle patched libQt6Pas and its Qt6 dependencies
-          # Find and copy the patched libQt6Pas
           find /usr/lib -name 'libQt6Pas.so*' -exec cp -P {} AppDir/usr/lib/ \;
-          # Copy required Qt6 libraries that may not be on all systems
-          for lib in libQt6Core libQt6Gui libQt6Widgets libQt6DBus libQt6PrintSupport; do
+          for lib in libQt6Core libQt6Gui libQt6Widgets libQt6DBus libQt6PrintSupport \
+                     libQt6OpenGL libQt6OpenGLWidgets; do
             find /usr/lib -name "${lib}.so*" -exec cp -P {} AppDir/usr/lib/ \; 2>/dev/null || true
           done
+
+          # Bundle ICU libraries (required by Qt6)
+          for lib in libicui18n libicuuc libicudata; do
+            find /usr/lib -name "${lib}.so*" -exec cp -P {} AppDir/usr/lib/ \; 2>/dev/null || true
+          done
+
+          # Bundle other Qt6 runtime dependencies that may differ across distros
+          for lib in libxcb libxkbcommon libdouble-conversion libmd4c libpcre2 libb2; do
+            find /usr/lib -name "${lib}*.so*" -exec cp -P {} AppDir/usr/lib/ \; 2>/dev/null || true
+          done
+
           # Copy Qt6 platform plugins
           QT6_PLUGIN_DIR=$(qmake6 -query QT_INSTALL_PLUGINS 2>/dev/null || echo "/usr/lib/x86_64-linux-gnu/qt6/plugins")
           if [ -d "$QT6_PLUGIN_DIR/platforms" ]; then
@@ -171,104 +207,12 @@ jobs:
           path: xEditLaz-x86_64.AppImage
 
   # ---------------------------------------------------------------------------
-  # Windows cross-build: compile Rust + Lazarus for win64 from Linux
-  # ---------------------------------------------------------------------------
-  build-windows:
-    name: Windows x86_64 (cross-compile)
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # -- Rust toolchain with Windows target --
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-pc-windows-gnu
-
-      - name: Cache Cargo registry and build artifacts
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            rust-core/target
-          key: windows-cargo-${{ hashFiles('rust-core/Cargo.lock') }}
-          restore-keys: windows-cargo-
-
-      # -- MinGW-w64 cross-compiler --
-      - name: Install MinGW-w64
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            gcc-mingw-w64-x86-64 g++-mingw-w64-x86-64 mingw-w64-x86-64-dev
-
-      # -- Rust cross-build --
-      - name: Build xedit_ffi for Windows (release)
-        working-directory: rust-core
-        run: |
-          cargo build --release -p xedit_ffi --target x86_64-pc-windows-gnu
-
-      # -- Lazarus / FPC with Windows cross-compiler --
-      - name: Install Lazarus, FPC, and FPC Windows cross-compiler
-        run: |
-          sudo apt-get install -y --no-install-recommends \
-            lazarus fpc fpc-source fp-units-win-rtl
-          # Install the cross-compiler package if available
-          sudo apt-get install -y --no-install-recommends \
-            fpc-crosswin64 || true
-          # If fpc-crosswin64 is not packaged, build the cross-compiler
-          # from fpc-source as a fallback
-          if ! command -v ppcrossx64 &>/dev/null && \
-             [ ! -f /usr/lib/fpc/*/ppcrossx64 ]; then
-            echo "Building FPC cross-compiler for Win64 from source..."
-            FPC_VER=$(fpc -iV)
-            FPC_SRC="/usr/share/fpcsrc/${FPC_VER}"
-            if [ -d "$FPC_SRC" ]; then
-              cd "$FPC_SRC"
-              sudo make crossinstall OS_TARGET=win64 CPU_TARGET=x86_64 \
-                INSTALL_PREFIX=/usr
-            fi
-          fi
-
-      - name: Build Lazarus GUI for Windows
-        run: |
-          lazbuild --build-all \
-            --widgetset=win32 \
-            --os=win64 \
-            --cpu=x86_64 \
-            lazarus-gui/xEditLaz.lpi
-
-      # -- Package zip --
-      - name: Package Windows zip
-        run: |
-          mkdir -p win64-pkg
-
-          # Copy and rename the Rust DLL to match what Pascal expects
-          cp rust-core/target/x86_64-pc-windows-gnu/release/xedit_ffi.dll \
-             win64-pkg/xedit_core.dll
-
-          # Copy the Windows executable
-          # lazbuild for win64 produces xEditLaz.exe in the project directory
-          cp lazarus-gui/xEditLaz.exe win64-pkg/
-
-          cd win64-pkg
-          zip -9 ../xEditLaz-win64.zip xEditLaz.exe xedit_core.dll
-
-      - name: Upload Windows zip
-        uses: actions/upload-artifact@v4
-        with:
-          name: xEditLaz-win64
-          path: xEditLaz-win64.zip
-
-  # ---------------------------------------------------------------------------
   # Release: create a GitHub release on tag push
   # ---------------------------------------------------------------------------
   release:
     name: Create Release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build-linux, build-windows]
+    needs: [build-linux]
     runs-on: ubuntu-latest
 
     steps:
@@ -276,11 +220,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: xEditLaz-linux-x86_64
-
-      - name: Download Windows artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: xEditLaz-win64
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -290,4 +229,3 @@ jobs:
           generate_release_notes: true
           files: |
             xEditLaz-x86_64.AppImage
-            xEditLaz-win64.zip
