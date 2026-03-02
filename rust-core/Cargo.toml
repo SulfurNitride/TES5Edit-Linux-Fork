@@ -1,0 +1,75 @@
+[package]
+name = "xedit-rust"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+xedit_core = { path = "xedit_core" }
+xedit_dom = { path = "xedit_dom" }
+xedit_io = { path = "xedit_io" }
+xedit_games = { path = "xedit_games" }
+
+[dev-dependencies]
+byteorder = { workspace = true }
+tempfile = "3"
+
+[workspace]
+resolver = "2"
+members = [
+    ".",
+    "xedit_core",
+    "xedit_dom",
+    "xedit_io",
+    "xedit_games",
+    "xedit_tools",
+    "xedit_ffi",
+    "xedit_nif",
+    "xedit_transpiler",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+rust-version = "1.75"
+
+[workspace.dependencies]
+# Error handling
+anyhow = "1.0"
+thiserror = "2.0"
+
+# Binary parsing
+byteorder = "1.5"
+binrw = "0.15"
+
+# Parallelism
+rayon = "1.11"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# File operations
+memmap2 = "0.9"
+walkdir = "2.5"
+flate2 = "1.1"
+lz4_flex = "0.11"
+
+# Archive formats
+ba2 = "3.0.1"
+
+# Dynamic loading (for nifly)
+libloading = "0.8"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Hashing
+xxhash-rust = { version = "0.8", features = ["xxh64"] }
+
+[profile.release]
+lto = "thin"
+strip = true
+codegen-units = 1

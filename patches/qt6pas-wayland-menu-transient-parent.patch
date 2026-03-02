@@ -1,0 +1,89 @@
+--- a/src/qmenu_c.cpp
++++ b/src/qmenu_c.cpp
+@@ -168,14 +168,44 @@
+ 	return (QActionH) ((QMenu *)handle)->activeAction();
+ }
+
++// Helper: ensure a widget's window has its transient parent set.
++// On Wayland, popups require a transient parent to be properly positioned.
++static void ensureTransientParent(QWidget *popup)
++{
++	if (!popup)
++		return;
++	QWindow *popupWindow = popup->windowHandle();
++	if (!popupWindow)
++		return;
++	if (popupWindow->transientParent())
++		return; // already set
++
++	// Walk up the widget parent chain to find a suitable parent window
++	QWidget *parent = popup->parentWidget();
++	if (!parent)
++		parent = QApplication::activeWindow();
++	if (parent) {
++		QWindow *parentWindow = parent->windowHandle();
++		if (parentWindow)
++			popupWindow->setTransientParent(parentWindow);
++	}
++}
++
+ void QMenu_popup(QMenuH handle, const QPointH pos, QActionH at)
+ {
+-	((QMenu *)handle)->popup(*(const QPoint*)pos, (QAction*)at);
++	QMenu *menu = (QMenu *)handle;
++	// Ensure the menu window has a transient parent for Wayland
++	menu->winId(); // force window handle creation
++	ensureTransientParent(menu);
++	menu->popup(*(const QPoint*)pos, (QAction*)at);
+ }
+
+ QActionH QMenu_exec(QMenuH handle)
+ {
+-	return (QActionH) ((QMenu *)handle)->exec();
++	QMenu *menu = (QMenu *)handle;
++	menu->winId();
++	ensureTransientParent(menu);
++	return (QActionH) menu->exec();
+ }
+
+ QActionH QMenu_exec2(QMenuH handle, const QPointH pos, QActionH at)
+--- a/src/qcombobox_c.cpp
++++ b/src/qcombobox_c.cpp
+@@ -312,9 +312,36 @@
+ 	*(QSize *)retval = ((QComboBox *)handle)->minimumSizeHint();
+ }
+
++// Helper: ensure a widget's popup window has its transient parent set for Wayland.
++static void ensureComboTransientParent(QComboBox *combo)
++{
++	if (!combo)
++		return;
++	// The popup view is the dropdown list
++	QAbstractItemView *view = combo->view();
++	if (!view)
++		return;
++	QWidget *popup = view->window();
++	if (!popup)
++		return;
++	QWindow *popupWindow = popup->windowHandle();
++	if (!popupWindow)
++		return;
++	if (popupWindow->transientParent())
++		return;
++	QWindow *parentWindow = combo->windowHandle();
++	if (!parentWindow)
++		parentWindow = combo->window() ? combo->window()->windowHandle() : nullptr;
++	if (parentWindow)
++		popupWindow->setTransientParent(parentWindow);
++}
++
+ void QComboBox_showPopup(QComboBoxH handle)
+ {
+-	((QComboBox *)handle)->showPopup();
++	QComboBox *combo = (QComboBox *)handle;
++	combo->showPopup();
++	// Set transient parent after popup is shown (window handle now exists)
++	ensureComboTransientParent(combo);
+ }
+
+ void QComboBox_hidePopup(QComboBoxH handle)

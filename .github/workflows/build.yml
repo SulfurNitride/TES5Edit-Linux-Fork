@@ -1,0 +1,290 @@
+# =============================================================================
+# xEdit Rust Port - CI Build Workflow
+# =============================================================================
+# Builds Linux AppImage and Windows zip from an Ubuntu runner using
+# cross-compilation for the Windows target.
+
+name: Build
+
+on:
+  push:
+    branches: [main, master]
+    tags: ["v*"]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: write
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Linux build: test, compile Rust + Lazarus, package AppImage
+  # ---------------------------------------------------------------------------
+  build-linux:
+    name: Linux x86_64 (AppImage)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -- Rust toolchain --
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo registry and build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rust-core/target
+          key: linux-cargo-${{ hashFiles('rust-core/Cargo.lock') }}
+          restore-keys: linux-cargo-
+
+      # -- Rust tests --
+      - name: Run workspace tests
+        working-directory: rust-core
+        run: cargo test --workspace
+
+      # -- Rust release build --
+      - name: Build xedit_ffi (release)
+        working-directory: rust-core
+        run: cargo build --release -p xedit_ffi
+
+      # -- nifly (NIF file support) --
+      - name: Build nifly and nifly_wrapper
+        run: |
+          # Build nifly static library
+          cd rust-core/xedit_nif/nifly
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF \
+                   -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+          make -j$(nproc)
+
+          # Build the wrapper shared library
+          cd ../../nifly_wrapper
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release
+          make -j$(nproc)
+          ls -la libnifly_wrapper.so
+
+      # -- Lazarus / FPC + Qt6 --
+      - name: Install Lazarus, FPC, and Qt6 development packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            lazarus fpc \
+            qt6-base-dev libgl1-mesa-dev
+
+      - name: Build patched libQt6Pas.so
+        run: |
+          # Copy the qt6pas cbindings source from the Lazarus installation
+          QT6PAS_SRC="/usr/lib/lazarus/lcl/interfaces/qt6/cbindings"
+          if [ ! -d "$QT6PAS_SRC" ]; then
+            echo "ERROR: qt6pas cbindings not found at $QT6PAS_SRC"
+            exit 1
+          fi
+          cp -r "$QT6PAS_SRC" /tmp/qt6pas-build
+          cd /tmp/qt6pas-build
+
+          # Apply C++ patches (transient parent for Wayland menus/combos)
+          patch -p1 < "$GITHUB_WORKSPACE/patches/qt6pas-wayland-menu-transient-parent.patch" || true
+
+          # Build with qmake6
+          qmake6 Qt6Pas.pro
+          make -j$(nproc)
+
+          # Install so Lazarus can link against it
+          sudo make install
+          sudo ldconfig
+
+          # Apply Pascal patch to LCL qtwidgets.pas (remove _q_returnPressed disconnect)
+          cd /usr/lib/lazarus/lcl/interfaces/qt6
+          sudo patch -p1 < "$GITHUB_WORKSPACE/patches/qt6pas-remove-returnpressed-disconnect.patch" || true
+
+      - name: Build Lazarus GUI (Qt6)
+        run: |
+          lazbuild --build-all --widgetset=qt6 lazarus-gui/xEditLaz.lpi
+
+      # -- Package AppImage --
+      - name: Download appimagetool
+        run: |
+          wget -q "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" \
+            -O /tmp/appimagetool
+          chmod +x /tmp/appimagetool
+
+      - name: Assemble AppDir and build AppImage
+        run: |
+          # Create the AppDir structure
+          mkdir -p AppDir/usr/bin AppDir/usr/lib \
+                   AppDir/usr/share/applications \
+                   AppDir/usr/share/icons/hicolor/256x256/apps
+
+          # Copy binaries
+          cp rust-core/target/release/libxedit_ffi.so AppDir/usr/lib/
+          cp rust-core/xedit_nif/nifly_wrapper/build/libnifly_wrapper.so AppDir/usr/lib/
+          cp lazarus-gui/xEditLaz AppDir/usr/bin/
+          chmod +x AppDir/usr/bin/xEditLaz
+
+          # Bundle patched libQt6Pas and its Qt6 dependencies
+          # Find and copy the patched libQt6Pas
+          find /usr/lib -name 'libQt6Pas.so*' -exec cp -P {} AppDir/usr/lib/ \;
+          # Copy required Qt6 libraries that may not be on all systems
+          for lib in libQt6Core libQt6Gui libQt6Widgets libQt6DBus libQt6PrintSupport; do
+            find /usr/lib -name "${lib}.so*" -exec cp -P {} AppDir/usr/lib/ \; 2>/dev/null || true
+          done
+          # Copy Qt6 platform plugins
+          QT6_PLUGIN_DIR=$(qmake6 -query QT_INSTALL_PLUGINS 2>/dev/null || echo "/usr/lib/x86_64-linux-gnu/qt6/plugins")
+          if [ -d "$QT6_PLUGIN_DIR/platforms" ]; then
+            mkdir -p AppDir/usr/lib/qt6/plugins/platforms
+            cp "$QT6_PLUGIN_DIR/platforms/libqxcb.so" AppDir/usr/lib/qt6/plugins/platforms/ 2>/dev/null || true
+            cp "$QT6_PLUGIN_DIR/platforms/libqwayland"*.so AppDir/usr/lib/qt6/plugins/platforms/ 2>/dev/null || true
+          fi
+          if [ -d "$QT6_PLUGIN_DIR/wayland-shell-integration" ]; then
+            mkdir -p AppDir/usr/lib/qt6/plugins/wayland-shell-integration
+            cp "$QT6_PLUGIN_DIR/wayland-shell-integration/"*.so AppDir/usr/lib/qt6/plugins/wayland-shell-integration/ 2>/dev/null || true
+          fi
+
+          # Copy desktop integration files
+          cp AppDir/xedit.desktop AppDir/usr/share/applications/xedit.desktop
+
+          # Placeholder icon
+          echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" \
+            | base64 -d > AppDir/usr/share/icons/hicolor/256x256/apps/xedit.png
+          ln -sf usr/share/icons/hicolor/256x256/apps/xedit.png AppDir/xedit.png
+          ln -sf usr/share/icons/hicolor/256x256/apps/xedit.png AppDir/.DirIcon
+
+          chmod +x AppDir/AppRun
+
+          # Build AppImage
+          export ARCH=x86_64
+          /tmp/appimagetool --appimage-extract-and-run AppDir/ xEditLaz-x86_64.AppImage
+
+      - name: Upload Linux AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: xEditLaz-linux-x86_64
+          path: xEditLaz-x86_64.AppImage
+
+  # ---------------------------------------------------------------------------
+  # Windows cross-build: compile Rust + Lazarus for win64 from Linux
+  # ---------------------------------------------------------------------------
+  build-windows:
+    name: Windows x86_64 (cross-compile)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -- Rust toolchain with Windows target --
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-gnu
+
+      - name: Cache Cargo registry and build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rust-core/target
+          key: windows-cargo-${{ hashFiles('rust-core/Cargo.lock') }}
+          restore-keys: windows-cargo-
+
+      # -- MinGW-w64 cross-compiler --
+      - name: Install MinGW-w64
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            gcc-mingw-w64-x86-64 mingw-w64-x86-64-dev
+
+      # -- Rust cross-build --
+      - name: Build xedit_ffi for Windows (release)
+        working-directory: rust-core
+        run: |
+          cargo build --release -p xedit_ffi --target x86_64-pc-windows-gnu
+
+      # -- Lazarus / FPC with Windows cross-compiler --
+      - name: Install Lazarus, FPC, and FPC Windows cross-compiler
+        run: |
+          sudo apt-get install -y --no-install-recommends \
+            lazarus fpc fpc-source fp-units-win-rtl
+          # Install the cross-compiler package if available
+          sudo apt-get install -y --no-install-recommends \
+            fpc-crosswin64 || true
+          # If fpc-crosswin64 is not packaged, build the cross-compiler
+          # from fpc-source as a fallback
+          if ! command -v ppcrossx64 &>/dev/null && \
+             [ ! -f /usr/lib/fpc/*/ppcrossx64 ]; then
+            echo "Building FPC cross-compiler for Win64 from source..."
+            FPC_VER=$(fpc -iV)
+            FPC_SRC="/usr/share/fpcsrc/${FPC_VER}"
+            if [ -d "$FPC_SRC" ]; then
+              cd "$FPC_SRC"
+              sudo make crossinstall OS_TARGET=win64 CPU_TARGET=x86_64 \
+                INSTALL_PREFIX=/usr
+            fi
+          fi
+
+      - name: Build Lazarus GUI for Windows
+        run: |
+          lazbuild --build-all \
+            --widgetset=win32 \
+            --os=win64 \
+            --cpu=x86_64 \
+            lazarus-gui/xEditLaz.lpi
+
+      # -- Package zip --
+      - name: Package Windows zip
+        run: |
+          mkdir -p win64-pkg
+
+          # Copy and rename the Rust DLL to match what Pascal expects
+          cp rust-core/target/x86_64-pc-windows-gnu/release/xedit_ffi.dll \
+             win64-pkg/xedit_core.dll
+
+          # Copy the Windows executable
+          # lazbuild for win64 produces xEditLaz.exe in the project directory
+          cp lazarus-gui/xEditLaz.exe win64-pkg/
+
+          cd win64-pkg
+          zip -9 ../xEditLaz-win64.zip xEditLaz.exe xedit_core.dll
+
+      - name: Upload Windows zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: xEditLaz-win64
+          path: xEditLaz-win64.zip
+
+  # ---------------------------------------------------------------------------
+  # Release: create a GitHub release on tag push
+  # ---------------------------------------------------------------------------
+  release:
+    name: Create Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: xEditLaz-linux-x86_64
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: xEditLaz-win64
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            xEditLaz-x86_64.AppImage
+            xEditLaz-win64.zip

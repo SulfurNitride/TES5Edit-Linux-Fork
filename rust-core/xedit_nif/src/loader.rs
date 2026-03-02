@@ -1,0 +1,124 @@
+//! Runtime loading of the nifly C wrapper shared library.
+
+use std::ffi::CString;
+use std::path::Path;
+
+use crate::api::{NifFile, NiflyFunctions};
+use crate::NifError;
+
+/// Handle to the loaded nifly shared library.
+///
+/// This is loaded once at startup and kept alive for the entire session.
+/// If nifly cannot be loaded, the application must not start.
+pub struct NiflyLibrary {
+    _lib: libloading::Library,
+    funcs: Box<NiflyFunctions>,
+}
+
+impl NiflyLibrary {
+    /// Attempt to load the nifly C wrapper from standard search paths.
+    ///
+    /// Search order:
+    /// 1. Same directory as the executable
+    /// 2. System library paths (LD_LIBRARY_PATH on Linux, PATH on Windows)
+    /// 3. Explicit path if provided
+    pub fn load() -> Result<Self, NifError> {
+        let lib_name = if cfg!(target_os = "windows") {
+            "nifly_wrapper.dll"
+        } else {
+            "libnifly_wrapper.so"
+        };
+
+        // Try next to the executable first
+        if let Ok(exe) = std::env::current_exe() {
+            if let Some(dir) = exe.parent() {
+                let candidate = dir.join(lib_name);
+                if candidate.exists() {
+                    return Self::load_from(candidate.to_string_lossy().as_ref());
+                }
+            }
+        }
+
+        Self::load_from(lib_name)
+    }
+
+    /// Load from a specific path or library name.
+    pub fn load_from(path: impl AsRef<str>) -> Result<Self, NifError> {
+        let path_str = path.as_ref();
+
+        let lib = unsafe {
+            libloading::Library::new(path_str).map_err(|e| {
+                NifError::LoadFailed(format!("Failed to load '{}': {}", path_str, e))
+            })?
+        };
+
+        // Resolve all function pointers
+        let funcs = unsafe {
+            let load = *lib
+                .get::<crate::api::NiflyLoadFn>(b"nifly_load\0")
+                .map_err(|e| NifError::MissingSymbol(format!("nifly_load: {}", e)))?;
+            let destroy = *lib
+                .get::<crate::api::NiflyDestroyFn>(b"nifly_destroy\0")
+                .map_err(|e| NifError::MissingSymbol(format!("nifly_destroy: {}", e)))?;
+            let get_block_count = *lib
+                .get::<crate::api::NiflyGetBlockCountFn>(b"nifly_get_block_count\0")
+                .map_err(|e| NifError::MissingSymbol(format!("nifly_get_block_count: {}", e)))?;
+            let get_block_type = *lib
+                .get::<crate::api::NiflyGetBlockTypeFn>(b"nifly_get_block_type\0")
+                .map_err(|e| NifError::MissingSymbol(format!("nifly_get_block_type: {}", e)))?;
+            let get_shape_count = *lib
+                .get::<crate::api::NiflyGetShapeCountFn>(b"nifly_get_shape_count\0")
+                .map_err(|e| NifError::MissingSymbol(format!("nifly_get_shape_count: {}", e)))?;
+            let get_texture_slot = *lib
+                .get::<crate::api::NiflyGetTextureSlotFn>(b"nifly_get_texture_slot\0")
+                .map_err(|e| NifError::MissingSymbol(format!("nifly_get_texture_slot: {}", e)))?;
+
+            Box::new(NiflyFunctions {
+                load,
+                destroy,
+                get_block_count,
+                get_block_type,
+                get_shape_count,
+                get_texture_slot,
+            })
+        };
+
+        tracing::info!("nifly library loaded successfully from: {}", path_str);
+
+        Ok(Self { _lib: lib, funcs })
+    }
+
+    /// Load a NIF file using the nifly library.
+    pub fn load_nif(&self, path: &Path) -> Result<NifFile, NifError> {
+        let path_cstr = CString::new(
+            path.to_str()
+                .ok_or_else(|| NifError::InvalidFile("Path contains invalid UTF-8".into()))?,
+        )
+        .map_err(|_| NifError::InvalidFile("Path contains null bytes".into()))?;
+
+        let handle = unsafe { (self.funcs.load)(path_cstr.as_ptr()) };
+        if handle.is_null() {
+            return Err(NifError::InvalidFile(format!(
+                "nifly failed to load: {}",
+                path.display()
+            )));
+        }
+
+        Ok(unsafe { NifFile::from_raw(handle, &*self.funcs as *const NiflyFunctions) })
+    }
+
+    /// Check if nifly is available at the expected path.
+    pub fn is_available() -> bool {
+        let lib_name = if cfg!(target_os = "windows") {
+            "nifly_wrapper.dll"
+        } else {
+            "libnifly_wrapper.so"
+        };
+
+        Path::new(lib_name).exists()
+            || std::env::current_exe()
+                .ok()
+                .and_then(|p| p.parent().map(|d| d.join(lib_name).exists()))
+                .unwrap_or(false)
+    }
+}

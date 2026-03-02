@@ -1,0 +1,15 @@
+[package]
+name = "xedit_io"
+description = "Plugin file I/O and surgical patch writer for xEdit"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+xedit_dom = { path = "../xedit_dom" }
+anyhow.workspace = true
+thiserror.workspace = true
+byteorder.workspace = true
+memmap2.workspace = true
+flate2.workspace = true
+tracing.workspace = true

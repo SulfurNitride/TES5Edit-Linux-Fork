@@ -1,0 +1,607 @@
+object frmMain: TfrmMain
+  Left = 400
+  Height = 760
+  Top = 160
+  Width = 1200
+  Caption = 'xEdit (Lazarus)'
+  ClientHeight = 760
+  ClientWidth = 1200
+  KeyPreview = True
+  Menu = MainMenu1
+  OnCloseQuery = FormCloseQuery
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  Position = poScreenCenter
+  LCLVersion = '4.99.0.0'
+  object pnlNav: TPanel
+    Left = 0
+    Height = 689
+    Top = 26
+    Width = 350
+    Align = alLeft
+    BevelOuter = bvNone
+    ClientHeight = 689
+    ClientWidth = 350
+    TabOrder = 0
+    object pnlSearch: TPanel
+      Left = 0
+      Height = 25
+      Top = 0
+      Width = 350
+      Align = alTop
+      BevelOuter = bvNone
+      ClientHeight = 25
+      ClientWidth = 350
+      TabOrder = 0
+      object lblFormID: TLabel
+        Left = 4
+        Height = 15
+        Top = 5
+        Width = 42
+        Caption = '&FormID'
+        FocusControl = edFormIDSearch
+      end
+      object edFormIDSearch: TEdit
+        Left = 50
+        Height = 23
+        Top = 1
+        Width = 80
+        OnKeyPress = edFormIDSearchKeyPress
+        TabOrder = 0
+      end
+      object lblEditorID: TLabel
+        Left = 138
+        Height = 15
+        Top = 5
+        Width = 50
+        Caption = '&Editor ID'
+        FocusControl = edEditorIDSearch
+      end
+      object edEditorIDSearch: TEdit
+        Left = 192
+        Height = 23
+        Top = 1
+        Width = 154
+        Anchors = [akTop, akLeft, akRight]
+        OnKeyPress = edEditorIDSearchKeyPress
+        TabOrder = 1
+      end
+    end
+    object lblFilterHint: TLabel
+      Left = 3
+      Height = 15
+      Top = 25
+      Width = 344
+      Align = alTop
+      BorderSpacing.Left = 3
+      BorderSpacing.Right = 3
+      Caption = 'A filter has been applied. The treeview contents is fossilized and will not adjust structure to changes.'
+      Visible = False
+      WordWrap = True
+    end
+    object vstNav: TTreeView
+      Left = 0
+      Height = 620
+      Top = 40
+      Width = 350
+      Align = alClient
+      OnDeletion = vstNavDeletion
+      OnExpanding = vstNavExpanding
+      OnChange = vstNavChange
+      PopupMenu = pmNav
+      ReadOnly = True
+      TabOrder = 1
+    end
+    object pnlNavBottom: TPanel
+      Left = 0
+      Height = 29
+      Top = 660
+      Width = 350
+      Align = alBottom
+      BevelOuter = bvNone
+      ClientHeight = 29
+      ClientWidth = 350
+      TabOrder = 2
+      object lblFileNameFilter: TLabel
+        Left = 4
+        Height = 15
+        Top = 7
+        Width = 89
+        Caption = 'F&ilter by filename:'
+        FocusControl = edFileNameFilter
+      end
+      object edFileNameFilter: TEdit
+        Left = 98
+        Height = 23
+        Top = 3
+        Width = 248
+        Anchors = [akTop, akLeft, akRight]
+        TabOrder = 0
+      end
+    end
+  end
+  object splElements: TSplitter
+    Left = 350
+    Height = 689
+    Top = 26
+    Width = 5
+    AutoSnap = False
+    MinSize = 250
+    ResizeStyle = rsUpdate
+  end
+  object pnlRight: TPanel
+    Left = 355
+    Height = 689
+    Top = 26
+    Width = 845
+    Align = alClient
+    BevelOuter = bvNone
+    ClientHeight = 689
+    ClientWidth = 845
+    TabOrder = 1
+    object pgMain: TPageControl
+      Left = 0
+      Height = 689
+      Top = 0
+      Width = 845
+      ActivePage = tbsView
+      Align = alClient
+      TabIndex = 0
+      TabOrder = 0
+      TabPosition = tpBottom
+      object tbsView: TTabSheet
+        Caption = 'View'
+        ClientHeight = 661
+        ClientWidth = 837
+        object pnlViewTop: TPanel
+          Left = 0
+          Height = 25
+          Top = 0
+          Width = 837
+          Align = alTop
+          BevelOuter = bvNone
+          ClientHeight = 25
+          ClientWidth = 837
+          TabOrder = 0
+          object lblViewFilterName: TLabel
+            Left = 4
+            Height = 15
+            Top = 5
+            Width = 82
+            Caption = 'Filter by &Name:'
+            FocusControl = edViewFilterName
+          end
+          object edViewFilterName: TEdit
+            Left = 90
+            Height = 23
+            Top = 1
+            Width = 120
+            TabOrder = 0
+          end
+          object cobViewFilter: TComboBox
+            Left = 216
+            Height = 23
+            Top = 1
+            Width = 55
+            ItemHeight = 15
+            ItemIndex = 0
+            Items.Strings = (
+              'and'
+              'or'
+            )
+            Style = csDropDownList
+            TabOrder = 1
+            Text = 'and'
+          end
+          object lblViewFilterValue: TLabel
+            Left = 277
+            Height = 15
+            Top = 5
+            Width = 49
+            Caption = 'by &Value:'
+            FocusControl = edViewFilterValue
+          end
+          object edViewFilterValue: TEdit
+            Left = 330
+            Height = 23
+            Top = 1
+            Width = 120
+            TabOrder = 2
+          end
+          object bnLegend: TSpeedButton
+            Left = 770
+            Height = 23
+            Top = 1
+            Width = 60
+            Anchors = [akTop, akRight]
+            AllowAllUp = True
+            Caption = 'Legend'
+            Flat = True
+            GroupIndex = 1
+          end
+        end
+        object vstView: TTreeView
+          Left = 0
+          Height = 636
+          Top = 25
+          Width = 837
+          Align = alClient
+          ReadOnly = True
+          TabOrder = 1
+        end
+      end
+      object tbsReferencedBy: TTabSheet
+        Caption = 'Referenced By'
+        ClientHeight = 661
+        ClientWidth = 837
+        object lvReferencedBy: TListView
+          Left = 0
+          Height = 661
+          Top = 0
+          Width = 837
+          Align = alClient
+          Columns = <
+            item
+              AutoSize = True
+              Caption = 'Record'
+            end
+            item
+              Caption = 'Signature'
+              Width = 70
+            end
+            item
+              AutoSize = True
+              Caption = 'File'
+            end>
+          GridLines = True
+          MultiSelect = True
+          ReadOnly = True
+          RowSelect = True
+          TabOrder = 0
+          ViewStyle = vsReport
+        end
+      end
+      object tbsMessages: TTabSheet
+        Caption = 'Messages'
+        ClientHeight = 661
+        ClientWidth = 837
+        object mmoMessages: TMemo
+          Left = 0
+          Height = 661
+          Top = 0
+          Width = 837
+          Align = alClient
+          ReadOnly = True
+          ScrollBars = ssBoth
+          TabOrder = 0
+          WordWrap = False
+        end
+      end
+      object tbsInfo: TTabSheet
+        Caption = 'Information'
+        ClientHeight = 661
+        ClientWidth = 837
+        object mmoInfo: TMemo
+          Left = 0
+          Height = 661
+          Top = 0
+          Width = 837
+          Align = alClient
+          BorderStyle = bsNone
+          Font.Name = 'Courier New'
+          Lines.Strings = (
+            'xEdit is an advanced graphical esp editor and conflict detector.'
+            ''
+            'Discord: https://discord.gg/5t8RnNQ'
+            'Forum: https://www.afkmods.com/index.php?/topic/3750-wipz-tes5edit/'
+            ''
+            'The navigation treeview on the left side shows all active masters and plugins'
+            'in their correct load order. By navigating that treeview you can look at every'
+            'single record in any of your masters or plugins.'
+            ''
+            'Once a record has been selected the detailed contents of that record is shown'
+            'on the right side.'
+          )
+          ParentFont = False
+          ReadOnly = True
+          ScrollBars = ssBoth
+          TabOrder = 0
+        end
+      end
+    end
+  end
+  object ToolBar1: TToolBar
+    Left = 0
+    Height = 26
+    Top = 0
+    Width = 1200
+    Caption = 'ToolBar1'
+    TabOrder = 2
+    object bnBack: TToolButton
+      Left = 1
+      Top = 2
+      Caption = 'Back'
+      Enabled = False
+    end
+    object bnForward: TToolButton
+      Left = 54
+      Top = 2
+      Caption = 'Forward'
+      Enabled = False
+    end
+    object tbSep1: TToolButton
+      Left = 107
+      Top = 2
+      Width = 8
+      Caption = 'tbSep1'
+      Style = tbsSeparator
+    end
+    object bnSave: TToolButton
+      Left = 115
+      Top = 2
+      Caption = 'Save'
+    end
+    object tbSep2: TToolButton
+      Left = 168
+      Top = 2
+      Width = 8
+      Caption = 'tbSep2'
+      Style = tbsSeparator
+    end
+    object lblGame: TLabel
+      Left = 176
+      Height = 22
+      Top = 2
+      Width = 38
+      Caption = 'Game:'
+      Layout = tlCenter
+    end
+    object cobGame: TComboBox
+      Left = 214
+      Height = 23
+      Top = 2
+      Width = 130
+      ItemHeight = 15
+      ItemIndex = 0
+      Items.Strings = (
+        'SSE'
+        'FO4'
+        'Starfield'
+        'FO76'
+        'FNV'
+        'FO3'
+        'TES4'
+        'TES3'
+      )
+      OnChange = cobGameChange
+      Style = csDropDownList
+      TabOrder = 0
+      Text = 'SSE'
+    end
+  end
+  object stbMain: TStatusBar
+    Left = 0
+    Height = 23
+    Top = 737
+    Width = 1200
+    Panels = <
+      item
+        Width = 200
+      end
+      item
+        Width = 50
+      end>
+    SimplePanel = False
+  end
+  object pnlCancel: TPanel
+    Left = 403
+    Height = 153
+    Top = 280
+    Width = 318
+    BevelInner = bvLowered
+    BorderWidth = 50
+    TabOrder = 4
+    Visible = False
+    object btnCancel: TButton
+      Left = 51
+      Height = 49
+      Top = 51
+      Width = 214
+      Align = alClient
+      Caption = 'Cancel'
+      TabOrder = 0
+    end
+  end
+  object MainMenu1: TMainMenu
+    Left = 24
+    Top = 24
+    object mniFile: TMenuItem
+      Caption = '&File'
+      object mniFileOpen: TMenuItem
+        Caption = '&Open...'
+        ShortCut = 16463
+        OnClick = mniFileOpenClick
+      end
+      object mniFileMO2Open: TMenuItem
+        Caption = 'Open &MO2 Folder...'
+        OnClick = mniFileMO2OpenClick
+      end
+      object mniFileSep1: TMenuItem
+        Caption = '-'
+      end
+      object mniFileExit: TMenuItem
+        Caption = 'E&xit'
+        ShortCut = 32883
+        OnClick = mniFileExitClick
+      end
+    end
+    object mniNavigation: TMenuItem
+      Caption = 'Navigation'
+      object mniNavCompareSelected: TMenuItem
+        Caption = 'Compare Selected'
+      end
+      object mniNavFilterApply: TMenuItem
+        Caption = 'Apply Filter'
+      end
+      object mniNavFilterRemove: TMenuItem
+        Caption = 'Remove Filter'
+      end
+      object mniNavSep1: TMenuItem
+        Caption = '-'
+      end
+      object mniNavCheckForErrors: TMenuItem
+        Caption = 'Check for Errors'
+      end
+      object mniNavApplyScript: TMenuItem
+        Caption = 'Apply Script...'
+      end
+      object mniNavSep2: TMenuItem
+        Caption = '-'
+      end
+      object mniNavOptions: TMenuItem
+        Caption = 'Options'
+      end
+      object mniNavSep3: TMenuItem
+        Caption = '-'
+      end
+      object mniNavClean: TMenuItem
+        Caption = 'Clean'
+        object mniNavCleanQuick: TMenuItem
+          Caption = 'Quick Auto Clean'
+          OnClick = DoQuickClean
+        end
+        object mniNavCleanSep1: TMenuItem
+          Caption = '-'
+        end
+        object mniNavCleanCheckITM: TMenuItem
+          Caption = 'Check for ITM Records'
+          OnClick = DoCheckITM
+        end
+        object mniNavCleanRemoveITM: TMenuItem
+          Caption = 'Remove ITM Records'
+          OnClick = DoRemoveITM
+        end
+        object mniNavCleanUndeleteRefs: TMenuItem
+          Caption = 'Undelete and Disable References'
+          OnClick = DoUndeleteRefs
+        end
+      end
+    end
+    object mniView: TMenuItem
+      Caption = 'View'
+      object mniViewEdit: TMenuItem
+        Caption = 'Edit'
+      end
+      object mniViewAdd: TMenuItem
+        Caption = 'Add'
+      end
+      object mniViewRemove: TMenuItem
+        Caption = 'Remove'
+      end
+      object mniViewSep1: TMenuItem
+        Caption = '-'
+      end
+      object mniViewCopyToSelectedRecords: TMenuItem
+        Caption = 'Copy to selected records'
+      end
+      object mniViewColumnWidths: TMenuItem
+        Caption = 'Column Widths'
+      end
+    end
+    object mniReferencedBy: TMenuItem
+      Caption = 'Referenced By'
+      object mniRefByCompareSelected: TMenuItem
+        Caption = 'Compare Selected'
+      end
+      object mniRefByApplyScript: TMenuItem
+        Caption = 'Apply Script...'
+      end
+      object mniRefByCopyOverrideInto: TMenuItem
+        Caption = 'Copy as override into...'
+      end
+      object mniRefByRemove: TMenuItem
+        Caption = 'Remove'
+      end
+    end
+    object mniMessages: TMenuItem
+      Caption = 'Messages'
+      object mniMessagesClear: TMenuItem
+        Caption = 'Clear'
+      end
+      object mniMessagesSaveSelected: TMenuItem
+        Caption = 'Save selected text'
+      end
+      object mniMessagesAutoscroll: TMenuItem
+        Caption = 'Autoscroll to the last message'
+      end
+    end
+    object mniMain: TMenuItem
+      Caption = 'Main'
+      object mniMainLocalization: TMenuItem
+        Caption = 'Localization'
+      end
+      object mniMainPluggyLink: TMenuItem
+        Caption = 'Pluggy Link'
+      end
+      object mniMainSep1: TMenuItem
+        Caption = '-'
+      end
+      object mniMainSave: TMenuItem
+        Caption = 'Save'
+        ShortCut = 16467
+      end
+      object mniMainOptions: TMenuItem
+        Caption = 'Options'
+      end
+    end
+    object mniHelp: TMenuItem
+      Caption = '&Help'
+      object mniHelpAbout: TMenuItem
+        Caption = '&About...'
+        OnClick = mniHelpAboutClick
+      end
+    end
+  end
+  object dlgOpenPlugin: TOpenDialog
+    Title = 'Open Plugin File'
+    Filter = 'Plugin files (*.esp;*.esm;*.esl)|*.esp;*.esm;*.esl|All files (*.*)|*.*'
+    Options = [ofFileMustExist, ofEnableSizing]
+    Left = 80
+    Top = 24
+  end
+  object dlgSelectMO2Dir: TSelectDirectoryDialog
+    Title = 'Select MO2 Installation Folder'
+    Left = 136
+    Top = 24
+  end
+  object pmNav: TPopupMenu
+    Left = 192
+    Top = 24
+    object mniNavCtxQuickClean: TMenuItem
+      Caption = 'Quick Auto Clean'
+      OnClick = DoQuickClean
+    end
+    object mniNavCtxSep1: TMenuItem
+      Caption = '-'
+    end
+    object mniNavCtxCheckITM: TMenuItem
+      Caption = 'Check for ITM Records'
+      OnClick = DoCheckITM
+    end
+    object mniNavCtxRemoveITM: TMenuItem
+      Caption = 'Remove ITM Records'
+      OnClick = DoRemoveITM
+    end
+    object mniNavCtxUndeleteRefs: TMenuItem
+      Caption = 'Undelete and Disable References'
+      OnClick = DoUndeleteRefs
+    end
+  end
+  object tmrRefByBuild: TTimer
+    Enabled = False
+    Interval = 250
+    OnTimer = tmrRefByBuildTimer
+    Left = 248
+    Top = 24
+  end
+end

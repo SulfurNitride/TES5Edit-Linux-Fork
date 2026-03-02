@@ -1,0 +1,21 @@
+[package]
+name = "xedit_ffi"
+description = "C FFI bridge for Pascal/Lazarus GUI to call Rust xEdit core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+xedit_core = { path = "../xedit_core" }
+xedit_dom = { path = "../xedit_dom" }
+xedit_io = { path = "../xedit_io" }
+xedit_games = { path = "../xedit_games" }
+xedit_nif = { path = "../xedit_nif" }
+xedit_tools = { path = "../xedit_tools" }
+anyhow.workspace = true
+rayon.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true

@@ -1,0 +1,18 @@
+[package]
+name = "xedit_core"
+description = "Core xEdit engine - plugin loading, conflict detection, editing"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+xedit_dom = { path = "../xedit_dom" }
+xedit_io = { path = "../xedit_io" }
+xedit_games = { path = "../xedit_games" }
+xedit_nif = { path = "../xedit_nif" }
+xedit_tools = { path = "../xedit_tools" }
+anyhow.workspace = true
+thiserror.workspace = true
+rayon.workspace = true
+tracing.workspace = true
+walkdir.workspace = true

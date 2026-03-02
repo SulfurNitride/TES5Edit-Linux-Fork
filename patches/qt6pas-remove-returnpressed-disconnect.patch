@@ -1,0 +1,13 @@
+--- a/qtwidgets.pas
++++ b/qtwidgets.pas
+@@ -11388,7 +11388,9 @@
+     begin
+       FLineEdit := TQtLineEdit.CreateFrom(LCLObject, QComboBox_lineEdit(QComboBoxH(Widget)));
+       FLineEdit.FOwner := Self;
+-      QObject_disconnect(FLineEdit.Widget, '2returnPressed()', Widget, '1_q_returnPressed()');
++      { Note: _q_returnPressed() private slot was removed in Qt6.
++        The disconnect call is no longer needed and would produce a
++        "No such slot" warning on the console. }
+       FLineEdit.ChildOfComplexWidget := ccwComboBox;
+       FLineEdit.AttachEvents;
+       QComboBox_setCompleter(QComboBoxH(Widget), nil);

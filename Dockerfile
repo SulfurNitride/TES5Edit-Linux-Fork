@@ -1,0 +1,194 @@
+# =============================================================================
+# xEdit Rust Port - AppImage Build Dockerfile
+# =============================================================================
+# Multi-stage build that compiles the Rust shared library, nifly wrapper,
+# patched Qt6Pas bindings, and Lazarus GUI, then packages into an AppImage.
+#
+# Usage:
+#   docker build -t xedit-appimage .
+#   docker run --rm -v "$(pwd)/output:/output" xedit-appimage
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Stage 1: Build the Rust shared library (libxedit_ffi.so)
+# ---------------------------------------------------------------------------
+FROM rust:1.82-bookworm AS rust-builder
+
+WORKDIR /build/rust-core
+
+# Copy only manifests first for better layer caching
+COPY rust-core/Cargo.toml rust-core/Cargo.lock* ./
+COPY rust-core/xedit_core/Cargo.toml xedit_core/Cargo.toml
+COPY rust-core/xedit_dom/Cargo.toml xedit_dom/Cargo.toml
+COPY rust-core/xedit_io/Cargo.toml xedit_io/Cargo.toml
+COPY rust-core/xedit_games/Cargo.toml xedit_games/Cargo.toml
+COPY rust-core/xedit_tools/Cargo.toml xedit_tools/Cargo.toml
+COPY rust-core/xedit_ffi/Cargo.toml xedit_ffi/Cargo.toml
+COPY rust-core/xedit_nif/Cargo.toml xedit_nif/Cargo.toml
+COPY rust-core/xedit_transpiler/Cargo.toml xedit_transpiler/Cargo.toml
+
+# Create dummy source files so cargo can resolve dependencies and cache them
+RUN mkdir -p src xedit_core/src xedit_dom/src xedit_io/src xedit_games/src \
+             xedit_tools/src xedit_ffi/src xedit_nif/src xedit_transpiler/src && \
+    echo "// dummy" > src/lib.rs && \
+    echo "// dummy" > xedit_core/src/lib.rs && \
+    echo "// dummy" > xedit_dom/src/lib.rs && \
+    echo "// dummy" > xedit_io/src/lib.rs && \
+    echo "// dummy" > xedit_games/src/lib.rs && \
+    echo "// dummy" > xedit_tools/src/lib.rs && \
+    echo "// dummy" > xedit_ffi/src/lib.rs && \
+    echo "// dummy" > xedit_nif/src/lib.rs && \
+    echo "// dummy" > xedit_transpiler/src/lib.rs && \
+    cargo fetch || true
+
+# Now copy the real source code
+COPY rust-core/ ./
+
+# Build the FFI crate as a cdylib (produces libxedit_ffi.so)
+RUN cargo build --release -p xedit_ffi && \
+    ls -la target/release/libxedit_ffi.so
+
+# ---------------------------------------------------------------------------
+# Stage 2: Build the nifly wrapper (libnifly_wrapper.so)
+# ---------------------------------------------------------------------------
+FROM debian:bookworm-slim AS nifly-builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential cmake \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+
+# Copy nifly source and our wrapper
+COPY rust-core/xedit_nif/nifly/ nifly/
+COPY rust-core/xedit_nif/nifly_wrapper/ nifly_wrapper/
+
+# Build nifly static library
+RUN mkdir -p nifly/build && cd nifly/build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF \
+             -DCMAKE_POSITION_INDEPENDENT_CODE=ON && \
+    make -j$(nproc)
+
+# Build the wrapper shared library
+RUN mkdir -p nifly_wrapper/build && cd nifly_wrapper/build && \
+    cmake .. -DCMAKE_BUILD_TYPE=Release && \
+    make -j$(nproc) && \
+    ls -la libnifly_wrapper.so
+
+# ---------------------------------------------------------------------------
+# Stage 3: Build patched Qt6Pas and the Lazarus GUI
+# ---------------------------------------------------------------------------
+FROM ubuntu:24.04 AS lazarus-builder
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install Lazarus, FPC, Qt6 development packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    lazarus fpc \
+    qt6-base-dev libgl1-mesa-dev \
+    patch make g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+
+# Copy our patches
+COPY patches/ patches/
+
+# Build patched libQt6Pas.so from the system Lazarus qt6 cbindings
+RUN cp -r /usr/lib/lazarus/lcl/interfaces/qt6/cbindings /tmp/qt6pas-build && \
+    cd /tmp/qt6pas-build && \
+    patch -p1 < /build/patches/qt6pas-wayland-menu-transient-parent.patch || true && \
+    qmake6 Qt6Pas.pro && \
+    make -j$(nproc) && \
+    make install && \
+    ldconfig
+
+# Apply Pascal patch to LCL qtwidgets.pas
+RUN cd /usr/lib/lazarus/lcl/interfaces/qt6 && \
+    patch -p1 < /build/patches/qt6pas-remove-returnpressed-disconnect.patch || true
+
+# Copy the Lazarus project files
+COPY lazarus-gui/ lazarus-gui/
+
+# Build the Lazarus project with Qt6 widgetset
+RUN lazbuild --build-all --widgetset=qt6 lazarus-gui/xEditLaz.lpi && \
+    ls -la lazarus-gui/xEditLaz
+
+# ---------------------------------------------------------------------------
+# Stage 4: Package everything into an AppImage
+# ---------------------------------------------------------------------------
+FROM ubuntu:24.04 AS appimage-builder
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install runtime dependencies and tools for AppImage creation
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    file wget ca-certificates \
+    libqt6widgets6 libqt6gui6 libqt6core6 libqt6dbus6 libqt6printsupport6 \
+    qt6-wayland \
+    && rm -rf /var/lib/apt/lists/*
+
+# Download appimagetool
+RUN wget -q "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" \
+        -O /usr/local/bin/appimagetool && \
+    chmod +x /usr/local/bin/appimagetool
+
+WORKDIR /build
+
+# Create the AppDir structure
+RUN mkdir -p AppDir/usr/bin AppDir/usr/lib \
+             AppDir/usr/lib/qt6/plugins/platforms \
+             AppDir/usr/lib/qt6/plugins/wayland-shell-integration \
+             AppDir/usr/share/applications \
+             AppDir/usr/share/icons/hicolor/256x256/apps
+
+# Copy the Rust shared library from stage 1
+COPY --from=rust-builder /build/rust-core/target/release/libxedit_ffi.so AppDir/usr/lib/
+
+# Copy the nifly wrapper from stage 2
+COPY --from=nifly-builder /build/nifly_wrapper/build/libnifly_wrapper.so AppDir/usr/lib/
+
+# Copy the Lazarus binary from stage 3
+COPY --from=lazarus-builder /build/lazarus-gui/xEditLaz AppDir/usr/bin/
+
+# Bundle patched libQt6Pas and Qt6 runtime libraries
+RUN find /usr/lib -name 'libQt6Pas.so*' -exec cp -P {} AppDir/usr/lib/ \; && \
+    for lib in libQt6Core libQt6Gui libQt6Widgets libQt6DBus libQt6PrintSupport; do \
+      find /usr/lib -name "${lib}.so*" -exec cp -P {} AppDir/usr/lib/ \; 2>/dev/null || true; \
+    done
+
+# Bundle Qt6 platform plugins
+RUN QT6_PLUGIN_DIR=$(find /usr/lib -type d -name platforms -path '*/qt6/plugins/*' | head -1) && \
+    if [ -n "$QT6_PLUGIN_DIR" ]; then \
+      cp "$QT6_PLUGIN_DIR/libqxcb.so" AppDir/usr/lib/qt6/plugins/platforms/ 2>/dev/null || true; \
+      cp "$QT6_PLUGIN_DIR/libqwayland"*.so AppDir/usr/lib/qt6/plugins/platforms/ 2>/dev/null || true; \
+    fi && \
+    WAYLAND_DIR=$(find /usr/lib -type d -name wayland-shell-integration -path '*/qt6/plugins/*' | head -1) && \
+    if [ -n "$WAYLAND_DIR" ]; then \
+      cp "$WAYLAND_DIR/"*.so AppDir/usr/lib/qt6/plugins/wayland-shell-integration/ 2>/dev/null || true; \
+    fi
+
+# Copy the AppRun and desktop file from the build context
+COPY AppDir/AppRun AppDir/AppRun
+COPY AppDir/xedit.desktop AppDir/xedit.desktop
+RUN cp AppDir/xedit.desktop AppDir/usr/share/applications/xedit.desktop
+
+# Placeholder icon
+RUN echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" \
+    | base64 -d > AppDir/usr/share/icons/hicolor/256x256/apps/xedit.png && \
+    ln -sf usr/share/icons/hicolor/256x256/apps/xedit.png AppDir/xedit.png && \
+    ln -sf usr/share/icons/hicolor/256x256/apps/xedit.png AppDir/.DirIcon
+
+# Make AppRun and binary executable
+RUN chmod +x AppDir/AppRun AppDir/usr/bin/xEditLaz
+
+# Build the AppImage
+ENV ARCH=x86_64
+RUN appimagetool --appimage-extract-and-run AppDir/ xEditLaz-x86_64.AppImage
+
+# ---------------------------------------------------------------------------
+# Stage 5: Minimal output stage - just the AppImage artifact
+# ---------------------------------------------------------------------------
+FROM scratch AS output
+
+COPY --from=appimage-builder /build/xEditLaz-x86_64.AppImage /xEditLaz-x86_64.AppImage

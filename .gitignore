@@ -1,0 +1,30 @@
+#############
+## Rust
+#############
+rust-core/target/
+
+#############
+## Lazarus
+#############
+lazarus-gui/xEditLaz
+lazarus-gui/*.so
+lazarus-gui/lib/
+lazarus-gui/*.lps
+lazarus-gui/*.res
+lazarus-gui/*.compiled
+lazarus-gui/backup/
+
+#############
+## CMake / nifly build
+#############
+rust-core/xedit_nif/nifly_wrapper/build/
+
+#############
+## OS / Editor
+#############
+*.bak
+*.swp
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini

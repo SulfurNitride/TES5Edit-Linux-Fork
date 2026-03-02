@@ -1,0 +1,15 @@
+[package]
+name = "xedit_dom"
+description = "Lossless binary-preserving DOM for Bethesda plugin files (ESP/ESM/ESL)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+thiserror.workspace = true
+byteorder.workspace = true
+memmap2.workspace = true
+flate2.workspace = true
+lz4_flex.workspace = true
+tracing.workspace = true
