@@ -83,7 +83,7 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             lazarus fpc \
             qt6-base-dev qt6-wayland libgl1-mesa-dev \
-            kde-style-breeze-qt6
+            kde-style-breeze
 
       - name: Cache Qt6Pas build
         id: cache-qt6pas

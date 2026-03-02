@@ -125,7 +125,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
     file wget ca-certificates \
     libqt6widgets6 libqt6gui6 libqt6core6 libqt6dbus6 libqt6printsupport6 \
-    qt6-wayland kde-style-breeze-qt6 \
+    qt6-wayland kde-style-breeze \
     && rm -rf /var/lib/apt/lists/*
 
 # Download appimagetool
