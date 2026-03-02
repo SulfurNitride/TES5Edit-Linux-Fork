@@ -147,6 +147,7 @@ jobs:
         run: |
           # Create the AppDir structure
           mkdir -p AppDir/usr/bin AppDir/usr/lib \
+                   AppDir/usr/plugins \
                    AppDir/usr/share/applications \
                    AppDir/usr/share/icons/hicolor/256x256/apps
 
@@ -156,33 +157,55 @@ jobs:
           cp lazarus-gui/xEditLaz AppDir/usr/bin/
           chmod +x AppDir/usr/bin/xEditLaz
 
-          # Bundle patched libQt6Pas and its Qt6 dependencies
+          # Bundle patched libQt6Pas
           find /usr/lib -name 'libQt6Pas.so*' -exec cp -P {} AppDir/usr/lib/ \;
-          for lib in libQt6Core libQt6Gui libQt6Widgets libQt6DBus libQt6PrintSupport \
-                     libQt6OpenGL libQt6OpenGLWidgets; do
-            find /usr/lib -name "${lib}.so*" -exec cp -P {} AppDir/usr/lib/ \; 2>/dev/null || true
+
+          # ── Bundle ALL shared library dependencies ──
+          # Same approach as the MO2 Linux port: use ldd to find everything,
+          # skip only core system libs that must come from the host.
+          SKIP_PATTERN="linux-vdso|ld-linux|libc\.so|libm\.so|libdl\.so|librt\.so|libpthread|libresolv|libnss|libgcc_s|libstdc\+\+"
+          SKIP_PATTERN="${SKIP_PATTERN}|libGL\.so|libEGL|libGLX|libGLdispatch|libdrm|libvulkan"
+          SKIP_PATTERN="${SKIP_PATTERN}|libX11|libxcb\.so|libwayland-client|libwayland-server|libwayland-cursor|libwayland-egl"
+
+          collect_deps() {
+            ldd "$1" 2>/dev/null | grep "=>" | awk '{print $3}' | grep "^/" | sort -u
+          }
+
+          ALL_DEPS=$(mktemp)
+          collect_deps AppDir/usr/bin/xEditLaz >> "$ALL_DEPS"
+          for lib in AppDir/usr/lib/*.so*; do
+            [ -f "$lib" ] && collect_deps "$lib" >> "$ALL_DEPS"
           done
 
-          # Bundle ICU libraries (required by Qt6)
-          for lib in libicui18n libicuuc libicudata; do
-            find /usr/lib -name "${lib}.so*" -exec cp -P {} AppDir/usr/lib/ \; 2>/dev/null || true
+          sort -u "$ALL_DEPS" | while read -r dep; do
+            dep_name="$(basename "$dep")"
+            echo "$dep_name" | grep -qE "$SKIP_PATTERN" && continue
+            [ -f "AppDir/usr/lib/$dep_name" ] && continue
+            cp -Lf "$dep" AppDir/usr/lib/ 2>/dev/null || true
           done
+          rm -f "$ALL_DEPS"
 
-          # Bundle other Qt6 runtime dependencies that may differ across distros
-          for lib in libxcb libxkbcommon libdouble-conversion libmd4c libpcre2 libb2; do
-            find /usr/lib -name "${lib}*.so*" -exec cp -P {} AppDir/usr/lib/ \; 2>/dev/null || true
-          done
-
-          # Copy Qt6 platform plugins
+          # ── Qt6 platform plugins ──
           QT6_PLUGIN_DIR=$(qmake6 -query QT_INSTALL_PLUGINS 2>/dev/null || echo "/usr/lib/x86_64-linux-gnu/qt6/plugins")
-          if [ -d "$QT6_PLUGIN_DIR/platforms" ]; then
-            mkdir -p AppDir/usr/lib/qt6/plugins/platforms
-            cp "$QT6_PLUGIN_DIR/platforms/libqxcb.so" AppDir/usr/lib/qt6/plugins/platforms/ 2>/dev/null || true
-            cp "$QT6_PLUGIN_DIR/platforms/libqwayland"*.so AppDir/usr/lib/qt6/plugins/platforms/ 2>/dev/null || true
-          fi
-          if [ -d "$QT6_PLUGIN_DIR/wayland-shell-integration" ]; then
-            mkdir -p AppDir/usr/lib/qt6/plugins/wayland-shell-integration
-            cp "$QT6_PLUGIN_DIR/wayland-shell-integration/"*.so AppDir/usr/lib/qt6/plugins/wayland-shell-integration/ 2>/dev/null || true
+          if [ -d "$QT6_PLUGIN_DIR" ]; then
+            for plugin_type in platforms platformthemes imageformats \
+                               xcbglintegrations egldeviceintegrations \
+                               wayland-shell-integration \
+                               wayland-decoration-client wayland-graphics-integration-client; do
+              if [ -d "$QT6_PLUGIN_DIR/$plugin_type" ]; then
+                cp -a "$QT6_PLUGIN_DIR/$plugin_type" AppDir/usr/plugins/
+              fi
+            done
+
+            # Bundle deps of Qt plugins too
+            find AppDir/usr/plugins -name "*.so" -exec sh -c '
+              ldd "$1" 2>/dev/null | grep "=>" | awk "{print \$3}" | grep "^/" | while read dep; do
+                dep_name="$(basename "$dep")"
+                echo "$dep_name" | grep -qE "'"$SKIP_PATTERN"'" && continue
+                [ -f "AppDir/usr/lib/$dep_name" ] && continue
+                cp -Lf "$dep" AppDir/usr/lib/ 2>/dev/null || true
+              done
+            ' _ {} \;
           fi
 
           # Copy desktop integration files
@@ -195,6 +218,12 @@ jobs:
           ln -sf usr/share/icons/hicolor/256x256/apps/xedit.png AppDir/.DirIcon
 
           chmod +x AppDir/AppRun
+
+          # Show what we bundled
+          echo "=== Bundled libraries ==="
+          ls AppDir/usr/lib/ | head -40
+          echo "=== Bundled plugins ==="
+          find AppDir/usr/plugins -name "*.so" | sort
 
           # Build AppImage
           export ARCH=x86_64

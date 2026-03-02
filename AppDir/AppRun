@@ -2,31 +2,19 @@
 # =============================================================================
 # AppRun - Entry point for the xEdit AppImage
 # =============================================================================
-# This script is executed when the user launches the AppImage. It sets up
-# the runtime environment (library paths, etc.) and then executes the
-# actual xEditLaz binary.
-#
-# AppImage sets $APPDIR to the mount point of the squashfs filesystem.
-# =============================================================================
-
-# Determine the directory where this AppImage is mounted
 APPDIR="$(dirname "$(readlink -f "$0")")"
 
-# Add the bundled shared libraries to the library search path.
-# This ensures libxedit_ffi.so (and any other bundled libs) are found
-# at runtime without requiring system-wide installation.
-export LD_LIBRARY_PATH="${APPDIR}/usr/lib:${LD_LIBRARY_PATH}"
+# Bundled shared libraries
+export LD_LIBRARY_PATH="${APPDIR}/usr/lib:${LD_LIBRARY_PATH:-}"
 
-# Point Qt6 to bundled plugins (platform, wayland shell integration)
-if [ -d "${APPDIR}/usr/lib/qt6/plugins" ]; then
-  export QT_PLUGIN_PATH="${APPDIR}/usr/lib/qt6/plugins:${QT_PLUGIN_PATH}"
-fi
+# Qt6 plugins — must set both so Qt finds platform plugins
+export QT_PLUGIN_PATH="${APPDIR}/usr/plugins"
+export QT_QPA_PLATFORM_PLUGIN_PATH="${APPDIR}/usr/plugins/platforms"
 
 # Suppress harmless Qt6/Wayland noise
 export QT_LOGGING_RULES="qt.qpa.wayland.warning=false;qt.core.qobject.connect=false"
 
-# Optional: set XDG data dirs so the .desktop file and icons are discoverable
+# XDG data dirs for desktop integration
 export XDG_DATA_DIRS="${APPDIR}/usr/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
 
-# Launch the main binary, forwarding all command-line arguments
 exec "${APPDIR}/usr/bin/xEditLaz" "$@"
