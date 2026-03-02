@@ -125,7 +125,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
     file wget ca-certificates \
     libqt6widgets6 libqt6gui6 libqt6core6 libqt6dbus6 libqt6printsupport6 \
-    qt6-wayland \
+    qt6-wayland kde-style-breeze-qt6 \
     && rm -rf /var/lib/apt/lists/*
 
 # Download appimagetool
@@ -157,15 +157,18 @@ RUN find /usr/lib -name 'libQt6Pas.so*' -exec cp -P {} AppDir/usr/lib/ \; && \
       find /usr/lib -name "${lib}.so*" -exec cp -P {} AppDir/usr/lib/ \; 2>/dev/null || true; \
     done
 
-# Bundle Qt6 platform plugins
-RUN QT6_PLUGIN_DIR=$(find /usr/lib -type d -name platforms -path '*/qt6/plugins/*' | head -1) && \
-    if [ -n "$QT6_PLUGIN_DIR" ]; then \
-      cp "$QT6_PLUGIN_DIR/libqxcb.so" AppDir/usr/lib/qt6/plugins/platforms/ 2>/dev/null || true; \
-      cp "$QT6_PLUGIN_DIR/libqwayland"*.so AppDir/usr/lib/qt6/plugins/platforms/ 2>/dev/null || true; \
-    fi && \
-    WAYLAND_DIR=$(find /usr/lib -type d -name wayland-shell-integration -path '*/qt6/plugins/*' | head -1) && \
-    if [ -n "$WAYLAND_DIR" ]; then \
-      cp "$WAYLAND_DIR/"*.so AppDir/usr/lib/qt6/plugins/wayland-shell-integration/ 2>/dev/null || true; \
+# Bundle Qt6 plugins (platforms, styles, wayland, etc.)
+RUN QT6_PLUGIN_BASE=$(find /usr/lib -type d -name plugins -path '*/qt6/*' | head -1) && \
+    if [ -n "$QT6_PLUGIN_BASE" ]; then \
+      for plugin_type in platforms platformthemes imageformats styles \
+                         xcbglintegrations egldeviceintegrations \
+                         wayland-shell-integration \
+                         wayland-decoration-client wayland-graphics-integration-client; do \
+        if [ -d "$QT6_PLUGIN_BASE/$plugin_type" ]; then \
+          mkdir -p "AppDir/usr/plugins/$plugin_type" && \
+          cp -a "$QT6_PLUGIN_BASE/$plugin_type/"*.so "AppDir/usr/plugins/$plugin_type/" 2>/dev/null || true; \
+        fi; \
+      done; \
     fi
 
 # Copy the AppRun and desktop file from the build context

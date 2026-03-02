@@ -11,6 +11,9 @@ export LD_LIBRARY_PATH="${APPDIR}/usr/lib:${LD_LIBRARY_PATH:-}"
 export QT_PLUGIN_PATH="${APPDIR}/usr/plugins"
 export QT_QPA_PLATFORM_PLUGIN_PATH="${APPDIR}/usr/plugins/platforms"
 
+# Use bundled Breeze style so AppImage matches system look
+export QT_STYLE_OVERRIDE=Breeze
+
 # Suppress harmless Qt6/Wayland noise
 export QT_LOGGING_RULES="qt.qpa.wayland.warning=false;qt.core.qobject.connect=false"
 
