@@ -79,12 +79,14 @@ jobs:
 
       - name: Build patched libQt6Pas.so
         run: |
-          # Copy the qt6pas cbindings source from the Lazarus installation
-          QT6PAS_SRC="/usr/lib/lazarus/lcl/interfaces/qt6/cbindings"
-          if [ ! -d "$QT6PAS_SRC" ]; then
-            echo "ERROR: qt6pas cbindings not found at $QT6PAS_SRC"
+          # Find the qt6pas cbindings source from the Lazarus installation
+          QT6PAS_SRC=$(find /usr -type d -name cbindings -path '*/qt6/*' 2>/dev/null | head -1)
+          if [ -z "$QT6PAS_SRC" ] || [ ! -d "$QT6PAS_SRC" ]; then
+            echo "ERROR: qt6pas cbindings not found under /usr"
+            find /usr -name 'Qt6Pas.pro' 2>/dev/null || true
             exit 1
           fi
+          echo "Found qt6pas cbindings at: $QT6PAS_SRC"
           cp -r "$QT6PAS_SRC" /tmp/qt6pas-build
           cd /tmp/qt6pas-build
 
@@ -100,7 +102,8 @@ jobs:
           sudo ldconfig
 
           # Apply Pascal patch to LCL qtwidgets.pas (remove _q_returnPressed disconnect)
-          cd /usr/lib/lazarus/lcl/interfaces/qt6
+          QT6_IFACE_DIR=$(dirname "$QT6PAS_SRC")
+          cd "$QT6_IFACE_DIR"
           sudo patch -p1 < "$GITHUB_WORKSPACE/patches/qt6pas-remove-returnpressed-disconnect.patch" || true
 
       - name: Build Lazarus GUI (Qt6)
@@ -199,7 +202,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            gcc-mingw-w64-x86-64 mingw-w64-x86-64-dev
+            gcc-mingw-w64-x86-64 g++-mingw-w64-x86-64 mingw-w64-x86-64-dev
 
       # -- Rust cross-build --
       - name: Build xedit_ffi for Windows (release)
