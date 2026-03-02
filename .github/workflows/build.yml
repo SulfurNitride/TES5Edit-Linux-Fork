@@ -82,8 +82,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             lazarus fpc \
-            qt6-base-dev qt6-wayland libgl1-mesa-dev \
-            kde-style-breeze
+            qt6-base-dev qt6-wayland libgl1-mesa-dev
 
       - name: Cache Qt6Pas build
         id: cache-qt6pas
@@ -189,7 +188,7 @@ jobs:
           # ── Qt6 platform plugins ──
           QT6_PLUGIN_DIR=$(qmake6 -query QT_INSTALL_PLUGINS 2>/dev/null || echo "/usr/lib/x86_64-linux-gnu/qt6/plugins")
           if [ -d "$QT6_PLUGIN_DIR" ]; then
-            for plugin_type in platforms platformthemes imageformats styles \
+            for plugin_type in platforms platformthemes imageformats \
                                xcbglintegrations egldeviceintegrations \
                                wayland-shell-integration \
                                wayland-decoration-client wayland-graphics-integration-client; do

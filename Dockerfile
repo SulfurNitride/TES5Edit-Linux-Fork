@@ -125,7 +125,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
     file wget ca-certificates \
     libqt6widgets6 libqt6gui6 libqt6core6 libqt6dbus6 libqt6printsupport6 \
-    qt6-wayland kde-style-breeze \
+    qt6-wayland \
     && rm -rf /var/lib/apt/lists/*
 
 # Download appimagetool
@@ -160,7 +160,7 @@ RUN find /usr/lib -name 'libQt6Pas.so*' -exec cp -P {} AppDir/usr/lib/ \; && \
 # Bundle Qt6 plugins (platforms, styles, wayland, etc.)
 RUN QT6_PLUGIN_BASE=$(find /usr/lib -type d -name plugins -path '*/qt6/*' | head -1) && \
     if [ -n "$QT6_PLUGIN_BASE" ]; then \
-      for plugin_type in platforms platformthemes imageformats styles \
+      for plugin_type in platforms platformthemes imageformats \
                          xcbglintegrations egldeviceintegrations \
                          wayland-shell-integration \
                          wayland-decoration-client wayland-graphics-integration-client; do \
