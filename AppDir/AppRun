@@ -7,8 +7,10 @@ APPDIR="$(dirname "$(readlink -f "$0")")"
 # Bundled shared libraries
 export LD_LIBRARY_PATH="${APPDIR}/usr/lib:${LD_LIBRARY_PATH:-}"
 
-# Qt6 plugins — bundled plugins first, then fall back to host plugins for theming
-export QT_PLUGIN_PATH="${APPDIR}/usr/plugins:${QT_PLUGIN_PATH:-}"
+# Qt6 plugins — bundled plugins first, then host plugins for KDE theming
+# Must include host paths explicitly since QT_PLUGIN_PATH overrides the compiled-in default
+HOST_QT6_PLUGINS="/usr/lib/qt6/plugins:/usr/lib/x86_64-linux-gnu/qt6/plugins"
+export QT_PLUGIN_PATH="${APPDIR}/usr/plugins:${QT_PLUGIN_PATH:-${HOST_QT6_PLUGINS}}"
 export QT_QPA_PLATFORM_PLUGIN_PATH="${APPDIR}/usr/plugins/platforms"
 
 # Suppress harmless Qt6/Wayland noise

@@ -160,7 +160,7 @@ RUN find /usr/lib -name 'libQt6Pas.so*' -exec cp -P {} AppDir/usr/lib/ \; && \
 # Bundle Qt6 plugins (platforms, styles, wayland, etc.)
 RUN QT6_PLUGIN_BASE=$(find /usr/lib -type d -name plugins -path '*/qt6/*' | head -1) && \
     if [ -n "$QT6_PLUGIN_BASE" ]; then \
-      for plugin_type in platforms platformthemes imageformats \
+      for plugin_type in platforms imageformats \
                          xcbglintegrations egldeviceintegrations \
                          wayland-shell-integration \
                          wayland-decoration-client wayland-graphics-integration-client; do \
