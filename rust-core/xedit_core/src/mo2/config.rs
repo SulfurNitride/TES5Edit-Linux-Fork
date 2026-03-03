@@ -299,6 +299,7 @@ other_key=other_value
     }
 
     #[test]
+    #[cfg(target_os = "linux")]
     fn test_convert_wine_path_z_drive() {
         assert_eq!(
             convert_wine_path("Z:\\\\home\\\\luke\\\\Games"),
@@ -311,6 +312,7 @@ other_key=other_value
     }
 
     #[test]
+    #[cfg(target_os = "linux")]
     fn test_convert_wine_path_native() {
         assert_eq!(
             convert_wine_path("/home/luke/Games"),
