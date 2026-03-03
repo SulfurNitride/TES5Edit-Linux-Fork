@@ -61,6 +61,7 @@ ba2 = "3.0.1"
 
 # Dynamic loading (for nifly)
 libloading = "0.8"
+libc = "0.2"
 
 # Logging
 tracing = "0.1"
@@ -68,6 +69,9 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # Hashing
 xxhash-rust = { version = "0.8", features = ["xxh64"] }
+
+# Database
+rusqlite = { version = "0.31", features = ["bundled"] }
 
 [profile.release]
 lto = "thin"

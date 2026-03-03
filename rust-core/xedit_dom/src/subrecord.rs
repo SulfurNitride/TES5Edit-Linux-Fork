@@ -14,6 +14,8 @@ pub struct Subrecord {
     /// Raw data bytes - always preserved for lossless roundtrip.
     /// Interpretation depends on game definitions.
     pub raw_data: Vec<u8>,
+    /// Cached data size in bytes. Preserved after offloading raw_data to disk.
+    pub size: u32,
     /// Original byte offset in the source file (for surgical patching)
     pub source_offset: Option<u64>,
     /// Whether this subrecord has been modified since loading
@@ -23,9 +25,11 @@ pub struct Subrecord {
 impl Subrecord {
     /// Create a new subrecord with raw data.
     pub fn new(signature: Signature, raw_data: Vec<u8>) -> Self {
+        let size = raw_data.len() as u32;
         Self {
             signature,
             raw_data,
+            size,
             source_offset: None,
             modified: false,
         }

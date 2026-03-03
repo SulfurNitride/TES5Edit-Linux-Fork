@@ -17,5 +17,9 @@ xedit_nif = { path = "../xedit_nif" }
 xedit_tools = { path = "../xedit_tools" }
 anyhow.workspace = true
 rayon.workspace = true
+rusqlite.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+libc.workspace = true

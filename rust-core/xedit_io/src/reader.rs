@@ -153,15 +153,17 @@ impl PluginReader {
         reader.read_exact(&mut raw_data)?;
 
         // Handle compressed records
-        let (subrecords, raw_compressed_data) = if flags.is_compressed() {
-            // First 4 bytes = decompressed size, rest is zlib compressed
-            let raw_compressed = raw_data.clone();
+        let (subrecords, raw_compressed_data, keep_raw_data) = if flags.is_compressed() {
+            // First 4 bytes = decompressed size, rest is zlib compressed.
+            // Keep compressed bytes for lossless save; DON'T clone into raw_data
+            // (saves ~1-2 GB for large mod lists with many compressed records).
             let decompressed = self.decompress_record(&raw_data, sig, source_offset)?;
             let subs = self.parse_subrecords(&decompressed)?;
-            (subs, Some(raw_compressed))
+            (subs, Some(raw_data), None)
         } else {
             let subs = self.parse_subrecords(&raw_data)?;
-            (subs, None)
+            // Keep raw_data for uncompressed records — needed for lossless roundtrip
+            (subs, None, Some(raw_data))
         };
 
         Ok(Record {
@@ -174,7 +176,7 @@ impl PluginReader {
             subrecords,
             raw_header: Some(header_bytes),
             raw_compressed_data,
-            raw_data: Some(raw_data),
+            raw_data: keep_raw_data,
             source_offset: Some(source_offset),
             modified: false,
         })

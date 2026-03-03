@@ -19,4 +19,4 @@ export QT_LOGGING_RULES="qt.qpa.wayland.warning=false;qt.core.qobject.connect=fa
 # XDG data dirs for desktop integration
 export XDG_DATA_DIRS="${APPDIR}/usr/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
 
-exec "${APPDIR}/usr/bin/xEditLaz" "$@"
+exec "${APPDIR}/usr/bin/xEdit" "$@"

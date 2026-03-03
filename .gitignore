@@ -4,15 +4,10 @@
 rust-core/target/
 
 #############
-## Lazarus
+## Qt6 C++ GUI
 #############
-lazarus-gui/xEditLaz
-lazarus-gui/*.so
-lazarus-gui/lib/
-lazarus-gui/*.lps
-lazarus-gui/*.res
-lazarus-gui/*.compiled
-lazarus-gui/backup/
+qt-gui/build/
+qt-gui/.cache/
 
 #############
 ## CMake / nifly build

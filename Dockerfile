@@ -2,7 +2,7 @@
 # xEdit Rust Port - AppImage Build Dockerfile
 # =============================================================================
 # Multi-stage build that compiles the Rust shared library, nifly wrapper,
-# patched Qt6Pas bindings, and Lazarus GUI, then packages into an AppImage.
+# and Qt6 C++ GUI, then packages into an AppImage.
 #
 # Usage:
 #   docker build -t xedit-appimage .
@@ -76,43 +76,25 @@ RUN mkdir -p nifly_wrapper/build && cd nifly_wrapper/build && \
     ls -la libnifly_wrapper.so
 
 # ---------------------------------------------------------------------------
-# Stage 3: Build patched Qt6Pas and the Lazarus GUI
+# Stage 3: Build the Qt6 C++ GUI
 # ---------------------------------------------------------------------------
-FROM ubuntu:24.04 AS lazarus-builder
+FROM ubuntu:24.04 AS qt-gui-builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install Lazarus, FPC, Qt6 development packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    lazarus fpc \
+    build-essential cmake \
     qt6-base-dev libgl1-mesa-dev \
-    patch make g++ \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
 
-# Copy our patches
-COPY patches/ patches/
+COPY qt-gui/ qt-gui/
 
-# Build patched libQt6Pas.so from the system Lazarus qt6 cbindings
-RUN cp -r /usr/lib/lazarus/lcl/interfaces/qt6/cbindings /tmp/qt6pas-build && \
-    cd /tmp/qt6pas-build && \
-    patch -p1 < /build/patches/qt6pas-wayland-menu-transient-parent.patch || true && \
-    qmake6 Qt6Pas.pro && \
-    make -j$(nproc) && \
-    make install && \
-    ldconfig
-
-# Apply Pascal patch to LCL qtwidgets.pas
-RUN cd /usr/lib/lazarus/lcl/interfaces/qt6 && \
-    patch -p1 < /build/patches/qt6pas-remove-returnpressed-disconnect.patch || true
-
-# Copy the Lazarus project files
-COPY lazarus-gui/ lazarus-gui/
-
-# Build the Lazarus project with Qt6 widgetset
-RUN lazbuild --build-all --widgetset=qt6 lazarus-gui/xEditLaz.lpi && \
-    ls -la lazarus-gui/xEditLaz
+RUN cd qt-gui && \
+    cmake -B build -DCMAKE_BUILD_TYPE=Release && \
+    cmake --build build -j$(nproc) && \
+    ls -la build/xEdit
 
 # ---------------------------------------------------------------------------
 # Stage 4: Package everything into an AppImage
@@ -148,12 +130,11 @@ COPY --from=rust-builder /build/rust-core/target/release/libxedit_ffi.so AppDir/
 # Copy the nifly wrapper from stage 2
 COPY --from=nifly-builder /build/nifly_wrapper/build/libnifly_wrapper.so AppDir/usr/lib/
 
-# Copy the Lazarus binary from stage 3
-COPY --from=lazarus-builder /build/lazarus-gui/xEditLaz AppDir/usr/bin/
+# Copy the Qt6 C++ GUI binary from stage 3
+COPY --from=qt-gui-builder /build/qt-gui/build/xEdit AppDir/usr/bin/
 
-# Bundle patched libQt6Pas and Qt6 runtime libraries
-RUN find /usr/lib -name 'libQt6Pas.so*' -exec cp -P {} AppDir/usr/lib/ \; && \
-    for lib in libQt6Core libQt6Gui libQt6Widgets libQt6DBus libQt6PrintSupport; do \
+# Bundle Qt6 runtime libraries
+RUN for lib in libQt6Core libQt6Gui libQt6Widgets libQt6DBus libQt6PrintSupport; do \
       find /usr/lib -name "${lib}.so*" -exec cp -P {} AppDir/usr/lib/ \; 2>/dev/null || true; \
     done
 
@@ -183,15 +164,15 @@ RUN echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhg
     ln -sf usr/share/icons/hicolor/256x256/apps/xedit.png AppDir/.DirIcon
 
 # Make AppRun and binary executable
-RUN chmod +x AppDir/AppRun AppDir/usr/bin/xEditLaz
+RUN chmod +x AppDir/AppRun AppDir/usr/bin/xEdit
 
 # Build the AppImage
 ENV ARCH=x86_64
-RUN appimagetool --appimage-extract-and-run AppDir/ xEditLaz-x86_64.AppImage
+RUN appimagetool --appimage-extract-and-run AppDir/ xEdit-x86_64.AppImage
 
 # ---------------------------------------------------------------------------
 # Stage 5: Minimal output stage - just the AppImage artifact
 # ---------------------------------------------------------------------------
 FROM scratch AS output
 
-COPY --from=appimage-builder /build/xEditLaz-x86_64.AppImage /xEditLaz-x86_64.AppImage
+COPY --from=appimage-builder /build/xEdit-x86_64.AppImage /xEdit-x86_64.AppImage

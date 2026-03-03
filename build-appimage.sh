@@ -3,8 +3,8 @@
 # build-appimage.sh - Build the xEdit AppImage using Docker
 # =============================================================================
 # This script automates the entire AppImage build process:
-#   1. Builds a multi-stage Docker image that compiles both the Rust shared
-#      library and the Lazarus GUI.
+#   1. Builds a multi-stage Docker image that compiles the Rust shared
+#      library and the Qt6 C++ GUI.
 #   2. Extracts the final AppImage artifact from the Docker build.
 #
 # Prerequisites:
@@ -15,7 +15,7 @@
 #   ./build-appimage.sh
 #
 # Output:
-#   ./output/xEditLaz-x86_64.AppImage
+#   ./output/xEdit-x86_64.AppImage
 # =============================================================================
 
 set -euo pipefail
@@ -31,7 +31,7 @@ IMAGE_NAME="xedit-appimage-builder"
 OUTPUT_DIR="./output"
 
 # Name of the final AppImage file
-APPIMAGE_NAME="xEditLaz-x86_64.AppImage"
+APPIMAGE_NAME="xEdit-x86_64.AppImage"
 
 # ---------------------------------------------------------------------------
 # Resolve the project root (directory containing this script)
@@ -49,7 +49,7 @@ echo ""
 # ---------------------------------------------------------------------------
 # Step 1: Build the Docker image
 # ---------------------------------------------------------------------------
-# The multi-stage Dockerfile compiles the Rust library, the Lazarus GUI,
+# The multi-stage Dockerfile compiles the Rust library, the Qt6 C++ GUI,
 # and packages them into an AppImage. The final stage is a scratch image
 # containing only the AppImage artifact.
 echo "[1/3] Building Docker image (this may take a while on first run)..."
@@ -74,7 +74,7 @@ mkdir -p "${OUTPUT_DIR}"
 
 # Create a container (without starting it) and copy the artifact out
 CONTAINER_ID=$(docker create "${IMAGE_NAME}")
-docker cp "${CONTAINER_ID}:/build/xEditLaz-x86_64.AppImage" "${OUTPUT_DIR}/${APPIMAGE_NAME}"
+docker cp "${CONTAINER_ID}:/build/xEdit-x86_64.AppImage" "${OUTPUT_DIR}/${APPIMAGE_NAME}"
 docker rm "${CONTAINER_ID}" > /dev/null
 
 echo "[2/3] AppImage extracted."

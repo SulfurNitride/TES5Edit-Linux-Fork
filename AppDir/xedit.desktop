@@ -2,7 +2,7 @@
 Type=Application
 Name=xEdit
 Comment=Elder Scrolls and Fallout plugin editor (Rust port)
-Exec=xEditLaz
+Exec=xEdit
 Icon=xedit
 Terminal=false
 Categories=Game;Utility;

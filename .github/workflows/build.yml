@@ -1,23 +1,23 @@
 # =============================================================================
 # xEdit Rust Port - CI Build Workflow
 # =============================================================================
-# Builds Linux AppImage from an Ubuntu runner.
+# Builds Linux AppImage and Windows zip from GitHub Actions runners.
 
 name: Build
 
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, dev-4.1.6]
     tags: ["v*"]
   pull_request:
-    branches: [main, master]
+    branches: [main, master, dev-4.1.6]
 
 permissions:
   contents: write
 
 jobs:
   # ---------------------------------------------------------------------------
-  # Linux build: test, compile Rust + Lazarus, package AppImage
+  # Linux build: test, compile Rust + Qt6 C++ GUI, package AppImage
   # ---------------------------------------------------------------------------
   build-linux:
     name: Linux x86_64 (AppImage)
@@ -26,6 +26,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       # -- Rust toolchain --
       - name: Install Rust toolchain
@@ -58,7 +60,7 @@ jobs:
           path: |
             rust-core/xedit_nif/nifly/build
             rust-core/xedit_nif/nifly_wrapper/build
-          key: nifly-${{ hashFiles('rust-core/xedit_nif/nifly/src/**', 'rust-core/xedit_nif/nifly/include/**', 'rust-core/xedit_nif/nifly_wrapper/*.cpp', 'rust-core/xedit_nif/nifly_wrapper/*.h') }}
+          key: nifly-linux-${{ hashFiles('rust-core/xedit_nif/nifly/src/**', 'rust-core/xedit_nif/nifly/include/**', 'rust-core/xedit_nif/nifly_wrapper/*.cpp', 'rust-core/xedit_nif/nifly_wrapper/*.h') }}
 
       - name: Build nifly and nifly_wrapper
         run: |
@@ -76,65 +78,20 @@ jobs:
           make -j$(nproc)
           ls -la libnifly_wrapper.so
 
-      # -- Lazarus / FPC + Qt6 --
-      - name: Install Lazarus, FPC, and Qt6 development packages
+      # -- Qt6 C++ GUI --
+      - name: Install Qt6 and build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            lazarus fpc \
+            build-essential cmake \
             qt6-base-dev qt6-wayland libgl1-mesa-dev
 
-      - name: Cache Qt6Pas build
-        id: cache-qt6pas
-        uses: actions/cache@v4
-        with:
-          path: /tmp/qt6pas-installed
-          key: qt6pas-${{ hashFiles('patches/qt6pas-wayland-menu-transient-parent.patch') }}-${{ runner.os }}
-
-      - name: Build patched libQt6Pas.so
-        if: steps.cache-qt6pas.outputs.cache-hit != 'true'
+      - name: Build Qt6 C++ GUI
         run: |
-          # Find the qt6pas cbindings source from the Lazarus installation
-          QT6PAS_SRC=$(find /usr -type d -name cbindings -path '*/qt6/*' 2>/dev/null | head -1)
-          if [ -z "$QT6PAS_SRC" ] || [ ! -d "$QT6PAS_SRC" ]; then
-            echo "ERROR: qt6pas cbindings not found under /usr"
-            find /usr -name 'Qt6Pas.pro' 2>/dev/null || true
-            exit 1
-          fi
-          echo "Found qt6pas cbindings at: $QT6PAS_SRC"
-          cp -r "$QT6PAS_SRC" /tmp/qt6pas-build
-          cd /tmp/qt6pas-build
-
-          # Apply C++ patches (transient parent for Wayland menus/combos)
-          patch -p1 < "$GITHUB_WORKSPACE/patches/qt6pas-wayland-menu-transient-parent.patch" || true
-
-          # Build with qmake6
-          qmake6 Qt6Pas.pro
-          make -j$(nproc)
-
-          # Save built artifacts for caching
-          mkdir -p /tmp/qt6pas-installed
-          make INSTALL_ROOT=/tmp/qt6pas-installed install
-
-      - name: Install patched libQt6Pas.so
-        run: |
-          # Install from cache or fresh build
-          if [ -d /tmp/qt6pas-installed ]; then
-            sudo cp -r /tmp/qt6pas-installed/* /
-            sudo ldconfig
-          fi
-
-          # Apply Pascal patch to LCL qtwidgets.pas
-          QT6PAS_SRC=$(find /usr -type d -name cbindings -path '*/qt6/*' 2>/dev/null | head -1)
-          if [ -n "$QT6PAS_SRC" ]; then
-            QT6_IFACE_DIR=$(dirname "$QT6PAS_SRC")
-            cd "$QT6_IFACE_DIR"
-            sudo patch -p1 < "$GITHUB_WORKSPACE/patches/qt6pas-remove-returnpressed-disconnect.patch" || true
-          fi
-
-      - name: Build Lazarus GUI (Qt6)
-        run: |
-          lazbuild --build-all --widgetset=qt6 lazarus-gui/xEditLaz.lpi
+          cd qt-gui
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j$(nproc)
+          ls -la build/xEdit
 
       # -- Package AppImage --
       - name: Download appimagetool
@@ -151,18 +108,13 @@ jobs:
                    AppDir/usr/share/applications \
                    AppDir/usr/share/icons/hicolor/256x256/apps
 
-          # Copy binaries (rename libxedit_ffi.so to libxedit_core.so to match Pascal expectation)
-          cp rust-core/target/release/libxedit_ffi.so AppDir/usr/lib/libxedit_core.so
+          # Copy binaries
+          cp rust-core/target/release/libxedit_ffi.so AppDir/usr/lib/
           cp rust-core/xedit_nif/nifly_wrapper/build/libnifly_wrapper.so AppDir/usr/lib/
-          cp lazarus-gui/xEditLaz AppDir/usr/bin/
-          chmod +x AppDir/usr/bin/xEditLaz
-
-          # Bundle patched libQt6Pas
-          find /usr/lib -name 'libQt6Pas.so*' -exec cp -P {} AppDir/usr/lib/ \;
+          cp qt-gui/build/xEdit AppDir/usr/bin/
+          chmod +x AppDir/usr/bin/xEdit
 
           # ── Bundle ALL shared library dependencies ──
-          # Same approach as the MO2 Linux port: use ldd to find everything,
-          # skip only core system libs that must come from the host.
           SKIP_PATTERN="linux-vdso|ld-linux|libc\.so|libm\.so|libdl\.so|librt\.so|libpthread|libresolv|libnss|libgcc_s|libstdc\+\+"
           SKIP_PATTERN="${SKIP_PATTERN}|libGL\.so|libEGL|libGLX|libGLdispatch|libdrm|libvulkan"
           SKIP_PATTERN="${SKIP_PATTERN}|libX11|libxcb\.so|libwayland-client|libwayland-server|libwayland-cursor|libwayland-egl"
@@ -172,7 +124,7 @@ jobs:
           }
 
           ALL_DEPS=$(mktemp)
-          collect_deps AppDir/usr/bin/xEditLaz >> "$ALL_DEPS"
+          collect_deps AppDir/usr/bin/xEdit >> "$ALL_DEPS"
           for lib in AppDir/usr/lib/*.so*; do
             [ -f "$lib" ] && collect_deps "$lib" >> "$ALL_DEPS"
           done
@@ -227,13 +179,112 @@ jobs:
 
           # Build AppImage
           export ARCH=x86_64
-          /tmp/appimagetool --appimage-extract-and-run AppDir/ xEditLaz-x86_64.AppImage
+          /tmp/appimagetool --appimage-extract-and-run AppDir/ xEdit-x86_64.AppImage
 
       - name: Upload Linux AppImage
         uses: actions/upload-artifact@v4
         with:
-          name: xEditLaz-linux-x86_64
-          path: xEditLaz-x86_64.AppImage
+          name: xEdit-linux-x86_64
+          path: xEdit-x86_64.AppImage
+
+  # ---------------------------------------------------------------------------
+  # Windows build: compile Rust + Qt6 C++ GUI, package zip
+  # ---------------------------------------------------------------------------
+  build-windows:
+    name: Windows x86_64
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # -- Rust toolchain --
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo registry and build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~\.cargo\registry
+            ~\.cargo\git
+            rust-core\target
+          key: windows-cargo-${{ hashFiles('rust-core/Cargo.lock') }}
+          restore-keys: windows-cargo-
+
+      # -- Rust tests --
+      - name: Run workspace tests
+        working-directory: rust-core
+        run: cargo test --workspace
+
+      # -- Rust release build --
+      - name: Build xedit_ffi (release)
+        working-directory: rust-core
+        run: cargo build --release -p xedit_ffi
+
+      # -- nifly (NIF file support) --
+      - name: Cache nifly build
+        uses: actions/cache@v4
+        with:
+          path: |
+            rust-core/xedit_nif/nifly/build
+            rust-core/xedit_nif/nifly_wrapper/build
+          key: nifly-windows-${{ hashFiles('rust-core/xedit_nif/nifly/src/**', 'rust-core/xedit_nif/nifly/include/**', 'rust-core/xedit_nif/nifly_wrapper/*.cpp', 'rust-core/xedit_nif/nifly_wrapper/*.h') }}
+
+      - name: Build nifly and nifly_wrapper
+        run: |
+          cd rust-core/xedit_nif/nifly
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
+          cmake --build build --config Release -j
+          cd ../nifly_wrapper
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release -j
+          dir build\Release\
+
+      # -- Qt6 C++ GUI --
+      - name: Install Qt6
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.7.*'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2022_64'
+          modules: 'qtbase'
+
+      - name: Build Qt6 C++ GUI
+        run: |
+          cd qt-gui
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="${env:Qt6_DIR}"
+          cmake --build build --config Release -j
+          dir build\Release\
+
+      # -- Package Windows zip --
+      - name: Assemble Windows distribution
+        run: |
+          mkdir dist
+
+          # Copy main binary
+          Copy-Item qt-gui\build\Release\xEdit.exe dist\
+
+          # Copy Rust FFI library
+          Copy-Item rust-core\target\release\xedit_ffi.dll dist\xedit_core.dll
+
+          # Copy nifly wrapper
+          $niflyDll = Get-ChildItem -Path rust-core\xedit_nif\nifly_wrapper\build -Recurse -Filter "nifly_wrapper.dll" | Select-Object -First 1
+          if ($niflyDll) { Copy-Item $niflyDll.FullName dist\ }
+
+          # Deploy Qt dependencies (windeployqt copies all needed DLLs + plugins)
+          & windeployqt --release --no-translations --no-opengl-sw dist\xEdit.exe
+
+          dir dist\
+
+      - name: Upload Windows zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: xEdit-windows-x86_64
+          path: dist/
 
   # ---------------------------------------------------------------------------
   # Release: create a GitHub release on tag push
@@ -241,14 +292,23 @@ jobs:
   release:
     name: Create Release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build-linux]
+    needs: [build-linux, build-windows]
     runs-on: ubuntu-latest
 
     steps:
       - name: Download Linux artifact
         uses: actions/download-artifact@v4
         with:
-          name: xEditLaz-linux-x86_64
+          name: xEdit-linux-x86_64
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: xEdit-windows-x86_64
+          path: xEdit-windows
+
+      - name: Zip Windows artifact
+        run: cd xEdit-windows && zip -r ../xEdit-windows-x86_64.zip .
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -257,4 +317,5 @@ jobs:
           prerelease: false
           generate_release_notes: true
           files: |
-            xEditLaz-x86_64.AppImage
+            xEdit-x86_64.AppImage
+            xEdit-windows-x86_64.zip
