@@ -20,9 +20,24 @@ target_include_directories(nifly_wrapper PRIVATE
 )
 
 # Link the pre-built static nifly library
-target_link_libraries(nifly_wrapper PRIVATE
-    ${NIFLY_BUILD_DIR}/src/libnifly.a
-)
+if(MSVC)
+    # MSVC: nifly.lib in a config subdirectory (e.g., Release/)
+    find_library(NIFLY_LIB nifly PATHS
+        ${NIFLY_BUILD_DIR}/src/Release
+        ${NIFLY_BUILD_DIR}/src/RelWithDebInfo
+        ${NIFLY_BUILD_DIR}/src/Debug
+        ${NIFLY_BUILD_DIR}/src
+        NO_DEFAULT_PATH
+    )
+    if(NOT NIFLY_LIB)
+        set(NIFLY_LIB ${NIFLY_BUILD_DIR}/src/Release/nifly.lib)
+    endif()
+    target_link_libraries(nifly_wrapper PRIVATE ${NIFLY_LIB})
+else()
+    target_link_libraries(nifly_wrapper PRIVATE
+        ${NIFLY_BUILD_DIR}/src/libnifly.a
+    )
+endif()
 
 # On Linux, set symbol visibility and ensure all nifly symbols are pulled in
 if(UNIX)
@@ -36,7 +51,13 @@ if(UNIX)
 endif()
 
 # Output name: libnifly_wrapper.so (Linux) or nifly_wrapper.dll (Windows)
-set_target_properties(nifly_wrapper PROPERTIES
-    OUTPUT_NAME nifly_wrapper
-    PREFIX "lib"
-)
+if(WIN32)
+    set_target_properties(nifly_wrapper PROPERTIES
+        OUTPUT_NAME nifly_wrapper
+    )
+else()
+    set_target_properties(nifly_wrapper PROPERTIES
+        OUTPUT_NAME nifly_wrapper
+        PREFIX "lib"
+    )
+endif()
