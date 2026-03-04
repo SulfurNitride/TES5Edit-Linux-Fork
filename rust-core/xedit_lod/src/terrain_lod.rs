@@ -36,7 +36,7 @@ pub fn generate_terrain_lod(
             return Ok(());
         }
     };
-    let settings = LodSettings::parse(&settings_data)?;
+    let settings = LodSettings::parse(&settings_data, "lod")?;
     let (sw_x, sw_y, ne_x, ne_y) = settings.cell_range();
 
     tracing::info!(

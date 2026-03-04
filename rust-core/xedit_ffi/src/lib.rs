@@ -4383,7 +4383,25 @@ fn scan_lod_references_from_dbs(
     let mut all_bases: std::collections::HashMap<u32, LodBase> = std::collections::HashMap::new();
     let mut all_refs: Vec<LodReference> = Vec::new();
 
-    // Pass 1: Collect all STAT/TREE bases with LOD models across all plugins
+    // Record flag constants (used in collect_wrld_refs_recursive)
+    let _ = 0x0000_0020u32; // FLAG_DELETED — used in inner function
+    let _ = 0x0000_0800u32; // FLAG_INITIALLY_DISABLED
+    let _ = 0x0000_8000u32; // FLAG_VWD
+    let _ = 0x0000_0040u32; // FLAG_HAS_TREE_LOD
+
+    let game_id = engine.game_id;
+    let is_fnv = matches!(game_id, xedit_dom::GameId::Fallout3 | xedit_dom::GameId::FalloutNV);
+
+    // Signatures for additional base types (FO3/FNV)
+    let scol_sig = xedit_dom::Signature::from_bytes(b"SCOL");
+    let acti_sig = xedit_dom::Signature::from_bytes(b"ACTI");
+    let mstt_sig = xedit_dom::Signature::from_bytes(b"MSTT");
+    let tree_sig = xedit_dom::Signature::from_bytes(b"TREE");
+    let _xesp_sig = xedit_dom::Signature::from_bytes(b"XESP");
+
+    // Pass 1: Collect all LOD-eligible bases across all plugins
+    // FO3/FNV: STAT, SCOL, ACTI, MSTT (all statics, no VWD requirement)
+    // Skyrim: STAT, TREE
     for (pi, plugin) in engine.plugins.iter().enumerate() {
         let db_path = db_paths.and_then(|paths| paths.get(pi));
         let conn = db_path.and_then(|p| Connection::open(p).ok());
@@ -4394,9 +4412,18 @@ fn scan_lod_references_from_dbs(
                 _ => continue,
             };
 
-            if group_sig != xedit_dom::Signature::STAT
-                && group_sig != xedit_dom::Signature::from_bytes(b"TREE")
-            {
+            let is_lod_group = if is_fnv {
+                group_sig == xedit_dom::Signature::STAT
+                    || group_sig == scol_sig
+                    || group_sig == acti_sig
+                    || group_sig == mstt_sig
+                    || group_sig == tree_sig
+            } else {
+                group_sig == xedit_dom::Signature::STAT
+                    || group_sig == tree_sig
+            };
+
+            if !is_lod_group {
                 continue;
             }
 
@@ -4421,7 +4448,16 @@ fn scan_lod_references_from_dbs(
                     });
                 }
 
-                if lod_models.iter().any(|m| m.is_some()) || full_model.is_some() {
+                // For FO3/FNV: any base with a MODL is LOD-eligible
+                // (LOD mesh = MODL + _lod.nif suffix)
+                // For Skyrim: need MNAM LOD models or be a TREE with full_model
+                let has_lod = if is_fnv {
+                    full_model.is_some()
+                } else {
+                    lod_models.iter().any(|m| m.is_some()) || full_model.is_some()
+                };
+
+                if has_lod {
                     all_bases.insert(form_id, LodBase {
                         form_id,
                         signature: record.signature,
@@ -4540,6 +4576,7 @@ fn parse_refr_subrecord(
     position: &mut [f32; 3],
     rotation: &mut [f32; 3],
     scale: &mut f32,
+    has_xesp: &mut bool,
 ) {
     if *sig == xedit_dom::Signature::NAME && data.len() >= 4 {
         *base_form_id = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
@@ -4549,6 +4586,8 @@ fn parse_refr_subrecord(
         *rotation = [f(12), f(16), f(20)];
     } else if *sig == xedit_dom::Signature::from_bytes(b"XSCL") && data.len() >= 4 {
         *scale = f32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+    } else if *sig == xedit_dom::Signature::from_bytes(b"XESP") {
+        *has_xesp = true;
     }
 }
 
@@ -4567,23 +4606,44 @@ fn parse_base_subrecord(
         let len = data.iter().position(|&b| b == 0).unwrap_or(data.len());
         *full_model = Some(String::from_utf8_lossy(&data[..len]).to_string());
     } else if *sig == xedit_dom::Signature::from_bytes(b"MNAM") {
-        // MNAM contains up to 4 LOD model paths as null-terminated strings
-        let mut offset = 0;
-        let mut level = 0;
-        while offset < data.len() && level < 4 {
-            let end = data[offset..]
-                .iter()
-                .position(|&b| b == 0)
-                .map(|pos| offset + pos)
-                .unwrap_or(data.len());
-            if end > offset {
-                let path = String::from_utf8_lossy(&data[offset..end]).to_string();
-                if !path.is_empty() {
-                    lod_models[level] = Some(path);
+        // MNAM contains up to 4 LOD model paths as 260-byte fixed-size entries
+        // (matching Delphi: wbString(True, 'Level N', 260))
+        // Total: 1040 bytes for 4 levels. Each is null-terminated within 260 bytes.
+        if data.len() >= 1040 {
+            // Fixed 260-byte entries (Skyrim/SSE/FO4)
+            for level in 0..4 {
+                let start = level * 260;
+                let end = start + 260;
+                if end <= data.len() {
+                    let entry = &data[start..end];
+                    let null_pos = entry.iter().position(|&b| b == 0).unwrap_or(260);
+                    if null_pos > 0 {
+                        let path = String::from_utf8_lossy(&entry[..null_pos]).to_string();
+                        if !path.is_empty() {
+                            lod_models[level] = Some(path);
+                        }
+                    }
                 }
             }
-            offset = end + 1;
-            level += 1;
+        } else {
+            // Fallback for smaller MNAM data: parse as null-separated strings
+            let mut offset = 0;
+            let mut level = 0;
+            while offset < data.len() && level < 4 {
+                let end = data[offset..]
+                    .iter()
+                    .position(|&b| b == 0)
+                    .map(|pos| offset + pos)
+                    .unwrap_or(data.len());
+                if end > offset {
+                    let path = String::from_utf8_lossy(&data[offset..end]).to_string();
+                    if !path.is_empty() {
+                        lod_models[level] = Some(path);
+                    }
+                }
+                offset = end + 1;
+                level += 1;
+            }
         }
     }
 }
@@ -4603,6 +4663,11 @@ fn collect_wrld_refs_recursive(
 ) {
     use xedit_dom::group::{GroupChild, GroupType};
 
+    // Flag constants for REFR filtering (matching Delphi xEdit)
+    const FLAG_DELETED: u32 = 0x0000_0020;
+    const FLAG_INITIALLY_DISABLED: u32 = 0x0000_0800;
+    const FLAG_VWD: u32 = 0x0000_8000;
+
     for child in &group.children {
         match child {
             GroupChild::Record(record) => {
@@ -4614,23 +4679,45 @@ fn collect_wrld_refs_recursive(
                     continue;
                 }
 
+                let ref_flags = record.flags.0;
+
+                // Skip deleted references (matching Delphi: Flags.IsDeleted)
+                if ref_flags & FLAG_DELETED != 0 {
+                    continue;
+                }
+
+                // Skip initially disabled references (unless VWD)
+                if ref_flags & FLAG_INITIALLY_DISABLED != 0
+                    && ref_flags & FLAG_VWD == 0
+                {
+                    continue;
+                }
+
                 let form_id = record.form_id.raw();
                 let mut base_form_id = 0u32;
                 let mut position = [0.0f32; 3];
                 let mut rotation = [0.0f32; 3];
                 let mut scale = 1.0f32;
+                let mut has_xesp = false;
 
                 if !record.subrecords.is_empty() {
                     for sr in &record.subrecords {
                         parse_refr_subrecord(
                             &sr.signature, &sr.raw_data,
                             &mut base_form_id, &mut position, &mut rotation, &mut scale,
+                            &mut has_xesp,
                         );
                     }
                 } else if let Some(c) = conn {
                     query_subrecords_and_parse(c, group_idx, ri as i32, |sig, data| {
-                        parse_refr_subrecord(sig, data, &mut base_form_id, &mut position, &mut rotation, &mut scale);
+                        parse_refr_subrecord(sig, data, &mut base_form_id, &mut position, &mut rotation, &mut scale, &mut has_xesp);
                     });
+                }
+
+                // Skip references with enable parent (XESP) unless VWD flag set
+                // Matching Delphi: skip if has XESP and NOT VWD
+                if has_xesp && ref_flags & FLAG_VWD == 0 {
+                    continue;
                 }
 
                 if base_form_id != 0 {
@@ -4649,10 +4736,9 @@ fn collect_wrld_refs_recursive(
                 }
             }
             GroupChild::Group(sub_group) => {
-                // Determine the worldspace form_id from WorldChildren group type
                 let ws_id = match sub_group.group_type {
                     GroupType::WorldChildren(id) => id,
-                    _ => worldspace_form_id, // inherit from parent
+                    _ => worldspace_form_id,
                 };
 
                 collect_wrld_refs_recursive(
@@ -4883,36 +4969,38 @@ pub extern "C" fn xedit_lod_generate(
 
         // Spawn worker thread — scanning + generation all happens off the UI thread
         std::thread::spawn(move || {
-            // Ensure output directory exists before logging
+            // Ensure output directory exists
             let _ = std::fs::create_dir_all(&options.output_dir);
 
-            // Set up file-based LOD logging so crashes leave a trace
-            let log_path = std::path::Path::new(&options.output_dir).join("LODGen_log.txt");
-            let log_file = std::fs::File::create(&log_path);
-            let lod_log = std::sync::Arc::new(std::sync::Mutex::new(log_file.ok()));
+            // Single log file next to the executable — captures ALL tracing output
+            let log_path = std::env::current_exe()
+                .ok()
+                .and_then(|p| p.parent().map(|d| d.join("LODGen_log.txt")))
+                .unwrap_or_else(|| std::path::PathBuf::from("LODGen_log.txt"));
 
-            // Helper to write to both tracing and the log file
-            let write_log = {
-                let lod_log = lod_log.clone();
-                move |msg: &str| {
-                    tracing::info!("{}", msg);
-                    if let Ok(mut guard) = lod_log.lock() {
-                        if let Some(ref mut f) = *guard {
-                            use std::io::Write;
-                            let elapsed = std::time::SystemTime::now()
-                        .duration_since(std::time::UNIX_EPOCH)
-                        .unwrap_or_default();
-                    let secs = elapsed.as_secs() % 86400;
-                    let _ = writeln!(f, "[{:02}:{:02}:{:02}] {}",
-                        secs / 3600, (secs % 3600) / 60, secs % 60, msg);
-                            let _ = f.flush();
-                        }
-                    }
-                }
+            // Install a tracing subscriber that writes to the log file
+            // This captures all tracing::info!/warn!/error! from the LOD pipeline
+            use tracing_subscriber::fmt;
+            use tracing_subscriber::prelude::*;
+
+            let log_file = std::fs::File::create(&log_path).ok();
+            let _guard = if let Some(file) = log_file {
+                let file_layer = fmt::layer()
+                    .with_writer(std::sync::Mutex::new(file))
+                    .with_ansi(false)
+                    .with_target(false)
+                    .with_level(true)
+                    .with_timer(fmt::time::uptime());
+
+                let subscriber = tracing_subscriber::registry().with(file_layer);
+                // Set as thread-local default (doesn't affect other threads)
+                Some(tracing::subscriber::set_default(subscriber))
+            } else {
+                None
             };
 
-            write_log(&format!("LOD Generation started — output: {}", options.output_dir));
-            write_log(&format!("Game: {}, Worldspaces: {}", options.game_id, options.worldspaces.join(", ")));
+            tracing::info!("LOD Generation started — output: {}", options.output_dir);
+            tracing::info!("Game: {}, Worldspaces: {}", options.game_id, options.worldspaces.join(", "));
 
             let progress = xedit_lod::progress::Progress::new(
                 progress_cb.map(|cb| cb as xedit_lod::progress::ProgressFn),
@@ -4936,16 +5024,12 @@ pub extern "C" fn xedit_lod_generate(
                 let db_lock = PLUGIN_DBS.lock().unwrap();
                 let db_paths = db_lock.as_ref();
 
-                write_log(&format!(
-                    "Scanning {} plugins for LOD references",
-                    engine.plugins.len(),
-                ));
+                tracing::info!("Scanning {} plugins for LOD references", engine.plugins.len());
 
                 match scan_lod_references_from_dbs(engine, db_paths) {
                     Ok(result) => result,
                     Err(e) => {
                         let msg = format!("Failed to scan references: {}", e);
-                        write_log(&msg);
                         tracing::error!("{}", msg);
                         let mut job = LOD_JOB.lock().unwrap();
                         *job = Some(LodJobState { status: -1, error: msg });
@@ -4954,12 +5038,10 @@ pub extern "C" fn xedit_lod_generate(
                 }
             };
 
-            write_log(&format!(
+            tracing::info!(
                 "Found {} LOD references, {} LOD bases, {} worldspaces",
-                references.len(),
-                bases.len(),
-                worldspace_map.len()
-            ));
+                references.len(), bases.len(), worldspace_map.len()
+            );
 
             progress.report(&format!(
                 "Found {} references, {} bases. Starting LOD generation...",
@@ -4974,7 +5056,7 @@ pub extern "C" fn xedit_lod_generate(
             let mut lock = LOD_JOB.lock().unwrap();
             match gen_result {
                 Ok(Ok(())) => {
-                    write_log("LOD generation completed successfully");
+                    tracing::info!("LOD generation completed successfully");
                     *lock = Some(LodJobState {
                         status: 1,
                         error: String::new(),
@@ -4982,7 +5064,6 @@ pub extern "C" fn xedit_lod_generate(
                 }
                 Ok(Err(e)) => {
                     let msg = format!("LOD generation failed: {:#}", e);
-                    write_log(&msg);
                     tracing::error!("{}", msg);
                     *lock = Some(LodJobState {
                         status: -1,
@@ -4991,7 +5072,6 @@ pub extern "C" fn xedit_lod_generate(
                 }
                 Err(_panic) => {
                     let msg = "LOD generation crashed (panic in native code). Check LODGen_log.txt for details.";
-                    write_log(msg);
                     tracing::error!("{}", msg);
                     *lock = Some(LodJobState {
                         status: -1,
