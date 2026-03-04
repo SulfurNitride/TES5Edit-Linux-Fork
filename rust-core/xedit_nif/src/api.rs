@@ -1,6 +1,7 @@
 //! nifly C wrapper API — function pointer types and high-level NIF handle.
 
-use std::ffi::{c_char, c_int, c_void, CStr};
+use std::ffi::{c_char, c_int, c_void, CStr, CString};
+use std::path::Path;
 
 use crate::NifError;
 
@@ -19,6 +20,61 @@ pub(crate) type NiflyGetTextureSlotFn = unsafe extern "C" fn(
     buflen: c_int,
 ) -> c_int;
 
+// Write/query function pointer types (optional — available when wrapper is rebuilt)
+pub(crate) type NiflyCreateFn = unsafe extern "C" fn(game_version: c_int) -> *mut c_void;
+pub(crate) type NiflyAddShapeFn = unsafe extern "C" fn(
+    handle: *mut c_void,
+    name: *const c_char,
+    verts: *const f32,
+    vert_count: c_int,
+    tris: *const u16,
+    tri_count: c_int,
+    uvs: *const f32,
+    normals: *const f32,
+) -> c_int;
+pub(crate) type NiflySetTextureFn = unsafe extern "C" fn(
+    handle: *mut c_void,
+    shape_idx: c_int,
+    slot: c_int,
+    path: *const c_char,
+) -> c_int;
+pub(crate) type NiflyGetVerticesFn = unsafe extern "C" fn(
+    handle: *mut c_void,
+    shape_idx: c_int,
+    out_buf: *mut f32,
+    max_count: c_int,
+) -> c_int;
+pub(crate) type NiflyGetTrianglesFn = unsafe extern "C" fn(
+    handle: *mut c_void,
+    shape_idx: c_int,
+    out_buf: *mut u16,
+    max_count: c_int,
+) -> c_int;
+pub(crate) type NiflyGetUvsFn = unsafe extern "C" fn(
+    handle: *mut c_void,
+    shape_idx: c_int,
+    out_buf: *mut f32,
+    max_count: c_int,
+) -> c_int;
+pub(crate) type NiflyGetNormalsFn = unsafe extern "C" fn(
+    handle: *mut c_void,
+    shape_idx: c_int,
+    out_buf: *mut f32,
+    max_count: c_int,
+) -> c_int;
+pub(crate) type NiflyGetVertexCountFn = unsafe extern "C" fn(
+    handle: *mut c_void,
+    shape_idx: c_int,
+) -> c_int;
+pub(crate) type NiflyGetTriangleCountFn = unsafe extern "C" fn(
+    handle: *mut c_void,
+    shape_idx: c_int,
+) -> c_int;
+pub(crate) type NiflySaveFn = unsafe extern "C" fn(
+    handle: *mut c_void,
+    path: *const c_char,
+) -> c_int;
+
 /// Resolved function pointers from the loaded nifly library.
 pub(crate) struct NiflyFunctions {
     pub load: NiflyLoadFn,
@@ -27,6 +83,17 @@ pub(crate) struct NiflyFunctions {
     pub get_block_type: NiflyGetBlockTypeFn,
     pub get_shape_count: NiflyGetShapeCountFn,
     pub get_texture_slot: NiflyGetTextureSlotFn,
+    // Optional write/query functions (available when wrapper is rebuilt)
+    pub create: Option<NiflyCreateFn>,
+    pub add_shape: Option<NiflyAddShapeFn>,
+    pub set_texture: Option<NiflySetTextureFn>,
+    pub get_vertices: Option<NiflyGetVerticesFn>,
+    pub get_triangles: Option<NiflyGetTrianglesFn>,
+    pub get_uvs: Option<NiflyGetUvsFn>,
+    pub get_normals: Option<NiflyGetNormalsFn>,
+    pub get_vertex_count: Option<NiflyGetVertexCountFn>,
+    pub get_triangle_count: Option<NiflyGetTriangleCountFn>,
+    pub save: Option<NiflySaveFn>,
 }
 
 /// A loaded NIF file handle, wrapping the opaque pointer from nifly.
@@ -117,6 +184,188 @@ impl NifFile {
         }
         let cstr = unsafe { CStr::from_ptr(buf.as_ptr() as *const c_char) };
         Ok(Some(cstr.to_string_lossy().into_owned()))
+    }
+
+    /// Add a shape with geometry data. Returns the shape index.
+    ///
+    /// `verts` is a flat slice of [x, y, z, ...] (length = vert_count * 3).
+    /// `tris` is a flat slice of [i0, i1, i2, ...] (length = tri_count * 3).
+    /// `uvs` is an optional flat slice of [u, v, ...] (length = vert_count * 2).
+    /// `normals` is an optional flat slice of [x, y, z, ...] (length = vert_count * 3).
+    pub fn add_shape(
+        &self,
+        name: &str,
+        verts: &[f32],
+        tris: &[u16],
+        uvs: Option<&[f32]>,
+        normals: Option<&[f32]>,
+    ) -> Result<u32, NifError> {
+        let func = unsafe { (*self.funcs).add_shape }
+            .ok_or_else(|| NifError::OperationFailed("nifly_add_shape not available".into()))?;
+        let c_name = CString::new(name)
+            .map_err(|_| NifError::InvalidFile("Shape name contains null bytes".into()))?;
+        let vert_count = (verts.len() / 3) as c_int;
+        let tri_count = (tris.len() / 3) as c_int;
+        let uv_ptr = uvs.map_or(std::ptr::null(), |u| u.as_ptr());
+        let norm_ptr = normals.map_or(std::ptr::null(), |n| n.as_ptr());
+        let ret = unsafe {
+            func(
+                self.handle,
+                c_name.as_ptr(),
+                verts.as_ptr(),
+                vert_count,
+                tris.as_ptr(),
+                tri_count,
+                uv_ptr,
+                norm_ptr,
+            )
+        };
+        if ret < 0 {
+            return Err(NifError::OperationFailed("add_shape failed".into()));
+        }
+        Ok(ret as u32)
+    }
+
+    /// Set a texture path for a shape at the given slot.
+    ///
+    /// Slot indices: 0=diffuse, 1=normal, etc.
+    pub fn set_texture(&self, shape_index: u32, slot: u32, path: &str) -> Result<(), NifError> {
+        let func = unsafe { (*self.funcs).set_texture }
+            .ok_or_else(|| NifError::OperationFailed("nifly_set_texture not available".into()))?;
+        let c_path = CString::new(path)
+            .map_err(|_| NifError::InvalidFile("Texture path contains null bytes".into()))?;
+        let ret = unsafe { func(self.handle, shape_index as c_int, slot as c_int, c_path.as_ptr()) };
+        if ret < 0 {
+            return Err(NifError::OperationFailed(format!(
+                "set_texture({}, {}) failed",
+                shape_index, slot
+            )));
+        }
+        Ok(())
+    }
+
+    /// Get vertex positions for a shape. Returns a flat vec of [x, y, z, ...].
+    pub fn get_vertices(&self, shape_index: u32) -> Result<Vec<f32>, NifError> {
+        let func = unsafe { (*self.funcs).get_vertices }
+            .ok_or_else(|| NifError::OperationFailed("nifly_get_vertices not available".into()))?;
+        // First call to get count
+        let count = unsafe { func(self.handle, shape_index as c_int, std::ptr::null_mut(), 0) };
+        if count < 0 {
+            return Err(NifError::OperationFailed(format!(
+                "get_vertices({}) failed",
+                shape_index
+            )));
+        }
+        if count == 0 {
+            return Ok(Vec::new());
+        }
+        let mut buf = vec![0.0f32; count as usize * 3];
+        unsafe { func(self.handle, shape_index as c_int, buf.as_mut_ptr(), count) };
+        Ok(buf)
+    }
+
+    /// Get triangle indices for a shape. Returns a flat vec of [i0, i1, i2, ...].
+    pub fn get_triangles(&self, shape_index: u32) -> Result<Vec<u16>, NifError> {
+        let func = unsafe { (*self.funcs).get_triangles }
+            .ok_or_else(|| NifError::OperationFailed("nifly_get_triangles not available".into()))?;
+        let count = unsafe { func(self.handle, shape_index as c_int, std::ptr::null_mut(), 0) };
+        if count < 0 {
+            return Err(NifError::OperationFailed(format!(
+                "get_triangles({}) failed",
+                shape_index
+            )));
+        }
+        if count == 0 {
+            return Ok(Vec::new());
+        }
+        let mut buf = vec![0u16; count as usize * 3];
+        unsafe { func(self.handle, shape_index as c_int, buf.as_mut_ptr(), count) };
+        Ok(buf)
+    }
+
+    /// Get UV coordinates for a shape. Returns a flat vec of [u, v, ...].
+    pub fn get_uvs(&self, shape_index: u32) -> Result<Vec<f32>, NifError> {
+        let func = unsafe { (*self.funcs).get_uvs }
+            .ok_or_else(|| NifError::OperationFailed("nifly_get_uvs not available".into()))?;
+        let count = unsafe { func(self.handle, shape_index as c_int, std::ptr::null_mut(), 0) };
+        if count < 0 {
+            return Err(NifError::OperationFailed(format!(
+                "get_uvs({}) failed",
+                shape_index
+            )));
+        }
+        if count == 0 {
+            return Ok(Vec::new());
+        }
+        let mut buf = vec![0.0f32; count as usize * 2];
+        unsafe { func(self.handle, shape_index as c_int, buf.as_mut_ptr(), count) };
+        Ok(buf)
+    }
+
+    /// Get vertex normals for a shape. Returns a flat vec of [x, y, z, ...].
+    pub fn get_normals(&self, shape_index: u32) -> Result<Vec<f32>, NifError> {
+        let func = unsafe { (*self.funcs).get_normals }
+            .ok_or_else(|| NifError::OperationFailed("nifly_get_normals not available".into()))?;
+        let count = unsafe { func(self.handle, shape_index as c_int, std::ptr::null_mut(), 0) };
+        if count < 0 {
+            return Err(NifError::OperationFailed(format!(
+                "get_normals({}) failed",
+                shape_index
+            )));
+        }
+        if count == 0 {
+            return Ok(Vec::new());
+        }
+        let mut buf = vec![0.0f32; count as usize * 3];
+        unsafe { func(self.handle, shape_index as c_int, buf.as_mut_ptr(), count) };
+        Ok(buf)
+    }
+
+    /// Get the vertex count for a shape.
+    pub fn vertex_count(&self, shape_index: u32) -> Result<u32, NifError> {
+        let func = unsafe { (*self.funcs).get_vertex_count }
+            .ok_or_else(|| NifError::OperationFailed("nifly_get_vertex_count not available".into()))?;
+        let n = unsafe { func(self.handle, shape_index as c_int) };
+        if n < 0 {
+            return Err(NifError::OperationFailed(format!(
+                "get_vertex_count({}) failed",
+                shape_index
+            )));
+        }
+        Ok(n as u32)
+    }
+
+    /// Get the triangle count for a shape.
+    pub fn triangle_count(&self, shape_index: u32) -> Result<u32, NifError> {
+        let func = unsafe { (*self.funcs).get_triangle_count }
+            .ok_or_else(|| NifError::OperationFailed("nifly_get_triangle_count not available".into()))?;
+        let n = unsafe { func(self.handle, shape_index as c_int) };
+        if n < 0 {
+            return Err(NifError::OperationFailed(format!(
+                "get_triangle_count({}) failed",
+                shape_index
+            )));
+        }
+        Ok(n as u32)
+    }
+
+    /// Save the NIF to disk.
+    pub fn save(&self, path: &Path) -> Result<(), NifError> {
+        let func = unsafe { (*self.funcs).save }
+            .ok_or_else(|| NifError::OperationFailed("nifly_save not available".into()))?;
+        let c_path = CString::new(
+            path.to_str()
+                .ok_or_else(|| NifError::InvalidFile("Path contains invalid UTF-8".into()))?,
+        )
+        .map_err(|_| NifError::InvalidFile("Path contains null bytes".into()))?;
+        let ret = unsafe { func(self.handle, c_path.as_ptr()) };
+        if ret < 0 {
+            return Err(NifError::OperationFailed(format!(
+                "save({}) failed",
+                path.display()
+            )));
+        }
+        Ok(())
     }
 }
 

@@ -15,60 +15,52 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"ACTI"),
             name: "Activator".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMAD
                 SubrecordDef {
                     signature: Signature(*b"VMAD"),
-                    name: "wbVMAD".to_string(),
-                    fields: vec![],
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDEST
                 SubrecordDef {
                     signature: Signature(*b"DEST"),
-                    name: "wbDEST".to_string(),
-                    fields: vec![],
+                    name: "Destructible".to_string(),
+                    fields: vec![FieldDef { name: "Destructible".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbKeywords
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbKeywords".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"KSIZ"),
+                    name: "Keywords".to_string(),
+                    fields: vec![FieldDef { name: "Keywords".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbByteColors
                 SubrecordDef {
                     signature: Signature(*b"    "),
-                    name: "wbByteColors".to_string(),
-                    fields: vec![],
+                    name: "Color".to_string(),
+                    fields: vec![FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -113,53 +105,46 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"TACT"),
             name: "Talking Activator".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMAD
                 SubrecordDef {
                     signature: Signature(*b"VMAD"),
-                    name: "wbVMAD".to_string(),
-                    fields: vec![],
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDEST
                 SubrecordDef {
                     signature: Signature(*b"DEST"),
-                    name: "wbDEST".to_string(),
-                    fields: vec![],
+                    name: "Destructible".to_string(),
+                    fields: vec![FieldDef { name: "Destructible".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbKeywords
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbKeywords".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"KSIZ"),
+                    name: "Keywords".to_string(),
+                    fields: vec![FieldDef { name: "Keywords".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -192,81 +177,70 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"ALCH"),
             name: "Ingestible".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbKeywords
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbKeywords".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"KSIZ"),
+                    name: "Keywords".to_string(),
+                    fields: vec![FieldDef { name: "Keywords".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDESC
                 SubrecordDef {
                     signature: Signature(*b"DESC"),
-                    name: "wbDESC".to_string(),
-                    fields: vec![],
+                    name: "Description".to_string(),
+                    fields: vec![FieldDef { name: "Description".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDEST
                 SubrecordDef {
                     signature: Signature(*b"DEST"),
-                    name: "wbDEST".to_string(),
-                    fields: vec![],
+                    name: "Destructible".to_string(),
+                    fields: vec![FieldDef { name: "Destructible".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbICON
                 SubrecordDef {
                     signature: Signature(*b"ICON"),
-                    name: "wbICON".to_string(),
-                    fields: vec![],
+                    name: "Icon".to_string(),
+                    fields: vec![FieldDef { name: "Icon".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbYNAM
                 SubrecordDef {
                     signature: Signature(*b"YNAM"),
-                    name: "wbYNAM".to_string(),
-                    fields: vec![],
+                    name: "Pickup Sound".to_string(),
+                    fields: vec![FieldDef { name: "Pickup Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbZNAM
                 SubrecordDef {
                     signature: Signature(*b"ZNAM"),
-                    name: "wbZNAM".to_string(),
-                    fields: vec![],
+                    name: "Putdown Sound".to_string(),
+                    fields: vec![FieldDef { name: "Putdown Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbETYP
                 SubrecordDef {
                     signature: Signature(*b"ETYP"),
-                    name: "wbETYP".to_string(),
-                    fields: vec![],
+                    name: "Equip Type".to_string(),
+                    fields: vec![FieldDef { name: "Equip Type".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"EQUP")] } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -287,11 +261,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     ],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbEffectsReq
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbEffectsReq".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"EFID"),
+                    name: "Effects".to_string(),
+                    fields: vec![FieldDef { name: "Effects".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
             ],
@@ -300,74 +273,64 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"AMMO"),
             name: "Ammunition".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbICON
                 SubrecordDef {
                     signature: Signature(*b"ICON"),
-                    name: "wbICON".to_string(),
-                    fields: vec![],
+                    name: "Icon".to_string(),
+                    fields: vec![FieldDef { name: "Icon".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDEST
                 SubrecordDef {
                     signature: Signature(*b"DEST"),
-                    name: "wbDEST".to_string(),
-                    fields: vec![],
+                    name: "Destructible".to_string(),
+                    fields: vec![FieldDef { name: "Destructible".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbYNAM
                 SubrecordDef {
                     signature: Signature(*b"YNAM"),
-                    name: "wbYNAM".to_string(),
-                    fields: vec![],
+                    name: "Pickup Sound".to_string(),
+                    fields: vec![FieldDef { name: "Pickup Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbZNAM
                 SubrecordDef {
                     signature: Signature(*b"ZNAM"),
-                    name: "wbZNAM".to_string(),
-                    fields: vec![],
+                    name: "Putdown Sound".to_string(),
+                    fields: vec![FieldDef { name: "Putdown Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDESC
                 SubrecordDef {
                     signature: Signature(*b"DESC"),
-                    name: "wbDESC".to_string(),
-                    fields: vec![],
+                    name: "Description".to_string(),
+                    fields: vec![FieldDef { name: "Description".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbKeywords
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbKeywords".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"KSIZ"),
+                    name: "Keywords".to_string(),
+                    fields: vec![FieldDef { name: "Keywords".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -394,18 +357,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"ANIO"),
             name: "Animated Object".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -420,32 +381,28 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"ARMO"),
             name: "Armor".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMAD
                 SubrecordDef {
                     signature: Signature(*b"VMAD"),
-                    name: "wbVMAD".to_string(),
-                    fields: vec![],
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbEnchantment
@@ -502,25 +459,22 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDEST
                 SubrecordDef {
                     signature: Signature(*b"DEST"),
-                    name: "wbDEST".to_string(),
-                    fields: vec![],
+                    name: "Destructible".to_string(),
+                    fields: vec![FieldDef { name: "Destructible".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbYNAM
                 SubrecordDef {
                     signature: Signature(*b"YNAM"),
-                    name: "wbYNAM".to_string(),
-                    fields: vec![],
+                    name: "Pickup Sound".to_string(),
+                    fields: vec![FieldDef { name: "Pickup Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbZNAM
                 SubrecordDef {
                     signature: Signature(*b"ZNAM"),
-                    name: "wbZNAM".to_string(),
-                    fields: vec![],
+                    name: "Putdown Sound".to_string(),
+                    fields: vec![FieldDef { name: "Putdown Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR")] } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -529,11 +483,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![FieldDef { name: "Ragdoll Constraint Template".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbETYP
                 SubrecordDef {
                     signature: Signature(*b"ETYP"),
-                    name: "wbETYP".to_string(),
-                    fields: vec![],
+                    name: "Equip Type".to_string(),
+                    fields: vec![FieldDef { name: "Equip Type".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"EQUP")] } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -554,18 +507,16 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![FieldDef { name: "Race".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"RACE")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbKeywords
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbKeywords".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"KSIZ"),
+                    name: "Keywords".to_string(),
+                    fields: vec![FieldDef { name: "Keywords".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDESC
                 SubrecordDef {
                     signature: Signature(*b"DESC"),
-                    name: "wbDESC".to_string(),
-                    fields: vec![],
+                    name: "Description".to_string(),
+                    fields: vec![FieldDef { name: "Description".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // RArray: Armature
@@ -602,11 +553,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"ARMA"),
             name: "Armor Addon".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbBODTBOD2
@@ -716,46 +666,40 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"BOOK"),
             name: "Book".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMAD
                 SubrecordDef {
                     signature: Signature(*b"VMAD"),
-                    name: "wbVMAD".to_string(),
-                    fields: vec![],
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbICON
                 SubrecordDef {
                     signature: Signature(*b"ICON"),
-                    name: "wbICON".to_string(),
-                    fields: vec![],
+                    name: "Icon".to_string(),
+                    fields: vec![FieldDef { name: "Icon".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -764,32 +708,28 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![FieldDef { name: "Book Text".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDEST
                 SubrecordDef {
                     signature: Signature(*b"DEST"),
-                    name: "wbDEST".to_string(),
-                    fields: vec![],
+                    name: "Destructible".to_string(),
+                    fields: vec![FieldDef { name: "Destructible".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbYNAM
                 SubrecordDef {
                     signature: Signature(*b"YNAM"),
-                    name: "wbYNAM".to_string(),
-                    fields: vec![],
+                    name: "Pickup Sound".to_string(),
+                    fields: vec![FieldDef { name: "Pickup Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbZNAM
                 SubrecordDef {
                     signature: Signature(*b"ZNAM"),
-                    name: "wbZNAM".to_string(),
-                    fields: vec![],
+                    name: "Putdown Sound".to_string(),
+                    fields: vec![FieldDef { name: "Putdown Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbKeywords
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbKeywords".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"KSIZ"),
+                    name: "Keywords".to_string(),
+                    fields: vec![FieldDef { name: "Keywords".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -828,18 +768,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"CELL"),
             name: "Cell".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -859,12 +797,9 @@ pub fn register_all() -> Vec<RecordDef> {
                     signature: Signature(*b"XCLL"),
                     name: "Lighting".to_string(),
                     fields: vec![
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
                         FieldDef { name: "Fog Near".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Fog Far".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Directional Rotation XY".to_string(), field_type: FieldType::Integer { size: IntegerSize::S32, enum_def: None, flags_def: None } },
@@ -874,8 +809,7 @@ pub fn register_all() -> Vec<RecordDef> {
                         FieldDef { name: "Fog Power".to_string(), field_type: FieldType::Float },
                         // TODO: resolve variable reference: wbAmbientColors
                         FieldDef { name: "wbAmbientColors".to_string(), field_type: FieldType::Unknown },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
                         FieldDef { name: "Fog Max".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Light Fade Begin".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Light Fade End".to_string(), field_type: FieldType::Float },
@@ -1024,32 +958,28 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"CLAS"),
             name: "Class".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULLReq
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbFULLReq".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"FULL"),
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDESCReq
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbDESCReq".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"DESC"),
+                    name: "Description".to_string(),
+                    fields: vec![FieldDef { name: "Description".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbICON
                 SubrecordDef {
                     signature: Signature(*b"ICON"),
-                    name: "wbICON".to_string(),
-                    fields: vec![],
+                    name: "Icon".to_string(),
+                    fields: vec![FieldDef { name: "Icon".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -1080,11 +1010,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"CLMT"),
             name: "Climate".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -1116,11 +1045,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![FieldDef { name: "Sun Glare Texture".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbClimateTiming
@@ -1136,11 +1064,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"SPGD"),
             name: "Shader Particle Geometry".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -1174,11 +1101,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"RFCT"),
             name: "Visual Effect".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -1197,39 +1123,34 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"CONT"),
             name: "Container".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMAD
                 SubrecordDef {
                     signature: Signature(*b"VMAD"),
-                    name: "wbVMAD".to_string(),
-                    fields: vec![],
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbCOCT
@@ -1246,11 +1167,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDEST
                 SubrecordDef {
                     signature: Signature(*b"DEST"),
-                    name: "wbDEST".to_string(),
-                    fields: vec![],
+                    name: "Destructible".to_string(),
+                    fields: vec![FieldDef { name: "Destructible".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -1280,11 +1200,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"CSTY"),
             name: "Combat Style".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -1371,18 +1290,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"DIAL"),
             name: "Dialog Topic".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -1445,46 +1362,40 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"DOOR"),
             name: "Door".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMAD
                 SubrecordDef {
                     signature: Signature(*b"VMAD"),
-                    name: "wbVMAD".to_string(),
-                    fields: vec![],
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDEST
                 SubrecordDef {
                     signature: Signature(*b"DEST"),
-                    name: "wbDEST".to_string(),
-                    fields: vec![],
+                    name: "Destructible".to_string(),
+                    fields: vec![FieldDef { name: "Destructible".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -1524,11 +1435,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"EFSH"),
             name: "Effect Shader".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -1570,8 +1480,7 @@ pub fn register_all() -> Vec<RecordDef> {
                         FieldDef { name: "Membrane Shader - Source Blend Mode".to_string(), field_type: FieldType::Integer { size: IntegerSize::U32, enum_def: None, flags_def: None } /* TODO: wbBlendModeEnum */ },
                         FieldDef { name: "Membrane Shader - Blend Operation".to_string(), field_type: FieldType::Integer { size: IntegerSize::U32, enum_def: None, flags_def: None } /* TODO: wbBlendOpEnum */ },
                         FieldDef { name: "Membrane Shader - Z Test Function".to_string(), field_type: FieldType::Integer { size: IntegerSize::U32, enum_def: None, flags_def: None } /* TODO: wbZTestFuncEnum */ },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
                         FieldDef { name: "Fill/Texture Effect - Alpha Fade In Time".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Fill/Texture Effect - Full Alpha Time".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Fill/Texture Effect - Alpha Fade Out Time".to_string(), field_type: FieldType::Float },
@@ -1581,8 +1490,7 @@ pub fn register_all() -> Vec<RecordDef> {
                         FieldDef { name: "Fill/Texture Effect - Texture Animation Speed (U)".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Fill/Texture Effect - Texture Animation Speed (V)".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Edge Effect - Fall Off".to_string(), field_type: FieldType::Float },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
                         FieldDef { name: "Edge Effect - Alpha Fade In Time".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Edge Effect - Full Alpha Time".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Edge Effect - Alpha Fade Out Time".to_string(), field_type: FieldType::Float },
@@ -1615,12 +1523,9 @@ pub fn register_all() -> Vec<RecordDef> {
                         FieldDef { name: "Particle Shader - Scale Key 2".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Particle Shader - Scale Key 1 Time".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Particle Shader - Scale Key 2 Time".to_string(), field_type: FieldType::Float },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
                         FieldDef { name: "Color Key 1 - Color Alpha".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Color Key 2 - Color Alpha".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Color Key 3 - Color Alpha".to_string(), field_type: FieldType::Float },
@@ -1638,8 +1543,7 @@ pub fn register_all() -> Vec<RecordDef> {
                         FieldDef { name: "Holes - Start Val".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Holes - End Val".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Edge Width (alpha units)".to_string(), field_type: FieldType::Float },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
                         FieldDef { name: "Explosion Wind Speed".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Texture Count U".to_string(), field_type: FieldType::Integer { size: IntegerSize::U32, enum_def: None, flags_def: None } },
                         FieldDef { name: "Texture Count V".to_string(), field_type: FieldType::Integer { size: IntegerSize::U32, enum_def: None, flags_def: None } },
@@ -1650,10 +1554,8 @@ pub fn register_all() -> Vec<RecordDef> {
                         FieldDef { name: "Addon Models - Scale In Time".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Addon Models - Scale Out Time".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Ambient Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR"), Signature(*b"NULL")] } },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
                         FieldDef { name: "Fill/Texture Effect - Color Key Scale/Time".to_string(), field_type: FieldType::Struct {
                             name: "Fill/Texture Effect - Color Key Scale/Time".to_string(),
                             fields: vec![
@@ -1694,25 +1596,22 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"ENCH"),
             name: "Enchantment".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -1731,11 +1630,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     ],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbEffectsReq
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbEffectsReq".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"EFID"),
+                    name: "Effects".to_string(),
+                    fields: vec![FieldDef { name: "Effects".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
             ],
@@ -1744,18 +1642,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"EYES"),
             name: "Eyes".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULLReq
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbFULLReq".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"FULL"),
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -1776,18 +1672,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"FACT"),
             name: "Faction".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbFactionRelations
@@ -1906,11 +1800,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
             ],
@@ -1919,60 +1812,52 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"FURN"),
             name: "Furniture".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMAD
                 SubrecordDef {
                     signature: Signature(*b"VMAD"),
-                    name: "wbVMAD".to_string(),
-                    fields: vec![],
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDEST
                 SubrecordDef {
                     signature: Signature(*b"DEST"),
-                    name: "wbDEST".to_string(),
-                    fields: vec![],
+                    name: "Destructible".to_string(),
+                    fields: vec![FieldDef { name: "Destructible".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbKeywords
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbKeywords".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"KSIZ"),
+                    name: "Keywords".to_string(),
+                    fields: vec![FieldDef { name: "Keywords".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbByteColors
                 SubrecordDef {
                     signature: Signature(*b"    "),
-                    name: "wbByteColors".to_string(),
-                    fields: vec![],
+                    name: "Color".to_string(),
+                    fields: vec![FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -2053,11 +1938,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"GLOB"),
             name: "Global".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -2103,18 +1987,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"KYWD"),
             name: "Keyword".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbByteRGBA
                 SubrecordDef {
                     signature: Signature(*b"    "),
-                    name: "wbByteRGBA".to_string(),
-                    fields: vec![],
+                    name: "Color".to_string(),
+                    fields: vec![FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
             ],
@@ -2123,18 +2005,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"LCRT"),
             name: "Location Reference Type".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbByteRGBA
                 SubrecordDef {
                     signature: Signature(*b"    "),
-                    name: "wbByteRGBA".to_string(),
-                    fields: vec![],
+                    name: "Color".to_string(),
+                    fields: vec![FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
             ],
@@ -2143,18 +2023,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"AACT"),
             name: "Action".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbByteRGBA
                 SubrecordDef {
                     signature: Signature(*b"    "),
-                    name: "wbByteRGBA".to_string(),
-                    fields: vec![],
+                    name: "Color".to_string(),
+                    fields: vec![FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
             ],
@@ -2163,18 +2041,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"TXST"),
             name: "Texture Set".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
                 // Begin RStruct: Textures (RGB/A)
@@ -2245,25 +2121,22 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"HDPT"),
             name: "Head Part".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -2323,18 +2196,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"ASPC"),
             name: "Acoustic Space".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -2361,39 +2232,34 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"MSTT"),
             name: "Moveable Static".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDEST
                 SubrecordDef {
                     signature: Signature(*b"DEST"),
-                    name: "wbDEST".to_string(),
-                    fields: vec![],
+                    name: "Destructible".to_string(),
+                    fields: vec![FieldDef { name: "Destructible".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -2414,18 +2280,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"IDLM"),
             name: "Idle Marker".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbIdleAnimation
@@ -2435,11 +2299,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
             ],
@@ -2448,39 +2311,34 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"PROJ"),
             name: "Projectile".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDEST
                 SubrecordDef {
                     signature: Signature(*b"DEST"),
-                    name: "wbDEST".to_string(),
-                    fields: vec![],
+                    name: "Destructible".to_string(),
+                    fields: vec![FieldDef { name: "Destructible".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -2540,32 +2398,28 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"HAZD"),
             name: "Hazard".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -2597,67 +2451,58 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"SLGM"),
             name: "Soul Gem".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbICON
                 SubrecordDef {
                     signature: Signature(*b"ICON"),
-                    name: "wbICON".to_string(),
-                    fields: vec![],
+                    name: "Icon".to_string(),
+                    fields: vec![FieldDef { name: "Icon".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDEST
                 SubrecordDef {
                     signature: Signature(*b"DEST"),
-                    name: "wbDEST".to_string(),
-                    fields: vec![],
+                    name: "Destructible".to_string(),
+                    fields: vec![FieldDef { name: "Destructible".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbYNAM
                 SubrecordDef {
                     signature: Signature(*b"YNAM"),
-                    name: "wbYNAM".to_string(),
-                    fields: vec![],
+                    name: "Pickup Sound".to_string(),
+                    fields: vec![FieldDef { name: "Pickup Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbZNAM
                 SubrecordDef {
                     signature: Signature(*b"ZNAM"),
-                    name: "wbZNAM".to_string(),
-                    fields: vec![],
+                    name: "Putdown Sound".to_string(),
+                    fields: vec![FieldDef { name: "Putdown Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbKeywords
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbKeywords".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"KSIZ"),
+                    name: "Keywords".to_string(),
+                    fields: vec![FieldDef { name: "Keywords".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -2693,11 +2538,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"NAVM"),
             name: "Navmesh".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbNVNM
@@ -2743,11 +2587,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"NAVI"),
             name: "Navmesh Info Map".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -2900,39 +2743,34 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"EXPL"),
             name: "Explosion".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMAD
                 SubrecordDef {
                     signature: Signature(*b"VMAD"),
-                    name: "wbVMAD".to_string(),
-                    fields: vec![],
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbEnchantment
@@ -2974,11 +2812,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"DEBR"),
             name: "Debris".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // RArray: Models
@@ -2995,11 +2832,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"IMGS"),
             name: "Image Space".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -3030,8 +2866,7 @@ pub fn register_all() -> Vec<RecordDef> {
                             name: "Tint".to_string(),
                             fields: vec![
                             FieldDef { name: "Amount".to_string(), field_type: FieldType::Float },
-                            // TODO: resolve variable reference: wbFloatColors
-                            FieldDef { name: "wbFloatColors".to_string(), field_type: FieldType::Unknown },
+                            FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Float },FieldDef { name: "Green".to_string(), field_type: FieldType::Float },FieldDef { name: "Blue".to_string(), field_type: FieldType::Float },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Float }] } },
                             ],
                         } },
                     ],
@@ -3068,8 +2903,7 @@ pub fn register_all() -> Vec<RecordDef> {
                     name: "Tint".to_string(),
                     fields: vec![
                         FieldDef { name: "Amount".to_string(), field_type: FieldType::Float },
-                        // TODO: resolve variable reference: wbFloatColors
-                        FieldDef { name: "wbFloatColors".to_string(), field_type: FieldType::Unknown },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Float },FieldDef { name: "Green".to_string(), field_type: FieldType::Float },FieldDef { name: "Blue".to_string(), field_type: FieldType::Float },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Float }] } },
                     ],
                     required: false,
                 },
@@ -3091,11 +2925,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"IMAD"),
             name: "Image Space Adapter".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -3453,46 +3286,40 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"PERK"),
             name: "Perk".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMADFragmentedPERK
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbVMADFragmentedPERK".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"VMAD"),
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDESCReq
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbDESCReq".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"DESC"),
+                    name: "Description".to_string(),
+                    fields: vec![FieldDef { name: "Description".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbICON
                 SubrecordDef {
                     signature: Signature(*b"ICON"),
-                    name: "wbICON".to_string(),
-                    fields: vec![],
+                    name: "Icon".to_string(),
+                    fields: vec![FieldDef { name: "Icon".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -3527,18 +3354,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"BPTD"),
             name: "Body Part Data".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // RArray: Body Parts
@@ -3629,25 +3454,22 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"ADDN"),
             name: "Addon Node".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -3677,25 +3499,22 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"AVIF"),
             name: "Actor Value Information".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDESCReq
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbDESCReq".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"DESC"),
+                    name: "Description".to_string(),
+                    fields: vec![FieldDef { name: "Description".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -3790,18 +3609,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"CAMS"),
             name: "Camera Shot".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -3839,18 +3656,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"CPTH"),
             name: "Camera Path".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -3881,11 +3696,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"VTYP"),
             name: "Voice Type".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -3900,11 +3714,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"MATT"),
             name: "Material Type".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -3919,11 +3732,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![FieldDef { name: "Material Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFloatColors
                 SubrecordDef {
                     signature: Signature(*b"    "),
-                    name: "wbFloatColors".to_string(),
-                    fields: vec![],
+                    name: "Color".to_string(),
+                    fields: vec![FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Float },FieldDef { name: "Green".to_string(), field_type: FieldType::Float },FieldDef { name: "Blue".to_string(), field_type: FieldType::Float },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Float }] } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -3950,18 +3762,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"IPCT"),
             name: "Impact".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -4022,11 +3832,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"IPDS"),
             name: "Impact Data Set".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // RArray: Data
@@ -4045,11 +3854,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"ECZN"),
             name: "Encounter Zone".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -4085,11 +3893,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"LCTN"),
             name: "Location".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -4346,18 +4153,16 @@ pub fn register_all() -> Vec<RecordDef> {
                     } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbKeywords
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbKeywords".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"KSIZ"),
+                    name: "Keywords".to_string(),
+                    fields: vec![FieldDef { name: "Keywords".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -4396,11 +4201,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![FieldDef { name: "Horse Marker Ref".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"REFR")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbByteRGBA
                 SubrecordDef {
                     signature: Signature(*b"    "),
-                    name: "wbByteRGBA".to_string(),
-                    fields: vec![],
+                    name: "Color".to_string(),
+                    fields: vec![FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
             ],
@@ -4409,25 +4213,22 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"MESG"),
             name: "Message".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDESCReq
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbDESCReq".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"DESC"),
+                    name: "Description".to_string(),
+                    fields: vec![FieldDef { name: "Description".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -4468,11 +4269,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"DOBJ"),
             name: "Default Object Manager".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -4497,23 +4297,19 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"LGTM"),
             name: "Lighting Template".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
                     signature: Signature(*b"DATA"),
                     name: "Lighting".to_string(),
                     fields: vec![
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
                         FieldDef { name: "Fog Near".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Fog Far".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Directional Rotation XY".to_string(), field_type: FieldType::Integer { size: IntegerSize::S32, enum_def: None, flags_def: None } },
@@ -4546,11 +4342,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"MUSC"),
             name: "Music Type".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -4590,11 +4385,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"FSTP"),
             name: "Footstep".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -4615,11 +4409,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"FSTS"),
             name: "Footstep Set".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -4672,11 +4465,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"SMBN"),
             name: "Story Manager Branch Node".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -4698,11 +4490,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -4723,11 +4514,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"SMQN"),
             name: "Story Manager Quest Node".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -4749,11 +4539,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -4806,11 +4595,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"SMEN"),
             name: "Story Manager Event Node".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -4832,11 +4620,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -4863,11 +4650,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"DLBR"),
             name: "Dialog Branch".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -4900,11 +4686,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"MUST"),
             name: "Music Track".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -4964,11 +4749,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -4987,11 +4771,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"DLVW"),
             name: "Dialog View".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -5032,18 +4815,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"SHOU"),
             name: "Shout".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbMDOB
@@ -5053,18 +4834,16 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbETYP
                 SubrecordDef {
                     signature: Signature(*b"ETYP"),
-                    name: "wbETYP".to_string(),
-                    fields: vec![],
+                    name: "Equip Type".to_string(),
+                    fields: vec![FieldDef { name: "Equip Type".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"EQUP")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDESC
                 SubrecordDef {
                     signature: Signature(*b"DESC"),
-                    name: "wbDESC".to_string(),
-                    fields: vec![],
+                    name: "Description".to_string(),
+                    fields: vec![FieldDef { name: "Description".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // RArray: Words of Power
@@ -5084,11 +4863,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"EQUP"),
             name: "Equip Type".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -5113,11 +4891,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"RELA"),
             name: "Relationship".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -5139,18 +4916,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"SCEN"),
             name: "Scene".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMADFragmentedSCEN
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbVMADFragmentedSCEN".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"VMAD"),
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -5174,11 +4949,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     required: false,
                 },
                 // Begin RStruct: Start Conditions
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -5188,11 +4962,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     required: false,
                 },
                 // Begin RStruct: Completion Conditions
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 // Begin RStruct: Unused
@@ -5481,11 +5254,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     ],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
             ],
@@ -5494,11 +5266,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"ASTP"),
             name: "Association Type".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -5537,11 +5308,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"OTFT"),
             name: "Outfit".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -5560,25 +5330,22 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"ARTO"),
             name: "Art Object".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -5593,18 +5360,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"MATO"),
             name: "Material Object".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // RArray: Property Data
@@ -5641,11 +5406,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"MOVT"),
             name: "Movement Type".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -5689,11 +5453,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"SNDR"),
             name: "Sound Descriptor".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -5734,11 +5497,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbFromVersion
@@ -5766,18 +5528,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"DUAL"),
             name: "Dual Cast Data".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -5799,18 +5559,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"SNCT"),
             name: "Sound Category".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -5843,11 +5601,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"SOPM"),
             name: "Sound Output Model".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -5930,18 +5687,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"COLL"),
             name: "Collision Layer".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDESCReq
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbDESCReq".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"DESC"),
+                    name: "Description".to_string(),
+                    fields: vec![FieldDef { name: "Description".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -5950,11 +5705,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![FieldDef { name: "Index".to_string(), field_type: FieldType::Integer { size: IntegerSize::U32, enum_def: None, flags_def: None } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbByteColors
                 SubrecordDef {
                     signature: Signature(*b"    "),
-                    name: "wbByteColors".to_string(),
-                    fields: vec![],
+                    name: "Color".to_string(),
+                    fields: vec![FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -5991,25 +5745,22 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"CLFM"),
             name: "Color".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbByteRGBA
                 SubrecordDef {
                     signature: Signature(*b"    "),
-                    name: "wbByteRGBA".to_string(),
-                    fields: vec![],
+                    name: "Color".to_string(),
+                    fields: vec![FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -6024,11 +5775,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"REVB"),
             name: "Reverb Parameters".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -6056,25 +5806,22 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"GRAS"),
             name: "Grass".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -6103,18 +5850,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"IDLE"),
             name: "Idle Animation".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -6161,18 +5906,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"INFO"),
             name: "Dialog response".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMADFragmentedINFO
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbVMADFragmentedINFO".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"VMAD"),
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -6272,11 +6015,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![FieldDef { name: "Idle Animations: Listener".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"IDLE")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 // RArray: Unused
@@ -6329,81 +6071,70 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"INGR"),
             name: "Ingredient".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMAD
                 SubrecordDef {
                     signature: Signature(*b"VMAD"),
-                    name: "wbVMAD".to_string(),
-                    fields: vec![],
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbKeywords
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbKeywords".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"KSIZ"),
+                    name: "Keywords".to_string(),
+                    fields: vec![FieldDef { name: "Keywords".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbICON
                 SubrecordDef {
                     signature: Signature(*b"ICON"),
-                    name: "wbICON".to_string(),
-                    fields: vec![],
+                    name: "Icon".to_string(),
+                    fields: vec![FieldDef { name: "Icon".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDEST
                 SubrecordDef {
                     signature: Signature(*b"DEST"),
-                    name: "wbDEST".to_string(),
-                    fields: vec![],
+                    name: "Destructible".to_string(),
+                    fields: vec![FieldDef { name: "Destructible".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbETYP
                 SubrecordDef {
                     signature: Signature(*b"ETYP"),
-                    name: "wbETYP".to_string(),
-                    fields: vec![],
+                    name: "Equip Type".to_string(),
+                    fields: vec![FieldDef { name: "Equip Type".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"EQUP")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbYNAM
                 SubrecordDef {
                     signature: Signature(*b"YNAM"),
-                    name: "wbYNAM".to_string(),
-                    fields: vec![],
+                    name: "Pickup Sound".to_string(),
+                    fields: vec![FieldDef { name: "Pickup Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbZNAM
                 SubrecordDef {
                     signature: Signature(*b"ZNAM"),
-                    name: "wbZNAM".to_string(),
-                    fields: vec![],
+                    name: "Putdown Sound".to_string(),
+                    fields: vec![FieldDef { name: "Putdown Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR")] } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -6424,11 +6155,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     ],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbEffectsReq
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbEffectsReq".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"EFID"),
+                    name: "Effects".to_string(),
+                    fields: vec![FieldDef { name: "Effects".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
             ],
@@ -6437,74 +6167,64 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"KEYM"),
             name: "Key".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMAD
                 SubrecordDef {
                     signature: Signature(*b"VMAD"),
-                    name: "wbVMAD".to_string(),
-                    fields: vec![],
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULLReq
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbFULLReq".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"FULL"),
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbICON
                 SubrecordDef {
                     signature: Signature(*b"ICON"),
-                    name: "wbICON".to_string(),
-                    fields: vec![],
+                    name: "Icon".to_string(),
+                    fields: vec![FieldDef { name: "Icon".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDEST
                 SubrecordDef {
                     signature: Signature(*b"DEST"),
-                    name: "wbDEST".to_string(),
-                    fields: vec![],
+                    name: "Destructible".to_string(),
+                    fields: vec![FieldDef { name: "Destructible".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbYNAM
                 SubrecordDef {
                     signature: Signature(*b"YNAM"),
-                    name: "wbYNAM".to_string(),
-                    fields: vec![],
+                    name: "Pickup Sound".to_string(),
+                    fields: vec![FieldDef { name: "Pickup Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbZNAM
                 SubrecordDef {
                     signature: Signature(*b"ZNAM"),
-                    name: "wbZNAM".to_string(),
-                    fields: vec![],
+                    name: "Putdown Sound".to_string(),
+                    fields: vec![FieldDef { name: "Putdown Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbKeywords
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbKeywords".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"KSIZ"),
+                    name: "Keywords".to_string(),
+                    fields: vec![FieldDef { name: "Keywords".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -6569,53 +6289,46 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"LIGH"),
             name: "Light".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMAD
                 SubrecordDef {
                     signature: Signature(*b"VMAD"),
-                    name: "wbVMAD".to_string(),
-                    fields: vec![],
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDEST
                 SubrecordDef {
                     signature: Signature(*b"DEST"),
-                    name: "wbDEST".to_string(),
-                    fields: vec![],
+                    name: "Destructible".to_string(),
+                    fields: vec![FieldDef { name: "Destructible".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbICON
                 SubrecordDef {
                     signature: Signature(*b"ICON"),
-                    name: "wbICON".to_string(),
-                    fields: vec![],
+                    name: "Icon".to_string(),
+                    fields: vec![FieldDef { name: "Icon".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -6624,8 +6337,7 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![
                         FieldDef { name: "Time".to_string(), field_type: FieldType::Integer { size: IntegerSize::S32, enum_def: None, flags_def: None } },
                         FieldDef { name: "Radius".to_string(), field_type: FieldType::Integer { size: IntegerSize::U32, enum_def: None, flags_def: None } },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
                         FieldDef { name: "Flags".to_string(), field_type: FieldType::Integer { size: IntegerSize::U32, enum_def: None, flags_def: Some(FlagDef { flags: vec![(0, "Dynamic".to_string()), (1, "Can be Carried".to_string()), (2, "Negative".to_string()), (3, "Flicker".to_string()), (4, "Unknown 4".to_string()), (5, "Off By Default".to_string()), (6, "Flicker Slow".to_string()), (7, "Pulse".to_string()), (8, "Pulse Slow".to_string()), (9, "Spot Light".to_string()), (10, "Shadow Spotlight".to_string()), (11, "Shadow Hemisphere".to_string()), (12, "Shadow Omnidirectional".to_string()), (13, "Portal-strict".to_string())] }) } },
                         FieldDef { name: "".to_string(), field_type: FieldType::Union {
                             members: vec![
@@ -6682,25 +6394,22 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"LSCR"),
             name: "Load Screen".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDESCReq
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbDESCReq".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"DESC"),
+                    name: "Description".to_string(),
+                    fields: vec![FieldDef { name: "Description".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -6753,11 +6462,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"LTEX"),
             name: "Landscape Texture".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -6806,18 +6514,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"LVLN"),
             name: "Leveled NPC".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbLVLD
@@ -6862,11 +6568,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
             ],
@@ -6875,18 +6580,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"LVLI"),
             name: "Leveled Item".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbLVLD
@@ -6937,18 +6640,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"LVSP"),
             name: "Leveled Spell".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbLVLD
@@ -6986,25 +6687,22 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"MGEF"),
             name: "Magic Effect".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMAD
                 SubrecordDef {
                     signature: Signature(*b"VMAD"),
-                    name: "wbVMAD".to_string(),
-                    fields: vec![],
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbMDOB
@@ -7014,11 +6712,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbKeywords
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbKeywords".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"KSIZ"),
+                    name: "Keywords".to_string(),
+                    fields: vec![FieldDef { name: "Keywords".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbMGEFData
@@ -7048,11 +6745,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![FieldDef { name: "Magic Item Description".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
             ],
@@ -7061,74 +6757,64 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"MISC"),
             name: "Misc. Item".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMAD
                 SubrecordDef {
                     signature: Signature(*b"VMAD"),
-                    name: "wbVMAD".to_string(),
-                    fields: vec![],
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbICON
                 SubrecordDef {
                     signature: Signature(*b"ICON"),
-                    name: "wbICON".to_string(),
-                    fields: vec![],
+                    name: "Icon".to_string(),
+                    fields: vec![FieldDef { name: "Icon".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDEST
                 SubrecordDef {
                     signature: Signature(*b"DEST"),
-                    name: "wbDEST".to_string(),
-                    fields: vec![],
+                    name: "Destructible".to_string(),
+                    fields: vec![FieldDef { name: "Destructible".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbYNAM
                 SubrecordDef {
                     signature: Signature(*b"YNAM"),
-                    name: "wbYNAM".to_string(),
-                    fields: vec![],
+                    name: "Pickup Sound".to_string(),
+                    fields: vec![FieldDef { name: "Pickup Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbZNAM
                 SubrecordDef {
                     signature: Signature(*b"ZNAM"),
-                    name: "wbZNAM".to_string(),
-                    fields: vec![],
+                    name: "Putdown Sound".to_string(),
+                    fields: vec![FieldDef { name: "Putdown Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbKeywords
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbKeywords".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"KSIZ"),
+                    name: "Keywords".to_string(),
+                    fields: vec![FieldDef { name: "Keywords".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -7146,67 +6832,58 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"APPA"),
             name: "Alchemical Apparatus".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMAD
                 SubrecordDef {
                     signature: Signature(*b"VMAD"),
-                    name: "wbVMAD".to_string(),
-                    fields: vec![],
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbICON
                 SubrecordDef {
                     signature: Signature(*b"ICON"),
-                    name: "wbICON".to_string(),
-                    fields: vec![],
+                    name: "Icon".to_string(),
+                    fields: vec![FieldDef { name: "Icon".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDEST
                 SubrecordDef {
                     signature: Signature(*b"DEST"),
-                    name: "wbDEST".to_string(),
-                    fields: vec![],
+                    name: "Destructible".to_string(),
+                    fields: vec![FieldDef { name: "Destructible".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbYNAM
                 SubrecordDef {
                     signature: Signature(*b"YNAM"),
-                    name: "wbYNAM".to_string(),
-                    fields: vec![],
+                    name: "Pickup Sound".to_string(),
+                    fields: vec![FieldDef { name: "Pickup Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbZNAM
                 SubrecordDef {
                     signature: Signature(*b"ZNAM"),
-                    name: "wbZNAM".to_string(),
-                    fields: vec![],
+                    name: "Putdown Sound".to_string(),
+                    fields: vec![FieldDef { name: "Putdown Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR")] } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -7215,11 +6892,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![FieldDef { name: "Quality".to_string(), field_type: FieldType::Integer { size: IntegerSize::S32, enum_def: Some(EnumDef { values: vec![(0, "Novice".to_string()), (1, "Apprentice".to_string()), (2, "Journeyman".to_string()), (3, "Expert".to_string()), (4, "Master".to_string())] }), flags_def: None } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDESC
                 SubrecordDef {
                     signature: Signature(*b"DESC"),
-                    name: "wbDESC".to_string(),
-                    fields: vec![],
+                    name: "Description".to_string(),
+                    fields: vec![FieldDef { name: "Description".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -7237,11 +6913,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"COBJ"),
             name: "Constructible Object".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbCOCT
@@ -7258,11 +6933,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -7289,25 +6963,22 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"NPC_"),
             name: "Non-Player Character".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMAD
                 SubrecordDef {
                     signature: Signature(*b"VMAD"),
-                    name: "wbVMAD".to_string(),
-                    fields: vec![],
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -7379,11 +7050,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDEST
                 SubrecordDef {
                     signature: Signature(*b"DEST"),
-                    name: "wbDEST".to_string(),
-                    fields: vec![],
+                    name: "Destructible".to_string(),
+                    fields: vec![FieldDef { name: "Destructible".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -7481,11 +7151,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![FieldDef { name: "Package".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"PACK")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbKeywords
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbKeywords".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"KSIZ"),
+                    name: "Keywords".to_string(),
+                    fields: vec![FieldDef { name: "Keywords".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -7494,11 +7163,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![FieldDef { name: "Class".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"CLAS")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -7629,11 +7297,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![FieldDef { name: "Head texture".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"TXST")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFloatColors
                 SubrecordDef {
                     signature: Signature(*b"    "),
-                    name: "wbFloatColors".to_string(),
-                    fields: vec![],
+                    name: "Color".to_string(),
+                    fields: vec![FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Float },FieldDef { name: "Green".to_string(), field_type: FieldType::Float },FieldDef { name: "Blue".to_string(), field_type: FieldType::Float },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Float }] } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -7681,11 +7348,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![FieldDef { name: "Tint Index".to_string(), field_type: FieldType::Integer { size: IntegerSize::U16, enum_def: None, flags_def: None } /* TODO: wbTintLayerToStr */ }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbByteRGBA
                 SubrecordDef {
                     signature: Signature(*b"    "),
-                    name: "wbByteRGBA".to_string(),
-                    fields: vec![],
+                    name: "Color".to_string(),
+                    fields: vec![FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -7706,18 +7372,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"PACK"),
             name: "Package".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMADFragmentedPACK
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbVMADFragmentedPACK".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"VMAD"),
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -7751,11 +7415,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     ],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbIdleAnimation
@@ -7884,11 +7547,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -8107,25 +7769,22 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"QUST"),
             name: "Quest".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMADFragmentedQUST
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbVMADFragmentedQUST".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"VMAD"),
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -8160,11 +7819,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     required: false,
                 },
                 // Begin RStruct: Quest Dialogue Conditions
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -8174,11 +7832,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     required: false,
                 },
                 // Begin RStruct: Story Manager Conditions
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 // RArray: Stages
@@ -8201,11 +7858,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![FieldDef { name: "Stage Flags".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: Some(FlagDef { flags: vec![(0, "Complete Quest".to_string()), (1, "Fail Quest".to_string())] }) } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -8271,11 +7927,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     ],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -8310,11 +7965,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     ],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbConditions
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbConditions".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"CTDA"),
+                    name: "Conditions".to_string(),
+                    fields: vec![FieldDef { name: "Conditions".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
             ],
@@ -8323,25 +7977,22 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"RACE"),
             name: "Race".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDESCReq
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbDESCReq".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"DESC"),
+                    name: "Description".to_string(),
+                    fields: vec![FieldDef { name: "Description".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbSPCT
@@ -8371,11 +8022,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbKeywords
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbKeywords".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"KSIZ"),
+                    name: "Keywords".to_string(),
+                    fields: vec![FieldDef { name: "Keywords".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -8633,11 +8283,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![FieldDef { name: "Male Data Marker".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // Begin RStruct: Female Behavior Graph
@@ -8647,11 +8296,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![FieldDef { name: "Female Data Marker".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -8848,11 +8496,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // Begin RStruct: Female Head Data
@@ -8916,11 +8563,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -8941,18 +8587,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"REGN"),
             name: "Region".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbByteColors
                 SubrecordDef {
                     signature: Signature(*b"    "),
-                    name: "wbByteColors".to_string(),
-                    fields: vec![],
+                    name: "Color".to_string(),
+                    fields: vec![FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -8981,11 +8625,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     ],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbICON
                 SubrecordDef {
                     signature: Signature(*b"ICON"),
-                    name: "wbICON".to_string(),
-                    fields: vec![],
+                    name: "Icon".to_string(),
+                    fields: vec![FieldDef { name: "Icon".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -9085,18 +8728,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"SOUN"),
             name: "Sound Marker".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -9123,32 +8764,28 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"SPEL"),
             name: "Spell".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbKeywords
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbKeywords".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"KSIZ"),
+                    name: "Keywords".to_string(),
+                    fields: vec![FieldDef { name: "Keywords".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbMDOB
@@ -9158,18 +8795,16 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbETYP
                 SubrecordDef {
                     signature: Signature(*b"ETYP"),
-                    name: "wbETYP".to_string(),
-                    fields: vec![],
+                    name: "Equip Type".to_string(),
+                    fields: vec![FieldDef { name: "Equip Type".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"EQUP")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDESCReq
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbDESCReq".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"DESC"),
+                    name: "Description".to_string(),
+                    fields: vec![FieldDef { name: "Description".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -9188,11 +8823,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     ],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbEffectsReq
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbEffectsReq".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"EFID"),
+                    name: "Effects".to_string(),
+                    fields: vec![FieldDef { name: "Effects".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
             ],
@@ -9201,32 +8835,28 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"SCRL"),
             name: "Scroll".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbKeywords
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbKeywords".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"KSIZ"),
+                    name: "Keywords".to_string(),
+                    fields: vec![FieldDef { name: "Keywords".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbMDOB
@@ -9236,46 +8866,40 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbETYP
                 SubrecordDef {
                     signature: Signature(*b"ETYP"),
-                    name: "wbETYP".to_string(),
-                    fields: vec![],
+                    name: "Equip Type".to_string(),
+                    fields: vec![FieldDef { name: "Equip Type".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"EQUP")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDESC
                 SubrecordDef {
                     signature: Signature(*b"DESC"),
-                    name: "wbDESC".to_string(),
-                    fields: vec![],
+                    name: "Description".to_string(),
+                    fields: vec![FieldDef { name: "Description".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDEST
                 SubrecordDef {
                     signature: Signature(*b"DEST"),
-                    name: "wbDEST".to_string(),
-                    fields: vec![],
+                    name: "Destructible".to_string(),
+                    fields: vec![FieldDef { name: "Destructible".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbYNAM
                 SubrecordDef {
                     signature: Signature(*b"YNAM"),
-                    name: "wbYNAM".to_string(),
-                    fields: vec![],
+                    name: "Pickup Sound".to_string(),
+                    fields: vec![FieldDef { name: "Pickup Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbZNAM
                 SubrecordDef {
                     signature: Signature(*b"ZNAM"),
-                    name: "wbZNAM".to_string(),
-                    fields: vec![],
+                    name: "Putdown Sound".to_string(),
+                    fields: vec![FieldDef { name: "Putdown Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR")] } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -9303,11 +8927,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     ],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbEffectsReq
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbEffectsReq".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"EFID"),
+                    name: "Effects".to_string(),
+                    fields: vec![FieldDef { name: "Effects".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
             ],
@@ -9316,25 +8939,22 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"STAT"),
             name: "Static".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -9445,11 +9065,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"PLYR"),
             name: "Player Reference".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -9464,32 +9083,28 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"TREE"),
             name: "Tree".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMAD
                 SubrecordDef {
                     signature: Signature(*b"VMAD"),
-                    name: "wbVMAD".to_string(),
-                    fields: vec![],
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -9515,11 +9130,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     ],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -9547,60 +9161,52 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"FLOR"),
             name: "Flora".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMAD
                 SubrecordDef {
                     signature: Signature(*b"VMAD"),
-                    name: "wbVMAD".to_string(),
-                    fields: vec![],
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULLReq
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbFULLReq".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"FULL"),
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDEST
                 SubrecordDef {
                     signature: Signature(*b"DEST"),
-                    name: "wbDEST".to_string(),
-                    fields: vec![],
+                    name: "Destructible".to_string(),
+                    fields: vec![FieldDef { name: "Destructible".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbKeywords
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbKeywords".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"KSIZ"),
+                    name: "Keywords".to_string(),
+                    fields: vec![FieldDef { name: "Keywords".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbByteColors
                 SubrecordDef {
                     signature: Signature(*b"    "),
-                    name: "wbByteColors".to_string(),
-                    fields: vec![],
+                    name: "Color".to_string(),
+                    fields: vec![FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -9640,11 +9246,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"VOLI"),
             name: "Volumetric Lighting".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -9714,11 +9319,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"LENS"),
             name: "Lens Flare".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -9757,8 +9361,7 @@ pub fn register_all() -> Vec<RecordDef> {
                     signature: Signature(*b"LFSD"),
                     name: "Lens Flare Data".to_string(),
                     fields: vec![
-                        // TODO: resolve variable reference: wbFloatColors
-                        FieldDef { name: "wbFloatColors".to_string(), field_type: FieldType::Unknown },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Float },FieldDef { name: "Green".to_string(), field_type: FieldType::Float },FieldDef { name: "Blue".to_string(), field_type: FieldType::Float },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Float }] } },
                         FieldDef { name: "Width".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Height".to_string(), field_type: FieldType::Float },
                         FieldDef { name: "Position".to_string(), field_type: FieldType::Float },
@@ -9774,11 +9377,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"RGDL"),
             name: "Ragdoll".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -9896,18 +9498,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"WATR"),
             name: "Water".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // Begin RStruct: Old Noise Textures
@@ -9995,12 +9595,9 @@ pub fn register_all() -> Vec<RecordDef> {
                         FieldDef { name: "Color Properties".to_string(), field_type: FieldType::Struct {
                             name: "Color Properties".to_string(),
                             fields: vec![
-                            // TODO: resolve variable reference: wbByteColors
-                            FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
-                            // TODO: resolve variable reference: wbByteColors
-                            FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
-                            // TODO: resolve variable reference: wbByteColors
-                            FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
+                            FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
+                            FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
+                            FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
                             ],
                         } },
                         FieldDef { name: "Texture Blend".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },
@@ -10156,46 +9753,40 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"WEAP"),
             name: "Weapon".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbVMAD
                 SubrecordDef {
                     signature: Signature(*b"VMAD"),
-                    name: "wbVMAD".to_string(),
-                    fields: vec![],
+                    name: "VM Adapter".to_string(),
+                    fields: vec![FieldDef { name: "VM Adapter".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbICON
                 SubrecordDef {
                     signature: Signature(*b"ICON"),
-                    name: "wbICON".to_string(),
-                    fields: vec![],
+                    name: "Icon".to_string(),
+                    fields: vec![FieldDef { name: "Icon".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbEnchantment
@@ -10205,18 +9796,16 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDEST
                 SubrecordDef {
                     signature: Signature(*b"DEST"),
-                    name: "wbDEST".to_string(),
-                    fields: vec![],
+                    name: "Destructible".to_string(),
+                    fields: vec![FieldDef { name: "Destructible".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbETYP
                 SubrecordDef {
                     signature: Signature(*b"ETYP"),
-                    name: "wbETYP".to_string(),
-                    fields: vec![],
+                    name: "Equip Type".to_string(),
+                    fields: vec![FieldDef { name: "Equip Type".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"EQUP")] } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -10231,32 +9820,28 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![FieldDef { name: "Alternate Block Material".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"MATT"), Signature(*b"NULL")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbYNAM
                 SubrecordDef {
                     signature: Signature(*b"YNAM"),
-                    name: "wbYNAM".to_string(),
-                    fields: vec![],
+                    name: "Pickup Sound".to_string(),
+                    fields: vec![FieldDef { name: "Pickup Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbZNAM
                 SubrecordDef {
                     signature: Signature(*b"ZNAM"),
-                    name: "wbZNAM".to_string(),
-                    fields: vec![],
+                    name: "Putdown Sound".to_string(),
+                    fields: vec![FieldDef { name: "Putdown Sound".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b"SNDR")] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbKeywords
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbKeywords".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"KSIZ"),
+                    name: "Keywords".to_string(),
+                    fields: vec![FieldDef { name: "Keywords".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbDESC
                 SubrecordDef {
                     signature: Signature(*b"DESC"),
-                    name: "wbDESC".to_string(),
-                    fields: vec![],
+                    name: "Description".to_string(),
+                    fields: vec![FieldDef { name: "Description".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbTexturedModel
@@ -10410,11 +9995,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"WTHR"),
             name: "Weather".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // Begin RStruct: Old Cloud Textures
@@ -10582,14 +10166,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     signature: Signature(*b"NAM2"),
                     name: "Sun Glare".to_string(),
                     fields: vec![
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
                     ],
                     required: false,
                 },
@@ -10597,23 +10177,18 @@ pub fn register_all() -> Vec<RecordDef> {
                     signature: Signature(*b"NAM3"),
                     name: "Moon Glare".to_string(),
                     fields: vec![
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
                     ],
                     required: false,
                 },
                 // Begin RStruct: Aurora
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -10628,18 +10203,16 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"WOOP"),
             name: "Word of Power".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 SubrecordDef {
@@ -10654,11 +10227,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"WRLD"),
             name: "Worldspace".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbWorldLargeRefs
@@ -10675,11 +10247,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbFULL
                 SubrecordDef {
                     signature: Signature(*b"FULL"),
-                    name: "wbFULL".to_string(),
-                    fields: vec![],
+                    name: "Name".to_string(),
+                    fields: vec![FieldDef { name: "Name".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbWorldFixedCenter
@@ -10753,11 +10324,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     required: false,
                 },
                 // Begin RStruct: Cloud Model
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // TODO: resolve variable reference: wbWorldMapData
@@ -10842,11 +10412,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"CLDC"),
             name: "CLDC".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
             ],
@@ -10855,11 +10424,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"HAIR"),
             name: "HAIR".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
             ],
@@ -10868,11 +10436,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"PWAT"),
             name: "PWAT".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
             ],
@@ -10881,11 +10448,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"SCOL"),
             name: "SCOL".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
             ],
@@ -10894,25 +10460,22 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"SCOL"),
             name: "Static Collection".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbOBND
                 SubrecordDef {
                     signature: Signature(*b"OBND"),
-                    name: "wbOBND".to_string(),
-                    fields: vec![],
+                    name: "Object Bounds".to_string(),
+                    fields: vec![FieldDef { name: "Object Bounds".to_string(), field_type: FieldType::Struct {name: "Object Bounds".to_string(), fields: vec![FieldDef { name: "X1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z1".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "X2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Y2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } },FieldDef { name: "Z2".to_string(), field_type: FieldType::Integer { size: IntegerSize::S16, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbGenericModel
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbGenericModel".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"MODL"),
+                    name: "Model".to_string(),
+                    fields: vec![FieldDef { name: "Model".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
                 // RArray: Parts
@@ -10929,11 +10492,10 @@ pub fn register_all() -> Vec<RecordDef> {
             signature: Signature(*b"SCPT"),
             name: "SCPT".to_string(),
             members: vec![
-                // TODO: resolve variable reference: wbEDID
                 SubrecordDef {
                     signature: Signature(*b"EDID"),
-                    name: "wbEDID".to_string(),
-                    fields: vec![],
+                    name: "Editor ID".to_string(),
+                    fields: vec![FieldDef { name: "Editor ID".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
             ],

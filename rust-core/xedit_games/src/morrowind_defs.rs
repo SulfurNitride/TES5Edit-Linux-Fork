@@ -141,11 +141,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     ],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbEffects
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbEffects".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"EFID"),
+                    name: "Effects".to_string(),
+                    fields: vec![FieldDef { name: "Effects".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
             ],
@@ -492,11 +491,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![FieldDef { name: "Region".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbByteColors
                 SubrecordDef {
                     signature: Signature(*b"    "),
-                    name: "wbByteColors".to_string(),
-                    fields: vec![],
+                    name: "Color".to_string(),
+                    fields: vec![FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
                 SubrecordDef {
@@ -509,12 +507,9 @@ pub fn register_all() -> Vec<RecordDef> {
                     signature: Signature(*b"AMBI"),
                     name: "Ambience".to_string(),
                     fields: vec![
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
                         FieldDef { name: "Fog Density".to_string(), field_type: FieldType::Float },
                     ],
                     required: false,
@@ -966,11 +961,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     ],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbEffects
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbEffects".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"EFID"),
+                    name: "Effects".to_string(),
+                    fields: vec![FieldDef { name: "Effects".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
             ],
@@ -1543,8 +1537,7 @@ pub fn register_all() -> Vec<RecordDef> {
                         FieldDef { name: "Value".to_string(), field_type: FieldType::Integer { size: IntegerSize::U32, enum_def: None, flags_def: None } },
                         FieldDef { name: "Time".to_string(), field_type: FieldType::Integer { size: IntegerSize::S32, enum_def: None, flags_def: None } },
                         FieldDef { name: "Radius".to_string(), field_type: FieldType::Integer { size: IntegerSize::U32, enum_def: None, flags_def: None } },
-                        // TODO: resolve variable reference: wbByteColors
-                        FieldDef { name: "wbByteColors".to_string(), field_type: FieldType::Unknown },
+                        FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } },
                         FieldDef { name: "Flags".to_string(), field_type: FieldType::Integer { size: IntegerSize::U32, enum_def: None, flags_def: Some(FlagDef { flags: vec![(0, "Dynamic".to_string()), (1, "Can Carry".to_string()), (2, "Negative".to_string()), (3, "Flicker".to_string()), (4, "Fire".to_string()), (5, "Off By Default".to_string()), (6, "Flicker Slow".to_string()), (7, "Pulse".to_string()), (8, "Pulse Slow".to_string())] }) } },
                     ],
                     required: false,
@@ -2437,11 +2430,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     fields: vec![FieldDef { name: "Sleep Creature".to_string(), field_type: FieldType::String }],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbByteColors
                 SubrecordDef {
                     signature: Signature(*b"    "),
-                    name: "wbByteColors".to_string(),
-                    fields: vec![],
+                    name: "Color".to_string(),
+                    fields: vec![FieldDef { name: "Color".to_string(), field_type: FieldType::Struct {name: "Color".to_string(), fields: vec![FieldDef { name: "Red".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Green".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Blue".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } },FieldDef { name: "Alpha".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: None, flags_def: None } }] } }],
                     required: false,
                 },
                 // RArray: Region Sounds
@@ -2812,11 +2804,10 @@ pub fn register_all() -> Vec<RecordDef> {
                     ],
                     required: false,
                 },
-                // TODO: resolve variable reference: wbEffects
                 SubrecordDef {
-                    signature: Signature(*b"    "),
-                    name: "wbEffects".to_string(),
-                    fields: vec![],
+                    signature: Signature(*b"EFID"),
+                    name: "Effects".to_string(),
+                    fields: vec![FieldDef { name: "Effects".to_string(), field_type: FieldType::ByteArray { size: 0 } }],
                     required: false,
                 },
             ],

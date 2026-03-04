@@ -25,11 +25,13 @@ typedef int32_t (*fn_xedit_plugin_record_count)(int32_t plugin_index);
 typedef int32_t (*fn_xedit_plugin_master_count)(int32_t plugin_index);
 typedef int32_t (*fn_xedit_plugin_master_name)(int32_t plugin_index, int32_t master_index, char* buf, int32_t buf_len);
 typedef int32_t (*fn_xedit_plugin_group_count)(int32_t plugin_index);
+typedef int32_t (*fn_xedit_plugin_load_order_id)(int32_t plugin_index);
 
 // Group queries
 typedef int32_t (*fn_xedit_group_signature)(int32_t plugin_idx, int32_t group_idx, char* buf, int32_t buf_len);
 typedef int32_t (*fn_xedit_group_name)(int32_t plugin_idx, int32_t group_idx, char* buf, int32_t buf_len);
 typedef int32_t (*fn_xedit_group_record_count)(int32_t plugin_idx, int32_t group_idx);
+typedef int32_t (*fn_xedit_group_form_ids)(int32_t plugin_idx, int32_t group_idx, uint32_t* buf, int32_t buf_len);
 
 // Record queries
 typedef int32_t (*fn_xedit_record_editor_id)(int32_t plugin_idx, int32_t group_idx, int32_t record_idx, char* buf, int32_t buf_len);
@@ -44,6 +46,7 @@ typedef int32_t (*fn_xedit_version)(char* buf, int32_t buf_len);
 typedef int32_t (*fn_xedit_subrecord_signature)(int32_t plugin_idx, int32_t group_idx, int32_t record_idx, int32_t sub_idx, char* buf, int32_t buf_len);
 typedef int32_t (*fn_xedit_subrecord_size)(int32_t plugin_idx, int32_t group_idx, int32_t record_idx, int32_t sub_idx);
 typedef int32_t (*fn_xedit_subrecord_data)(int32_t plugin_idx, int32_t group_idx, int32_t record_idx, int32_t sub_idx, char* buf, int32_t buf_len);
+typedef int32_t (*fn_xedit_subrecord_display_value)(int32_t plugin_idx, int32_t group_idx, int32_t record_idx, int32_t sub_idx, uint8_t* buf, int32_t buf_len);
 typedef int32_t (*fn_xedit_record_subrecords_batch)(int32_t plugin_idx, int32_t group_idx, int32_t record_idx, uint8_t* buf, int32_t buf_len);
 
 // Search
@@ -67,6 +70,11 @@ typedef int32_t (*fn_xedit_sort_load_order)(void* handle);
 // Form ID resolution and overrides
 typedef uint32_t (*fn_xedit_resolve_form_id)(void* handle, int32_t plugin_index, uint32_t raw_form_id);
 typedef int32_t (*fn_xedit_find_overrides)(void* handle, uint32_t form_id, char* buf, int32_t buf_len);
+typedef int32_t (*fn_xedit_find_overrides_full)(uint32_t form_id, uint8_t* buf, int32_t buf_len);
+
+// Conflict status
+typedef int32_t (*fn_xedit_record_conflict_status)(uint32_t form_id, uint8_t* buf, int32_t buf_len);
+typedef int32_t (*fn_xedit_subrecord_conflict_status)(uint32_t form_id, uint8_t* buf, int32_t buf_len);
 
 // NIF (mesh) queries
 typedef int32_t (*fn_xedit_nif_block_count)(void* handle, const char* path);
@@ -96,6 +104,19 @@ typedef int32_t (*fn_xedit_mo2_profile_count)(void* handle);
 typedef int32_t (*fn_xedit_mo2_profile_name)(void* handle, int32_t index, char* buf, int32_t buf_len);
 typedef int32_t (*fn_xedit_mo2_select_profile)(void* handle, const char* profile_name);
 typedef int32_t (*fn_xedit_mo2_load_order)(void* handle);
+
+// Record/Subrecord mutation
+typedef int32_t (*fn_xedit_set_subrecord_data)(int32_t plugin_idx, int32_t group_idx, int32_t record_idx, int32_t sub_idx, const uint8_t* data, int32_t data_len);
+typedef int32_t (*fn_xedit_delete_record)(int32_t plugin_idx, int32_t group_idx, int32_t record_idx);
+typedef int32_t (*fn_xedit_copy_record)(int32_t src_plugin_idx, int32_t src_group_idx, int32_t src_record_idx, int32_t dst_plugin_idx);
+typedef int32_t (*fn_xedit_add_record)(int32_t plugin_idx, int32_t group_idx, uint32_t form_id, const uint8_t* signature);
+
+// LOD generation
+typedef int32_t (*fn_xedit_lod_list_worldspaces)(uint8_t* buf, int32_t buf_len);
+typedef int32_t (*fn_xedit_lod_generate)(const char* options_json, void* progress_cb);
+typedef int32_t (*fn_xedit_lod_status)();
+typedef int32_t (*fn_xedit_lod_error)(uint8_t* buf, int32_t buf_len);
+typedef int32_t (*fn_xedit_lod_cancel)();
 
 // ---------------------------------------------------------------------------
 // XEditFFI -- singleton that loads the Rust core library at runtime.
@@ -129,11 +150,13 @@ public:
     fn_xedit_plugin_master_count   xedit_plugin_master_count   = nullptr;
     fn_xedit_plugin_master_name    xedit_plugin_master_name    = nullptr;
     fn_xedit_plugin_group_count    xedit_plugin_group_count    = nullptr;
+    fn_xedit_plugin_load_order_id  xedit_plugin_load_order_id  = nullptr;
 
     // Group queries
     fn_xedit_group_signature       xedit_group_signature       = nullptr;
     fn_xedit_group_name            xedit_group_name            = nullptr;
     fn_xedit_group_record_count    xedit_group_record_count    = nullptr;
+    fn_xedit_group_form_ids        xedit_group_form_ids        = nullptr;
 
     // Record queries
     fn_xedit_record_editor_id      xedit_record_editor_id      = nullptr;
@@ -148,6 +171,7 @@ public:
     fn_xedit_subrecord_signature   xedit_subrecord_signature   = nullptr;
     fn_xedit_subrecord_size        xedit_subrecord_size        = nullptr;
     fn_xedit_subrecord_data        xedit_subrecord_data        = nullptr;
+    fn_xedit_subrecord_display_value xedit_subrecord_display_value = nullptr;
     fn_xedit_record_subrecords_batch xedit_record_subrecords_batch = nullptr;
 
     // Search
@@ -171,6 +195,11 @@ public:
     // Form ID resolution and overrides
     fn_xedit_resolve_form_id       xedit_resolve_form_id       = nullptr;
     fn_xedit_find_overrides        xedit_find_overrides        = nullptr;
+    fn_xedit_find_overrides_full   xedit_find_overrides_full   = nullptr;
+
+    // Conflict status
+    fn_xedit_record_conflict_status    xedit_record_conflict_status    = nullptr;
+    fn_xedit_subrecord_conflict_status xedit_subrecord_conflict_status = nullptr;
 
     // NIF (mesh) queries
     fn_xedit_nif_block_count       xedit_nif_block_count       = nullptr;
@@ -200,6 +229,19 @@ public:
     fn_xedit_mo2_profile_name     xedit_mo2_profile_name     = nullptr;
     fn_xedit_mo2_select_profile   xedit_mo2_select_profile   = nullptr;
     fn_xedit_mo2_load_order       xedit_mo2_load_order       = nullptr;
+
+    // Record/Subrecord mutation
+    fn_xedit_set_subrecord_data    xedit_set_subrecord_data    = nullptr;
+    fn_xedit_delete_record         xedit_delete_record         = nullptr;
+    fn_xedit_copy_record           xedit_copy_record           = nullptr;
+    fn_xedit_add_record            xedit_add_record            = nullptr;
+
+    // LOD generation
+    fn_xedit_lod_list_worldspaces  xedit_lod_list_worldspaces  = nullptr;
+    fn_xedit_lod_generate          xedit_lod_generate          = nullptr;
+    fn_xedit_lod_status            xedit_lod_status            = nullptr;
+    fn_xedit_lod_error             xedit_lod_error             = nullptr;
+    fn_xedit_lod_cancel            xedit_lod_cancel            = nullptr;
 
 private:
     XEditFFI() = default;

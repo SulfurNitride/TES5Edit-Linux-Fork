@@ -1,7 +1,10 @@
 #pragma once
 #include <QAbstractItemModel>
+#include <QHash>
 #include <QMimeData>
+#include <QPair>
 #include <QStringList>
+#include <cstdint>
 
 class NavTreeItem;
 
@@ -21,6 +24,7 @@ public:
     bool canFetchMore(const QModelIndex& parent) const override;
     void fetchMore(const QModelIndex& parent) override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
+    bool removeRows(int row, int count, const QModelIndex& parent = {}) override;
 
     // Drag and drop support
     Qt::DropActions supportedDragActions() const override;
@@ -37,10 +41,15 @@ public:
     void clear();
     NavTreeItem* itemFromIndex(const QModelIndex& index) const;
     QModelIndex findRecord(int pluginIdx, int groupIdx, int recordIdx) const;
+    void applyConflictData(int conflictCount);
+    void applyConflictDataFromCache();
+    void setConflictCache(QHash<uint32_t, QPair<int, int>>&& cache);
+    const QHash<uint32_t, QPair<int, int>>& conflictCache() const { return m_conflictsByFormId; }
 
     static constexpr const char* MimeType = "application/x-xedit-navitem";
 
 private:
     void populateGroups(NavTreeItem* pluginItem);
     NavTreeItem* m_rootItem = nullptr;
+    QHash<uint32_t, QPair<int, int>> m_conflictsByFormId; // formId -> (ConflictAll, ConflictThis)
 };

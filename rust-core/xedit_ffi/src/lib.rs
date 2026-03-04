@@ -21,7 +21,9 @@ use xedit_core::conflicts::{ConflictDetector, RecordConflict};
 use xedit_core::load_order::LoadOrder;
 use xedit_core::mo2::{Mo2Config, Profile, VirtualFileSystem};
 // Note: Profile is used in xedit_mo2_select_profile
-use xedit_dom::{FormId, GameId};
+use xedit_dom::{FormId, GameId, Signature};
+use xedit_dom::element::IntegerSize;
+use xedit_games::definition::{FieldType, FieldDef, EnumDef, FlagDef};
 use xedit_tools::asset_scan;
 use xedit_tools::cleaner;
 use xedit_nif::NiflyLibrary;
@@ -47,6 +49,7 @@ pub const XEDIT_ERR_LOAD_FAILED: i32 = -3;
 pub const XEDIT_ERR_SAVE_FAILED: i32 = -4;
 pub const XEDIT_ERR_NIFLY_MISSING: i32 = -5;
 pub const XEDIT_ERR_INVALID_GAME: i32 = -6;
+pub const XEDIT_ERR_BUFFER_TOO_SMALL: i32 = -7;
 pub const XEDIT_ERR_PANIC: i32 = -99;
 
 // ============================================================================
@@ -430,6 +433,8 @@ pub extern "C" fn xedit_version(buf: *mut c_char, buf_len: i32) -> i32 {
 
 use xedit_dom::group::{Group, GroupChild, GroupType};
 use xedit_dom::Plugin;
+use xedit_dom::Record;
+use xedit_dom::Subrecord;
 
 /// Helper: write a Rust string into a caller-provided C buffer.
 /// Returns number of bytes written (excluding null terminator), or -1 on error.
@@ -502,6 +507,39 @@ fn get_plugin_db_path(plugin_idx: i32) -> Option<PathBuf> {
     }
 }
 
+/// Helper: validate plugin index and return a mutable reference to the plugin.
+fn get_plugin_mut(engine: &mut XEditEngine, plugin_idx: i32) -> Option<&mut Plugin> {
+    if plugin_idx < 0 || plugin_idx as usize >= engine.plugins.len() {
+        return None;
+    }
+    Some(&mut engine.plugins[plugin_idx as usize])
+}
+
+/// Helper: validate group index and return a mutable reference to the group.
+fn get_group_mut(plugin: &mut Plugin, group_idx: i32) -> Option<&mut Group> {
+    if group_idx < 0 || group_idx as usize >= plugin.groups.len() {
+        return None;
+    }
+    Some(&mut plugin.groups[group_idx as usize])
+}
+
+/// Collect all direct Record children from a group as mutable references
+/// (flattening nested sub-groups). Returns a flat list with indices into
+/// the group's children vec.
+fn collect_records_from_group_mut(group: &mut Group) -> Vec<&mut Record> {
+    let mut records = Vec::new();
+    for child in &mut group.children {
+        match child {
+            GroupChild::Record(r) => records.push(r),
+            GroupChild::Group(g) => {
+                let nested = collect_records_from_group_mut(g);
+                records.extend(nested);
+            }
+        }
+    }
+    records
+}
+
 /// Get a human-readable name for a group type.
 fn group_type_name(gt: &GroupType) -> String {
     match gt {
@@ -553,6 +591,24 @@ pub extern "C" fn xedit_plugin_group_count(plugin_idx: i32) -> i32 {
         match get_plugin(engine, plugin_idx) {
             Some(p) => p.groups.len() as i32,
             None => XEDIT_ERR_NULL_HANDLE,
+        }
+    })
+}
+
+/// Get the load order index of a plugin.
+/// Returns the load order position (0-based) if valid, -1 if invalid.
+/// Currently plugins are loaded sequentially, so plugin_idx IS the load order index.
+#[no_mangle]
+pub extern "C" fn xedit_plugin_load_order_id(plugin_idx: i32) -> i32 {
+    catch_panic(|| {
+        let lock = ENGINE.lock().unwrap();
+        let engine = match lock.as_ref() {
+            Some(e) => e,
+            None => return -1,
+        };
+        match get_plugin(engine, plugin_idx) {
+            Some(_) => plugin_idx,
+            None => -1,
         }
     })
 }
@@ -636,6 +692,45 @@ pub extern "C" fn xedit_group_record_count(plugin_idx: i32, group_idx: i32) -> i
     })
 }
 
+/// Batch-return all FormIDs for a group.
+/// Writes form_ids as contiguous u32 values into buf.
+/// Returns number of FormIDs written, or negative error.
+#[no_mangle]
+pub extern "C" fn xedit_group_form_ids(
+    plugin_idx: i32,
+    group_idx: i32,
+    buf: *mut u32,
+    buf_len: i32,
+) -> i32 {
+    catch_panic(|| {
+        if buf.is_null() || buf_len <= 0 {
+            return XEDIT_ERR_NULL_HANDLE;
+        }
+        let lock = ENGINE.lock().unwrap();
+        let engine = match lock.as_ref() {
+            Some(e) => e,
+            None => return XEDIT_ERR_NULL_HANDLE,
+        };
+        let plugin = match get_plugin(engine, plugin_idx) {
+            Some(p) => p,
+            None => return XEDIT_ERR_NULL_HANDLE,
+        };
+        let group = match get_group(plugin, group_idx) {
+            Some(g) => g,
+            None => return XEDIT_ERR_NULL_HANDLE,
+        };
+
+        let records = collect_records_from_group(group);
+        let max = buf_len as usize;
+        let count = records.len().min(max);
+        let slice = unsafe { std::slice::from_raw_parts_mut(buf, max) };
+        for (i, record) in records.iter().enumerate().take(count) {
+            slice[i] = record.form_id.raw();
+        }
+        count as i32
+    })
+}
+
 // ============================================================================
 // Tree navigation - Record level
 // ============================================================================
@@ -671,10 +766,59 @@ pub extern "C" fn xedit_record_editor_id(
         }
         let record = records[record_idx as usize];
         match record.editor_id() {
-            Some(edid) => write_to_buf(edid, buf, buf_len),
-            None => {
-                // Write empty string
-                write_to_buf("", buf, buf_len)
+            Some(edid) if !edid.is_empty() => write_to_buf(edid, buf, buf_len),
+            _ => {
+                // In-memory subrecords may be empty after SQLite offload.
+                // Fall back to querying the plugin's SQLite DB for EDID/FULL.
+                let db_path = match get_plugin_db_path(plugin_idx) {
+                    Some(p) => p,
+                    None => return write_to_buf("", buf, buf_len),
+                };
+                let conn = match Connection::open(&db_path) {
+                    Ok(c) => c,
+                    Err(_) => return write_to_buf("", buf, buf_len),
+                };
+
+                // Query EDID (editor id) — raw_data is a null-terminated UTF-8 string
+                let edid: String = conn
+                    .query_row(
+                        "SELECT raw_data FROM subrecords WHERE group_idx=?1 AND record_idx=?2 AND signature='EDID' LIMIT 1",
+                        params![group_idx, record_idx],
+                        |row| {
+                            let data: Vec<u8> = row.get(0)?;
+                            let s = String::from_utf8_lossy(&data).trim_end_matches('\0').to_string();
+                            Ok(s)
+                        },
+                    )
+                    .unwrap_or_default();
+
+                if edid.is_empty() {
+                    return write_to_buf("", buf, buf_len);
+                }
+
+                // Query FULL (display name) — null-terminated UTF-8, or 4-byte string index if localized
+                let full: String = if plugin.is_localized() {
+                    // Localized plugins store FULL as a 4-byte string table index, skip it
+                    String::new()
+                } else {
+                    conn.query_row(
+                        "SELECT raw_data FROM subrecords WHERE group_idx=?1 AND record_idx=?2 AND signature='FULL' LIMIT 1",
+                        params![group_idx, record_idx],
+                        |row| {
+                            let data: Vec<u8> = row.get(0)?;
+                            let s = String::from_utf8_lossy(&data).trim_end_matches('\0').to_string();
+                            Ok(s)
+                        },
+                    )
+                    .unwrap_or_default()
+                };
+
+                let result = if full.is_empty() {
+                    edid
+                } else {
+                    format!("{} \"{}\"", edid, full)
+                };
+                write_to_buf(&result, buf, buf_len)
             }
         }
     })
@@ -1823,6 +1967,93 @@ pub extern "C" fn xedit_find_overrides(
     })
 }
 
+/// Find all plugins that contain a record with the given FormID,
+/// returning full coordinates (plugin_idx, group_idx, record_idx) for each.
+///
+/// Buffer format: [i32 count | (i32 plugin_idx, i32 group_idx, i32 record_idx) ...]
+/// Returns XEDIT_OK on success, negative error code on failure.
+#[no_mangle]
+pub extern "C" fn xedit_find_overrides_full(
+    form_id: u32,
+    buf: *mut u8,
+    buf_len: i32,
+) -> i32 {
+    catch_panic(|| {
+        if buf.is_null() || buf_len <= 0 {
+            return XEDIT_ERR_NULL_HANDLE;
+        }
+
+        let lock = ENGINE.lock().unwrap();
+        let engine = match lock.as_ref() {
+            Some(e) => e,
+            None => return XEDIT_ERR_NULL_HANDLE,
+        };
+
+        // Collect all (plugin_idx, group_idx, record_idx) triples for this FormID
+        let mut results: Vec<(i32, i32, i32)> = Vec::new();
+        for (pi, plugin) in engine.plugins.iter().enumerate() {
+            for (gi, group) in plugin.groups.iter().enumerate() {
+                let records = collect_records_from_group(group);
+                for (ri, record) in records.iter().enumerate() {
+                    if record.form_id.0 == form_id {
+                        results.push((pi as i32, gi as i32, ri as i32));
+                    }
+                }
+            }
+        }
+
+        let count = results.len() as i32;
+        // Need 4 bytes for count + 12 bytes per triple
+        let required = 4 + results.len() * 12;
+        if (buf_len as usize) < required {
+            // Not enough space — write count only if we have room, then return error
+            if buf_len >= 4 {
+                unsafe {
+                    std::ptr::copy_nonoverlapping(
+                        &count as *const i32 as *const u8,
+                        buf,
+                        4,
+                    );
+                }
+            }
+            return XEDIT_ERR_BUFFER_TOO_SMALL;
+        }
+
+        // Write count
+        unsafe {
+            std::ptr::copy_nonoverlapping(
+                &count as *const i32 as *const u8,
+                buf,
+                4,
+            );
+        }
+
+        // Write triples
+        for (i, (pi, gi, ri)) in results.iter().enumerate() {
+            let offset = 4 + i * 12;
+            unsafe {
+                std::ptr::copy_nonoverlapping(
+                    pi as *const i32 as *const u8,
+                    buf.add(offset),
+                    4,
+                );
+                std::ptr::copy_nonoverlapping(
+                    gi as *const i32 as *const u8,
+                    buf.add(offset + 4),
+                    4,
+                );
+                std::ptr::copy_nonoverlapping(
+                    ri as *const i32 as *const u8,
+                    buf.add(offset + 8),
+                    4,
+                );
+            }
+        }
+
+        XEDIT_OK
+    })
+}
+
 // ============================================================================
 // Progress callback FFI
 // ============================================================================
@@ -2888,4 +3119,1892 @@ pub extern "C" fn xedit_record_refby_batch(
 
         count
     })
+}
+
+// ============================================================================
+// Subrecord display value
+// ============================================================================
+
+/// Decode a subrecord's raw data into a human-readable display string.
+/// Returns the length written to buf (not counting null terminator), or negative error code.
+#[no_mangle]
+pub extern "C" fn xedit_subrecord_display_value(
+    plugin_idx: i32,
+    group_idx: i32,
+    record_idx: i32,
+    sub_idx: i32,
+    buf: *mut u8,
+    buf_len: i32,
+) -> i32 {
+    catch_panic(|| {
+        if buf.is_null() || buf_len <= 0 {
+            return XEDIT_ERR_NULL_HANDLE;
+        }
+
+        let lock = ENGINE.lock().unwrap();
+        let engine = match lock.as_ref() {
+            Some(e) => e,
+            None => return XEDIT_ERR_NULL_HANDLE,
+        };
+        let plugin = match get_plugin(engine, plugin_idx) {
+            Some(p) => p,
+            None => return XEDIT_ERR_NULL_HANDLE,
+        };
+        let group = match get_group(plugin, group_idx) {
+            Some(g) => g,
+            None => return XEDIT_ERR_NULL_HANDLE,
+        };
+        let records = collect_records_from_group(group);
+        if record_idx < 0 || record_idx as usize >= records.len() {
+            return XEDIT_ERR_NULL_HANDLE;
+        }
+        let record = records[record_idx as usize];
+
+        // Get the subrecord (in-memory or from offload DB)
+        let (sig_str, raw_data): (String, Vec<u8>) = if !record.subrecords.is_empty() {
+            if sub_idx < 0 || sub_idx as usize >= record.subrecords.len() {
+                return XEDIT_ERR_NULL_HANDLE;
+            }
+            let sub = &record.subrecords[sub_idx as usize];
+            let sig = sub.signature.as_str();
+            let data = if !sub.raw_data.is_empty() {
+                sub.raw_data.clone()
+            } else {
+                match load_subrecord_from_db(plugin_idx, group_idx, record_idx, sub_idx) {
+                    Some(d) => d,
+                    None => return XEDIT_ERR_LOAD_FAILED,
+                }
+            };
+            (sig, data)
+        } else {
+            // All subrecords offloaded — load from DB
+            let data = match load_subrecord_from_db(plugin_idx, group_idx, record_idx, sub_idx) {
+                Some(d) => d,
+                None => return XEDIT_ERR_LOAD_FAILED,
+            };
+            // Try to get signature from the offload DB
+            let sig = match load_subrecord_sig_from_db(plugin_idx, group_idx, record_idx, sub_idx) {
+                Some(s) => s,
+                None => {
+                    // Can't determine type, fall back to hex
+                    let display = format_hex_fallback(&data);
+                    return write_to_u8_buf(&display, buf, buf_len);
+                }
+            };
+            (sig, data)
+        };
+
+        let record_sig = record.signature.as_str();
+        let is_localized = plugin.is_localized();
+        let display = decode_subrecord_display(engine, &sig_str, &raw_data, &record_sig, is_localized);
+        write_to_u8_buf(&display, buf, buf_len)
+    })
+}
+
+/// Helper: load raw subrecord data from the offload SQLite DB.
+fn load_subrecord_from_db(plugin_idx: i32, group_idx: i32, record_idx: i32, sub_idx: i32) -> Option<Vec<u8>> {
+    let db_path = get_plugin_db_path(plugin_idx)?;
+    let conn = Connection::open(&db_path).ok()?;
+    conn.query_row(
+        "SELECT raw_data FROM subrecords WHERE group_idx=?1 AND record_idx=?2 AND sub_idx=?3",
+        params![group_idx, record_idx, sub_idx],
+        |row| row.get::<_, Vec<u8>>(0),
+    ).ok()
+}
+
+/// Helper: load subrecord signature from the offload SQLite DB.
+fn load_subrecord_sig_from_db(plugin_idx: i32, group_idx: i32, record_idx: i32, sub_idx: i32) -> Option<String> {
+    let db_path = get_plugin_db_path(plugin_idx)?;
+    let conn = Connection::open(&db_path).ok()?;
+    conn.query_row(
+        "SELECT signature FROM subrecords WHERE group_idx=?1 AND record_idx=?2 AND sub_idx=?3",
+        params![group_idx, record_idx, sub_idx],
+        |row| row.get::<_, String>(0),
+    ).ok()
+}
+
+/// Write a string into a *mut u8 buffer with null termination.
+/// Returns bytes written (not counting null), or error code.
+fn write_to_u8_buf(s: &str, buf: *mut u8, buf_len: i32) -> i32 {
+    if buf.is_null() || buf_len <= 0 {
+        return XEDIT_ERR_NULL_HANDLE;
+    }
+    let bytes = s.as_bytes();
+    let max_copy = (buf_len as usize).saturating_sub(1); // leave room for null
+    let copy_len = bytes.len().min(max_copy);
+    unsafe {
+        ptr::copy_nonoverlapping(bytes.as_ptr(), buf, copy_len);
+        *buf.add(copy_len) = 0; // null terminator
+    }
+    copy_len as i32
+}
+
+/// Format raw bytes as hex fallback: "0A FF 12 34", truncated at 64 bytes.
+fn format_hex_fallback(data: &[u8]) -> String {
+    let truncated = data.len() > 64;
+    let slice = if truncated { &data[..64] } else { data };
+    let mut hex = String::with_capacity(slice.len() * 3);
+    for (i, b) in slice.iter().enumerate() {
+        if i > 0 {
+            hex.push(' ');
+        }
+        hex.push_str(&format!("{:02X}", b));
+    }
+    if truncated {
+        hex.push_str("...");
+    }
+    hex
+}
+
+/// Decode a subrecord's raw data into a human-readable display string.
+///
+/// First attempts definition-based decoding using the game's DefinitionRegistry.
+/// Falls back to the heuristic decoder if no definition is found.
+fn decode_subrecord_display(engine: &XEditEngine, sig: &str, data: &[u8], record_sig: &str, is_localized: bool) -> String {
+    // Try definition-based decoding first
+    if sig.len() == 4 && record_sig.len() >= 4 {
+        let mut rec_bytes = [b' '; 4];
+        for (i, b) in record_sig.bytes().take(4).enumerate() {
+            rec_bytes[i] = b;
+        }
+        let rec_signature = Signature(rec_bytes);
+
+        let mut sub_bytes = [b' '; 4];
+        for (i, b) in sig.bytes().take(4).enumerate() {
+            sub_bytes[i] = b;
+        }
+        let sub_signature = Signature(sub_bytes);
+
+        if let Some(record_def) = engine.definitions.get(engine.game_id, rec_signature) {
+            // Find the matching subrecord definition
+            if let Some(subrec_def) = record_def.members.iter().find(|m| m.signature == sub_signature) {
+                if !subrec_def.fields.is_empty() {
+                    let result = decode_fields_from_def(&subrec_def.fields, data, is_localized);
+                    if !result.is_empty() {
+                        return result;
+                    }
+                }
+            }
+        }
+    }
+
+    // Fall back to heuristic decoder
+    decode_subrecord_heuristic(sig, data, record_sig, is_localized)
+}
+
+/// Decode a slice of field definitions against raw data bytes.
+/// Returns the decoded display string, or empty string on failure.
+fn decode_fields_from_def(fields: &[FieldDef], data: &[u8], is_localized: bool) -> String {
+    let mut offset: usize = 0;
+    let mut parts: Vec<String> = Vec::new();
+
+    for field in fields {
+        if offset >= data.len() {
+            break;
+        }
+        let remaining = &data[offset..];
+        match decode_field_type(&field.field_type, remaining, is_localized) {
+            Some((display, consumed)) => {
+                if !field.name.is_empty() {
+                    parts.push(format!("{}: {}", field.name, display));
+                } else {
+                    parts.push(display);
+                }
+                offset += consumed;
+            }
+            None => {
+                // Could not decode this field — return what we have so far
+                // plus hex for the remainder
+                if !remaining.is_empty() {
+                    parts.push(format_hex_fallback(remaining));
+                }
+                break;
+            }
+        }
+    }
+
+    if parts.is_empty() {
+        String::new()
+    } else if parts.len() == 1 {
+        // Single field: return its value directly (without field name prefix for cleaner display)
+        // Re-decode to get just the value
+        if fields.len() == 1 {
+            if let Some((display, _)) = decode_field_type(&fields[0].field_type, data, is_localized) {
+                return display;
+            }
+        }
+        parts.remove(0)
+    } else {
+        parts.join(" | ")
+    }
+}
+
+/// Decode a single field type from raw data at the current position.
+/// Returns (display_string, bytes_consumed) or None on failure.
+fn decode_field_type(field_type: &FieldType, data: &[u8], is_localized: bool) -> Option<(String, usize)> {
+    match field_type {
+        FieldType::String => {
+            // Localized plugins store string references as 4-byte u32 indices
+            // into external .STRINGS/.DLSTRINGS/.ILSTRINGS files instead of
+            // inline text. Decoding these 4 bytes as UTF-8 produces garbled text.
+            if is_localized && data.len() == 4 {
+                let index = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+                return Some((format!("String Index: 0x{:08X}", index), 4));
+            }
+            let s = decode_null_terminated_string(data);
+            // Consume up to and including the null terminator, or all data
+            let consumed = match data.iter().position(|&b| b == 0) {
+                Some(pos) => pos + 1,
+                None => data.len(),
+            };
+            Some((s, consumed))
+        }
+        FieldType::LenString => {
+            // Length-prefixed string: first 2 bytes are u16 length
+            if data.len() < 2 {
+                return None;
+            }
+            let len = u16::from_le_bytes([data[0], data[1]]) as usize;
+            let consumed = 2 + len;
+            if consumed > data.len() {
+                return None;
+            }
+            let s = match std::str::from_utf8(&data[2..2 + len]) {
+                Ok(s) => s.trim_end_matches('\0').to_string(),
+                Err(_) => String::from_utf8_lossy(&data[2..2 + len]).into_owned(),
+            };
+            Some((s, consumed))
+        }
+        FieldType::Integer { size, enum_def, flags_def } => {
+            let byte_size = size.byte_size();
+            if data.len() < byte_size {
+                return None;
+            }
+            let (display, raw_val) = decode_integer(size, &data[..byte_size]);
+
+            // Check enum first, then flags
+            let display = if let Some(enum_def) = enum_def {
+                lookup_enum(raw_val, enum_def).unwrap_or(display)
+            } else if let Some(flags_def) = flags_def {
+                format_flags(raw_val as u64, flags_def)
+            } else {
+                display
+            };
+
+            Some((display, byte_size))
+        }
+        FieldType::Float => {
+            if data.len() < 4 {
+                return None;
+            }
+            let val = f32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+            Some((format!("{:.6}", val), 4))
+        }
+        FieldType::HalfFloat => {
+            if data.len() < 2 {
+                return None;
+            }
+            let bits = u16::from_le_bytes([data[0], data[1]]);
+            let val = half_to_f32(bits);
+            Some((format!("{:.6}", val), 2))
+        }
+        FieldType::FormId { .. } => {
+            if data.len() < 4 {
+                return None;
+            }
+            let val = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+            Some((format!("[{:08X}]", val), 4))
+        }
+        FieldType::Struct { fields, .. } => {
+            let mut offset: usize = 0;
+            let mut parts: Vec<String> = Vec::new();
+            for field in fields {
+                if offset >= data.len() {
+                    break;
+                }
+                match decode_field_type(&field.field_type, &data[offset..], is_localized) {
+                    Some((display, consumed)) => {
+                        if !field.name.is_empty() {
+                            parts.push(format!("{}: {}", field.name, display));
+                        } else {
+                            parts.push(display);
+                        }
+                        offset += consumed;
+                    }
+                    None => break,
+                }
+            }
+            if parts.is_empty() {
+                None
+            } else {
+                Some((parts.join(" | "), offset))
+            }
+        }
+        FieldType::Array { element, count, .. } => {
+            let mut offset: usize = 0;
+            let mut parts: Vec<String> = Vec::new();
+            let max_count = if *count > 0 { *count } else { usize::MAX };
+            let mut i = 0;
+            while offset < data.len() && i < max_count {
+                match decode_field_type(&element.field_type, &data[offset..], is_localized) {
+                    Some((display, consumed)) => {
+                        if consumed == 0 {
+                            break; // prevent infinite loop
+                        }
+                        parts.push(display);
+                        offset += consumed;
+                        i += 1;
+                    }
+                    None => break,
+                }
+            }
+            if parts.is_empty() {
+                None
+            } else {
+                Some((parts.join(", "), offset))
+            }
+        }
+        FieldType::ByteArray { size } => {
+            let byte_count = if *size > 0 { (*size).min(data.len()) } else { data.len() };
+            let hex = format_hex_fallback(&data[..byte_count]);
+            Some((hex, byte_count))
+        }
+        FieldType::Flags(flag_def) => {
+            // Flags are typically stored as u32
+            if data.len() < 4 {
+                if data.len() >= 2 {
+                    let val = u16::from_le_bytes([data[0], data[1]]) as u64;
+                    return Some((format_flags(val, flag_def), 2));
+                } else if data.len() >= 1 {
+                    return Some((format_flags(data[0] as u64, flag_def), 1));
+                }
+                return None;
+            }
+            let val = u32::from_le_bytes([data[0], data[1], data[2], data[3]]) as u64;
+            Some((format_flags(val, flag_def), 4))
+        }
+        FieldType::Enum(enum_def) => {
+            // Enums are typically stored as u32
+            if data.len() < 4 {
+                if data.len() >= 2 {
+                    let val = u16::from_le_bytes([data[0], data[1]]) as i64;
+                    return Some((lookup_enum(val, enum_def).unwrap_or_else(|| format!("{}", val)), 2));
+                } else if data.len() >= 1 {
+                    let val = data[0] as i64;
+                    return Some((lookup_enum(val, enum_def).unwrap_or_else(|| format!("{}", val)), 1));
+                }
+                return None;
+            }
+            let val = u32::from_le_bytes([data[0], data[1], data[2], data[3]]) as i64;
+            Some((lookup_enum(val, enum_def).unwrap_or_else(|| format!("{}", val)), 4))
+        }
+        FieldType::Union { members } => {
+            // Try each member type until one succeeds
+            for member in members {
+                if let Some(result) = decode_field_type(&member.field_type, data, is_localized) {
+                    return Some(result);
+                }
+            }
+            None
+        }
+        FieldType::Unknown => {
+            // Fall through — caller should use heuristic
+            None
+        }
+    }
+}
+
+/// Decode an integer of the given size from raw bytes.
+/// Returns (display_string, raw_signed_value).
+fn decode_integer(size: &IntegerSize, data: &[u8]) -> (String, i64) {
+    match size {
+        IntegerSize::U8 => {
+            let v = data[0] as u8;
+            (format!("{}", v), v as i64)
+        }
+        IntegerSize::S8 => {
+            let v = data[0] as i8;
+            (format!("{}", v), v as i64)
+        }
+        IntegerSize::U16 => {
+            let v = u16::from_le_bytes([data[0], data[1]]);
+            (format!("{}", v), v as i64)
+        }
+        IntegerSize::S16 => {
+            let v = i16::from_le_bytes([data[0], data[1]]);
+            (format!("{}", v), v as i64)
+        }
+        IntegerSize::U32 => {
+            let v = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+            (format!("{}", v), v as i64)
+        }
+        IntegerSize::S32 => {
+            let v = i32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+            (format!("{}", v), v as i64)
+        }
+        IntegerSize::U64 => {
+            let v = u64::from_le_bytes([
+                data[0], data[1], data[2], data[3],
+                data[4], data[5], data[6], data[7],
+            ]);
+            (format!("{}", v), v as i64)
+        }
+        IntegerSize::S64 => {
+            let v = i64::from_le_bytes([
+                data[0], data[1], data[2], data[3],
+                data[4], data[5], data[6], data[7],
+            ]);
+            (format!("{}", v), v)
+        }
+    }
+}
+
+/// Look up an integer value in an enum definition.
+fn lookup_enum(val: i64, enum_def: &EnumDef) -> Option<String> {
+    enum_def.values.iter()
+        .find(|(k, _)| *k == val)
+        .map(|(_, name)| name.clone())
+}
+
+/// Format a bitmask value using flag definitions.
+fn format_flags(val: u64, flag_def: &FlagDef) -> String {
+    if val == 0 {
+        return "0x00000000".to_string();
+    }
+    let mut set_flags: Vec<&str> = Vec::new();
+    for (bit, name) in &flag_def.flags {
+        if val & bit != 0 {
+            set_flags.push(name);
+        }
+    }
+    if set_flags.is_empty() {
+        format!("0x{:08X}", val)
+    } else {
+        set_flags.join(", ")
+    }
+}
+
+/// Convert IEEE 754 half-precision (16-bit) float to f32.
+fn half_to_f32(bits: u16) -> f32 {
+    let sign = ((bits >> 15) & 1) as u32;
+    let exponent = ((bits >> 10) & 0x1F) as u32;
+    let mantissa = (bits & 0x3FF) as u32;
+
+    if exponent == 0 {
+        if mantissa == 0 {
+            // Zero
+            f32::from_bits(sign << 31)
+        } else {
+            // Subnormal
+            let val = (mantissa as f32) / 1024.0 * 2.0f32.powi(-14);
+            if sign == 1 { -val } else { val }
+        }
+    } else if exponent == 31 {
+        if mantissa == 0 {
+            f32::from_bits((sign << 31) | 0x7F800000) // Infinity
+        } else {
+            f32::NAN
+        }
+    } else {
+        // Normal
+        let f32_exp = (exponent as i32 - 15 + 127) as u32;
+        let f32_mantissa = mantissa << 13;
+        f32::from_bits((sign << 31) | (f32_exp << 23) | f32_mantissa)
+    }
+}
+
+/// Heuristic subrecord decoder — fallback when no definition is available.
+/// Decodes based on the 4-char signature type using hardcoded patterns.
+fn decode_subrecord_heuristic(sig: &str, data: &[u8], record_sig: &str, is_localized: bool) -> String {
+    // Localized string subrecords: FULL, DESC, and other localizable sigs
+    // store a u32 string table index instead of inline text when the plugin
+    // has the LOCALIZED flag set.
+    const LOCALIZABLE_SIGS: &[&str] = &[
+        "FULL", "DESC", "NNAM", "SHRT", "TNAM", "ITXT", "RNAM",
+    ];
+    if is_localized && data.len() == 4 && LOCALIZABLE_SIGS.contains(&sig) {
+        let index = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+        return format!("String Index: 0x{:08X}", index);
+    }
+
+    // String subrecords (null-terminated UTF-8 or Windows-1252)
+    match sig {
+        "EDID" | "FULL" | "DESC" | "NNAM" | "TNAM" | "ANAM" | "MNAM" | "ONAM"
+        | "TX00" | "TX01" | "TX02" | "TX03" | "TX04" | "TX05" | "TX06" | "TX07"
+        | "MODL" | "MOD2" | "MOD3" | "MOD4" | "MOD5" | "ICON" | "MICO" | "ICO2"
+        | "MIC2" | "NIFN" | "XATO" | "SHRT" => {
+            return decode_null_terminated_string(data);
+        }
+        // These are strings when the data length suggests it (> 4 bytes or has null terminator)
+        "DNAM" | "RNAM" => {
+            if data.len() > 4 || (!data.is_empty() && data.last() == Some(&0)) {
+                if let Some(s) = try_null_terminated_string(data) {
+                    if !s.is_empty() {
+                        return s;
+                    }
+                }
+            }
+            // Otherwise fall through to other decoders
+        }
+        // FormID-like when exactly 4 bytes, otherwise try as string
+        "INAM" | "CNAM" | "SNAM" | "YNAM" | "ZNAM" | "BNAM" => {
+            if data.len() == 4 {
+                let val = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+                return format!("[{:08X}]", val);
+            }
+            return decode_null_terminated_string(data);
+        }
+        // Always FormID references (4 bytes)
+        "SCRI" | "EITM" | "BIDS" | "BAMT" | "ETYP" | "TPLT" | "WNAM" => {
+            if data.len() == 4 {
+                let val = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+                return format!("[{:08X}]", val);
+            }
+        }
+        // Float subrecords
+        "XSCL" | "FLTV" => {
+            if data.len() == 4 {
+                let val = f32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+                return format!("{:.6}", val);
+            }
+        }
+        // Integer subrecords
+        "INTV" => {
+            if data.len() == 4 {
+                let val = i32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+                return format!("{}", val);
+            } else if data.len() == 2 {
+                let val = i16::from_le_bytes([data[0], data[1]]);
+                return format!("{}", val);
+            }
+        }
+        // DATA: context-dependent
+        "DATA" => {
+            if data.len() == 4 {
+                // Record types where DATA is known to be a struct, not a simple value
+                let struct_data_records = [
+                    "NPC_", "WEAP", "ARMO", "AMMO", "BOOK", "INGR", "ALCH",
+                    "MISC", "LIGH", "CELL", "REFR", "ACHR", "FACT", "RACE",
+                    "MGEF", "ENCH", "SPEL", "DIAL", "QUST",
+                ];
+                if !struct_data_records.contains(&record_sig) {
+                    // Try as f32 first
+                    let fval = f32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+                    if fval.is_finite() && !fval.is_subnormal() && fval != 0.0 {
+                        return format!("{:.6}", fval);
+                    }
+                    // Otherwise as u32
+                    let uval = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+                    return format!("{}", uval);
+                }
+            }
+        }
+        _ => {}
+    }
+
+    // Fallback: hex dump
+    format_hex_fallback(data)
+}
+
+/// Decode null-terminated string data. Try UTF-8 first, fall back to lossy.
+fn decode_null_terminated_string(data: &[u8]) -> String {
+    // Strip trailing null(s)
+    let trimmed = match data.iter().position(|&b| b == 0) {
+        Some(pos) => &data[..pos],
+        None => data,
+    };
+    if trimmed.is_empty() {
+        return String::new();
+    }
+    match std::str::from_utf8(trimmed) {
+        Ok(s) => s.to_string(),
+        Err(_) => String::from_utf8_lossy(trimmed).into_owned(),
+    }
+}
+
+/// Try to decode as null-terminated string; returns None if data doesn't look like a string.
+fn try_null_terminated_string(data: &[u8]) -> Option<String> {
+    let trimmed = match data.iter().position(|&b| b == 0) {
+        Some(pos) => &data[..pos],
+        None => data,
+    };
+    if trimmed.is_empty() {
+        return Some(String::new());
+    }
+    // Check if it looks like printable text (at least mostly ASCII/printable)
+    let printable_count = trimmed.iter().filter(|&&b| b >= 0x20 && b < 0x7F).count();
+    if printable_count * 2 >= trimmed.len() {
+        // More than half printable — likely a string
+        match std::str::from_utf8(trimmed) {
+            Ok(s) => Some(s.to_string()),
+            Err(_) => Some(String::from_utf8_lossy(trimmed).into_owned()),
+        }
+    } else {
+        None
+    }
+}
+
+// ============================================================================
+// Per-record and per-subrecord conflict status FFI
+// ============================================================================
+
+/// Collect all subrecord raw data concatenated by signature for a record.
+/// Returns a vec of (Signature, concatenated_bytes) in order of first appearance.
+fn collect_subrecord_data_ordered(record: &xedit_dom::Record) -> Vec<(xedit_dom::Signature, Vec<u8>)> {
+    let mut result: Vec<(xedit_dom::Signature, Vec<u8>)> = Vec::new();
+    for sr in &record.subrecords {
+        if let Some(entry) = result.iter_mut().find(|(sig, _)| *sig == sr.signature) {
+            entry.1.extend_from_slice(&sr.raw_data);
+        } else {
+            result.push((sr.signature, sr.raw_data.clone()));
+        }
+    }
+    result
+}
+
+/// Helper: find all records matching a FormID across all plugins, returning
+/// (plugin_index, &Record) pairs in load order.
+fn find_records_for_form_id(engine: &XEditEngine, form_id: u32) -> Vec<(usize, &xedit_dom::Record)> {
+    let mut results = Vec::new();
+    for (pi, plugin) in engine.plugins.iter().enumerate() {
+        for group in &plugin.groups {
+            let records = collect_records_from_group(group);
+            for record in records {
+                if record.form_id.0 == form_id {
+                    results.push((pi, record));
+                }
+            }
+        }
+    }
+    results
+}
+
+/// Get conflict status for a record across all overriding plugins.
+///
+/// Buffer format: [i32 conflict_all | i32 plugin_count | i32 conflict_this_0 | i32 conflict_this_1 | ...]
+///
+/// conflict_all values: 0=Unknown, 1=OnlyOne, 2=NoConflict, 3=ConflictBenign, 4=Override, 5=Conflict, 6=ConflictCritical
+/// conflict_this values: 0=Unknown, 1=Ignored, 2=NotDefined, 3=IdenticalToMaster, 4=OnlyOne,
+///                       5=HiddenByModGroup, 6=Master, 7=ConflictBenign, 8=Override,
+///                       9=IdenticalToMasterWinsConflict, 10=ConflictWins, 11=ConflictLoses
+#[no_mangle]
+pub extern "C" fn xedit_record_conflict_status(
+    form_id: u32,
+    buf: *mut u8,
+    buf_len: i32,
+) -> i32 {
+    catch_panic(|| {
+        if buf.is_null() || buf_len <= 0 {
+            return XEDIT_ERR_NULL_HANDLE;
+        }
+
+        let lock = ENGINE.lock().unwrap();
+        let engine = match lock.as_ref() {
+            Some(e) => e,
+            None => return XEDIT_ERR_NULL_HANDLE,
+        };
+
+        let entries = find_records_for_form_id(engine, form_id);
+        let plugin_count = entries.len() as i32;
+
+        // Need: 4 (conflict_all) + 4 (plugin_count) + 4 * plugin_count (conflict_this per plugin)
+        let required = 8 + entries.len() * 4;
+        if (buf_len as usize) < required {
+            return XEDIT_ERR_BUFFER_TOO_SMALL;
+        }
+
+        if entries.is_empty() {
+            // No records found — write Unknown(0) and count 0
+            let zero: i32 = 0;
+            unsafe {
+                std::ptr::copy_nonoverlapping(&zero as *const i32 as *const u8, buf, 4);
+                std::ptr::copy_nonoverlapping(&zero as *const i32 as *const u8, buf.add(4), 4);
+            }
+            return XEDIT_OK;
+        }
+
+        // Collect concatenated subrecord bytes per plugin for whole-record comparison
+        let record_bytes: Vec<Vec<u8>> = entries.iter().map(|(_, record)| {
+            let mut bytes = Vec::new();
+            for sr in &record.subrecords {
+                bytes.extend_from_slice(&sr.signature.0);
+                bytes.extend_from_slice(&sr.raw_data);
+            }
+            bytes
+        }).collect();
+
+        // Determine conflict_all based on number of unique byte representations
+        let mut unique_sets: Vec<&Vec<u8>> = Vec::new();
+        for rb in &record_bytes {
+            if !unique_sets.iter().any(|u| *u == rb) {
+                unique_sets.push(rb);
+            }
+        }
+
+        let conflict_all: i32 = if entries.len() == 1 {
+            1 // OnlyOne
+        } else {
+            match unique_sets.len() {
+                1 => 2, // NoConflict — all identical
+                2 => 4, // Override — two distinct versions
+                _ => 5, // Conflict — 3+ distinct versions
+            }
+        };
+
+        // Determine conflict_this for each plugin
+        let mut conflict_this: Vec<i32> = Vec::with_capacity(entries.len());
+
+        if entries.len() == 1 {
+            conflict_this.push(4); // OnlyOne
+        } else {
+            let master_bytes = &record_bytes[0];
+            let winner_bytes = &record_bytes[record_bytes.len() - 1];
+
+            for (i, rb) in record_bytes.iter().enumerate() {
+                if i == 0 {
+                    conflict_this.push(6); // Master
+                } else if rb == master_bytes {
+                    conflict_this.push(3); // IdenticalToMaster
+                } else if rb == winner_bytes {
+                    conflict_this.push(10); // ConflictWins
+                } else {
+                    conflict_this.push(11); // ConflictLoses
+                }
+            }
+        }
+
+        // Write buffer: conflict_all, plugin_count, then conflict_this values
+        unsafe {
+            std::ptr::copy_nonoverlapping(
+                &conflict_all as *const i32 as *const u8,
+                buf,
+                4,
+            );
+            std::ptr::copy_nonoverlapping(
+                &plugin_count as *const i32 as *const u8,
+                buf.add(4),
+                4,
+            );
+            for (i, ct) in conflict_this.iter().enumerate() {
+                std::ptr::copy_nonoverlapping(
+                    ct as *const i32 as *const u8,
+                    buf.add(8 + i * 4),
+                    4,
+                );
+            }
+        }
+
+        XEDIT_OK
+    })
+}
+
+/// Get per-subrecord conflict status across all overriding plugins.
+///
+/// Buffer format: [i32 sub_count | for each sub: [4-byte sig | i32 conflict_all | i32 n_plugins | i32 ct_0 | ct_1 | ...]]
+///
+/// conflict_all values: 0=Unknown, 2=NoConflict, 5=Conflict
+/// conflict_this values: 0=Unknown, 2=NotDefined, 3=IdenticalToMaster, 6=Master, 10=ConflictWins, 11=ConflictLoses
+#[no_mangle]
+pub extern "C" fn xedit_subrecord_conflict_status(
+    form_id: u32,
+    buf: *mut u8,
+    buf_len: i32,
+) -> i32 {
+    catch_panic(|| {
+        if buf.is_null() || buf_len <= 0 {
+            return XEDIT_ERR_NULL_HANDLE;
+        }
+
+        let lock = ENGINE.lock().unwrap();
+        let engine = match lock.as_ref() {
+            Some(e) => e,
+            None => return XEDIT_ERR_NULL_HANDLE,
+        };
+
+        let entries = find_records_for_form_id(engine, form_id);
+        let n_plugins = entries.len();
+
+        if entries.is_empty() {
+            // Write sub_count = 0
+            if buf_len < 4 {
+                return XEDIT_ERR_BUFFER_TOO_SMALL;
+            }
+            let zero: i32 = 0;
+            unsafe {
+                std::ptr::copy_nonoverlapping(&zero as *const i32 as *const u8, buf, 4);
+            }
+            return XEDIT_OK;
+        }
+
+        // Collect subrecord data per plugin: Vec<Vec<(Signature, data)>>
+        let plugin_subs: Vec<Vec<(xedit_dom::Signature, Vec<u8>)>> = entries
+            .iter()
+            .map(|(_, record)| collect_subrecord_data_ordered(record))
+            .collect();
+
+        // Gather all unique signatures in order of first appearance across all plugins
+        let mut all_sigs: Vec<xedit_dom::Signature> = Vec::new();
+        let mut seen_sigs: HashSet<[u8; 4]> = HashSet::new();
+        for subs in &plugin_subs {
+            for (sig, _) in subs {
+                if seen_sigs.insert(sig.0) {
+                    all_sigs.push(*sig);
+                }
+            }
+        }
+
+        let sub_count = all_sigs.len() as i32;
+
+        // Calculate required buffer size:
+        // 4 (sub_count) + for each sig: 4 (sig) + 4 (conflict_all) + 4 (n_plugins) + 4 * n_plugins (conflict_this)
+        let per_sub_size = 4 + 4 + 4 + n_plugins * 4; // sig + conflict_all + n_plugins + ct values
+        let required = 4 + all_sigs.len() * per_sub_size;
+        if (buf_len as usize) < required {
+            // Write sub_count so caller knows how much space is needed
+            if buf_len >= 4 {
+                unsafe {
+                    std::ptr::copy_nonoverlapping(&sub_count as *const i32 as *const u8, buf, 4);
+                }
+            }
+            return XEDIT_ERR_BUFFER_TOO_SMALL;
+        }
+
+        // Write sub_count
+        let mut offset = 0usize;
+        unsafe {
+            std::ptr::copy_nonoverlapping(&sub_count as *const i32 as *const u8, buf, 4);
+        }
+        offset += 4;
+
+        let n_plugins_i32 = n_plugins as i32;
+
+        for sig in &all_sigs {
+            // For each plugin, find the data for this signature (or None if missing)
+            let per_plugin_data: Vec<Option<&Vec<u8>>> = plugin_subs
+                .iter()
+                .map(|subs| {
+                    subs.iter()
+                        .find(|(s, _)| s == sig)
+                        .map(|(_, data)| data)
+                })
+                .collect();
+
+            // Determine conflict_all: compare all present data
+            let present_data: Vec<&Vec<u8>> = per_plugin_data.iter().filter_map(|d| *d).collect();
+
+            let all_same = if present_data.len() <= 1 {
+                true
+            } else {
+                present_data[1..].iter().all(|d| *d == present_data[0])
+            };
+
+            // Also check if any plugin is missing this subrecord
+            let any_missing = per_plugin_data.iter().any(|d| d.is_none());
+
+            let conflict_all: i32 = if all_same && !any_missing {
+                2 // NoConflict
+            } else {
+                5 // Conflict
+            };
+
+            // Determine conflict_this for each plugin
+            let master_data = per_plugin_data[0];
+            let winner_data = per_plugin_data[n_plugins - 1];
+
+            let mut conflict_this: Vec<i32> = Vec::with_capacity(n_plugins);
+            for (i, data) in per_plugin_data.iter().enumerate() {
+                match data {
+                    None => {
+                        conflict_this.push(2); // NotDefined
+                    }
+                    Some(d) => {
+                        if n_plugins == 1 {
+                            conflict_this.push(6); // Master (only one)
+                        } else if i == 0 {
+                            conflict_this.push(6); // Master
+                        } else if master_data.is_some() && *d == master_data.unwrap() {
+                            conflict_this.push(3); // IdenticalToMaster
+                        } else if winner_data.is_some() && *d == winner_data.unwrap() {
+                            conflict_this.push(10); // ConflictWins
+                        } else {
+                            conflict_this.push(11); // ConflictLoses
+                        }
+                    }
+                }
+            }
+
+            // Write: 4-byte sig, i32 conflict_all, i32 n_plugins, then conflict_this values
+            unsafe {
+                // Signature bytes
+                std::ptr::copy_nonoverlapping(sig.0.as_ptr(), buf.add(offset), 4);
+                offset += 4;
+                // conflict_all
+                std::ptr::copy_nonoverlapping(
+                    &conflict_all as *const i32 as *const u8,
+                    buf.add(offset),
+                    4,
+                );
+                offset += 4;
+                // n_plugins
+                std::ptr::copy_nonoverlapping(
+                    &n_plugins_i32 as *const i32 as *const u8,
+                    buf.add(offset),
+                    4,
+                );
+                offset += 4;
+                // conflict_this per plugin
+                for ct in &conflict_this {
+                    std::ptr::copy_nonoverlapping(
+                        ct as *const i32 as *const u8,
+                        buf.add(offset),
+                        4,
+                    );
+                    offset += 4;
+                }
+            }
+        }
+
+        XEDIT_OK
+    })
+}
+
+// ============================================================================
+// Record/Subrecord mutation operations
+// ============================================================================
+
+/// Replace a subrecord's raw data with new data.
+/// Returns 0 on success, -1 on error.
+#[no_mangle]
+pub extern "C" fn xedit_set_subrecord_data(
+    plugin_idx: i32,
+    group_idx: i32,
+    record_idx: i32,
+    sub_idx: i32,
+    data: *const u8,
+    data_len: i32,
+) -> i32 {
+    catch_panic(|| {
+        if data.is_null() || data_len < 0 {
+            return XEDIT_ERR_NULL_HANDLE;
+        }
+
+        let new_data = unsafe { std::slice::from_raw_parts(data, data_len as usize) }.to_vec();
+
+        let mut lock = ENGINE.lock().unwrap();
+        let engine = match lock.as_mut() {
+            Some(e) => e,
+            None => return XEDIT_ERR_NULL_HANDLE,
+        };
+        let plugin = match get_plugin_mut(engine, plugin_idx) {
+            Some(p) => p,
+            None => return XEDIT_ERR_NULL_HANDLE,
+        };
+        plugin.modified = true;
+        let group = match get_group_mut(plugin, group_idx) {
+            Some(g) => g,
+            None => return XEDIT_ERR_NULL_HANDLE,
+        };
+        let mut records = collect_records_from_group_mut(group);
+        if record_idx < 0 || record_idx as usize >= records.len() {
+            return XEDIT_ERR_NULL_HANDLE;
+        }
+        let record = &mut records[record_idx as usize];
+        if sub_idx < 0 || sub_idx as usize >= record.subrecords.len() {
+            // If subrecords are offloaded (vec empty), update the DB directly
+            let db_path = match get_plugin_db_path(plugin_idx) {
+                Some(p) => p,
+                None => return XEDIT_ERR_NULL_HANDLE,
+            };
+            let conn = match Connection::open(&db_path) {
+                Ok(c) => c,
+                Err(_) => return XEDIT_ERR_LOAD_FAILED,
+            };
+            let updated = match conn.execute(
+                "UPDATE subrecords SET raw_data=?1 WHERE group_idx=?2 AND record_idx=?3 AND sub_idx=?4",
+                params![new_data, group_idx, record_idx, sub_idx],
+            ) {
+                Ok(n) => n,
+                Err(_) => return XEDIT_ERR_SAVE_FAILED,
+            };
+            if updated == 0 {
+                return XEDIT_ERR_NULL_HANDLE;
+            }
+            record.modified = true;
+            return XEDIT_OK;
+        }
+        let subrecord = &mut record.subrecords[sub_idx as usize];
+        subrecord.size = new_data.len() as u32;
+        subrecord.raw_data = new_data.clone();
+        subrecord.modified = true;
+        record.modified = true;
+
+        // If subrecord data has been offloaded to SQLite, also update the DB entry
+        if let Some(db_path) = get_plugin_db_path(plugin_idx) {
+            if let Ok(conn) = Connection::open(&db_path) {
+                let _ = conn.execute(
+                    "UPDATE subrecords SET raw_data=?1 WHERE group_idx=?2 AND record_idx=?3 AND sub_idx=?4",
+                    params![new_data, group_idx, record_idx, sub_idx],
+                );
+            }
+        }
+
+        XEDIT_OK
+    })
+}
+
+/// Mark a record as deleted (sets the deleted flag in the record header).
+/// Returns 0 on success, -1 on error.
+#[no_mangle]
+pub extern "C" fn xedit_delete_record(
+    plugin_idx: i32,
+    group_idx: i32,
+    record_idx: i32,
+) -> i32 {
+    catch_panic(|| {
+        let mut lock = ENGINE.lock().unwrap();
+        let engine = match lock.as_mut() {
+            Some(e) => e,
+            None => return XEDIT_ERR_NULL_HANDLE,
+        };
+        let plugin = match get_plugin_mut(engine, plugin_idx) {
+            Some(p) => p,
+            None => return XEDIT_ERR_NULL_HANDLE,
+        };
+        plugin.modified = true;
+        let group = match get_group_mut(plugin, group_idx) {
+            Some(g) => g,
+            None => return XEDIT_ERR_NULL_HANDLE,
+        };
+        let mut records = collect_records_from_group_mut(group);
+        if record_idx < 0 || record_idx as usize >= records.len() {
+            return XEDIT_ERR_NULL_HANDLE;
+        }
+        let record = &mut records[record_idx as usize];
+        use xedit_dom::record::RecordFlags;
+        record.flags = RecordFlags(record.flags.0 | RecordFlags::DELETED);
+        record.modified = true;
+        XEDIT_OK
+    })
+}
+
+/// Copy a record from one plugin to another.
+/// Returns the new record index in the destination plugin's group, or -1 on error.
+#[no_mangle]
+pub extern "C" fn xedit_copy_record(
+    src_plugin_idx: i32,
+    src_group_idx: i32,
+    src_record_idx: i32,
+    dst_plugin_idx: i32,
+) -> i32 {
+    catch_panic(|| {
+        let mut lock = ENGINE.lock().unwrap();
+        let engine = match lock.as_mut() {
+            Some(e) => e,
+            None => return XEDIT_ERR_NULL_HANDLE,
+        };
+
+        // First, clone the source record (requires immutable borrow of source plugin)
+        let (cloned_record, group_sig) = {
+            let src_plugin = match get_plugin(engine, src_plugin_idx) {
+                Some(p) => p,
+                None => return XEDIT_ERR_NULL_HANDLE,
+            };
+            let src_group = match get_group(src_plugin, src_group_idx) {
+                Some(g) => g,
+                None => return XEDIT_ERR_NULL_HANDLE,
+            };
+            let src_records = collect_records_from_group(src_group);
+            if src_record_idx < 0 || src_record_idx as usize >= src_records.len() {
+                return XEDIT_ERR_NULL_HANDLE;
+            }
+            let src_record = src_records[src_record_idx as usize];
+
+            // If subrecords were offloaded, reload them from the DB before cloning
+            let mut cloned = src_record.clone();
+            if cloned.subrecords.is_empty() {
+                if let Some(db_path) = get_plugin_db_path(src_plugin_idx) {
+                    if let Ok(conn) = Connection::open(&db_path) {
+                        if let Ok(mut stmt) = conn.prepare(
+                            "SELECT sub_idx, signature, raw_data FROM subrecords WHERE group_idx=?1 AND record_idx=?2 ORDER BY sub_idx"
+                        ) {
+                            if let Ok(rows) = stmt.query_map(
+                                params![src_group_idx, src_record_idx],
+                                |row| {
+                                    let sig_str: String = row.get(1)?;
+                                    let raw_data: Vec<u8> = row.get(2)?;
+                                    Ok((sig_str, raw_data))
+                                },
+                            ) {
+                                for row_result in rows {
+                                    if let Ok((sig_str, raw_data)) = row_result {
+                                        let sig_bytes = sig_str.as_bytes();
+                                        let mut sig_arr = [0u8; 4];
+                                        let copy_len = sig_bytes.len().min(4);
+                                        sig_arr[..copy_len].copy_from_slice(&sig_bytes[..copy_len]);
+                                        cloned.subrecords.push(Subrecord::new(
+                                            Signature::from_bytes(&sig_arr),
+                                            raw_data,
+                                        ));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            cloned.modified = true;
+            // Clear source-specific fields since this is a new copy
+            cloned.source_offset = None;
+            cloned.raw_header = None;
+            cloned.raw_compressed_data = None;
+            cloned.raw_data = None;
+
+            let group_sig = match src_group.group_type {
+                GroupType::Top(sig) => sig,
+                _ => cloned.signature,
+            };
+
+            (cloned, group_sig)
+        };
+
+        // Now mutably access the destination plugin
+        let dst_plugin = match get_plugin_mut(engine, dst_plugin_idx) {
+            Some(p) => p,
+            None => return XEDIT_ERR_NULL_HANDLE,
+        };
+        dst_plugin.modified = true;
+
+        // Find or create the matching top-level group in the destination
+        let dst_group_pos = dst_plugin.groups.iter().position(|g| {
+            matches!(g.group_type, GroupType::Top(sig) if sig == group_sig)
+        });
+
+        let dst_group = if let Some(idx) = dst_group_pos {
+            &mut dst_plugin.groups[idx]
+        } else {
+            // Create a new top-level group
+            dst_plugin.groups.push(Group {
+                group_type: GroupType::Top(group_sig),
+                stamp: 0,
+                unknown: 0,
+                children: Vec::new(),
+                raw_header: None,
+                source_offset: None,
+            });
+            dst_plugin.groups.last_mut().unwrap()
+        };
+
+        // Count existing records to determine the new index
+        let new_idx = collect_records_from_group(dst_group).len();
+        dst_group.children.push(GroupChild::Record(cloned_record));
+        new_idx as i32
+    })
+}
+
+/// Create a new empty record in a plugin's group.
+/// Returns the new record index, or -1 on error.
+#[no_mangle]
+pub extern "C" fn xedit_add_record(
+    plugin_idx: i32,
+    group_idx: i32,
+    form_id: u32,
+    signature: *const u8,
+) -> i32 {
+    catch_panic(|| {
+        if signature.is_null() {
+            return XEDIT_ERR_NULL_HANDLE;
+        }
+
+        let sig_bytes = unsafe { std::slice::from_raw_parts(signature, 4) };
+        let mut sig_arr = [0u8; 4];
+        sig_arr.copy_from_slice(sig_bytes);
+        let sig = Signature::from_bytes(&sig_arr);
+
+        let mut lock = ENGINE.lock().unwrap();
+        let engine = match lock.as_mut() {
+            Some(e) => e,
+            None => return XEDIT_ERR_NULL_HANDLE,
+        };
+        let plugin = match get_plugin_mut(engine, plugin_idx) {
+            Some(p) => p,
+            None => return XEDIT_ERR_NULL_HANDLE,
+        };
+        plugin.modified = true;
+        let group = match get_group_mut(plugin, group_idx) {
+            Some(g) => g,
+            None => return XEDIT_ERR_NULL_HANDLE,
+        };
+
+        // Count existing records to determine the new index
+        let new_idx = collect_records_from_group(group).len();
+
+        let new_record = Record {
+            signature: sig,
+            flags: xedit_dom::record::RecordFlags::NONE,
+            form_id: FormId(form_id),
+            vc_info: 0,
+            version: 0,
+            unknown: 0,
+            subrecords: Vec::new(),
+            raw_header: None,
+            raw_compressed_data: None,
+            raw_data: None,
+            source_offset: None,
+            modified: true,
+        };
+
+        group.children.push(GroupChild::Record(new_record));
+        new_idx as i32
+    })
+}
+
+// ============================================================================
+// LOD Generation
+// ============================================================================
+
+/// Global LOD generation job state.
+/// None = no job, Some = job in progress or completed.
+static LOD_JOB: Mutex<Option<LodJobState>> = Mutex::new(None);
+static LOD_CANCEL: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+struct LodJobState {
+    status: i32,    // 0=running, 1=done, -1=error
+    error: String,
+}
+
+/// Scan loaded plugins for LOD-relevant STAT/TREE bases and REFR placements.
+/// Reads subrecord data from SQLite offload DBs (in-memory subrecords are cleared after offload).
+fn scan_lod_references_from_dbs(
+    engine: &XEditEngine,
+    db_paths: Option<&Vec<PathBuf>>,
+) -> anyhow::Result<(Vec<xedit_lod::LodReference>, std::collections::HashMap<u32, xedit_lod::LodBase>, std::collections::HashMap<String, u32>)> {
+    use xedit_lod::{LodBase, LodReference};
+
+    let mut all_bases: std::collections::HashMap<u32, LodBase> = std::collections::HashMap::new();
+    let mut all_refs: Vec<LodReference> = Vec::new();
+
+    // Pass 1: Collect all STAT/TREE bases with LOD models across all plugins
+    for (pi, plugin) in engine.plugins.iter().enumerate() {
+        let db_path = db_paths.and_then(|paths| paths.get(pi));
+        let conn = db_path.and_then(|p| Connection::open(p).ok());
+
+        for (gi, group) in plugin.groups.iter().enumerate() {
+            let group_sig = match group.group_type {
+                xedit_dom::group::GroupType::Top(sig) => sig,
+                _ => continue,
+            };
+
+            if group_sig != xedit_dom::Signature::STAT
+                && group_sig != xedit_dom::Signature::from_bytes(b"TREE")
+            {
+                continue;
+            }
+
+            let records = collect_records_from_group(group);
+            for (ri, record) in records.iter().enumerate() {
+                let form_id = record.form_id.raw();
+                let mut lod_models = vec![None; 4];
+                let mut full_model = None;
+                let mut editor_id = String::new();
+
+                // Try in-memory subrecords first, fall back to SQLite
+                if !record.subrecords.is_empty() {
+                    for sr in &record.subrecords {
+                        parse_base_subrecord(
+                            &sr.signature, &sr.raw_data,
+                            &mut editor_id, &mut full_model, &mut lod_models,
+                        );
+                    }
+                } else if let Some(ref c) = conn {
+                    query_subrecords_and_parse(c, gi as i32, ri as i32, |sig, data| {
+                        parse_base_subrecord(sig, data, &mut editor_id, &mut full_model, &mut lod_models);
+                    });
+                }
+
+                if lod_models.iter().any(|m| m.is_some()) || full_model.is_some() {
+                    all_bases.insert(form_id, LodBase {
+                        form_id,
+                        signature: record.signature,
+                        editor_id,
+                        lod_models,
+                        full_model,
+                    });
+                }
+            }
+        }
+    }
+
+    tracing::info!("Pass 1 complete: {} LOD bases found", all_bases.len());
+
+    // Pass 2: Walk WRLD groups to collect:
+    //   - WRLD record editor_id → form_id mappings
+    //   - REFR references tagged with their parent worldspace form_id
+    let mut worldspace_map: std::collections::HashMap<String, u32> = std::collections::HashMap::new();
+
+    for (pi, plugin) in engine.plugins.iter().enumerate() {
+        let db_path = db_paths.and_then(|paths| paths.get(pi));
+        let conn = db_path.and_then(|p| Connection::open(p).ok());
+
+        for (gi, group) in plugin.groups.iter().enumerate() {
+            let group_sig = match group.group_type {
+                xedit_dom::group::GroupType::Top(sig) => sig,
+                _ => continue,
+            };
+
+            if group_sig != xedit_dom::Signature::WRLD {
+                continue;
+            }
+
+            // Get the flat record list for SQLite record_idx mapping
+            let flat_records = collect_records_from_group(group);
+
+            // First, collect WRLD records' editor IDs
+            for (ri, record) in flat_records.iter().enumerate() {
+                if record.signature != xedit_dom::Signature::WRLD {
+                    continue;
+                }
+                let mut editor_id = String::new();
+
+                if !record.subrecords.is_empty() {
+                    for sr in &record.subrecords {
+                        if sr.signature == xedit_dom::Signature::EDID {
+                            let len = sr.raw_data.iter().position(|&b| b == 0).unwrap_or(sr.raw_data.len());
+                            editor_id = String::from_utf8_lossy(&sr.raw_data[..len]).to_string();
+                        }
+                    }
+                } else if let Some(ref c) = conn {
+                    query_subrecords_and_parse(c, gi as i32, ri as i32, |sig, data| {
+                        if *sig == xedit_dom::Signature::EDID {
+                            let len = data.iter().position(|&b| b == 0).unwrap_or(data.len());
+                            editor_id = String::from_utf8_lossy(&data[..len]).to_string();
+                        }
+                    });
+                }
+
+                if !editor_id.is_empty() {
+                    worldspace_map.insert(editor_id.to_lowercase(), record.form_id.raw());
+                }
+            }
+
+            // Use recursive walker that tracks worldspace_form_id through the hierarchy
+            let mut flat_idx: usize = 0;
+            collect_wrld_refs_recursive(
+                group, conn.as_ref(), gi as i32, pi,
+                0, // no worldspace at top WRLD group level
+                &mut flat_idx, &all_bases, &mut all_refs,
+            );
+        }
+    }
+
+    tracing::info!(
+        "Pass 2 complete: {} worldspace mappings, {} REFR references",
+        worldspace_map.len(),
+        all_refs.len()
+    );
+
+    Ok((all_refs, all_bases, worldspace_map))
+}
+
+/// Query subrecords from SQLite and call a callback for each one.
+fn query_subrecords_and_parse(
+    conn: &Connection,
+    group_idx: i32,
+    record_idx: i32,
+    mut callback: impl FnMut(&xedit_dom::Signature, &[u8]),
+) {
+    if let Ok(mut stmt) = conn.prepare_cached(
+        "SELECT signature, raw_data FROM subrecords WHERE group_idx=?1 AND record_idx=?2 ORDER BY sub_idx"
+    ) {
+        if let Ok(rows) = stmt.query_map(params![group_idx, record_idx], |row| {
+            let sig: String = row.get(0)?;
+            let data: Vec<u8> = row.get(1)?;
+            Ok((sig, data))
+        }) {
+            for row in rows.flatten() {
+                let sig_bytes: &[u8; 4] = row.0.as_bytes()
+                    .get(..4)
+                    .and_then(|s| s.try_into().ok())
+                    .unwrap_or(b"    ");
+                let sig = xedit_dom::Signature::from_bytes(sig_bytes);
+                callback(&sig, &row.1);
+            }
+        }
+    }
+}
+
+/// Parse a single REFR subrecord for placement data (NAME, DATA, XSCL).
+fn parse_refr_subrecord(
+    sig: &xedit_dom::Signature,
+    data: &[u8],
+    base_form_id: &mut u32,
+    position: &mut [f32; 3],
+    rotation: &mut [f32; 3],
+    scale: &mut f32,
+) {
+    if *sig == xedit_dom::Signature::NAME && data.len() >= 4 {
+        *base_form_id = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+    } else if *sig == xedit_dom::Signature::DATA && data.len() >= 24 {
+        let f = |o: usize| f32::from_le_bytes([data[o], data[o+1], data[o+2], data[o+3]]);
+        *position = [f(0), f(4), f(8)];
+        *rotation = [f(12), f(16), f(20)];
+    } else if *sig == xedit_dom::Signature::from_bytes(b"XSCL") && data.len() >= 4 {
+        *scale = f32::from_le_bytes([data[0], data[1], data[2], data[3]]);
+    }
+}
+
+/// Parse a single subrecord for STAT/TREE base data (EDID, MODL, MNAM).
+fn parse_base_subrecord(
+    sig: &xedit_dom::Signature,
+    data: &[u8],
+    editor_id: &mut String,
+    full_model: &mut Option<String>,
+    lod_models: &mut Vec<Option<String>>,
+) {
+    if *sig == xedit_dom::Signature::EDID {
+        let len = data.iter().position(|&b| b == 0).unwrap_or(data.len());
+        *editor_id = String::from_utf8_lossy(&data[..len]).to_string();
+    } else if *sig == xedit_dom::Signature::MODL {
+        let len = data.iter().position(|&b| b == 0).unwrap_or(data.len());
+        *full_model = Some(String::from_utf8_lossy(&data[..len]).to_string());
+    } else if *sig == xedit_dom::Signature::from_bytes(b"MNAM") {
+        // MNAM contains up to 4 LOD model paths as null-terminated strings
+        let mut offset = 0;
+        let mut level = 0;
+        while offset < data.len() && level < 4 {
+            let end = data[offset..]
+                .iter()
+                .position(|&b| b == 0)
+                .map(|pos| offset + pos)
+                .unwrap_or(data.len());
+            if end > offset {
+                let path = String::from_utf8_lossy(&data[offset..end]).to_string();
+                if !path.is_empty() {
+                    lod_models[level] = Some(path);
+                }
+            }
+            offset = end + 1;
+            level += 1;
+        }
+    }
+}
+
+/// Recursively walk WRLD group hierarchy, tracking the current worldspace form_id
+/// from WorldChildren groups and collecting REFR records with their worldspace tag.
+/// `flat_idx` tracks the flat record index for SQLite record_idx queries.
+fn collect_wrld_refs_recursive(
+    group: &xedit_dom::Group,
+    conn: Option<&Connection>,
+    group_idx: i32,
+    plugin_index: usize,
+    worldspace_form_id: u32,
+    flat_idx: &mut usize,
+    bases: &std::collections::HashMap<u32, xedit_lod::LodBase>,
+    refs_out: &mut Vec<xedit_lod::LodReference>,
+) {
+    use xedit_dom::group::{GroupChild, GroupType};
+
+    for child in &group.children {
+        match child {
+            GroupChild::Record(record) => {
+                let ri = *flat_idx;
+                *flat_idx += 1;
+
+                // Only collect REFR records when we're inside a WorldChildren hierarchy
+                if worldspace_form_id == 0 || record.signature != xedit_dom::Signature::REFR {
+                    continue;
+                }
+
+                let form_id = record.form_id.raw();
+                let mut base_form_id = 0u32;
+                let mut position = [0.0f32; 3];
+                let mut rotation = [0.0f32; 3];
+                let mut scale = 1.0f32;
+
+                if !record.subrecords.is_empty() {
+                    for sr in &record.subrecords {
+                        parse_refr_subrecord(
+                            &sr.signature, &sr.raw_data,
+                            &mut base_form_id, &mut position, &mut rotation, &mut scale,
+                        );
+                    }
+                } else if let Some(c) = conn {
+                    query_subrecords_and_parse(c, group_idx, ri as i32, |sig, data| {
+                        parse_refr_subrecord(sig, data, &mut base_form_id, &mut position, &mut rotation, &mut scale);
+                    });
+                }
+
+                if base_form_id != 0 {
+                    if let Some(base) = bases.get(&base_form_id) {
+                        refs_out.push(xedit_lod::LodReference {
+                            form_id,
+                            base_form_id,
+                            base_signature: base.signature,
+                            position,
+                            rotation,
+                            scale,
+                            plugin_index,
+                            worldspace_form_id,
+                        });
+                    }
+                }
+            }
+            GroupChild::Group(sub_group) => {
+                // Determine the worldspace form_id from WorldChildren group type
+                let ws_id = match sub_group.group_type {
+                    GroupType::WorldChildren(id) => id,
+                    _ => worldspace_form_id, // inherit from parent
+                };
+
+                collect_wrld_refs_recursive(
+                    sub_group, conn, group_idx, plugin_index,
+                    ws_id, flat_idx, bases, refs_out,
+                );
+            }
+        }
+    }
+}
+
+/// List worldspaces that have LOD settings files.
+/// Scans WRLD records from loaded plugins, then filters to those with matching
+/// lodsettings files (loose or in BSA/BA2 archives).
+/// Returns newline-separated worldspace editor IDs in buf.
+#[no_mangle]
+pub extern "C" fn xedit_lod_list_worldspaces(buf: *mut u8, buf_len: i32) -> i32 {
+    catch_panic(|| {
+        if buf.is_null() || buf_len <= 0 {
+            return XEDIT_ERR_NULL_HANDLE;
+        }
+
+        let lock = ENGINE.lock().unwrap();
+        let engine = match lock.as_ref() {
+            Some(e) => e,
+            None => return XEDIT_ERR_NULL_HANDLE,
+        };
+
+        let db_lock = PLUGIN_DBS.lock().unwrap();
+        let db_paths = db_lock.as_ref();
+
+        if matches!(engine.game_id, xedit_dom::GameId::Oblivion | xedit_dom::GameId::Morrowind) {
+            // No lodsettings for Oblivion/Morrowind
+            unsafe { *buf = 0; }
+            return 0;
+        }
+
+        tracing::info!("LOD list: game_id = {:?}, data_path = {:?}", engine.game_id, engine.data_path);
+
+        // Lodsettings extensions to try — FO3/FNV use .dlodsettings, others use .lod.
+        // TTW (Tale of Two Wastelands) runs as FNV but may have either format,
+        // so we try both extensions for robustness.
+        let extensions: &[&str] = match engine.game_id {
+            xedit_dom::GameId::Fallout3 | xedit_dom::GameId::FalloutNV => &["dlodsettings", "lod"],
+            _ => &["lod", "dlodsettings"],
+        };
+
+        // Create resource loader for checking file existence
+        let loader = match xedit_lod::ResourceLoader::new(&engine.data_path) {
+            Ok(l) => l,
+            Err(e) => {
+                tracing::error!("Failed to create resource loader: {:#}", e);
+                return XEDIT_ERR_LOAD_FAILED;
+            }
+        };
+
+        // Use the pre-built BSA index to quickly list lodsettings files
+        let lodsettings_files = loader.list_files_in_dir("lodsettings");
+        tracing::info!(
+            "LOD list: {} BSA archives, {} lodsettings files in index",
+            loader.bsa_paths().len(),
+            lodsettings_files.len()
+        );
+        for f in lodsettings_files.iter().take(10) {
+            tracing::info!("  {}", f);
+        }
+
+        // Collect all WRLD editor IDs from loaded plugins, filtered by lodsettings existence
+        let mut worldspace_edids: Vec<String> = Vec::new();
+        let mut all_wrld_edids: Vec<String> = Vec::new(); // debug: track all found
+        let mut seen_form_ids = std::collections::HashSet::new();
+
+        for (pi, plugin) in engine.plugins.iter().enumerate() {
+            let db_path = db_paths.and_then(|paths| paths.get(pi));
+            let conn = db_path.and_then(|p| Connection::open(p).ok());
+
+            for (gi, group) in plugin.groups.iter().enumerate() {
+                let group_sig = match group.group_type {
+                    xedit_dom::group::GroupType::Top(sig) => sig,
+                    _ => continue,
+                };
+                if group_sig != xedit_dom::Signature::WRLD {
+                    continue;
+                }
+
+                // Use flattened record list (matches SQLite offload indices)
+                let records = collect_records_from_group(group);
+                for (ri, record) in records.iter().enumerate() {
+                    if record.signature != xedit_dom::Signature::WRLD {
+                        continue;
+                    }
+
+                    // Deduplicate by form_id (later plugins override earlier ones)
+                    let fid = record.form_id.raw();
+                    if !seen_form_ids.insert(fid) {
+                        continue;
+                    }
+
+                    let mut editor_id = String::new();
+                    if !record.subrecords.is_empty() {
+                        for sr in &record.subrecords {
+                            if sr.signature == xedit_dom::Signature::EDID {
+                                let len = sr.raw_data.iter().position(|&b| b == 0).unwrap_or(sr.raw_data.len());
+                                editor_id = String::from_utf8_lossy(&sr.raw_data[..len]).to_string();
+                            }
+                        }
+                    } else if let Some(ref c) = conn {
+                        query_subrecords_and_parse(c, gi as i32, ri as i32, |sig, data| {
+                            if *sig == xedit_dom::Signature::EDID {
+                                let len = data.iter().position(|&b| b == 0).unwrap_or(data.len());
+                                editor_id = String::from_utf8_lossy(&data[..len]).to_string();
+                            }
+                        });
+                    }
+
+                    if editor_id.is_empty() {
+                        continue;
+                    }
+
+                    all_wrld_edids.push(editor_id.clone());
+
+                    // Check if lodsettings file exists with any supported extension
+                    let has_settings = extensions.iter().any(|ext| {
+                        loader.exists(&format!("lodsettings\\{}.{}", editor_id, ext))
+                            || loader.exists(&format!("lodsettings/{}.{}", editor_id, ext))
+                    });
+                    if has_settings {
+                        worldspace_edids.push(editor_id);
+                    }
+                }
+            }
+        }
+
+        tracing::info!(
+            "LOD list: found {} WRLD editor IDs total: {:?}",
+            all_wrld_edids.len(),
+            &all_wrld_edids[..std::cmp::min(20, all_wrld_edids.len())]
+        );
+
+        worldspace_edids.sort_unstable_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
+        worldspace_edids.dedup_by(|a, b| a.eq_ignore_ascii_case(b));
+
+        tracing::info!(
+            "Found {} worldspaces with LOD settings",
+            worldspace_edids.len(),
+        );
+
+        let result = worldspace_edids.join("\n");
+        let result_bytes = result.as_bytes();
+        let copy_len = std::cmp::min(result_bytes.len(), (buf_len - 1) as usize);
+        unsafe {
+            std::ptr::copy_nonoverlapping(result_bytes.as_ptr(), buf, copy_len);
+            *buf.add(copy_len) = 0;
+        }
+
+        copy_len as i32
+    })
+}
+
+/// Start async LOD generation with JSON options.
+/// options_json: null-terminated UTF-8 JSON string with LodOptions
+/// progress_cb: optional progress callback (message, progress_fraction)
+/// Returns 0 on success (job started), negative on error.
+#[no_mangle]
+pub extern "C" fn xedit_lod_generate(
+    options_json: *const c_char,
+    progress_cb: Option<ProgressCallback>,
+) -> i32 {
+    catch_panic(|| {
+        if options_json.is_null() {
+            return XEDIT_ERR_NULL_HANDLE;
+        }
+
+        let json_str = unsafe { CStr::from_ptr(options_json) }
+            .to_str()
+            .unwrap_or("");
+
+        let mut options: xedit_lod::LodOptions = match serde_json::from_str(json_str) {
+            Ok(o) => o,
+            Err(e) => {
+                tracing::error!("Failed to parse LOD options JSON: {:#}", e);
+                let mut lock = LOD_JOB.lock().unwrap();
+                *lock = Some(LodJobState {
+                    status: -1,
+                    error: format!("Invalid options JSON: {}", e),
+                });
+                return XEDIT_ERR_LOAD_FAILED;
+            }
+        };
+
+        // Grab data path and game_id from engine (quick, non-blocking)
+        let (data_path, game_id) = {
+            let lock = ENGINE.lock().unwrap();
+            let engine = match lock.as_ref() {
+                Some(e) => e,
+                None => return XEDIT_ERR_NULL_HANDLE,
+            };
+            (engine.data_path.clone(), engine.game_id)
+        };
+
+        // Set game-specific lodsettings extension and game ID
+        options.lod_extension = match game_id {
+            xedit_dom::GameId::Fallout3 | xedit_dom::GameId::FalloutNV => "dlodsettings".to_string(),
+            _ => "lod".to_string(),
+        };
+        options.game_id = match game_id {
+            xedit_dom::GameId::Morrowind => "Morrowind".to_string(),
+            xedit_dom::GameId::Oblivion => "Oblivion".to_string(),
+            xedit_dom::GameId::Fallout3 => "Fallout3".to_string(),
+            xedit_dom::GameId::FalloutNV => "FalloutNV".to_string(),
+            xedit_dom::GameId::SkyrimSE => "SkyrimSE".to_string(),
+            xedit_dom::GameId::Fallout4 => "Fallout4".to_string(),
+            xedit_dom::GameId::Starfield => "Starfield".to_string(),
+            xedit_dom::GameId::Fallout76 => "Fallout76".to_string(),
+        };
+
+        // Reset cancel flag
+        LOD_CANCEL.store(false, Ordering::SeqCst);
+
+        // Set job as running
+        {
+            let mut lock = LOD_JOB.lock().unwrap();
+            *lock = Some(LodJobState {
+                status: 0,
+                error: String::new(),
+            });
+        }
+
+        // Spawn worker thread — scanning + generation all happens off the UI thread
+        std::thread::spawn(move || {
+            let progress = xedit_lod::progress::Progress::new(
+                progress_cb.map(|cb| cb as xedit_lod::progress::ProgressFn),
+                &LOD_CANCEL,
+            );
+
+            progress.report("Scanning plugins for LOD references...");
+
+            // Scan references from loaded plugins + SQLite DBs
+            let (references, bases, worldspace_map) = {
+                let lock = ENGINE.lock().unwrap();
+                let engine = match lock.as_ref() {
+                    Some(e) => e,
+                    None => {
+                        let mut job = LOD_JOB.lock().unwrap();
+                        *job = Some(LodJobState { status: -1, error: "Engine not initialized".into() });
+                        return;
+                    }
+                };
+
+                let db_lock = PLUGIN_DBS.lock().unwrap();
+                let db_paths = db_lock.as_ref();
+
+                tracing::info!(
+                    "Scanning {} plugins for LOD references (worldspaces: {})",
+                    engine.plugins.len(),
+                    options.worldspaces.join(",")
+                );
+
+                match scan_lod_references_from_dbs(engine, db_paths) {
+                    Ok(result) => result,
+                    Err(e) => {
+                        tracing::error!("Failed to scan references: {}", e);
+                        let mut job = LOD_JOB.lock().unwrap();
+                        *job = Some(LodJobState { status: -1, error: format!("Reference scan failed: {}", e) });
+                        return;
+                    }
+                }
+            };
+
+            tracing::info!(
+                "Found {} LOD references, {} LOD bases, {} worldspaces",
+                references.len(),
+                bases.len(),
+                worldspace_map.len()
+            );
+
+            progress.report(&format!(
+                "Found {} references, {} bases. Starting LOD generation...",
+                references.len(), bases.len()
+            ));
+
+            let result = xedit_lod::generate_lod(&options, &data_path, &references, &bases, &worldspace_map, &progress);
+
+            let mut lock = LOD_JOB.lock().unwrap();
+            match result {
+                Ok(()) => {
+                    *lock = Some(LodJobState {
+                        status: 1,
+                        error: String::new(),
+                    });
+                }
+                Err(e) => {
+                    tracing::error!("LOD generation failed: {:#}", e);
+                    *lock = Some(LodJobState {
+                        status: -1,
+                        error: format!("{:#}", e),
+                    });
+                }
+            }
+        });
+
+        XEDIT_OK
+    })
+}
+
+/// Check LOD generation status.
+/// Returns: 0 = running, 1 = done successfully, -1 = error, -2 = no job.
+#[no_mangle]
+pub extern "C" fn xedit_lod_status() -> i32 {
+    let lock = LOD_JOB.lock().unwrap();
+    match lock.as_ref() {
+        Some(job) => job.status,
+        None => -2,
+    }
+}
+
+/// Get LOD generation error message.
+/// Returns length of error string, or 0 if no error.
+#[no_mangle]
+pub extern "C" fn xedit_lod_error(buf: *mut u8, buf_len: i32) -> i32 {
+    if buf.is_null() || buf_len <= 0 {
+        return 0;
+    }
+
+    let lock = LOD_JOB.lock().unwrap();
+    let error = match lock.as_ref() {
+        Some(job) if !job.error.is_empty() => &job.error,
+        _ => {
+            unsafe { *buf = 0; }
+            return 0;
+        }
+    };
+
+    let error_bytes = error.as_bytes();
+    let copy_len = std::cmp::min(error_bytes.len(), (buf_len - 1) as usize);
+    unsafe {
+        std::ptr::copy_nonoverlapping(error_bytes.as_ptr(), buf, copy_len);
+        *buf.add(copy_len) = 0;
+    }
+    copy_len as i32
+}
+
+/// Cancel the in-progress LOD generation job.
+/// Returns 0 if cancellation was requested, -2 if no job is running.
+#[no_mangle]
+pub extern "C" fn xedit_lod_cancel() -> i32 {
+    let lock = LOD_JOB.lock().unwrap();
+    match lock.as_ref() {
+        Some(job) if job.status == 0 => {
+            LOD_CANCEL.store(true, Ordering::SeqCst);
+            XEDIT_OK
+        }
+        _ => -2,
+    }
 }

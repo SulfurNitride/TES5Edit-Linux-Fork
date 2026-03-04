@@ -152,18 +152,35 @@ bool RecordViewModel::setData(const QModelIndex& index, const QVariant& value,
     const SubrecordInfo& sub = m_subrecords.at(row);
     const QString newText = value.toString();
 
-    // Log the edit attempt -- actual FFI write support will be added later
-    qDebug() << "RecordViewModel::setData: edit attempted on subrecord"
-             << sub.signature << "row" << row
-             << "plugin" << m_pluginIdx << "group" << m_groupIdx
-             << "record" << m_recordIdx
-             << "newValue:" << newText;
+    if (newText == sub.textPreview)
+        return false; // no change
 
-    // TODO: Call FFI write function once available, e.g.:
-    //   ffi.xedit_subrecord_set_text(m_pluginIdx, m_groupIdx, m_recordIdx, row,
-    //                                newText.toUtf8().constData());
-    // For now, update the in-memory preview so the UI reflects the change.
+    // Convert the edited text to UTF-8 bytes with a null terminator
+    // (Bethesda text subrecords are null-terminated C strings)
+    QByteArray utf8 = newText.toUtf8();
+    utf8.append('\0');
+
+    auto& ffi = XEditFFI::instance();
+    if (!ffi.xedit_set_subrecord_data) {
+        qWarning() << "RecordViewModel::setData: xedit_set_subrecord_data not available";
+        return false;
+    }
+
+    const int32_t result = ffi.xedit_set_subrecord_data(
+        m_pluginIdx, m_groupIdx, m_recordIdx, row,
+        reinterpret_cast<const uint8_t*>(utf8.constData()),
+        utf8.size());
+
+    if (result != 0) {
+        qWarning() << "RecordViewModel::setData: FFI write failed with code" << result
+                   << "for subrecord" << sub.signature << "row" << row;
+        return false;
+    }
+
+    // Update in-memory state to reflect the committed change
     m_subrecords[row].textPreview = newText;
+    m_subrecords[row].rawData = utf8;
+    m_subrecords[row].size = utf8.size();
     emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole});
     return true;
 }
@@ -222,8 +239,15 @@ void RecordViewModel::loadSubrecords()
                 info.rawData.truncate(bytesRead);
             }
 
-            // Attempt text decode for known text subrecords
-            if (isTextSubrecord(info.signature)) {
+            // Try FFI decoded display value first, fall back to text decode
+            if (ffi.xedit_subrecord_display_value) {
+                info.textPreview = ffiString([&](char* buf, int32_t len) {
+                    return ffi.xedit_subrecord_display_value(
+                        m_pluginIdx, m_groupIdx, m_recordIdx, i,
+                        reinterpret_cast<uint8_t*>(buf), len);
+                });
+            }
+            if (info.textPreview.isEmpty() && isTextSubrecord(info.signature)) {
                 info.textPreview = tryDecodeText(info.rawData);
             }
 
@@ -296,7 +320,15 @@ void RecordViewModel::loadSubrecords()
                 if (previewLen > 0)
                     info.rawData = QByteArray(reinterpret_cast<const char*>(ptr), previewLen);
 
-                if (isTextSubrecord(info.signature))
+                // Try FFI decoded display value first, fall back to text decode
+                if (ffi.xedit_subrecord_display_value) {
+                    info.textPreview = ffiString([&](char* buf, int32_t len) {
+                        return ffi.xedit_subrecord_display_value(
+                            m_pluginIdx, m_groupIdx, m_recordIdx, i,
+                            reinterpret_cast<uint8_t*>(buf), len);
+                    });
+                }
+                if (info.textPreview.isEmpty() && isTextSubrecord(info.signature))
                     info.textPreview = tryDecodeText(info.rawData);
 
                 ptr += dataSize;

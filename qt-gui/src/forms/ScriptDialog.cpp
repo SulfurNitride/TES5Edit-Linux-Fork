@@ -108,13 +108,27 @@ void ScriptDialog::onRun()
     clearOutput();
     m_actRun->setEnabled(false);
     m_actStop->setEnabled(true);
-    emit runRequested(m_editor->toPlainText());
+
+    const QString script = m_editor->toPlainText();
+    if (script.trimmed().isEmpty()) {
+        appendOutput("No script to execute.");
+        onStop();
+        return;
+    }
+
+    appendOutput("Script execution not yet implemented.");
+    appendOutput(QString("Script length: %1 characters").arg(script.length()));
+    emit runRequested(script);
+
+    // Since execution is not yet implemented, immediately reset to stopped state
+    onStop();
 }
 
 void ScriptDialog::onStop()
 {
     m_actRun->setEnabled(true);
     m_actStop->setEnabled(false);
+    m_editor->setReadOnly(false);
     emit stopRequested();
 }
 

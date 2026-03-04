@@ -20,6 +20,16 @@ void NavTreeItem::appendChild(NavTreeItem* child)
     m_children.append(child);
 }
 
+void NavTreeItem::removeChild(int row)
+{
+    if (row < 0 || row >= m_children.size())
+        return;
+    delete m_children.takeAt(row);
+    // Re-index rows after removal
+    for (int i = row; i < m_children.size(); ++i)
+        m_children[i]->m_row = i;
+}
+
 NavTreeItem* NavTreeItem::child(int row) const
 {
     if (row < 0 || row >= m_children.size())

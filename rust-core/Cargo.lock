@@ -847,12 +847,14 @@ dependencies = [
  "libc",
  "rayon",
  "rusqlite",
+ "serde_json",
  "tracing",
  "tracing-subscriber",
  "xedit_core",
  "xedit_dom",
  "xedit_games",
  "xedit_io",
+ "xedit_lod",
  "xedit_nif",
  "xedit_tools",
 ]
@@ -880,6 +882,24 @@ dependencies = [
  "thiserror 2.0.18",
  "tracing",
  "xedit_dom",
+]
+
+[[package]]
+name = "xedit_lod"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "ba2",
+ "byteorder",
+ "flate2",
+ "memmap2",
+ "rayon",
+ "serde",
+ "serde_json",
+ "tracing",
+ "walkdir",
+ "xedit_dom",
+ "xedit_nif",
 ]
 
 [[package]]

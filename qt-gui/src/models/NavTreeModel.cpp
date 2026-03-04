@@ -1,12 +1,15 @@
 #include "models/NavTreeModel.h"
 #include "models/NavTreeItem.h"
+#include "delegates/ConflictColorDelegate.h"
 #include "ffi/XEditFFI.h"
+#include "util/ConflictColors.h"
 #include "util/StringBuffer.h"
 #include "util/SignatureNames.h"
 
 #include <QDataStream>
 #include <QDebug>
 #include <QIODevice>
+#include <QVector>
 
 NavTreeModel::NavTreeModel(QObject* parent)
     : QAbstractItemModel(parent)
@@ -71,11 +74,17 @@ int NavTreeModel::columnCount(const QModelIndex& /*parent*/) const
 
 QVariant NavTreeModel::data(const QModelIndex& index, int role) const
 {
-    if (!index.isValid() || role != Qt::DisplayRole)
+    if (!index.isValid())
         return {};
 
     auto* item = static_cast<NavTreeItem*>(index.internalPointer());
-    return item->displayText();
+    if (role == Qt::DisplayRole)
+        return item->displayText();
+    if (role == ConflictAllRole)
+        return item->conflictAll();
+    if (role == ConflictThisRole)
+        return item->conflictThis();
+    return {};
 }
 
 bool NavTreeModel::hasChildren(const QModelIndex& parent) const
@@ -137,9 +146,10 @@ void NavTreeModel::fetchMore(const QModelIndex& parent)
         auto* recItem = new NavTreeItem(
             NodeType::Record, pi, gi, r, item);
 
-        // Cache the record display text at load time — no FFI calls in data()
+        // Cache the record display text and FormID at load time — no FFI calls in data()
         uint32_t formId = ffi.xedit_record_form_id
             ? ffi.xedit_record_form_id(pi, gi, r) : 0;
+        recItem->setFormId(formId);
         QString editorId = ffiString([&](char* buf, int len) {
             return ffi.xedit_record_editor_id(pi, gi, r, buf, len);
         });
@@ -148,6 +158,11 @@ void NavTreeModel::fetchMore(const QModelIndex& parent)
                 .arg(formId, 8, 16, QLatin1Char('0'))
                 .arg(editorId)
                 .toUpper());
+        if (auto it = m_conflictsByFormId.constFind(formId);
+            it != m_conflictsByFormId.cend()) {
+            recItem->setConflictAll(it.value().first);
+            recItem->setConflictThis(it.value().second);
+        }
 
         item->appendChild(recItem);
     }
@@ -156,6 +171,35 @@ void NavTreeModel::fetchMore(const QModelIndex& parent)
     item->setFetchedCount(batchEnd);
     if (batchEnd >= total)
         item->setChildrenLoaded(true);
+
+    // Update parent group's worst conflict status from its children
+    int worstCA = item->conflictAll();
+    int worstCT = item->conflictThis();
+    for (int r = 0; r < item->childCount(); ++r) {
+        worstCA = qMax(worstCA, item->child(r)->conflictAll());
+        worstCT = qMax(worstCT, item->child(r)->conflictThis());
+    }
+    if (worstCA != item->conflictAll() || worstCT != item->conflictThis()) {
+        item->setConflictAll(worstCA);
+        item->setConflictThis(worstCT);
+        emit dataChanged(parent, parent, { ConflictAllRole, ConflictThisRole });
+
+        // Also propagate up to the plugin node
+        NavTreeItem* pluginItem = item->parentItem();
+        if (pluginItem && pluginItem != m_rootItem) {
+            int worstPluginCA = pluginItem->conflictAll();
+            int worstPluginCT = pluginItem->conflictThis();
+            worstPluginCA = qMax(worstPluginCA, worstCA);
+            worstPluginCT = qMax(worstPluginCT, worstCT);
+            if (worstPluginCA != pluginItem->conflictAll()
+                || worstPluginCT != pluginItem->conflictThis()) {
+                pluginItem->setConflictAll(worstPluginCA);
+                pluginItem->setConflictThis(worstPluginCT);
+                QModelIndex pluginIdx = createIndex(pluginItem->row(), 0, pluginItem);
+                emit dataChanged(pluginIdx, pluginIdx, { ConflictAllRole, ConflictThisRole });
+            }
+        }
+    }
 }
 
 Qt::ItemFlags NavTreeModel::flags(const QModelIndex& index) const
@@ -176,6 +220,22 @@ Qt::ItemFlags NavTreeModel::flags(const QModelIndex& index) const
     }
 
     return f;
+}
+
+bool NavTreeModel::removeRows(int row, int count, const QModelIndex& parent)
+{
+    NavTreeItem* parentItem = parent.isValid()
+        ? static_cast<NavTreeItem*>(parent.internalPointer())
+        : m_rootItem;
+
+    if (row < 0 || row + count > parentItem->childCount())
+        return false;
+
+    beginRemoveRows(parent, row, row + count - 1);
+    for (int i = 0; i < count; ++i)
+        parentItem->removeChild(row); // always remove at 'row' since list shifts
+    endRemoveRows();
+    return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -333,6 +393,7 @@ void NavTreeModel::clear()
     beginResetModel();
     delete m_rootItem;
     m_rootItem = new NavTreeItem(NodeType::Plugin, -1, -1, -1, nullptr);
+    m_conflictsByFormId.clear();
     endResetModel();
 }
 
@@ -378,6 +439,239 @@ QModelIndex NavTreeModel::findRecord(int pluginIdx, int groupIdx, int recordIdx)
     return {};
 }
 
+void NavTreeModel::applyConflictData(int conflictCount)
+{
+    auto& ffi = XEditFFI::instance();
+    if (!ffi.xedit_conflict_form_id
+        || !ffi.xedit_conflict_severity || !ffi.xedit_conflict_plugin_count) {
+        return;
+    }
+
+    m_conflictsByFormId.clear();
+
+    auto mapSeverityToConflictAll = [](int severity) -> int {
+        switch (severity) {
+        case 0: return static_cast<int>(ConflictAll::Benign);   // caConflictBenign
+        case 1: return static_cast<int>(ConflictAll::Override); // caOverride
+        case 2: return static_cast<int>(ConflictAll::Critical); // caConflictCritical
+        case 3: return static_cast<int>(ConflictAll::Conflict); // caConflict/ITM
+        default: return static_cast<int>(ConflictAll::Unknown);
+        }
+    };
+
+    if (conflictCount <= 0)
+        return;
+
+    for (int i = 0; i < conflictCount; ++i) {
+        const uint32_t formId = ffi.xedit_conflict_form_id(nullptr, i);
+        const int severity = ffi.xedit_conflict_severity(nullptr, i);
+        const int pluginCount = ffi.xedit_conflict_plugin_count(nullptr, i);
+        Q_UNUSED(pluginCount)
+
+        const int conflictAll = mapSeverityToConflictAll(severity);
+        const int conflictThis = (severity == 1)
+            ? static_cast<int>(ConflictThis::ConflictWins)
+            : static_cast<int>(ConflictThis::ConflictLoses);
+
+        auto it = m_conflictsByFormId.find(formId);
+        if (it == m_conflictsByFormId.end()) {
+            m_conflictsByFormId.insert(formId, qMakePair(conflictAll, conflictThis));
+            continue;
+        }
+
+        // Prefer the highest-severity background; keep "wins" if seen.
+        if (conflictAll > it.value().first)
+            it.value().first = conflictAll;
+        if (conflictThis == static_cast<int>(ConflictThis::ConflictWins))
+            it.value().second = conflictThis;
+    }
+
+    QVector<QModelIndex> changedIndexes;
+    changedIndexes.reserve(1024);
+
+    for (int p = 0; p < m_rootItem->childCount(); ++p) {
+        NavTreeItem* pluginItem = m_rootItem->child(p);
+        for (int g = 0; g < pluginItem->childCount(); ++g) {
+            NavTreeItem* groupItem = pluginItem->child(g);
+            for (int r = 0; r < groupItem->childCount(); ++r) {
+                NavTreeItem* recItem = groupItem->child(r);
+                const uint32_t formId = recItem->formId();
+
+                int newConflictAll = static_cast<int>(ConflictAll::Unknown);
+                int newConflictThis = static_cast<int>(ConflictThis::Unknown);
+
+                if (auto it = m_conflictsByFormId.constFind(formId);
+                    it != m_conflictsByFormId.cend()) {
+                    newConflictAll = it.value().first;
+                    newConflictThis = it.value().second;
+                }
+
+                if (recItem->conflictAll() == newConflictAll
+                    && recItem->conflictThis() == newConflictThis) {
+                    continue;
+                }
+
+                recItem->setConflictAll(newConflictAll);
+                recItem->setConflictThis(newConflictThis);
+                changedIndexes.append(createIndex(r, 0, recItem));
+            }
+        }
+    }
+
+    // Propagate conflict status to group and plugin nodes using batch FormID lookup
+    // (works even when records haven't been loaded/expanded yet)
+    for (int p = 0; p < m_rootItem->childCount(); ++p) {
+        auto* pluginItem = m_rootItem->child(p);
+        int worstPluginCA = 0;
+        int worstPluginCT = 0;
+
+        for (int g = 0; g < pluginItem->childCount(); ++g) {
+            auto* groupItem = pluginItem->child(g);
+            int worstGroupCA = 0;
+            int worstGroupCT = 0;
+
+            // If children are loaded, use them directly
+            if (groupItem->childrenLoaded() || groupItem->childCount() > 0) {
+                for (int r = 0; r < groupItem->childCount(); ++r) {
+                    auto* recItem = groupItem->child(r);
+                    worstGroupCA = qMax(worstGroupCA, recItem->conflictAll());
+                    worstGroupCT = qMax(worstGroupCT, recItem->conflictThis());
+                }
+            } else {
+                // Children not loaded — use batch FormID query to check against conflict cache
+                if (ffi.xedit_group_form_ids) {
+                    const int pi = pluginItem->pluginIndex();
+                    const int gi = groupItem->groupIndex();
+                    const int recCount = groupItem->cachedRecordCount();
+                    if (recCount > 0) {
+                        QVector<uint32_t> formIds(recCount);
+                        int32_t got = ffi.xedit_group_form_ids(pi, gi, formIds.data(), recCount);
+                        for (int32_t r = 0; r < got; ++r) {
+                            auto it = m_conflictsByFormId.constFind(formIds[r]);
+                            if (it != m_conflictsByFormId.cend()) {
+                                worstGroupCA = qMax(worstGroupCA, it.value().first);
+                                worstGroupCT = qMax(worstGroupCT, it.value().second);
+                            }
+                        }
+                    }
+                }
+            }
+
+            groupItem->setConflictAll(worstGroupCA);
+            groupItem->setConflictThis(worstGroupCT);
+            worstPluginCA = qMax(worstPluginCA, worstGroupCA);
+            worstPluginCT = qMax(worstPluginCT, worstGroupCT);
+        }
+
+        pluginItem->setConflictAll(worstPluginCA);
+        pluginItem->setConflictThis(worstPluginCT);
+    }
+
+    // Emit dataChanged for all items so group/plugin nodes repaint too
+    const QVector<int> roles = { ConflictAllRole, ConflictThisRole };
+    if (m_rootItem->childCount() > 0)
+        emit dataChanged(index(0, 0), index(rowCount() - 1, 0), roles);
+}
+
+void NavTreeModel::setConflictCache(QHash<uint32_t, QPair<int, int>>&& cache)
+{
+    m_conflictsByFormId = std::move(cache);
+    applyConflictDataFromCache();
+}
+
+void NavTreeModel::applyConflictDataFromCache()
+{
+    if (m_conflictsByFormId.isEmpty())
+        return;
+
+    QVector<QModelIndex> changedIndexes;
+    changedIndexes.reserve(1024);
+
+    for (int p = 0; p < m_rootItem->childCount(); ++p) {
+        NavTreeItem* pluginItem = m_rootItem->child(p);
+        for (int g = 0; g < pluginItem->childCount(); ++g) {
+            NavTreeItem* groupItem = pluginItem->child(g);
+            for (int r = 0; r < groupItem->childCount(); ++r) {
+                NavTreeItem* recItem = groupItem->child(r);
+                const uint32_t formId = recItem->formId();
+
+                int newConflictAll = static_cast<int>(ConflictAll::Unknown);
+                int newConflictThis = static_cast<int>(ConflictThis::Unknown);
+
+                if (auto it = m_conflictsByFormId.constFind(formId);
+                    it != m_conflictsByFormId.cend()) {
+                    newConflictAll = it.value().first;
+                    newConflictThis = it.value().second;
+                }
+
+                if (recItem->conflictAll() == newConflictAll
+                    && recItem->conflictThis() == newConflictThis) {
+                    continue;
+                }
+
+                recItem->setConflictAll(newConflictAll);
+                recItem->setConflictThis(newConflictThis);
+                changedIndexes.append(createIndex(r, 0, recItem));
+            }
+        }
+    }
+
+    // Propagate conflict status to group and plugin nodes using batch FormID lookup
+    // (works even when records haven't been loaded/expanded yet)
+    auto& ffi = XEditFFI::instance();
+    for (int p = 0; p < m_rootItem->childCount(); ++p) {
+        auto* pluginItem = m_rootItem->child(p);
+        int worstPluginCA = 0;
+        int worstPluginCT = 0;
+
+        for (int g = 0; g < pluginItem->childCount(); ++g) {
+            auto* groupItem = pluginItem->child(g);
+            int worstGroupCA = 0;
+            int worstGroupCT = 0;
+
+            // If children are loaded, use them directly
+            if (groupItem->childrenLoaded() || groupItem->childCount() > 0) {
+                for (int r = 0; r < groupItem->childCount(); ++r) {
+                    auto* recItem = groupItem->child(r);
+                    worstGroupCA = qMax(worstGroupCA, recItem->conflictAll());
+                    worstGroupCT = qMax(worstGroupCT, recItem->conflictThis());
+                }
+            } else {
+                // Children not loaded — use batch FormID query to check against conflict cache
+                if (ffi.xedit_group_form_ids) {
+                    const int pi = pluginItem->pluginIndex();
+                    const int gi = groupItem->groupIndex();
+                    const int recCount = groupItem->cachedRecordCount();
+                    if (recCount > 0) {
+                        QVector<uint32_t> formIds(recCount);
+                        int32_t got = ffi.xedit_group_form_ids(pi, gi, formIds.data(), recCount);
+                        for (int32_t r = 0; r < got; ++r) {
+                            auto it = m_conflictsByFormId.constFind(formIds[r]);
+                            if (it != m_conflictsByFormId.cend()) {
+                                worstGroupCA = qMax(worstGroupCA, it.value().first);
+                                worstGroupCT = qMax(worstGroupCT, it.value().second);
+                            }
+                        }
+                    }
+                }
+            }
+
+            groupItem->setConflictAll(worstGroupCA);
+            groupItem->setConflictThis(worstGroupCT);
+            worstPluginCA = qMax(worstPluginCA, worstGroupCA);
+            worstPluginCT = qMax(worstPluginCT, worstGroupCT);
+        }
+
+        pluginItem->setConflictAll(worstPluginCA);
+        pluginItem->setConflictThis(worstPluginCT);
+    }
+
+    // Emit dataChanged for all items so group/plugin nodes repaint too
+    const QVector<int> roles = { ConflictAllRole, ConflictThisRole };
+    if (m_rootItem->childCount() > 0)
+        emit dataChanged(index(0, 0), index(rowCount() - 1, 0), roles);
+}
+
 // ---------------------------------------------------------------------------
 // Private helpers
 // ---------------------------------------------------------------------------
@@ -387,11 +681,21 @@ void NavTreeModel::populateGroups(NavTreeItem* pluginItem)
     auto& ffi = XEditFFI::instance();
     int pi = pluginItem->pluginIndex();
 
-    // Cache the plugin display text
+    // Cache the plugin display text with load order index prefix
     QString pluginName = ffiString([&](char* buf, int len) {
         return ffi.xedit_plugin_filename(pi, buf, len);
     });
-    pluginItem->setDisplayText(pluginName);
+    int loadOrderId = ffi.xedit_plugin_load_order_id
+        ? ffi.xedit_plugin_load_order_id(pi) : pi;
+    if (loadOrderId >= 0) {
+        pluginItem->setDisplayText(
+            QStringLiteral("[%1] %2")
+                .arg(loadOrderId, 2, 16, QLatin1Char('0'))
+                .arg(pluginName)
+                .toUpper());
+    } else {
+        pluginItem->setDisplayText(pluginName);
+    }
 
     int groupCount = ffi.xedit_plugin_group_count(pi);
 

@@ -18,6 +18,9 @@ public:
     /// Pre-populate the file path (e.g. from main window context)
     void setLogFilePath(const QString& path);
 
+    /// Load log content directly from a string (e.g. from the messages pane)
+    void setLogContent(const QString& content);
+
     /// Log severity levels recognised by the analyser
     enum class LogLevel { All, Error, Warning, Info };
 

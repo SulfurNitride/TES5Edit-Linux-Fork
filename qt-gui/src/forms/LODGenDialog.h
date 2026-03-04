@@ -3,9 +3,11 @@
 #include <QComboBox>
 #include <QDialog>
 #include <QGroupBox>
+#include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
 #include <QPushButton>
+#include <QSpinBox>
 #include <QStringList>
 
 class LODGenDialog : public QDialog {
@@ -17,36 +19,16 @@ public:
     void setWorldspaces(const QStringList& worldspaces);
     QStringList selectedWorldspaces() const;
 
-    // LOD type getters
-    bool objectsLOD() const;
-    bool treesLOD() const;
-    bool terrainLOD() const;
-
-    // LOD level getters
-    bool lodLevel4() const;
-    bool lodLevel8() const;
-    bool lodLevel16() const;
-    bool lodLevel32() const;
-
-    // Objects LOD options
-    bool buildAtlas() const;
-    bool noTangents() const;
-    bool noVertexColors() const;
-
-    // Atlas options
-    int atlasWidth() const;
-    int atlasHeight() const;
-    int atlasTextureSize() const;
-    QString compressionDiffuse() const;
-    QString compressionNormal() const;
-
-    // Trees LOD options
-    int treesLODBrightness() const;
-    bool trees3D() const;
+    // Set game mode to show/hide game-specific controls
+    // "SkyrimSE", "FalloutNV", "Fallout3", "Fallout4", "Oblivion", etc.
+    void setGameMode(const QString& gameMode);
 
     // Output directory
     QString outputDirectory() const;
     void setOutputDirectory(const QString& dir);
+
+    // Serialize all options to JSON for FFI
+    QByteArray toJson() const;
 
 private slots:
     void onObjectsLODToggled(bool checked);
@@ -56,6 +38,7 @@ private slots:
     void onSelectAllWorldspaces();
     void onSelectNoneWorldspaces();
     void onGenerateClicked();
+    void onChunkToggled(bool checked);
 
 private:
     void setupUI();
@@ -63,6 +46,9 @@ private:
     QWidget* createOptionsPanel();
     void updateObjectsOptionsEnabled();
     void updateTreesOptionsEnabled();
+    void applyGameModeVisibility();
+
+    QString m_gameMode;
 
     // Worldspace list
     QListWidget* m_lstWorldspaces;
@@ -86,8 +72,27 @@ private:
     QComboBox* m_cmbAtlasWidth;
     QComboBox* m_cmbAtlasHeight;
     QComboBox* m_cmbAtlasTextureSize;
+    QComboBox* m_cmbAtlasUVRange;
     QComboBox* m_cmbCompDiffuse;
     QComboBox* m_cmbCompNormal;
+    QComboBox* m_cmbCompSpecular;
+    QLabel* m_lblSpecular;
+    QComboBox* m_cmbDefaultAlphaThreshold;
+
+    // FO4-specific
+    QCheckBox* m_chkUseAlphaThreshold;
+    QCheckBox* m_chkUseBacklightPower;
+
+    // Specific chunk
+    QCheckBox* m_chkChunk;
+    QComboBox* m_cmbChunkLODLevel;
+    QLineEdit* m_edLODX;
+    QLineEdit* m_edLODY;
+    QLineEdit* m_edLODX2;
+    QLineEdit* m_edLODY2;
+    QLabel* m_lblE;
+    QLabel* m_lblN;
+    QWidget* m_chunkCoordsWidget;
 
     // Trees LOD options
     QComboBox* m_cmbTreesBrightness;

@@ -15,7 +15,9 @@ xedit_io = { path = "../xedit_io" }
 xedit_games = { path = "../xedit_games" }
 xedit_nif = { path = "../xedit_nif" }
 xedit_tools = { path = "../xedit_tools" }
+xedit_lod = { path = "../xedit_lod" }
 anyhow.workspace = true
+serde_json.workspace = true
 rayon.workspace = true
 rusqlite.workspace = true
 tracing.workspace = true

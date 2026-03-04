@@ -26,6 +26,7 @@ members = [
     "xedit_ffi",
     "xedit_nif",
     "xedit_transpiler",
+    "xedit_lod",
 ]
 
 [workspace.package]

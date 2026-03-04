@@ -41,6 +41,7 @@ QWidget* OptionsDialog::createGeneralTab()
     m_chkHideUnused         = new QCheckBox("Hide Unused", page);
     m_chkHideIgnored        = new QCheckBox("Hide Ignored", page);
     m_chkLoadBSAs           = new QCheckBox("Load BSAs", page);
+    m_chkLoadBSAs->setChecked(true);  // Default: BSAs should be loaded
     m_chkSimpleRecords      = new QCheckBox("Simple Records", page);
     m_chkShowGroupRecordCount = new QCheckBox("Show Group Record Count", page);
 

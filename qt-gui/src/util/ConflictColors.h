@@ -29,6 +29,7 @@ enum class ConflictThis {
 };
 
 namespace ConflictColors {
+    bool isDarkTheme();
     QColor backgroundFor(ConflictAll ca);
     QColor textColorFor(ConflictThis ct);
 }

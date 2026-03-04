@@ -40,6 +40,16 @@ void LogAnalyzerDialog::setLogFilePath(const QString& path)
     m_editFilePath->setText(path);
 }
 
+void LogAnalyzerDialog::setLogContent(const QString& content)
+{
+    m_editFilePath->setText(tr("(messages pane)"));
+    m_rawContent = content;
+    m_logView->setPlainText(m_rawContent);
+    parseLogContent(m_rawContent);
+    applyFilters();
+    updateSummary();
+}
+
 // ---------------------------------------------------------------------------
 // UI construction
 // ---------------------------------------------------------------------------

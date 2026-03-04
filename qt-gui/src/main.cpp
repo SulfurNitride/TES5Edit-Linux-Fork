@@ -2,6 +2,7 @@
 #include <QMessageBox>
 #include "ffi/XEditFFI.h"
 #include "forms/MainWindow.h"
+#include "util/CommandLineArgs.h"
 
 int main(int argc, char* argv[])
 {
@@ -9,6 +10,8 @@ int main(int argc, char* argv[])
     app.setApplicationName("xEdit");
     app.setApplicationVersion("4.1.6");
     app.setOrganizationName("xEdit");
+
+    CommandLineArgs::instance().parse(app);
 
     // Load the Rust FFI library
     if (!XEditFFI::instance().load()) {

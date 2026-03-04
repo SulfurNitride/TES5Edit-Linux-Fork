@@ -168,19 +168,23 @@ fn generate_subrecord(node: &ParsedNode, indent: usize) -> String {
         }
 
         ParsedNode::VarRef { name } => {
-            // Generate a placeholder subrecord referencing the predefined variable
-            format!(
-                "{pad}// TODO: resolve variable reference: {name}\n\
-                 {pad}SubrecordDef {{\n\
-                 {pad}    signature: Signature(*b\"{sig}\"),\n\
-                 {pad}    name: \"{name}\".to_string(),\n\
-                 {pad}    fields: vec![],\n\
-                 {pad}    required: false,\n\
-                 {pad}}}",
-                pad = pad,
-                name = name,
-                sig = extract_sig_from_varref(name),
-            )
+            if let Some(resolved) = resolve_varref(name, &pad) {
+                resolved
+            } else {
+                // Unresolved variable reference — keep TODO placeholder
+                format!(
+                    "{pad}// TODO: resolve variable reference: {name}\n\
+                     {pad}SubrecordDef {{\n\
+                     {pad}    signature: Signature(*b\"{sig}\"),\n\
+                     {pad}    name: \"{name}\".to_string(),\n\
+                     {pad}    fields: vec![],\n\
+                     {pad}    required: false,\n\
+                     {pad}}}",
+                    pad = pad,
+                    name = name,
+                    sig = extract_sig_from_varref(name),
+                )
+            }
         }
 
         ParsedNode::Unused { size } => {
@@ -347,11 +351,15 @@ fn generate_field(node: &ParsedNode, indent: usize) -> String {
         }
 
         ParsedNode::VarRef { name } => {
-            format!(
-                "{pad}// TODO: resolve variable reference: {name}\n\
-                 {pad}FieldDef {{ name: \"{name}\".to_string(), field_type: FieldType::Unknown }}",
-                name = name,
-            )
+            if let Some(resolved) = resolve_varref_field(name, &pad) {
+                resolved
+            } else {
+                format!(
+                    "{pad}// TODO: resolve variable reference: {name}\n\
+                     {pad}FieldDef {{ name: \"{name}\".to_string(), field_type: FieldType::Unknown }}",
+                    name = name,
+                )
+            }
         }
 
         ParsedNode::RStruct { name, .. } | ParsedNode::RArray { name, .. } => {
@@ -463,6 +471,174 @@ fn pad_signature(sig: &str) -> String {
 
 fn escape_rust_string(s: &str) -> String {
     s.replace('\\', "\\\\").replace('"', "\\\"")
+}
+
+/// Resolve a VarRef name to a complete SubrecordDef code string.
+/// Returns `None` if the variable is not in the known lookup table.
+fn resolve_varref(name: &str, pad: &str) -> Option<String> {
+    // Look up the resolved definition: (signature, display_name, fields_code)
+    let (sig, display_name, fields_code) = resolve_varref_parts(name)?;
+
+    Some(format!(
+        "{pad}SubrecordDef {{\n\
+         {pad}    signature: Signature(*b\"{sig}\"),\n\
+         {pad}    name: \"{display_name}\".to_string(),\n\
+         {pad}    fields: vec![{fields}],\n\
+         {pad}    required: false,\n\
+         {pad}}}",
+        pad = pad,
+        sig = pad_signature(sig),
+        display_name = escape_rust_string(display_name),
+        fields = fields_code,
+    ))
+}
+
+/// Resolve a VarRef name to a FieldDef code string (for use inside structs/unions).
+/// Returns `None` if the variable is not in the known lookup table.
+fn resolve_varref_field(name: &str, pad: &str) -> Option<String> {
+    let (_sig, display_name, _fields_code) = resolve_varref_parts(name)?;
+
+    // Try to get a simple field type first
+    if let Some(field_type) = resolve_varref_field_type(name) {
+        return Some(format!(
+            "{pad}FieldDef {{ name: \"{name}\".to_string(), field_type: {ft} }}",
+            pad = pad,
+            name = escape_rust_string(display_name),
+            ft = field_type,
+        ));
+    }
+
+    // For struct-based types, emit the full FieldDef from parts
+    // The fields_code from resolve_varref_parts is already a complete FieldDef string
+    let (_sig, _display_name, fields_code) = resolve_varref_parts(name)?;
+    Some(format!("{pad}{fields}", pad = pad, fields = fields_code))
+}
+
+/// Returns (signature, display_name, fields_vec_contents) for known variable references.
+fn resolve_varref_parts(name: &str) -> Option<(&'static str, &'static str, String)> {
+    match name {
+        // Editor ID - string
+        "wbEDID" => Some(("EDID", "Editor ID",
+            "FieldDef { name: \"Editor ID\".to_string(), field_type: FieldType::String }".into())),
+
+        // Display name - localized string
+        "wbFULL" | "wbFULLReq" => Some(("FULL", "Name",
+            "FieldDef { name: \"Name\".to_string(), field_type: FieldType::String }".into())),
+
+        // Description
+        "wbDESC" | "wbDESCReq" => Some(("DESC", "Description",
+            "FieldDef { name: \"Description\".to_string(), field_type: FieldType::String }".into())),
+
+        // Object bounds - struct with 6 x S16
+        "wbOBND" | "wbOBNDReq" => Some(("OBND", "Object Bounds", format!(
+            "FieldDef {{ name: \"Object Bounds\".to_string(), field_type: FieldType::Struct {{\
+             name: \"Object Bounds\".to_string(), fields: vec![\
+             FieldDef {{ name: \"X1\".to_string(), field_type: FieldType::Integer {{ size: IntegerSize::S16, enum_def: None, flags_def: None }} }},\
+             FieldDef {{ name: \"Y1\".to_string(), field_type: FieldType::Integer {{ size: IntegerSize::S16, enum_def: None, flags_def: None }} }},\
+             FieldDef {{ name: \"Z1\".to_string(), field_type: FieldType::Integer {{ size: IntegerSize::S16, enum_def: None, flags_def: None }} }},\
+             FieldDef {{ name: \"X2\".to_string(), field_type: FieldType::Integer {{ size: IntegerSize::S16, enum_def: None, flags_def: None }} }},\
+             FieldDef {{ name: \"Y2\".to_string(), field_type: FieldType::Integer {{ size: IntegerSize::S16, enum_def: None, flags_def: None }} }},\
+             FieldDef {{ name: \"Z2\".to_string(), field_type: FieldType::Integer {{ size: IntegerSize::S16, enum_def: None, flags_def: None }} }}\
+             ] }} }}"))),
+
+        // Model path
+        "wbGenericModel" | "wbMODL" => Some(("MODL", "Model",
+            "FieldDef { name: \"Model\".to_string(), field_type: FieldType::String }".into())),
+
+        // Icon paths
+        "wbICON" | "wbICONReq" => Some(("ICON", "Icon",
+            "FieldDef { name: \"Icon\".to_string(), field_type: FieldType::String }".into())),
+
+        "wbMICO" => Some(("MICO", "Menu Icon",
+            "FieldDef { name: \"Menu Icon\".to_string(), field_type: FieldType::String }".into())),
+
+        // Keywords
+        "wbKeywords" => Some(("KSIZ", "Keywords",
+            "FieldDef { name: \"Keywords\".to_string(), field_type: FieldType::ByteArray { size: 0 } }".into())),
+
+        // VM adapter data
+        "wbVMAD" | "wbVMADFragmentedSCPT" | "wbVMADFragmentedPERK"
+        | "wbVMADFragmentedQUST" | "wbVMADFragmentedSCEN"
+        | "wbVMADFragmentedINFO" | "wbVMADFragmentedPACK" => Some(("VMAD", "VM Adapter",
+            "FieldDef { name: \"VM Adapter\".to_string(), field_type: FieldType::ByteArray { size: 0 } }".into())),
+
+        // Color types - struct with R,G,B,A as U8
+        "wbByteColors" | "wbByteRGBA" => Some(("    ", "Color", format!(
+            "FieldDef {{ name: \"Color\".to_string(), field_type: FieldType::Struct {{\
+             name: \"Color\".to_string(), fields: vec![\
+             FieldDef {{ name: \"Red\".to_string(), field_type: FieldType::Integer {{ size: IntegerSize::U8, enum_def: None, flags_def: None }} }},\
+             FieldDef {{ name: \"Green\".to_string(), field_type: FieldType::Integer {{ size: IntegerSize::U8, enum_def: None, flags_def: None }} }},\
+             FieldDef {{ name: \"Blue\".to_string(), field_type: FieldType::Integer {{ size: IntegerSize::U8, enum_def: None, flags_def: None }} }},\
+             FieldDef {{ name: \"Alpha\".to_string(), field_type: FieldType::Integer {{ size: IntegerSize::U8, enum_def: None, flags_def: None }} }}\
+             ] }} }}"))),
+
+        // Float color - struct with R,G,B,A as Float
+        "wbFloatColors" => Some(("    ", "Color", format!(
+            "FieldDef {{ name: \"Color\".to_string(), field_type: FieldType::Struct {{\
+             name: \"Color\".to_string(), fields: vec![\
+             FieldDef {{ name: \"Red\".to_string(), field_type: FieldType::Float }},\
+             FieldDef {{ name: \"Green\".to_string(), field_type: FieldType::Float }},\
+             FieldDef {{ name: \"Blue\".to_string(), field_type: FieldType::Float }},\
+             FieldDef {{ name: \"Alpha\".to_string(), field_type: FieldType::Float }}\
+             ] }} }}"))),
+
+        // Boolean enum
+        "wbBoolEnum" => Some(("    ", "Value",
+            "FieldDef { name: \"Value\".to_string(), field_type: FieldType::Integer { size: IntegerSize::U8, enum_def: Some(EnumDef { values: vec![(0, \"False\".to_string()), (1, \"True\".to_string())] }), flags_def: None } }".into())),
+
+        // Pickup sound
+        "wbYNAM" => Some(("YNAM", "Pickup Sound",
+            "FieldDef { name: \"Pickup Sound\".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b\"SNDR\")] } }".into())),
+
+        // Putdown sound
+        "wbZNAM" => Some(("ZNAM", "Putdown Sound",
+            "FieldDef { name: \"Putdown Sound\".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b\"SNDR\")] } }".into())),
+
+        // Equip type
+        "wbETYP" | "wbETYPReq" => Some(("ETYP", "Equip Type",
+            "FieldDef { name: \"Equip Type\".to_string(), field_type: FieldType::FormId { valid_refs: vec![Signature(*b\"EQUP\")] } }".into())),
+
+        // Destructible
+        "wbDEST" | "wbDESTActor" => Some(("DEST", "Destructible",
+            "FieldDef { name: \"Destructible\".to_string(), field_type: FieldType::ByteArray { size: 0 } }".into())),
+
+        // Conditions
+        "wbConditions" | "wbCTDA" => Some(("CTDA", "Conditions",
+            "FieldDef { name: \"Conditions\".to_string(), field_type: FieldType::ByteArray { size: 0 } }".into())),
+
+        // Magic effects
+        "wbEffects" | "wbEffectsReq" => Some(("EFID", "Effects",
+            "FieldDef { name: \"Effects\".to_string(), field_type: FieldType::ByteArray { size: 0 } }".into())),
+
+        _ => None,
+    }
+}
+
+/// Returns just the FieldType code string for a known VarRef (used for field-level resolution).
+fn resolve_varref_field_type(name: &str) -> Option<&'static str> {
+    match name {
+        "wbEDID" => Some("FieldType::String"),
+        "wbFULL" | "wbFULLReq" => Some("FieldType::String"),
+        "wbDESC" | "wbDESCReq" => Some("FieldType::String"),
+        "wbGenericModel" | "wbMODL" => Some("FieldType::String"),
+        "wbICON" | "wbICONReq" => Some("FieldType::String"),
+        "wbMICO" => Some("FieldType::String"),
+        "wbKeywords" => Some("FieldType::ByteArray { size: 0 }"),
+        "wbVMAD" | "wbVMADFragmentedSCPT" | "wbVMADFragmentedPERK"
+        | "wbVMADFragmentedQUST" | "wbVMADFragmentedSCEN"
+        | "wbVMADFragmentedINFO" | "wbVMADFragmentedPACK" => Some("FieldType::ByteArray { size: 0 }"),
+        "wbDEST" | "wbDESTActor" => Some("FieldType::ByteArray { size: 0 }"),
+        "wbConditions" | "wbCTDA" => Some("FieldType::ByteArray { size: 0 }"),
+        "wbEffects" | "wbEffectsReq" => Some("FieldType::ByteArray { size: 0 }"),
+        "wbYNAM" => Some("FieldType::FormId { valid_refs: vec![Signature(*b\"SNDR\")] }"),
+        "wbZNAM" => Some("FieldType::FormId { valid_refs: vec![Signature(*b\"SNDR\")] }"),
+        "wbETYP" | "wbETYPReq" => Some("FieldType::FormId { valid_refs: vec![Signature(*b\"EQUP\")] }"),
+        // For struct types (OBND, colors) we can't return a simple static str,
+        // so fall back to Unknown for field-level usage (these are rare as fields)
+        "wbOBND" | "wbOBNDReq" | "wbByteColors" | "wbByteRGBA"
+        | "wbFloatColors" | "wbBoolEnum" => None,
+        _ => None,
+    }
 }
 
 /// Try to extract a 4-char signature from a variable reference name.

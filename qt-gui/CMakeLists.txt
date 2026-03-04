@@ -15,6 +15,7 @@ set(SOURCES
     # Models
     src/models/NavTreeItem.cpp
     src/models/NavTreeModel.cpp
+    src/models/OverrideViewModel.cpp
     src/models/RecordViewModel.cpp
     src/models/RefByTableModel.cpp
     src/models/SpreadsheetModel.cpp
@@ -24,6 +25,8 @@ set(SOURCES
     # Utilities
     src/util/SignatureNames.cpp
     src/util/ConflictColors.cpp
+    src/util/ModGroupFile.cpp
+    src/util/StringTableParser.cpp
     # Highlighting
     src/highlighting/PascalHighlighter.cpp
     # Forms
@@ -56,8 +59,12 @@ set(HEADERS
     src/util/StringBuffer.h
     src/util/SignatureNames.h
     src/util/ConflictColors.h
+    src/util/SettingsManager.h
+    src/util/ModGroupFile.h
+    src/util/StringTableParser.h
     src/models/NavTreeItem.h
     src/models/NavTreeModel.h
+    src/models/OverrideViewModel.h
     src/models/RecordViewModel.h
     src/models/RefByTableModel.h
     src/models/SpreadsheetModel.h

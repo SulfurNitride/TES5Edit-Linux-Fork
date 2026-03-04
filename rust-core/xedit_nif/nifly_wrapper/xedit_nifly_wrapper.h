@@ -48,6 +48,45 @@ NIFLY_EXPORT int nifly_get_shape_count(void* handle);
 NIFLY_EXPORT int nifly_get_texture_slot(void* handle, int shape_index, int slot,
                                         char* buf, int buflen);
 
+/* Create a new empty NIF file for a given game version.
+ * game_version: 0=Oblivion, 1=Fallout3/FNV, 2=SkyrimLE, 3=SkyrimSE, 4=Fallout4, 5=Starfield
+ * Returns an opaque handle, or NULL on failure. */
+NIFLY_EXPORT void* nifly_create(int game_version);
+
+/* Add a shape with geometry data. Returns the shape index (>= 0), or -1 on error. */
+NIFLY_EXPORT int nifly_add_shape(void* handle, const char* name,
+                                  const float* verts, int vert_count,
+                                  const uint16_t* tris, int tri_count,
+                                  const float* uvs, const float* normals);
+
+/* Set a texture path for a shape. slot: 0=diffuse, 1=normal, etc. Returns 0 on success. */
+NIFLY_EXPORT int nifly_set_texture(void* handle, int shape_idx, int slot, const char* path);
+
+/* Get vertex positions for a shape. Writes up to max_count * 3 floats.
+ * Returns actual vertex count, or -1 on error. */
+NIFLY_EXPORT int nifly_get_vertices(void* handle, int shape_idx, float* out_buf, int max_count);
+
+/* Get triangle indices for a shape. Writes up to max_count * 3 uint16_t values.
+ * Returns actual triangle count, or -1 on error. */
+NIFLY_EXPORT int nifly_get_triangles(void* handle, int shape_idx, uint16_t* out_buf, int max_count);
+
+/* Get UV coordinates for a shape. Writes up to max_count * 2 floats.
+ * Returns actual UV count (should equal vertex count), or -1 on error. */
+NIFLY_EXPORT int nifly_get_uvs(void* handle, int shape_idx, float* out_buf, int max_count);
+
+/* Get vertex normals for a shape. Writes up to max_count * 3 floats.
+ * Returns actual count, or -1 on error. */
+NIFLY_EXPORT int nifly_get_normals(void* handle, int shape_idx, float* out_buf, int max_count);
+
+/* Get the vertex count for a shape. Returns count or -1 on error. */
+NIFLY_EXPORT int nifly_get_vertex_count(void* handle, int shape_idx);
+
+/* Get the triangle count for a shape. Returns count or -1 on error. */
+NIFLY_EXPORT int nifly_get_triangle_count(void* handle, int shape_idx);
+
+/* Save NIF to disk. Returns 0 on success, -1 on failure. */
+NIFLY_EXPORT int nifly_save(void* handle, const char* path);
+
 #ifdef __cplusplus
 }
 #endif

@@ -43,8 +43,17 @@ impl XEditEngine {
             )
         })?;
 
-        let definitions = DefinitionRegistry::new();
-        // TODO: Load game-specific definitions based on game_id
+        let mut definitions = DefinitionRegistry::new();
+        match game_id {
+            GameId::Morrowind => definitions.load_morrowind_definitions(),
+            GameId::Oblivion => definitions.load_tes4_definitions(),
+            GameId::Fallout3 => definitions.load_fo3_definitions(),
+            GameId::FalloutNV => definitions.load_fnv_definitions(),
+            GameId::SkyrimSE => definitions.load_sse_definitions(),
+            GameId::Fallout4 => definitions.load_fo4_definitions(),
+            GameId::Fallout76 => definitions.load_fo76_definitions(),
+            GameId::Starfield => definitions.load_starfield_definitions(),
+        }
 
         Ok(Self {
             game_id,

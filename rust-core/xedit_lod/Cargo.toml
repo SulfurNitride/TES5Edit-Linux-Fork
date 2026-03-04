@@ -1,0 +1,20 @@
+[package]
+name = "xedit_lod"
+description = "LOD generation for xEdit — objects, trees, and terrain LOD"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+xedit_dom = { path = "../xedit_dom" }
+xedit_nif = { path = "../xedit_nif" }
+anyhow.workspace = true
+rayon.workspace = true
+byteorder.workspace = true
+serde = { workspace = true }
+serde_json.workspace = true
+ba2.workspace = true
+tracing.workspace = true
+memmap2.workspace = true
+walkdir.workspace = true
+flate2.workspace = true

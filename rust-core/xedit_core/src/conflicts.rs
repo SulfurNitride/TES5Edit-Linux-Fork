@@ -5,6 +5,7 @@
 
 use std::collections::HashMap;
 
+use rayon::prelude::*;
 use xedit_dom::{FormId, Record, Signature, Subrecord};
 
 use crate::load_order::LoadOrder;
@@ -62,42 +63,49 @@ impl<'a> ConflictDetector<'a> {
     /// Returns a conflict entry for every FormID that has overrides, classified
     /// by severity.
     pub fn detect_all_conflicts(&self) -> Vec<RecordConflict> {
-        // Build a map: canonical (target_plugin_index, local_id) -> Vec<(plugin_index, record)>
-        let mut form_id_map: HashMap<(usize, u32), Vec<(usize, &Record)>> = HashMap::new();
-
-        for (plugin_index, plugin) in self.load_order.plugins.iter().enumerate() {
-            for record in plugin.all_records() {
-                if let Some((target_plugin, target_local)) =
-                    self.load_order.resolve_form_id(plugin_index, record.form_id)
-                {
-                    let key = (target_plugin, target_local.raw());
-                    form_id_map
-                        .entry(key)
-                        .or_default()
-                        .push((plugin_index, record));
+        // Phase 1: Build per-plugin entry vectors in parallel, then merge.
+        let per_plugin: Vec<Vec<((usize, u32), (usize, &Record))>> = self
+            .load_order
+            .plugins
+            .par_iter()
+            .enumerate()
+            .map(|(plugin_index, plugin)| {
+                let mut entries = Vec::new();
+                for record in plugin.all_records() {
+                    if let Some((target_plugin, target_local)) =
+                        self.load_order.resolve_form_id(plugin_index, record.form_id)
+                    {
+                        let key = (target_plugin, target_local.raw());
+                        entries.push((key, (plugin_index, record)));
+                    }
                 }
+                entries
+            })
+            .collect();
+
+        // Merge into single HashMap (sequential, but fast).
+        let mut form_id_map: HashMap<(usize, u32), Vec<(usize, &Record)>> = HashMap::new();
+        for plugin_entries in per_plugin {
+            for (key, entry) in plugin_entries {
+                form_id_map.entry(key).or_default().push(entry);
             }
         }
 
-        let mut conflicts = Vec::new();
-        for ((_target_plugin, _target_local), entries) in &form_id_map {
-            if entries.len() < 2 {
-                continue;
-            }
-
-            let first_record = entries[0].1;
-            let severity = self.classify_conflict(entries);
-
-            conflicts.push(RecordConflict {
-                form_id: first_record.form_id,
-                signature: first_record.signature,
-                severity,
-                entries: entries
-                    .iter()
-                    .map(|(idx, rec)| (*idx, rec.form_id))
-                    .collect(),
-            });
-        }
+        // Phase 2: Classify conflicts in parallel.
+        let mut conflicts: Vec<RecordConflict> = form_id_map
+            .par_iter()
+            .filter(|(_, entries)| entries.len() >= 2)
+            .map(|((_target_plugin, _target_local), entries)| {
+                let first_record = entries[0].1;
+                let severity = self.classify_conflict(entries);
+                RecordConflict {
+                    form_id: first_record.form_id,
+                    signature: first_record.signature,
+                    severity,
+                    entries: entries.iter().map(|(idx, rec)| (*idx, rec.form_id)).collect(),
+                }
+            })
+            .collect();
 
         // Sort by form_id for deterministic output.
         conflicts.sort_by_key(|c| c.form_id.raw());

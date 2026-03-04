@@ -141,11 +141,13 @@ bool XEditFFI::load(const QString& libPath)
     xedit_plugin_master_count   = resolve<fn_xedit_plugin_master_count>("xedit_plugin_master_count");
     xedit_plugin_master_name    = resolve<fn_xedit_plugin_master_name>("xedit_plugin_master_name");
     xedit_plugin_group_count    = resolve<fn_xedit_plugin_group_count>("xedit_plugin_group_count");
+    xedit_plugin_load_order_id  = resolve<fn_xedit_plugin_load_order_id>("xedit_plugin_load_order_id");
 
     // Group queries
     xedit_group_signature       = resolve<fn_xedit_group_signature>("xedit_group_signature");
     xedit_group_name            = resolve<fn_xedit_group_name>("xedit_group_name");
     xedit_group_record_count    = resolve<fn_xedit_group_record_count>("xedit_group_record_count");
+    xedit_group_form_ids        = resolve<fn_xedit_group_form_ids>("xedit_group_form_ids");
 
     // Record queries
     xedit_record_editor_id      = resolve<fn_xedit_record_editor_id>("xedit_record_editor_id");
@@ -160,6 +162,7 @@ bool XEditFFI::load(const QString& libPath)
     xedit_subrecord_signature   = resolve<fn_xedit_subrecord_signature>("xedit_subrecord_signature");
     xedit_subrecord_size        = resolve<fn_xedit_subrecord_size>("xedit_subrecord_size");
     xedit_subrecord_data        = resolve<fn_xedit_subrecord_data>("xedit_subrecord_data");
+    xedit_subrecord_display_value = resolve<fn_xedit_subrecord_display_value>("xedit_subrecord_display_value");
     xedit_record_subrecords_batch = resolve<fn_xedit_record_subrecords_batch>("xedit_record_subrecords_batch");
 
     // Search
@@ -183,6 +186,11 @@ bool XEditFFI::load(const QString& libPath)
     // Form ID resolution and overrides
     xedit_resolve_form_id       = resolve<fn_xedit_resolve_form_id>("xedit_resolve_form_id");
     xedit_find_overrides        = resolve<fn_xedit_find_overrides>("xedit_find_overrides");
+    xedit_find_overrides_full   = resolve<fn_xedit_find_overrides_full>("xedit_find_overrides_full");
+
+    // Conflict status
+    xedit_record_conflict_status    = resolve<fn_xedit_record_conflict_status>("xedit_record_conflict_status");
+    xedit_subrecord_conflict_status = resolve<fn_xedit_subrecord_conflict_status>("xedit_subrecord_conflict_status");
 
     // NIF (mesh) queries
     xedit_nif_block_count       = resolve<fn_xedit_nif_block_count>("xedit_nif_block_count");
@@ -212,6 +220,19 @@ bool XEditFFI::load(const QString& libPath)
     xedit_mo2_profile_name     = resolve<fn_xedit_mo2_profile_name>("xedit_mo2_profile_name");
     xedit_mo2_select_profile   = resolve<fn_xedit_mo2_select_profile>("xedit_mo2_select_profile");
     xedit_mo2_load_order       = resolve<fn_xedit_mo2_load_order>("xedit_mo2_load_order");
+
+    // Record/Subrecord mutation
+    xedit_set_subrecord_data    = resolve<fn_xedit_set_subrecord_data>("xedit_set_subrecord_data");
+    xedit_delete_record         = resolve<fn_xedit_delete_record>("xedit_delete_record");
+    xedit_copy_record           = resolve<fn_xedit_copy_record>("xedit_copy_record");
+    xedit_add_record            = resolve<fn_xedit_add_record>("xedit_add_record");
+
+    // LOD generation
+    xedit_lod_list_worldspaces  = resolve<fn_xedit_lod_list_worldspaces>("xedit_lod_list_worldspaces");
+    xedit_lod_generate          = resolve<fn_xedit_lod_generate>("xedit_lod_generate");
+    xedit_lod_status            = resolve<fn_xedit_lod_status>("xedit_lod_status");
+    xedit_lod_error             = resolve<fn_xedit_lod_error>("xedit_lod_error");
+    xedit_lod_cancel            = resolve<fn_xedit_lod_cancel>("xedit_lod_cancel");
 
     return true;
 }
@@ -252,11 +273,13 @@ void XEditFFI::unload()
     xedit_plugin_master_count   = nullptr;
     xedit_plugin_master_name    = nullptr;
     xedit_plugin_group_count    = nullptr;
+    xedit_plugin_load_order_id  = nullptr;
 
     // Group queries
     xedit_group_signature       = nullptr;
     xedit_group_name            = nullptr;
     xedit_group_record_count    = nullptr;
+    xedit_group_form_ids        = nullptr;
 
     // Record queries
     xedit_record_editor_id      = nullptr;
@@ -271,6 +294,7 @@ void XEditFFI::unload()
     xedit_subrecord_signature   = nullptr;
     xedit_subrecord_size        = nullptr;
     xedit_subrecord_data        = nullptr;
+    xedit_subrecord_display_value = nullptr;
     xedit_record_subrecords_batch = nullptr;
 
     // Search
@@ -294,6 +318,11 @@ void XEditFFI::unload()
     // Form ID resolution and overrides
     xedit_resolve_form_id       = nullptr;
     xedit_find_overrides        = nullptr;
+    xedit_find_overrides_full   = nullptr;
+
+    // Conflict status
+    xedit_record_conflict_status    = nullptr;
+    xedit_subrecord_conflict_status = nullptr;
 
     // NIF (mesh) queries
     xedit_nif_block_count       = nullptr;
@@ -323,4 +352,17 @@ void XEditFFI::unload()
     xedit_mo2_profile_name     = nullptr;
     xedit_mo2_select_profile   = nullptr;
     xedit_mo2_load_order       = nullptr;
+
+    // Record/Subrecord mutation
+    xedit_set_subrecord_data    = nullptr;
+    xedit_delete_record         = nullptr;
+    xedit_copy_record           = nullptr;
+    xedit_add_record            = nullptr;
+
+    // LOD generation
+    xedit_lod_list_worldspaces  = nullptr;
+    xedit_lod_generate          = nullptr;
+    xedit_lod_status            = nullptr;
+    xedit_lod_error             = nullptr;
+    xedit_lod_cancel            = nullptr;
 }
