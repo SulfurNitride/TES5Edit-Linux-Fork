@@ -4883,6 +4883,37 @@ pub extern "C" fn xedit_lod_generate(
 
         // Spawn worker thread — scanning + generation all happens off the UI thread
         std::thread::spawn(move || {
+            // Ensure output directory exists before logging
+            let _ = std::fs::create_dir_all(&options.output_dir);
+
+            // Set up file-based LOD logging so crashes leave a trace
+            let log_path = std::path::Path::new(&options.output_dir).join("LODGen_log.txt");
+            let log_file = std::fs::File::create(&log_path);
+            let lod_log = std::sync::Arc::new(std::sync::Mutex::new(log_file.ok()));
+
+            // Helper to write to both tracing and the log file
+            let write_log = {
+                let lod_log = lod_log.clone();
+                move |msg: &str| {
+                    tracing::info!("{}", msg);
+                    if let Ok(mut guard) = lod_log.lock() {
+                        if let Some(ref mut f) = *guard {
+                            use std::io::Write;
+                            let elapsed = std::time::SystemTime::now()
+                        .duration_since(std::time::UNIX_EPOCH)
+                        .unwrap_or_default();
+                    let secs = elapsed.as_secs() % 86400;
+                    let _ = writeln!(f, "[{:02}:{:02}:{:02}] {}",
+                        secs / 3600, (secs % 3600) / 60, secs % 60, msg);
+                            let _ = f.flush();
+                        }
+                    }
+                }
+            };
+
+            write_log(&format!("LOD Generation started — output: {}", options.output_dir));
+            write_log(&format!("Game: {}, Worldspaces: {}", options.game_id, options.worldspaces.join(", ")));
+
             let progress = xedit_lod::progress::Progress::new(
                 progress_cb.map(|cb| cb as xedit_lod::progress::ProgressFn),
                 &LOD_CANCEL,
@@ -4905,50 +4936,66 @@ pub extern "C" fn xedit_lod_generate(
                 let db_lock = PLUGIN_DBS.lock().unwrap();
                 let db_paths = db_lock.as_ref();
 
-                tracing::info!(
-                    "Scanning {} plugins for LOD references (worldspaces: {})",
+                write_log(&format!(
+                    "Scanning {} plugins for LOD references",
                     engine.plugins.len(),
-                    options.worldspaces.join(",")
-                );
+                ));
 
                 match scan_lod_references_from_dbs(engine, db_paths) {
                     Ok(result) => result,
                     Err(e) => {
-                        tracing::error!("Failed to scan references: {}", e);
+                        let msg = format!("Failed to scan references: {}", e);
+                        write_log(&msg);
+                        tracing::error!("{}", msg);
                         let mut job = LOD_JOB.lock().unwrap();
-                        *job = Some(LodJobState { status: -1, error: format!("Reference scan failed: {}", e) });
+                        *job = Some(LodJobState { status: -1, error: msg });
                         return;
                     }
                 }
             };
 
-            tracing::info!(
+            write_log(&format!(
                 "Found {} LOD references, {} LOD bases, {} worldspaces",
                 references.len(),
                 bases.len(),
                 worldspace_map.len()
-            );
+            ));
 
             progress.report(&format!(
                 "Found {} references, {} bases. Starting LOD generation...",
                 references.len(), bases.len()
             ));
 
-            let result = xedit_lod::generate_lod(&options, &data_path, &references, &bases, &worldspace_map, &progress);
+            // Wrap generation in catch_unwind to survive C++ crashes (nifly)
+            let gen_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                xedit_lod::generate_lod(&options, &data_path, &references, &bases, &worldspace_map, &progress)
+            }));
 
             let mut lock = LOD_JOB.lock().unwrap();
-            match result {
-                Ok(()) => {
+            match gen_result {
+                Ok(Ok(())) => {
+                    write_log("LOD generation completed successfully");
                     *lock = Some(LodJobState {
                         status: 1,
                         error: String::new(),
                     });
                 }
-                Err(e) => {
-                    tracing::error!("LOD generation failed: {:#}", e);
+                Ok(Err(e)) => {
+                    let msg = format!("LOD generation failed: {:#}", e);
+                    write_log(&msg);
+                    tracing::error!("{}", msg);
                     *lock = Some(LodJobState {
                         status: -1,
                         error: format!("{:#}", e),
+                    });
+                }
+                Err(_panic) => {
+                    let msg = "LOD generation crashed (panic in native code). Check LODGen_log.txt for details.";
+                    write_log(msg);
+                    tracing::error!("{}", msg);
+                    *lock = Some(LodJobState {
+                        status: -1,
+                        error: msg.to_string(),
                     });
                 }
             }
