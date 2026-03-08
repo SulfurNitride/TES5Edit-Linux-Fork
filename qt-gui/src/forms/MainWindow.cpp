@@ -51,7 +51,6 @@
 #include "forms/WaitDialog.h"
 #include "forms/LocalizationDialog.h"
 #include "forms/LocalizePluginDialog.h"
-#include "forms/LODGenDialog.h"
 #include "forms/ModGroupSelectDialog.h"
 #include "forms/ModGroupEditDialog.h"
 #include "forms/FileSelectDialog.h"
@@ -62,6 +61,7 @@
 #include "forms/ElementDetailDialog.h"
 #include "forms/ViewElementsDialog.h"
 #include "forms/WorldspaceCellDetailDialog.h"
+#include "forms/LODGenDialog.h"
 #include "util/CommandLineArgs.h"
 #include "util/ConflictColors.h"
 #include "util/ModGroupFile.h"
@@ -197,10 +197,11 @@ void MainWindow::createMenuBar()
     mainMenu->addSeparator();
     mainMenu->addAction(tr("Script Editor..."),    this, &MainWindow::onScriptEditor);
     mainMenu->addAction(tr("Log Analyzer..."),     this, &MainWindow::onLogAnalyzer);
-    mainMenu->addAction(tr("LOD Generation..."),   this, &MainWindow::onLODGen);
     mainMenu->addAction(tr("Localization..."),     this, &MainWindow::onLocalization);
     mainMenu->addAction(tr("Localize Plugin..."),  this, &MainWindow::onLocalizePlugin);
     mainMenu->addAction(tr("Mod Groups..."),       this, &MainWindow::onModGroupSelect);
+    mainMenu->addSeparator();
+    mainMenu->addAction(tr("Generate LOD..."),    this, &MainWindow::onLODGen);
     mainMenu->addSeparator();
     mainMenu->addAction(tr("Options..."), this, &MainWindow::onOptions);
 
@@ -2527,45 +2528,6 @@ void MainWindow::onLocalizePlugin()
     }
 }
 
-void MainWindow::onLODGen()
-{
-    LODGenDialog dlg(this);
-
-    // Map UI game label to internal game ID for game-specific LOD options
-    static const QHash<QString, QString> labelToGameId = {
-        {"Skyrim SE",   "SkyrimSE"},
-        {"Fallout 4",   "Fallout4"},
-        {"Starfield",   "Starfield"},
-        {"Fallout 76",  "Fallout76"},
-        {"Fallout NV",  "FalloutNV"},
-        {"Fallout 3",   "Fallout3"},
-        {"Oblivion",    "Oblivion"},
-        {"Morrowind",   "Morrowind"},
-    };
-    QString gameLabel = m_gameCombo->currentText();
-    QString gameId = labelToGameId.value(gameLabel, "SkyrimSE");
-    dlg.setGameMode(gameId);
-
-    auto& ffi = XEditFFI::instance();
-    QStringList worldspaces;
-
-    if (ffi.xedit_lod_list_worldspaces) {
-        QByteArray buf(8192, 0);
-        int32_t len = ffi.xedit_lod_list_worldspaces(
-            reinterpret_cast<uint8_t*>(buf.data()), buf.size());
-        if (len > 0) {
-            QString result = QString::fromUtf8(buf.constData(), len);
-            worldspaces = result.split('\n', Qt::SkipEmptyParts);
-        }
-    }
-
-    if (!m_dataPath.isEmpty())
-        dlg.setOutputDirectory(m_dataPath);
-
-    dlg.setWorldspaces(worldspaces);
-    dlg.exec();
-}
-
 void MainWindow::onModGroupSelect()
 {
     if (m_dataPath.isEmpty()) {
@@ -2860,4 +2822,53 @@ void MainWindow::onRefByDoubleClicked(const QModelIndex& index)
         m_navTree->scrollTo(navIdx);
         onNavTreeClicked(navIdx);
     }
+}
+
+void MainWindow::onLODGen()
+{
+    auto& ffi = XEditFFI::instance();
+    if (!ffi.isLoaded()) {
+        logMessage("Rust backend not loaded. Load plugins first.");
+        return;
+    }
+
+    // Collect worldspace EditorIDs from loaded plugins
+    QStringList worldspaces;
+    int pluginCount = ffi.xedit_plugin_count ? ffi.xedit_plugin_count() : 0;
+
+    for (int pi = 0; pi < pluginCount; ++pi) {
+        int groupCount = ffi.xedit_plugin_group_count ? ffi.xedit_plugin_group_count(pi) : 0;
+        for (int gi = 0; gi < groupCount; ++gi) {
+            char sigBuf[8] = {};
+            if (ffi.xedit_group_signature)
+                ffi.xedit_group_signature(pi, gi, sigBuf, sizeof(sigBuf));
+            if (QString::fromUtf8(sigBuf) != "WRLD")
+                continue;
+
+            int recCount = ffi.xedit_group_record_count ? ffi.xedit_group_record_count(pi, gi) : 0;
+            for (int ri = 0; ri < recCount; ++ri) {
+                char recSig[8] = {};
+                if (ffi.xedit_record_signature)
+                    ffi.xedit_record_signature(pi, gi, ri, recSig, sizeof(recSig));
+                if (QString::fromUtf8(recSig) != "WRLD")
+                    continue;
+
+                char edid[256] = {};
+                if (ffi.xedit_record_editor_id)
+                    ffi.xedit_record_editor_id(pi, gi, ri, edid, sizeof(edid));
+                QString ws = QString::fromUtf8(edid);
+                if (!ws.isEmpty() && !worldspaces.contains(ws))
+                    worldspaces.append(ws);
+            }
+        }
+    }
+
+    worldspaces.sort();
+
+    LODGenDialog dlg(this);
+    dlg.setWorldspaces(worldspaces);
+    dlg.setGameMode(m_currentGame);
+    if (!m_dataPath.isEmpty())
+        dlg.setOutputDirectory(m_dataPath + "/../LOD Generation Output");
+    dlg.exec();
 }

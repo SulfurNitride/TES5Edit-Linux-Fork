@@ -75,6 +75,61 @@ pub(crate) type NiflySaveFn = unsafe extern "C" fn(
     path: *const c_char,
 ) -> c_int;
 
+// Transform function pointer types
+pub(crate) type NiflyGetRootTranslationFn = unsafe extern "C" fn(
+    handle: *mut c_void,
+    out_xyz: *mut f32,
+) -> c_int;
+pub(crate) type NiflyGetNodeTransformFn = unsafe extern "C" fn(
+    handle: *mut c_void,
+    node_name: *const c_char,
+    out_translation: *mut f32,
+    out_rotation: *mut f32,
+    out_scale: *mut f32,
+) -> c_int;
+pub(crate) type NiflyGetShapeTransformFn = unsafe extern "C" fn(
+    handle: *mut c_void,
+    shape_idx: c_int,
+    out_translation: *mut f32,
+    out_rotation: *mut f32,
+    out_scale: *mut f32,
+) -> c_int;
+// LOD creation function pointer types (BSMultiBoundNode root)
+pub(crate) type NiflyCreateLodFn = unsafe extern "C" fn(game_version: c_int) -> *mut c_void;
+pub(crate) type NiflyAddMultiboundFn = unsafe extern "C" fn(
+    handle: *mut c_void,
+    center_x: f32, center_y: f32, center_z: f32,
+    extent_x: f32, extent_y: f32, extent_z: f32,
+) -> c_int;
+
+pub(crate) type NiflyCalcTangentsFn = unsafe extern "C" fn(
+    handle: *mut c_void,
+    shape_idx: c_int,
+) -> c_int;
+
+pub(crate) type NiflySetTextureClampModeFn = unsafe extern "C" fn(
+    handle: *mut c_void,
+    shape_idx: c_int,
+    mode: u32,
+) -> c_int;
+
+pub(crate) type NiflySetRootTranslationFn = unsafe extern "C" fn(
+    handle: *mut c_void,
+    x: f32, y: f32, z: f32,
+) -> c_int;
+
+pub(crate) type NiflySetRootFlagsFn = unsafe extern "C" fn(
+    handle: *mut c_void,
+    flags: u16, flags2: u16,
+) -> c_int;
+
+pub(crate) type NiflyGetShapeParentNodeFn = unsafe extern "C" fn(
+    handle: *mut c_void,
+    shape_idx: c_int,
+    buf: *mut c_char,
+    buflen: c_int,
+) -> c_int;
+
 /// Resolved function pointers from the loaded nifly library.
 pub(crate) struct NiflyFunctions {
     pub load: NiflyLoadFn,
@@ -94,6 +149,23 @@ pub(crate) struct NiflyFunctions {
     pub get_vertex_count: Option<NiflyGetVertexCountFn>,
     pub get_triangle_count: Option<NiflyGetTriangleCountFn>,
     pub save: Option<NiflySaveFn>,
+    // Transform functions
+    pub get_root_translation: Option<NiflyGetRootTranslationFn>,
+    pub get_node_transform: Option<NiflyGetNodeTransformFn>,
+    pub get_node_transform_global: Option<NiflyGetNodeTransformFn>,
+    pub get_shape_transform: Option<NiflyGetShapeTransformFn>,
+    pub get_shape_global_transform: Option<NiflyGetShapeTransformFn>,
+    pub get_shape_parent_node: Option<NiflyGetShapeParentNodeFn>,
+    // LOD creation (BSMultiBoundNode root)
+    pub create_lod: Option<NiflyCreateLodFn>,
+    pub add_multibound: Option<NiflyAddMultiboundFn>,
+    // Tangent calculation
+    pub calc_tangents: Option<NiflyCalcTangentsFn>,
+    // Shader property
+    pub set_texture_clamp_mode: Option<NiflySetTextureClampModeFn>,
+    // Root node configuration (terrain LOD)
+    pub set_root_translation: Option<NiflySetRootTranslationFn>,
+    pub set_root_flags: Option<NiflySetRootFlagsFn>,
 }
 
 /// A loaded NIF file handle, wrapping the opaque pointer from nifly.
@@ -104,10 +176,13 @@ pub struct NifFile {
     funcs: *const NiflyFunctions,
 }
 
-// NifFile is Send because the opaque pointer is only accessed through
-// the C API which manages its own thread safety, and we don't share
-// the handle across threads without synchronization.
+// NifFile is Send because each handle is an independent C++ NifFile instance
+// accessed only through the C API. Handles are not shared across threads.
 unsafe impl Send for NifFile {}
+
+// NiflyFunctions is Sync because it contains only immutable function pointers
+// resolved once at library load time. No mutable state.
+unsafe impl Sync for NiflyFunctions {}
 
 impl NifFile {
     /// Create a NifFile from a raw handle and function table pointer.
@@ -347,6 +422,185 @@ impl NifFile {
             )));
         }
         Ok(n as u32)
+    }
+
+    /// NIF node/shape transform: translation [x,y,z], rotation [3x3 row-major], scale.
+    /// Used for applying NIF-internal transforms during LOD generation.
+
+    /// Get the root node's translation.
+    pub fn root_translation(&self) -> Result<[f32; 3], NifError> {
+        let func = unsafe { (*self.funcs).get_root_translation }
+            .ok_or_else(|| NifError::OperationFailed("nifly_get_root_translation not available".into()))?;
+        let mut xyz = [0.0f32; 3];
+        let ret = unsafe { func(self.handle, xyz.as_mut_ptr()) };
+        if ret < 0 {
+            return Err(NifError::OperationFailed("get_root_translation failed".into()));
+        }
+        Ok(xyz)
+    }
+
+    /// Get the parent node name for a shape.
+    pub fn shape_parent_node(&self, shape_index: u32) -> Result<Option<String>, NifError> {
+        let func = unsafe { (*self.funcs).get_shape_parent_node }
+            .ok_or_else(|| NifError::OperationFailed("nifly_get_shape_parent_node not available".into()))?;
+        let mut buf = vec![0u8; 256];
+        let len = unsafe {
+            func(self.handle, shape_index as c_int, buf.as_mut_ptr() as *mut c_char, buf.len() as c_int)
+        };
+        if len < 0 {
+            return Err(NifError::OperationFailed(format!("get_shape_parent_node({}) failed", shape_index)));
+        }
+        if len == 0 {
+            return Ok(None);
+        }
+        let cstr = unsafe { CStr::from_ptr(buf.as_ptr() as *const c_char) };
+        Ok(Some(cstr.to_string_lossy().into_owned()))
+    }
+
+    /// Get the full accumulated (global) transform for a shape — composes all
+    /// parent node transforms down to the shape's own transform.
+    /// Returns (translation[3], rotation[3x3 row-major], scale).
+    pub fn shape_global_transform(&self, shape_index: u32) -> Result<([f32; 3], [f32; 9], f32), NifError> {
+        let func = unsafe { (*self.funcs).get_shape_global_transform }
+            .ok_or_else(|| NifError::OperationFailed("nifly_get_shape_global_transform not available".into()))?;
+        let mut trans = [0.0f32; 3];
+        let mut rot = [0.0f32; 9];
+        let mut scale = 1.0f32;
+        let ret = unsafe {
+            func(self.handle, shape_index as c_int, trans.as_mut_ptr(), rot.as_mut_ptr(), &mut scale)
+        };
+        if ret < 0 {
+            return Err(NifError::OperationFailed(format!("get_shape_global_transform({}) failed", shape_index)));
+        }
+        Ok((trans, rot, scale))
+    }
+
+    /// Get a shape's own transform (to its parent node).
+    /// Returns (translation[3], rotation[3x3 row-major], scale).
+    pub fn shape_transform(&self, shape_index: u32) -> Result<([f32; 3], [f32; 9], f32), NifError> {
+        let func = unsafe { (*self.funcs).get_shape_transform }
+            .ok_or_else(|| NifError::OperationFailed("nifly_get_shape_transform not available".into()))?;
+        let mut trans = [0.0f32; 3];
+        let mut rot = [0.0f32; 9];
+        let mut scale = 1.0f32;
+        let ret = unsafe {
+            func(self.handle, shape_index as c_int, trans.as_mut_ptr(), rot.as_mut_ptr(), &mut scale)
+        };
+        if ret < 0 {
+            return Err(NifError::OperationFailed(format!("get_shape_transform({}) failed", shape_index)));
+        }
+        Ok((trans, rot, scale))
+    }
+
+    /// Get a named node's transform relative to its parent.
+    /// Returns (translation[3], rotation[3x3 row-major], scale), or None if node not found.
+    pub fn node_transform(&self, node_name: &str) -> Result<Option<([f32; 3], [f32; 9], f32)>, NifError> {
+        let func = unsafe { (*self.funcs).get_node_transform }
+            .ok_or_else(|| NifError::OperationFailed("nifly_get_node_transform not available".into()))?;
+        let c_name = CString::new(node_name)
+            .map_err(|_| NifError::InvalidFile("Node name contains null bytes".into()))?;
+        let mut trans = [0.0f32; 3];
+        let mut rot = [0.0f32; 9];
+        let mut scale = 1.0f32;
+        let ret = unsafe {
+            func(self.handle, c_name.as_ptr(), trans.as_mut_ptr(), rot.as_mut_ptr(), &mut scale)
+        };
+        if ret < 0 {
+            return Err(NifError::OperationFailed(format!("get_node_transform({}) failed", node_name)));
+        }
+        if ret == 0 {
+            return Ok(None);
+        }
+        Ok(Some((trans, rot, scale)))
+    }
+
+    /// Get a named node's accumulated global transform (from root).
+    /// Returns (translation[3], rotation[3x3 row-major], scale), or None if node not found.
+    pub fn node_global_transform(&self, node_name: &str) -> Result<Option<([f32; 3], [f32; 9], f32)>, NifError> {
+        let func = unsafe { (*self.funcs).get_node_transform_global }
+            .ok_or_else(|| NifError::OperationFailed("nifly_get_node_transform_global not available".into()))?;
+        let c_name = CString::new(node_name)
+            .map_err(|_| NifError::InvalidFile("Node name contains null bytes".into()))?;
+        let mut trans = [0.0f32; 3];
+        let mut rot = [0.0f32; 9];
+        let mut scale = 1.0f32;
+        let ret = unsafe {
+            func(self.handle, c_name.as_ptr(), trans.as_mut_ptr(), rot.as_mut_ptr(), &mut scale)
+        };
+        if ret < 0 {
+            return Err(NifError::OperationFailed(format!("get_node_transform_global({}) failed", node_name)));
+        }
+        if ret == 0 {
+            return Ok(None);
+        }
+        Ok(Some((trans, rot, scale)))
+    }
+
+    /// Add BSMultiBound + BSMultiBoundAABB to the root BSMultiBoundNode.
+    /// Center and extent define the AABB for LOD culling.
+    pub fn add_multibound(&self, center: [f32; 3], extent: [f32; 3]) -> Result<(), NifError> {
+        let func = unsafe { (*self.funcs).add_multibound }
+            .ok_or_else(|| NifError::OperationFailed("nifly_add_multibound not available".into()))?;
+        let ret = unsafe {
+            func(
+                self.handle,
+                center[0], center[1], center[2],
+                extent[0], extent[1], extent[2],
+            )
+        };
+        if ret < 0 {
+            return Err(NifError::OperationFailed("add_multibound failed".into()));
+        }
+        Ok(())
+    }
+
+    /// Set the TextureClampMode on a shape's shader property.
+    /// mode: 0=CLAMP_S_CLAMP_T, 3=WRAP_S_WRAP_T (default).
+    /// Atlas-mapped shapes should use 0 to prevent sampling from adjacent tiles.
+    pub fn set_texture_clamp_mode(&self, shape_idx: u32, mode: u32) -> Result<(), NifError> {
+        let func = unsafe { (*self.funcs).set_texture_clamp_mode }
+            .ok_or_else(|| NifError::OperationFailed("nifly_set_texture_clamp_mode not available".into()))?;
+        let ret = unsafe { func(self.handle, shape_idx as c_int, mode) };
+        if ret < 0 {
+            return Err(NifError::OperationFailed("set_texture_clamp_mode failed".into()));
+        }
+        Ok(())
+    }
+
+    /// Set the root BSMultiBoundNode's translation (for terrain LOD world positioning).
+    /// FO3/FNV terrain LOD uses root translation for world placement.
+    pub fn set_root_translation(&self, x: f32, y: f32, z: f32) -> Result<(), NifError> {
+        let func = unsafe { (*self.funcs).set_root_translation }
+            .ok_or_else(|| NifError::OperationFailed("nifly_set_root_translation not available".into()))?;
+        let ret = unsafe { func(self.handle, x, y, z) };
+        if ret < 0 {
+            return Err(NifError::OperationFailed("set_root_translation failed".into()));
+        }
+        Ok(())
+    }
+
+    /// Set NiAVObject flags on the root node.
+    /// For FO3/FNV terrain LOD: flags=0x080E, flags2=8.
+    pub fn set_root_flags(&self, flags: u16, flags2: u16) -> Result<(), NifError> {
+        let func = unsafe { (*self.funcs).set_root_flags }
+            .ok_or_else(|| NifError::OperationFailed("nifly_set_root_flags not available".into()))?;
+        let ret = unsafe { func(self.handle, flags, flags2) };
+        if ret < 0 {
+            return Err(NifError::OperationFailed("set_root_flags failed".into()));
+        }
+        Ok(())
+    }
+
+    /// Calculate tangent space for a shape using nifly's built-in algorithm.
+    /// Must be called after vertices, normals, UVs, and triangles are set.
+    pub fn calc_tangents(&self, shape_idx: u32) -> Result<(), NifError> {
+        let func = unsafe { (*self.funcs).calc_tangents }
+            .ok_or_else(|| NifError::OperationFailed("nifly_calc_tangents not available".into()))?;
+        let ret = unsafe { func(self.handle, shape_idx as c_int) };
+        if ret < 0 {
+            return Err(NifError::OperationFailed("calc_tangents failed".into()));
+        }
+        Ok(())
     }
 
     /// Save the NIF to disk.

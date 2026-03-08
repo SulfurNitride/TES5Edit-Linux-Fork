@@ -27,6 +27,7 @@ use xedit_games::definition::{FieldType, FieldDef, EnumDef, FlagDef};
 use xedit_tools::asset_scan;
 use xedit_tools::cleaner;
 use xedit_nif::NiflyLibrary;
+use xedit_lod::resource_loader::ResourceLoader;
 
 // ============================================================================
 // Opaque handle types
@@ -180,7 +181,8 @@ pub extern "C" fn xedit_init(
 
         // Initialize logging
         let _ = tracing_subscriber::fmt()
-            .with_env_filter("xedit=info")
+            .with_env_filter("xedit_ffi=info,xedit_nif=info")
+            .with_writer(std::io::stderr)
             .try_init();
 
         match XEditEngine::new(game_id, PathBuf::from(path_str)) {
@@ -4359,779 +4361,392 @@ pub extern "C" fn xedit_add_record(
 }
 
 // ============================================================================
-// LOD Generation
+// LOD generation
 // ============================================================================
 
-/// Global LOD generation job state.
-/// None = no job, Some = job in progress or completed.
-static LOD_JOB: Mutex<Option<LodJobState>> = Mutex::new(None);
+/// Cancel flag for LOD generation — set to true to abort a running LOD pass.
 static LOD_CANCEL: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
-struct LodJobState {
-    status: i32,    // 0=running, 1=done, -1=error
-    error: String,
-}
-
-/// Scan loaded plugins for LOD-relevant STAT/TREE bases and REFR placements.
-/// Reads subrecord data from SQLite offload DBs (in-memory subrecords are cleared after offload).
-fn scan_lod_references_from_dbs(
-    engine: &XEditEngine,
-    db_paths: Option<&Vec<PathBuf>>,
-) -> anyhow::Result<(Vec<xedit_lod::LodReference>, std::collections::HashMap<u32, xedit_lod::LodBase>, std::collections::HashMap<String, u32>)> {
-    use xedit_lod::{LodBase, LodReference};
-
-    let mut all_bases: std::collections::HashMap<u32, LodBase> = std::collections::HashMap::new();
-    let mut all_refs: Vec<LodReference> = Vec::new();
-
-    // Record flag constants (used in collect_wrld_refs_recursive)
-    let _ = 0x0000_0020u32; // FLAG_DELETED — used in inner function
-    let _ = 0x0000_0800u32; // FLAG_INITIALLY_DISABLED
-    let _ = 0x0000_8000u32; // FLAG_VWD
-    let _ = 0x0000_0040u32; // FLAG_HAS_TREE_LOD
-
-    let game_id = engine.game_id;
-    let is_fnv = matches!(game_id, xedit_dom::GameId::Fallout3 | xedit_dom::GameId::FalloutNV);
-
-    // Signatures for additional base types (FO3/FNV)
-    let scol_sig = xedit_dom::Signature::from_bytes(b"SCOL");
-    let acti_sig = xedit_dom::Signature::from_bytes(b"ACTI");
-    let mstt_sig = xedit_dom::Signature::from_bytes(b"MSTT");
-    let tree_sig = xedit_dom::Signature::from_bytes(b"TREE");
-    let _xesp_sig = xedit_dom::Signature::from_bytes(b"XESP");
-
-    // Pass 1: Collect all LOD-eligible bases across all plugins
-    // FO3/FNV: STAT, SCOL, ACTI, MSTT (all statics, no VWD requirement)
-    // Skyrim: STAT, TREE
-    for (pi, plugin) in engine.plugins.iter().enumerate() {
-        let db_path = db_paths.and_then(|paths| paths.get(pi));
-        let conn = db_path.and_then(|p| Connection::open(p).ok());
-
-        for (gi, group) in plugin.groups.iter().enumerate() {
-            let group_sig = match group.group_type {
-                xedit_dom::group::GroupType::Top(sig) => sig,
-                _ => continue,
-            };
-
-            let is_lod_group = if is_fnv {
-                group_sig == xedit_dom::Signature::STAT
-                    || group_sig == scol_sig
-                    || group_sig == acti_sig
-                    || group_sig == mstt_sig
-                    || group_sig == tree_sig
-            } else {
-                group_sig == xedit_dom::Signature::STAT
-                    || group_sig == tree_sig
-            };
-
-            if !is_lod_group {
-                continue;
-            }
-
-            let records = collect_records_from_group(group);
-            for (ri, record) in records.iter().enumerate() {
-                let form_id = record.form_id.raw();
-                let mut lod_models = vec![None; 4];
-                let mut full_model = None;
-                let mut editor_id = String::new();
-
-                // Try in-memory subrecords first, fall back to SQLite
-                if !record.subrecords.is_empty() {
-                    for sr in &record.subrecords {
-                        parse_base_subrecord(
-                            &sr.signature, &sr.raw_data,
-                            &mut editor_id, &mut full_model, &mut lod_models,
-                        );
-                    }
-                } else if let Some(ref c) = conn {
-                    query_subrecords_and_parse(c, gi as i32, ri as i32, |sig, data| {
-                        parse_base_subrecord(sig, data, &mut editor_id, &mut full_model, &mut lod_models);
-                    });
-                }
-
-                // For FO3/FNV: any base with a MODL is LOD-eligible
-                // (LOD mesh = MODL + _lod.nif suffix)
-                // For Skyrim: need MNAM LOD models or be a TREE with full_model
-                let has_lod = if is_fnv {
-                    full_model.is_some()
-                } else {
-                    lod_models.iter().any(|m| m.is_some()) || full_model.is_some()
-                };
-
-                if has_lod {
-                    all_bases.insert(form_id, LodBase {
-                        form_id,
-                        signature: record.signature,
-                        editor_id,
-                        lod_models,
-                        full_model,
-                    });
-                }
-            }
-        }
-    }
-
-    tracing::info!("Pass 1 complete: {} LOD bases found", all_bases.len());
-
-    // Pass 2: Walk WRLD groups to collect:
-    //   - WRLD record editor_id → form_id mappings
-    //   - REFR references tagged with their parent worldspace form_id
-    let mut worldspace_map: std::collections::HashMap<String, u32> = std::collections::HashMap::new();
-
-    for (pi, plugin) in engine.plugins.iter().enumerate() {
-        let db_path = db_paths.and_then(|paths| paths.get(pi));
-        let conn = db_path.and_then(|p| Connection::open(p).ok());
-
-        for (gi, group) in plugin.groups.iter().enumerate() {
-            let group_sig = match group.group_type {
-                xedit_dom::group::GroupType::Top(sig) => sig,
-                _ => continue,
-            };
-
-            if group_sig != xedit_dom::Signature::WRLD {
-                continue;
-            }
-
-            // Get the flat record list for SQLite record_idx mapping
-            let flat_records = collect_records_from_group(group);
-
-            // First, collect WRLD records' editor IDs
-            for (ri, record) in flat_records.iter().enumerate() {
-                if record.signature != xedit_dom::Signature::WRLD {
-                    continue;
-                }
-                let mut editor_id = String::new();
-
-                if !record.subrecords.is_empty() {
-                    for sr in &record.subrecords {
-                        if sr.signature == xedit_dom::Signature::EDID {
-                            let len = sr.raw_data.iter().position(|&b| b == 0).unwrap_or(sr.raw_data.len());
-                            editor_id = String::from_utf8_lossy(&sr.raw_data[..len]).to_string();
-                        }
-                    }
-                } else if let Some(ref c) = conn {
-                    query_subrecords_and_parse(c, gi as i32, ri as i32, |sig, data| {
-                        if *sig == xedit_dom::Signature::EDID {
-                            let len = data.iter().position(|&b| b == 0).unwrap_or(data.len());
-                            editor_id = String::from_utf8_lossy(&data[..len]).to_string();
-                        }
-                    });
-                }
-
-                if !editor_id.is_empty() {
-                    worldspace_map.insert(editor_id.to_lowercase(), record.form_id.raw());
-                }
-            }
-
-            // Use recursive walker that tracks worldspace_form_id through the hierarchy
-            let mut flat_idx: usize = 0;
-            collect_wrld_refs_recursive(
-                group, conn.as_ref(), gi as i32, pi,
-                0, // no worldspace at top WRLD group level
-                &mut flat_idx, &all_bases, &mut all_refs,
-            );
-        }
-    }
-
-    tracing::info!(
-        "Pass 2 complete: {} worldspace mappings, {} REFR references",
-        worldspace_map.len(),
-        all_refs.len()
-    );
-
-    Ok((all_refs, all_bases, worldspace_map))
-}
-
-/// Query subrecords from SQLite and call a callback for each one.
-fn query_subrecords_and_parse(
-    conn: &Connection,
-    group_idx: i32,
-    record_idx: i32,
-    mut callback: impl FnMut(&xedit_dom::Signature, &[u8]),
-) {
-    if let Ok(mut stmt) = conn.prepare_cached(
-        "SELECT signature, raw_data FROM subrecords WHERE group_idx=?1 AND record_idx=?2 ORDER BY sub_idx"
-    ) {
-        if let Ok(rows) = stmt.query_map(params![group_idx, record_idx], |row| {
-            let sig: String = row.get(0)?;
-            let data: Vec<u8> = row.get(1)?;
-            Ok((sig, data))
-        }) {
-            for row in rows.flatten() {
-                let sig_bytes: &[u8; 4] = row.0.as_bytes()
-                    .get(..4)
-                    .and_then(|s| s.try_into().ok())
-                    .unwrap_or(b"    ");
-                let sig = xedit_dom::Signature::from_bytes(sig_bytes);
-                callback(&sig, &row.1);
-            }
-        }
-    }
-}
-
-/// Parse a single REFR subrecord for placement data (NAME, DATA, XSCL).
-fn parse_refr_subrecord(
-    sig: &xedit_dom::Signature,
-    data: &[u8],
-    base_form_id: &mut u32,
-    position: &mut [f32; 3],
-    rotation: &mut [f32; 3],
-    scale: &mut f32,
-    has_xesp: &mut bool,
-) {
-    if *sig == xedit_dom::Signature::NAME && data.len() >= 4 {
-        *base_form_id = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
-    } else if *sig == xedit_dom::Signature::DATA && data.len() >= 24 {
-        let f = |o: usize| f32::from_le_bytes([data[o], data[o+1], data[o+2], data[o+3]]);
-        *position = [f(0), f(4), f(8)];
-        *rotation = [f(12), f(16), f(20)];
-    } else if *sig == xedit_dom::Signature::from_bytes(b"XSCL") && data.len() >= 4 {
-        *scale = f32::from_le_bytes([data[0], data[1], data[2], data[3]]);
-    } else if *sig == xedit_dom::Signature::from_bytes(b"XESP") {
-        *has_xesp = true;
-    }
-}
-
-/// Parse a single subrecord for STAT/TREE base data (EDID, MODL, MNAM).
-fn parse_base_subrecord(
-    sig: &xedit_dom::Signature,
-    data: &[u8],
-    editor_id: &mut String,
-    full_model: &mut Option<String>,
-    lod_models: &mut Vec<Option<String>>,
-) {
-    if *sig == xedit_dom::Signature::EDID {
-        let len = data.iter().position(|&b| b == 0).unwrap_or(data.len());
-        *editor_id = String::from_utf8_lossy(&data[..len]).to_string();
-    } else if *sig == xedit_dom::Signature::MODL {
-        let len = data.iter().position(|&b| b == 0).unwrap_or(data.len());
-        *full_model = Some(String::from_utf8_lossy(&data[..len]).to_string());
-    } else if *sig == xedit_dom::Signature::from_bytes(b"MNAM") {
-        // MNAM contains up to 4 LOD model paths as 260-byte fixed-size entries
-        // (matching Delphi: wbString(True, 'Level N', 260))
-        // Total: 1040 bytes for 4 levels. Each is null-terminated within 260 bytes.
-        if data.len() >= 1040 {
-            // Fixed 260-byte entries (Skyrim/SSE/FO4)
-            for level in 0..4 {
-                let start = level * 260;
-                let end = start + 260;
-                if end <= data.len() {
-                    let entry = &data[start..end];
-                    let null_pos = entry.iter().position(|&b| b == 0).unwrap_or(260);
-                    if null_pos > 0 {
-                        let path = String::from_utf8_lossy(&entry[..null_pos]).to_string();
-                        if !path.is_empty() {
-                            lod_models[level] = Some(path);
-                        }
-                    }
-                }
-            }
-        } else {
-            // Fallback for smaller MNAM data: parse as null-separated strings
-            let mut offset = 0;
-            let mut level = 0;
-            while offset < data.len() && level < 4 {
-                let end = data[offset..]
-                    .iter()
-                    .position(|&b| b == 0)
-                    .map(|pos| offset + pos)
-                    .unwrap_or(data.len());
-                if end > offset {
-                    let path = String::from_utf8_lossy(&data[offset..end]).to_string();
-                    if !path.is_empty() {
-                        lod_models[level] = Some(path);
-                    }
-                }
-                offset = end + 1;
-                level += 1;
-            }
-        }
-    }
-}
-
-/// Recursively walk WRLD group hierarchy, tracking the current worldspace form_id
-/// from WorldChildren groups and collecting REFR records with their worldspace tag.
-/// `flat_idx` tracks the flat record index for SQLite record_idx queries.
-fn collect_wrld_refs_recursive(
-    group: &xedit_dom::Group,
-    conn: Option<&Connection>,
-    group_idx: i32,
-    plugin_index: usize,
-    worldspace_form_id: u32,
-    flat_idx: &mut usize,
-    bases: &std::collections::HashMap<u32, xedit_lod::LodBase>,
-    refs_out: &mut Vec<xedit_lod::LodReference>,
-) {
-    use xedit_dom::group::{GroupChild, GroupType};
-
-    // Flag constants for REFR filtering (matching Delphi xEdit)
-    const FLAG_DELETED: u32 = 0x0000_0020;
-    const FLAG_INITIALLY_DISABLED: u32 = 0x0000_0800;
-    const FLAG_VWD: u32 = 0x0000_8000;
-
-    for child in &group.children {
-        match child {
-            GroupChild::Record(record) => {
-                let ri = *flat_idx;
-                *flat_idx += 1;
-
-                // Only collect REFR records when we're inside a WorldChildren hierarchy
-                if worldspace_form_id == 0 || record.signature != xedit_dom::Signature::REFR {
-                    continue;
-                }
-
-                let ref_flags = record.flags.0;
-
-                // Skip deleted references (matching Delphi: Flags.IsDeleted)
-                if ref_flags & FLAG_DELETED != 0 {
-                    continue;
-                }
-
-                // Skip initially disabled references (unless VWD)
-                if ref_flags & FLAG_INITIALLY_DISABLED != 0
-                    && ref_flags & FLAG_VWD == 0
-                {
-                    continue;
-                }
-
-                let form_id = record.form_id.raw();
-                let mut base_form_id = 0u32;
-                let mut position = [0.0f32; 3];
-                let mut rotation = [0.0f32; 3];
-                let mut scale = 1.0f32;
-                let mut has_xesp = false;
-
-                if !record.subrecords.is_empty() {
-                    for sr in &record.subrecords {
-                        parse_refr_subrecord(
-                            &sr.signature, &sr.raw_data,
-                            &mut base_form_id, &mut position, &mut rotation, &mut scale,
-                            &mut has_xesp,
-                        );
-                    }
-                } else if let Some(c) = conn {
-                    query_subrecords_and_parse(c, group_idx, ri as i32, |sig, data| {
-                        parse_refr_subrecord(sig, data, &mut base_form_id, &mut position, &mut rotation, &mut scale, &mut has_xesp);
-                    });
-                }
-
-                // Skip references with enable parent (XESP) unless VWD flag set
-                // Matching Delphi: skip if has XESP and NOT VWD
-                if has_xesp && ref_flags & FLAG_VWD == 0 {
-                    continue;
-                }
-
-                if base_form_id != 0 {
-                    if let Some(base) = bases.get(&base_form_id) {
-                        refs_out.push(xedit_lod::LodReference {
-                            form_id,
-                            base_form_id,
-                            base_signature: base.signature,
-                            position,
-                            rotation,
-                            scale,
-                            plugin_index,
-                            worldspace_form_id,
-                        });
-                    }
-                }
-            }
-            GroupChild::Group(sub_group) => {
-                let ws_id = match sub_group.group_type {
-                    GroupType::WorldChildren(id) => id,
-                    _ => worldspace_form_id,
-                };
-
-                collect_wrld_refs_recursive(
-                    sub_group, conn, group_idx, plugin_index,
-                    ws_id, flat_idx, bases, refs_out,
-                );
-            }
-        }
-    }
-}
-
-/// List worldspaces that have LOD settings files.
-/// Scans WRLD records from loaded plugins, then filters to those with matching
-/// lodsettings files (loose or in BSA/BA2 archives).
-/// Returns newline-separated worldspace editor IDs in buf.
+/// Cancel an in-progress LOD generation.
 #[no_mangle]
-pub extern "C" fn xedit_lod_list_worldspaces(buf: *mut u8, buf_len: i32) -> i32 {
-    catch_panic(|| {
-        if buf.is_null() || buf_len <= 0 {
-            return XEDIT_ERR_NULL_HANDLE;
-        }
-
-        let lock = ENGINE.lock().unwrap();
-        let engine = match lock.as_ref() {
-            Some(e) => e,
-            None => return XEDIT_ERR_NULL_HANDLE,
-        };
-
-        let db_lock = PLUGIN_DBS.lock().unwrap();
-        let db_paths = db_lock.as_ref();
-
-        if matches!(engine.game_id, xedit_dom::GameId::Oblivion | xedit_dom::GameId::Morrowind) {
-            // No lodsettings for Oblivion/Morrowind
-            unsafe { *buf = 0; }
-            return 0;
-        }
-
-        tracing::info!("LOD list: game_id = {:?}, data_path = {:?}", engine.game_id, engine.data_path);
-
-        // Lodsettings extensions to try — FO3/FNV use .dlodsettings, others use .lod.
-        // TTW (Tale of Two Wastelands) runs as FNV but may have either format,
-        // so we try both extensions for robustness.
-        let extensions: &[&str] = match engine.game_id {
-            xedit_dom::GameId::Fallout3 | xedit_dom::GameId::FalloutNV => &["dlodsettings", "lod"],
-            _ => &["lod", "dlodsettings"],
-        };
-
-        // Create resource loader for checking file existence
-        let loader = match xedit_lod::ResourceLoader::new(&engine.data_path) {
-            Ok(l) => l,
-            Err(e) => {
-                tracing::error!("Failed to create resource loader: {:#}", e);
-                return XEDIT_ERR_LOAD_FAILED;
-            }
-        };
-
-        // Use the pre-built BSA index to quickly list lodsettings files
-        let lodsettings_files = loader.list_files_in_dir("lodsettings");
-        tracing::info!(
-            "LOD list: {} BSA archives, {} lodsettings files in index",
-            loader.bsa_paths().len(),
-            lodsettings_files.len()
-        );
-        for f in lodsettings_files.iter().take(10) {
-            tracing::info!("  {}", f);
-        }
-
-        // Collect all WRLD editor IDs from loaded plugins, filtered by lodsettings existence
-        let mut worldspace_edids: Vec<String> = Vec::new();
-        let mut all_wrld_edids: Vec<String> = Vec::new(); // debug: track all found
-        let mut seen_form_ids = std::collections::HashSet::new();
-
-        for (pi, plugin) in engine.plugins.iter().enumerate() {
-            let db_path = db_paths.and_then(|paths| paths.get(pi));
-            let conn = db_path.and_then(|p| Connection::open(p).ok());
-
-            for (gi, group) in plugin.groups.iter().enumerate() {
-                let group_sig = match group.group_type {
-                    xedit_dom::group::GroupType::Top(sig) => sig,
-                    _ => continue,
-                };
-                if group_sig != xedit_dom::Signature::WRLD {
-                    continue;
-                }
-
-                // Use flattened record list (matches SQLite offload indices)
-                let records = collect_records_from_group(group);
-                for (ri, record) in records.iter().enumerate() {
-                    if record.signature != xedit_dom::Signature::WRLD {
-                        continue;
-                    }
-
-                    // Deduplicate by form_id (later plugins override earlier ones)
-                    let fid = record.form_id.raw();
-                    if !seen_form_ids.insert(fid) {
-                        continue;
-                    }
-
-                    let mut editor_id = String::new();
-                    if !record.subrecords.is_empty() {
-                        for sr in &record.subrecords {
-                            if sr.signature == xedit_dom::Signature::EDID {
-                                let len = sr.raw_data.iter().position(|&b| b == 0).unwrap_or(sr.raw_data.len());
-                                editor_id = String::from_utf8_lossy(&sr.raw_data[..len]).to_string();
-                            }
-                        }
-                    } else if let Some(ref c) = conn {
-                        query_subrecords_and_parse(c, gi as i32, ri as i32, |sig, data| {
-                            if *sig == xedit_dom::Signature::EDID {
-                                let len = data.iter().position(|&b| b == 0).unwrap_or(data.len());
-                                editor_id = String::from_utf8_lossy(&data[..len]).to_string();
-                            }
-                        });
-                    }
-
-                    if editor_id.is_empty() {
-                        continue;
-                    }
-
-                    all_wrld_edids.push(editor_id.clone());
-
-                    // Check if lodsettings file exists with any supported extension
-                    let has_settings = extensions.iter().any(|ext| {
-                        loader.exists(&format!("lodsettings\\{}.{}", editor_id, ext))
-                            || loader.exists(&format!("lodsettings/{}.{}", editor_id, ext))
-                    });
-                    if has_settings {
-                        worldspace_edids.push(editor_id);
-                    }
-                }
-            }
-        }
-
-        tracing::info!(
-            "LOD list: found {} WRLD editor IDs total: {:?}",
-            all_wrld_edids.len(),
-            &all_wrld_edids[..std::cmp::min(20, all_wrld_edids.len())]
-        );
-
-        worldspace_edids.sort_unstable_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
-        worldspace_edids.dedup_by(|a, b| a.eq_ignore_ascii_case(b));
-
-        tracing::info!(
-            "Found {} worldspaces with LOD settings",
-            worldspace_edids.len(),
-        );
-
-        let result = worldspace_edids.join("\n");
-        let result_bytes = result.as_bytes();
-        let copy_len = std::cmp::min(result_bytes.len(), (buf_len - 1) as usize);
-        unsafe {
-            std::ptr::copy_nonoverlapping(result_bytes.as_ptr(), buf, copy_len);
-            *buf.add(copy_len) = 0;
-        }
-
-        copy_len as i32
-    })
+pub extern "C" fn xedit_lod_cancel() -> i32 {
+    LOD_CANCEL.store(true, std::sync::atomic::Ordering::Relaxed);
+    XEDIT_OK
 }
 
-/// Start async LOD generation with JSON options.
-/// options_json: null-terminated UTF-8 JSON string with LodOptions
-/// progress_cb: optional progress callback (message, progress_fraction)
-/// Returns 0 on success (job started), negative on error.
+/// Generate LOD for the loaded plugins.
+///
+/// `json_config` is a null-terminated JSON string with all LOD options from the GUI.
+/// `log_callback` is called with each log line (null-terminated UTF-8).
+///
+/// Returns XEDIT_OK on success, negative on error.
 #[no_mangle]
-pub extern "C" fn xedit_lod_generate(
-    options_json: *const c_char,
-    progress_cb: Option<ProgressCallback>,
+pub extern "C" fn xedit_generate_lod(
+    json_config: *const c_char,
+    log_callback: Option<extern "C" fn(*const c_char)>,
 ) -> i32 {
+    LOD_CANCEL.store(false, std::sync::atomic::Ordering::Relaxed);
+
     catch_panic(|| {
-        if options_json.is_null() {
+        use std::sync::atomic::Ordering;
+
+        if json_config.is_null() {
             return XEDIT_ERR_NULL_HANDLE;
         }
-
-        let json_str = unsafe { CStr::from_ptr(options_json) }
+        let config_str = unsafe { CStr::from_ptr(json_config) }
             .to_str()
             .unwrap_or("");
 
-        let mut options: xedit_lod::LodOptions = match serde_json::from_str(json_str) {
-            Ok(o) => o,
-            Err(e) => {
-                tracing::error!("Failed to parse LOD options JSON: {:#}", e);
-                let mut lock = LOD_JOB.lock().unwrap();
-                *lock = Some(LodJobState {
-                    status: -1,
-                    error: format!("Invalid options JSON: {}", e),
-                });
-                return XEDIT_ERR_LOAD_FAILED;
+        let log = |msg: &str| {
+            if let Some(cb) = log_callback {
+                if let Ok(c) = CString::new(msg) {
+                    cb(c.as_ptr());
+                }
             }
         };
 
-        // Grab data path and game_id from engine (quick, non-blocking)
-        let (data_path, game_id) = {
-            let lock = ENGINE.lock().unwrap();
-            let engine = match lock.as_ref() {
-                Some(e) => e,
-                None => return XEDIT_ERR_NULL_HANDLE,
-            };
-            (engine.data_path.clone(), engine.game_id)
+        log(&format!("[LOD] Parsing configuration..."));
+
+        // Parse JSON config
+        let json: serde_json::Value = match serde_json::from_str(config_str) {
+            Ok(v) => v,
+            Err(e) => {
+                log(&format!("[ERROR] Failed to parse LOD config: {}", e));
+                return -10;
+            }
         };
 
-        // Set game-specific lodsettings extension and game ID
-        options.lod_extension = match game_id {
-            xedit_dom::GameId::Fallout3 | xedit_dom::GameId::FalloutNV => "dlodsettings".to_string(),
-            _ => "lod".to_string(),
-        };
-        options.game_id = match game_id {
-            xedit_dom::GameId::Morrowind => "Morrowind".to_string(),
-            xedit_dom::GameId::Oblivion => "Oblivion".to_string(),
-            xedit_dom::GameId::Fallout3 => "Fallout3".to_string(),
-            xedit_dom::GameId::FalloutNV => "FalloutNV".to_string(),
-            xedit_dom::GameId::SkyrimSE => "SkyrimSE".to_string(),
-            xedit_dom::GameId::Fallout4 => "Fallout4".to_string(),
-            xedit_dom::GameId::Starfield => "Starfield".to_string(),
-            xedit_dom::GameId::Fallout76 => "Fallout76".to_string(),
-        };
+        // Extract key fields (keys match LODGenDialog::toJson() snake_case convention)
+        let output_dir = json["output_dir"].as_str().unwrap_or("");
+        let data_dir = json["data_dir"].as_str().unwrap_or("");
+        let worldspaces: Vec<String> = json["worldspaces"]
+            .as_array()
+            .map(|a| a.iter().filter_map(|v| v.as_str().map(String::from)).collect())
+            .unwrap_or_default();
 
-        // Reset cancel flag
-        LOD_CANCEL.store(false, Ordering::SeqCst);
+        let objects_lod = json["objects_lod"].as_bool().unwrap_or(false);
+        let trees_lod = json["trees_lod"].as_bool().unwrap_or(false);
+        let terrain_lod = json["terrain_lod"].as_bool().unwrap_or(false);
 
-        // Set job as running
-        {
-            let mut lock = LOD_JOB.lock().unwrap();
-            *lock = Some(LodJobState {
-                status: 0,
-                error: String::new(),
-            });
+        if output_dir.is_empty() {
+            log("[ERROR] Output directory not specified");
+            return -11;
+        }
+        if worldspaces.is_empty() {
+            log("[ERROR] No worldspaces selected");
+            return -12;
         }
 
-        // Spawn worker thread — scanning + generation all happens off the UI thread
-        std::thread::spawn(move || {
-            // Ensure output directory exists
-            let _ = std::fs::create_dir_all(&options.output_dir);
-
-            // Single log file next to the executable — captures ALL tracing output
-            let log_path = std::env::current_exe()
-                .ok()
-                .and_then(|p| p.parent().map(|d| d.join("LODGen_log.txt")))
-                .unwrap_or_else(|| std::path::PathBuf::from("LODGen_log.txt"));
-
-            // Install a tracing subscriber that writes to the log file
-            // This captures all tracing::info!/warn!/error! from the LOD pipeline
-            use tracing_subscriber::fmt;
-            use tracing_subscriber::prelude::*;
-
-            let log_file = std::fs::File::create(&log_path).ok();
-            let _guard = if let Some(file) = log_file {
-                let file_layer = fmt::layer()
-                    .with_writer(std::sync::Mutex::new(file))
-                    .with_ansi(false)
-                    .with_target(false)
-                    .with_level(true)
-                    .with_timer(fmt::time::uptime());
-
-                let subscriber = tracing_subscriber::registry().with(file_layer);
-                // Set as thread-local default (doesn't affect other threads)
-                Some(tracing::subscriber::set_default(subscriber))
-            } else {
-                None
-            };
-
-            tracing::info!("LOD Generation started — output: {}", options.output_dir);
-            tracing::info!("Game: {}, Worldspaces: {}", options.game_id, options.worldspaces.join(", "));
-
-            let progress = xedit_lod::progress::Progress::new(
-                progress_cb.map(|cb| cb as xedit_lod::progress::ProgressFn),
-                &LOD_CANCEL,
-            );
-
-            progress.report("Scanning plugins for LOD references...");
-
-            // Scan references from loaded plugins + SQLite DBs
-            let (references, bases, worldspace_map) = {
-                let lock = ENGINE.lock().unwrap();
-                let engine = match lock.as_ref() {
-                    Some(e) => e,
-                    None => {
-                        let mut job = LOD_JOB.lock().unwrap();
-                        *job = Some(LodJobState { status: -1, error: "Engine not initialized".into() });
-                        return;
-                    }
-                };
-
-                let db_lock = PLUGIN_DBS.lock().unwrap();
-                let db_paths = db_lock.as_ref();
-
-                tracing::info!("Scanning {} plugins for LOD references", engine.plugins.len());
-
-                match scan_lod_references_from_dbs(engine, db_paths) {
-                    Ok(result) => result,
-                    Err(e) => {
-                        let msg = format!("Failed to scan references: {}", e);
-                        tracing::error!("{}", msg);
-                        let mut job = LOD_JOB.lock().unwrap();
-                        *job = Some(LodJobState { status: -1, error: msg });
-                        return;
-                    }
-                }
-            };
-
-            tracing::info!(
-                "Found {} LOD references, {} LOD bases, {} worldspaces",
-                references.len(), bases.len(), worldspace_map.len()
-            );
-
-            progress.report(&format!(
-                "Found {} references, {} bases. Starting LOD generation...",
-                references.len(), bases.len()
-            ));
-
-            // Wrap generation in catch_unwind to survive C++ crashes (nifly)
-            let gen_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                xedit_lod::generate_lod(&options, &data_path, &references, &bases, &worldspace_map, &progress)
-            }));
-
-            let mut lock = LOD_JOB.lock().unwrap();
-            match gen_result {
-                Ok(Ok(())) => {
-                    tracing::info!("LOD generation completed successfully");
-                    *lock = Some(LodJobState {
-                        status: 1,
-                        error: String::new(),
-                    });
-                }
-                Ok(Err(e)) => {
-                    let msg = format!("LOD generation failed: {:#}", e);
-                    tracing::error!("{}", msg);
-                    *lock = Some(LodJobState {
-                        status: -1,
-                        error: format!("{:#}", e),
-                    });
-                }
-                Err(_panic) => {
-                    let msg = "LOD generation crashed (panic in native code). Check LODGen_log.txt for details.";
-                    tracing::error!("{}", msg);
-                    *lock = Some(LodJobState {
-                        status: -1,
-                        error: msg.to_string(),
-                    });
+        let output_path = PathBuf::from(output_dir);
+        let data_path = if !data_dir.is_empty() {
+            PathBuf::from(data_dir)
+        } else {
+            // Try to get data_path from engine
+            let lock = ENGINE.lock().unwrap();
+            match lock.as_ref() {
+                Some(engine) => engine.data_path.clone(),
+                None => {
+                    log("[ERROR] No data path available (engine not initialized and dataDir not set)");
+                    return -13;
                 }
             }
-        });
+        };
 
+        std::fs::create_dir_all(&output_path).ok();
+
+        // Build LodOptions from JSON
+        let options = json_to_lod_options(&json, output_dir, &data_path.to_string_lossy());
+
+        // Set up progress reporter with the global progress callback if set
+        let progress_cb: Option<ProgressCallback> = {
+            let lock = PROGRESS_CB.lock().unwrap();
+            *lock
+        };
+        let cancel = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let progress = xedit_lod::progress::Progress::new(
+            progress_cb.map(|cb| cb as xedit_lod::progress::ProgressFn),
+            cancel,
+        );
+
+        // Get plugins from engine
+        let lock = ENGINE.lock().unwrap();
+        let engine = match lock.as_ref() {
+            Some(e) => e,
+            None => {
+                log("[ERROR] Engine not initialized — load plugins first");
+                return XEDIT_ERR_NULL_HANDLE;
+            }
+        };
+
+        let plugins = &engine.plugins;
+        if plugins.is_empty() {
+            log("[ERROR] No plugins loaded");
+            return -14;
+        }
+
+        log(&format!("[LOD] {} plugins loaded, output: {}", plugins.len(), output_dir));
+
+        // Build resource loader
+        log("[LOD] Building resource loader...");
+        let mo2_config = MO2_CONFIG.lock().unwrap();
+
+        // Gather BSA paths and mod dirs
+        let mut bsa_paths: Vec<(PathBuf, usize)> = Vec::new();
+        let mut mod_dirs: Vec<PathBuf> = Vec::new();
+
+        if let Some(ref config) = *mo2_config {
+            // Enumerate MO2 mod directories
+            if config.mods_path.exists() {
+                if let Ok(entries) = std::fs::read_dir(&config.mods_path) {
+                    for (i, entry) in entries.flatten().enumerate() {
+                        let path = entry.path();
+                        if path.is_dir() {
+                            mod_dirs.push(path.clone());
+                            // Index BSAs in each mod dir
+                            if let Ok(sub_entries) = std::fs::read_dir(&path) {
+                                for sub_entry in sub_entries.flatten() {
+                                    let sub_path = sub_entry.path();
+                                    if let Some(ext) = sub_path.extension() {
+                                        if ext.eq_ignore_ascii_case("bsa") || ext.eq_ignore_ascii_case("ba2") {
+                                            bsa_paths.push((sub_path, i));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Also scan vanilla data dir for BSAs
+        if let Ok(entries) = std::fs::read_dir(&data_path) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if let Some(ext) = path.extension() {
+                    if ext.eq_ignore_ascii_case("bsa") || ext.eq_ignore_ascii_case("ba2") {
+                        if !bsa_paths.iter().any(|(p, _)| p == &path) {
+                            bsa_paths.push((path, usize::MAX));
+                        }
+                    }
+                }
+            }
+        }
+
+        let loader = match ResourceLoader::new(&data_path, &mod_dirs, &bsa_paths) {
+            Ok(l) => l,
+            Err(e) => {
+                log(&format!("[ERROR] Failed to build resource loader: {}", e));
+                return -15;
+            }
+        };
+
+        log(&format!("[LOD] Resource loader ready: {} BSAs, {} mod dirs",
+            bsa_paths.len(), mod_dirs.len()));
+
+        // Process each worldspace
+        for ws in &worldspaces {
+            if LOD_CANCEL.load(Ordering::Relaxed) {
+                log("[LOD] Cancelled by user");
+                return -100;
+            }
+
+            log(&format!("[LOD] === Processing worldspace: {} ===", ws));
+
+            // --- Terrain LOD ---
+            if terrain_lod {
+                log(&format!("[LOD] Scanning terrain cells for {}...", ws));
+                let cells = xedit_lod::terrain_lod::scan_terrain_cells(plugins, ws);
+                log(&format!("[LOD] Found {} terrain cells", cells.len()));
+
+                if !cells.is_empty() {
+                    log("[LOD] Scanning landscape textures...");
+                    let ltex_map = xedit_lod::terrain_lod::scan_landscape_textures(plugins);
+                    log(&format!("[LOD] Found {} landscape textures", ltex_map.len()));
+
+                    // Generate terrain textures for each enabled LOD level
+                    let levels = [4u32, 8, 16, 32];
+                    for (i, &level) in levels.iter().enumerate() {
+                        if LOD_CANCEL.load(Ordering::Relaxed) {
+                            log("[LOD] Cancelled by user");
+                            return -100;
+                        }
+
+                        let build_diffuse = options.terrain_build_diffuse;
+                        let build_normal = options.terrain_build_normal;
+                        if !build_diffuse && !build_normal {
+                            continue;
+                        }
+
+                        log(&format!("[LOD] Generating Level {} terrain textures...", level));
+                        let frac = 0.1 + (i as f64 * 0.2);
+                        progress.report(&format!("Level {} terrain textures", level), frac);
+
+                        match xedit_lod::terrain_lod::generate_terrain_textures(
+                            &cells, ws, &output_path, &loader, &ltex_map,
+                            level,
+                            options.terrain_diffuse_size[i],
+                            options.terrain_diffuse_comp[i],
+                            options.terrain_normal_comp[i],
+                            options.terrain_diffuse_mipmap[i],
+                            options.terrain_normal_mipmap[i],
+                            options.terrain_brightness[i],
+                            options.terrain_contrast[i],
+                            options.terrain_gamma[i],
+                            &progress,
+                        ) {
+                            Ok(count) => {
+                                log(&format!("[LOD] Level {}: generated {} texture files", level, count));
+                            }
+                            Err(e) => {
+                                log(&format!("[ERROR] Level {} terrain textures failed: {}", level, e));
+                            }
+                        }
+                    }
+                }
+            }
+
+            // --- Trees LOD ---
+            if trees_lod {
+                log(&format!("[LOD] Scanning tree bases for {}...", ws));
+                let tree_bases = xedit_lod::reference_scanner::scan_tree_bases(plugins);
+                log(&format!("[LOD] Found {} tree bases", tree_bases.len()));
+
+                log(&format!("[LOD] Scanning worldspace refs for {}...", ws));
+                let refs = xedit_lod::reference_scanner::scan_worldspace_refs(plugins, ws);
+                log(&format!("[LOD] Found {} placed refs", refs.len()));
+                log("[LOD] Tree LOD generation — using reference scanner data (pipeline in progress)");
+            }
+
+            // --- Objects LOD ---
+            if objects_lod {
+                log(&format!("[LOD] Scanning object bases for {}...", ws));
+                let object_bases = xedit_lod::reference_scanner::scan_object_bases(plugins);
+                log(&format!("[LOD] Found {} object bases", object_bases.len()));
+
+                log(&format!("[LOD] Scanning worldspace refs for {}...", ws));
+                let refs = xedit_lod::reference_scanner::scan_worldspace_refs(plugins, ws);
+                log(&format!("[LOD] Found {} placed refs", refs.len()));
+                log("[LOD] Object LOD generation — using reference scanner data (pipeline in progress)");
+            }
+        }
+
+        progress.report("LOD generation complete", 1.0);
+        log("[LOD] === LOD generation finished ===");
         XEDIT_OK
     })
 }
 
-/// Check LOD generation status.
-/// Returns: 0 = running, 1 = done successfully, -1 = error, -2 = no job.
-#[no_mangle]
-pub extern "C" fn xedit_lod_status() -> i32 {
-    let lock = LOD_JOB.lock().unwrap();
-    match lock.as_ref() {
-        Some(job) => job.status,
-        None => -2,
-    }
-}
-
-/// Get LOD generation error message.
-/// Returns length of error string, or 0 if no error.
-#[no_mangle]
-pub extern "C" fn xedit_lod_error(buf: *mut u8, buf_len: i32) -> i32 {
-    if buf.is_null() || buf_len <= 0 {
-        return 0;
-    }
-
-    let lock = LOD_JOB.lock().unwrap();
-    let error = match lock.as_ref() {
-        Some(job) if !job.error.is_empty() => &job.error,
-        _ => {
-            unsafe { *buf = 0; }
-            return 0;
-        }
+/// Convert JSON config to LodOptions.
+/// JSON keys match LODGenDialog::toJson() — snake_case with nested per-level objects.
+fn json_to_lod_options(json: &serde_json::Value, output_dir: &str, data_dir: &str) -> xedit_lod::LodOptions {
+    let get_bool = |key: &str| json[key].as_bool().unwrap_or(false);
+    let get_u32 = |key: &str, default: u32| {
+        json[key].as_u64().map(|v| v as u32)
+            .or_else(|| json[key].as_str().and_then(|s| s.parse().ok()))
+            .unwrap_or(default)
+    };
+    let get_i32 = |key: &str, default: i32| {
+        json[key].as_i64().map(|v| v as i32)
+            .or_else(|| json[key].as_str().and_then(|s| s.parse().ok()))
+            .unwrap_or(default)
+    };
+    let get_f32 = |key: &str, default: f32| {
+        json[key].as_f64().map(|v| v as f32)
+            .or_else(|| json[key].as_str().and_then(|s| s.parse().ok()))
+            .unwrap_or(default)
     };
 
-    let error_bytes = error.as_bytes();
-    let copy_len = std::cmp::min(error_bytes.len(), (buf_len - 1) as usize);
-    unsafe {
-        std::ptr::copy_nonoverlapping(error_bytes.as_ptr(), buf, copy_len);
-        *buf.add(copy_len) = 0;
+    // Helper to parse DDS compression format string -> code
+    fn parse_comp(s: &str) -> u32 {
+        match s {
+            "DXT1" | "BC1" => 200,
+            "DXT3" | "BC2" => 201,
+            "DXT5" | "BC3" => 202,
+            "BC5" | "ATI2N" => 205,
+            _ => s.parse().unwrap_or(200),
+        }
     }
-    copy_len as i32
+
+    // Per-level terrain settings from nested objects
+    let level_keys = ["terrain_lod4", "terrain_lod8", "terrain_lod16", "terrain_lod32"];
+    let mut terrain_quality = [10u32; 4];
+    let mut terrain_max_verts = [32767u32; 4];
+    let mut terrain_optimize_unseen = [false; 4];
+    let mut terrain_diffuse_size = [512u32; 4];
+    let mut terrain_diffuse_comp = [200u32; 4];
+    let mut terrain_diffuse_mipmap = [false; 4];
+    let mut terrain_normal_size = [512u32; 4];
+    let mut terrain_normal_comp = [200u32; 4];
+    let mut terrain_normal_mipmap = [false; 4];
+    let mut terrain_gamma = [1.0f32; 4];
+    let mut terrain_brightness = [0i32; 4];
+    let mut terrain_contrast = [0i32; 4];
+
+    for (i, key) in level_keys.iter().enumerate() {
+        let lvl = &json[*key];
+        if lvl.is_null() { continue; }
+
+        terrain_quality[i] = lvl["quality"].as_str().and_then(|s| s.parse().ok()).unwrap_or(10);
+        terrain_max_verts[i] = lvl["max_vertices"].as_str().and_then(|s| s.parse().ok()).unwrap_or(32767);
+        terrain_optimize_unseen[i] = lvl["water_delta"].as_str().map(|s| s != "None" && s != "0").unwrap_or(false);
+        terrain_diffuse_size[i] = lvl["diffuse_size"].as_str().and_then(|s| s.parse().ok()).unwrap_or(512);
+        terrain_diffuse_comp[i] = lvl["diffuse_compression"].as_str().map(|s| parse_comp(s)).unwrap_or(200);
+        terrain_diffuse_mipmap[i] = lvl["diffuse_mipmap"].as_bool().unwrap_or(false);
+        terrain_normal_size[i] = lvl["normal_size"].as_str().and_then(|s| s.parse().ok()).unwrap_or(512);
+        terrain_normal_comp[i] = lvl["normal_compression"].as_str().map(|s| parse_comp(s)).unwrap_or(200);
+        terrain_normal_mipmap[i] = lvl["normal_mipmap"].as_bool().unwrap_or(false);
+        terrain_gamma[i] = lvl["gamma"].as_str().and_then(|s| s.parse().ok()).unwrap_or(1.0);
+        terrain_brightness[i] = lvl["brightness"].as_str().and_then(|s| s.parse().ok()).unwrap_or(0);
+        terrain_contrast[i] = lvl["contrast"].as_str().and_then(|s| s.parse().ok()).unwrap_or(0);
+    }
+
+    xedit_lod::LodOptions {
+        objects_lod: get_bool("objects_lod"),
+        build_atlas: get_bool("build_atlas"),
+        atlas_width: get_u32("atlas_width", 4096),
+        atlas_height: get_u32("atlas_height", 4096),
+        atlas_texture_size: get_u32("atlas_texture_size", 1024),
+        atlas_texture_uv_range: get_f32("atlas_uv_range", 1.0),
+        atlas_diffuse_format: json["compression_diffuse"].as_str().map(|s| parse_comp(s)).unwrap_or(202),
+        atlas_normal_format: json["compression_normal"].as_str().map(|s| parse_comp(s)).unwrap_or(200),
+        atlas_specular_format: json["compression_specular"].as_str().map(|s| parse_comp(s)).unwrap_or(205),
+        default_alpha_threshold: get_u32("default_alpha_threshold", 128),
+        objects_no_tangents: get_bool("no_tangents"),
+        objects_no_vertex_colors: get_bool("no_vertex_colors"),
+        trees_lod: get_bool("trees_lod"),
+        tree_atlas_diffuse_format: json["tree_compression_diffuse"].as_str().map(|s| parse_comp(s)).unwrap_or(202),
+        tree_atlas_normal_format: json["tree_compression_normal"].as_str().map(|s| parse_comp(s)).unwrap_or(202),
+        tree_normal_map: get_bool("tree_normal_map"),
+        trees_brightness: get_i32("trees_brightness", 0),
+        terrain_lod: get_bool("terrain_lod"),
+        terrain_build_meshes: get_bool("build_meshes"),
+        terrain_build_diffuse: get_bool("build_diffuse_textures"),
+        terrain_build_normal: get_bool("build_normal_textures"),
+        terrain_quality,
+        terrain_max_verts,
+        terrain_optimize_unseen,
+        terrain_diffuse_size,
+        terrain_diffuse_comp,
+        terrain_diffuse_mipmap,
+        terrain_normal_size,
+        terrain_normal_comp,
+        terrain_normal_mipmap,
+        terrain_gamma,
+        terrain_brightness,
+        terrain_contrast,
+        terrain_default_diffuse_size: json["terrain_default_diffuse_size"].as_str()
+            .and_then(|s| s.parse().ok()).unwrap_or(128),
+        terrain_default_normal_size: json["terrain_default_normal_size"].as_str()
+            .and_then(|s| s.parse().ok()).unwrap_or(128),
+        terrain_vertex_color_multiplier: json["terrain_vertex_color_multiplier"].as_str()
+            .and_then(|s| s.parse().ok()).unwrap_or(1.0),
+        worldspaces: json["worldspaces"]
+            .as_array()
+            .map(|a| a.iter().filter_map(|v| v.as_str().map(String::from)).collect())
+            .unwrap_or_default(),
+        output_dir: output_dir.to_string(),
+        data_dir: data_dir.to_string(),
+    }
 }
 
-/// Cancel the in-progress LOD generation job.
-/// Returns 0 if cancellation was requested, -2 if no job is running.
-#[no_mangle]
-pub extern "C" fn xedit_lod_cancel() -> i32 {
-    let lock = LOD_JOB.lock().unwrap();
-    match lock.as_ref() {
-        Some(job) if job.status == 0 => {
-            LOD_CANCEL.store(true, Ordering::SeqCst);
-            XEDIT_OK
-        }
-        _ => -2,
-    }
-}

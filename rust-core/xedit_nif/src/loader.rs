@@ -15,6 +15,11 @@ pub struct NiflyLibrary {
     funcs: Box<NiflyFunctions>,
 }
 
+// Safe: NiflyLibrary holds an immutable dlopen handle and immutable function pointers.
+// Each NifFile created from it gets an independent C++ instance with no shared state.
+unsafe impl Send for NiflyLibrary {}
+unsafe impl Sync for NiflyLibrary {}
+
 impl NiflyLibrary {
     /// Attempt to load the nifly C wrapper from standard search paths.
     ///
@@ -86,6 +91,22 @@ impl NiflyLibrary {
             let get_triangle_count = lib.get::<crate::api::NiflyGetTriangleCountFn>(b"nifly_get_triangle_count\0").ok().map(|s| *s);
             let save = lib.get::<crate::api::NiflySaveFn>(b"nifly_save\0").ok().map(|s| *s);
 
+            // Transform functions (optional — available when wrapper is rebuilt with transform support)
+            let get_root_translation = lib.get::<crate::api::NiflyGetRootTranslationFn>(b"nifly_get_root_translation\0").ok().map(|s| *s);
+            let get_node_transform = lib.get::<crate::api::NiflyGetNodeTransformFn>(b"nifly_get_node_transform\0").ok().map(|s| *s);
+            let get_node_transform_global = lib.get::<crate::api::NiflyGetNodeTransformFn>(b"nifly_get_node_transform_global\0").ok().map(|s| *s);
+            let get_shape_transform = lib.get::<crate::api::NiflyGetShapeTransformFn>(b"nifly_get_shape_transform\0").ok().map(|s| *s);
+            let get_shape_global_transform = lib.get::<crate::api::NiflyGetShapeTransformFn>(b"nifly_get_shape_global_transform\0").ok().map(|s| *s);
+            let get_shape_parent_node = lib.get::<crate::api::NiflyGetShapeParentNodeFn>(b"nifly_get_shape_parent_node\0").ok().map(|s| *s);
+
+            // LOD creation functions (BSMultiBoundNode root)
+            let create_lod = lib.get::<crate::api::NiflyCreateLodFn>(b"nifly_create_lod\0").ok().map(|s| *s);
+            let add_multibound = lib.get::<crate::api::NiflyAddMultiboundFn>(b"nifly_add_multibound\0").ok().map(|s| *s);
+            let calc_tangents = lib.get::<crate::api::NiflyCalcTangentsFn>(b"nifly_calc_tangents\0").ok().map(|s| *s);
+            let set_texture_clamp_mode = lib.get::<crate::api::NiflySetTextureClampModeFn>(b"nifly_set_texture_clamp_mode\0").ok().map(|s| *s);
+            let set_root_translation = lib.get::<crate::api::NiflySetRootTranslationFn>(b"nifly_set_root_translation\0").ok().map(|s| *s);
+            let set_root_flags = lib.get::<crate::api::NiflySetRootFlagsFn>(b"nifly_set_root_flags\0").ok().map(|s| *s);
+
             Box::new(NiflyFunctions {
                 load,
                 destroy,
@@ -103,6 +124,18 @@ impl NiflyLibrary {
                 get_vertex_count,
                 get_triangle_count,
                 save,
+                get_root_translation,
+                get_node_transform,
+                get_node_transform_global,
+                get_shape_transform,
+                get_shape_global_transform,
+                get_shape_parent_node,
+                create_lod,
+                add_multibound,
+                calc_tangents,
+                set_texture_clamp_mode,
+                set_root_translation,
+                set_root_flags,
             })
         };
 
@@ -124,6 +157,26 @@ impl NiflyLibrary {
         if handle.is_null() {
             return Err(NifError::OperationFailed(format!(
                 "nifly_create({}) returned null",
+                game_version
+            )));
+        }
+
+        Ok(unsafe { NifFile::from_raw(handle, &*self.funcs as *const NiflyFunctions) })
+    }
+
+    /// Create a new LOD NIF file with BSMultiBoundNode as root.
+    ///
+    /// Game versions: 0=Oblivion, 1=Fallout3/FNV, 2=SkyrimLE, 3=SkyrimSE, 4=Fallout4, 5=Starfield.
+    pub fn create_lod_nif(&self, game_version: u32) -> Result<NifFile, NifError> {
+        let create_fn = self
+            .funcs
+            .create_lod
+            .ok_or_else(|| NifError::OperationFailed("nifly_create_lod not available".into()))?;
+
+        let handle = unsafe { create_fn(game_version as std::ffi::c_int) };
+        if handle.is_null() {
+            return Err(NifError::OperationFailed(format!(
+                "nifly_create_lod({}) returned null",
                 game_version
             )));
         }

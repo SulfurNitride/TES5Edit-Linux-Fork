@@ -87,6 +87,105 @@ NIFLY_EXPORT int nifly_get_triangle_count(void* handle, int shape_idx);
 /* Save NIF to disk. Returns 0 on success, -1 on failure. */
 NIFLY_EXPORT int nifly_save(void* handle, const char* path);
 
+/* Create a new NIF with BSMultiBoundNode as root (for LOD meshes).
+ * Same game_version mapping as nifly_create.
+ * Returns opaque handle, or NULL on failure. */
+NIFLY_EXPORT void* nifly_create_lod(int game_version);
+
+/* Add BSMultiBound + BSMultiBoundAABB to the root BSMultiBoundNode.
+ * center/extent define the AABB for LOD culling.
+ * Returns 0 on success, -1 on failure. */
+NIFLY_EXPORT int nifly_add_multibound(void* handle,
+                                       float center_x, float center_y, float center_z,
+                                       float extent_x, float extent_y, float extent_z);
+
+/* --- Node Transform Functions --- */
+
+/*
+ * Get the root node's translation (3 floats: x, y, z).
+ * Returns 0 on success, -1 on error.
+ */
+NIFLY_EXPORT int nifly_get_root_translation(void* handle, float* out_xyz);
+
+/*
+ * Get a shape's parent node name.
+ * Writes into `buf` up to `buflen` bytes (including null terminator).
+ * Returns the length of the name, or -1 on error.
+ */
+NIFLY_EXPORT int nifly_get_shape_parent_node(void* handle, int shape_idx,
+                                              char* buf, int buflen);
+
+/*
+ * Get a node's transform relative to its parent.
+ * out_translation: 3 floats (x, y, z)
+ * out_rotation: 9 floats (3x3 row-major matrix)
+ * out_scale: 1 float
+ * Returns 1 if transform found, 0 if not found, -1 on error.
+ */
+NIFLY_EXPORT int nifly_get_node_transform(void* handle, const char* node_name,
+                                           float* out_translation,
+                                           float* out_rotation,
+                                           float* out_scale);
+
+/*
+ * Get a node's accumulated global transform (from root).
+ * Same output layout as nifly_get_node_transform.
+ * Returns 1 if found, 0 if not, -1 on error.
+ */
+NIFLY_EXPORT int nifly_get_node_transform_global(void* handle, const char* node_name,
+                                                  float* out_translation,
+                                                  float* out_rotation,
+                                                  float* out_scale);
+
+/*
+ * Get the shape's own transform (NiTriShape/BSTriShape transform-to-parent).
+ * out_translation: 3 floats, out_rotation: 9 floats, out_scale: 1 float.
+ * Returns 1 on success, 0 if no transform, -1 on error.
+ */
+NIFLY_EXPORT int nifly_get_shape_transform(void* handle, int shape_idx,
+                                            float* out_translation,
+                                            float* out_rotation,
+                                            float* out_scale);
+
+/*
+ * Get the full accumulated transform for a shape (parent node chain + shape own).
+ * This composes all transforms from root down to the shape.
+ * out_translation: 3 floats, out_rotation: 9 floats, out_scale: 1 float.
+ * Returns 1 on success, 0 if not available, -1 on error.
+ */
+NIFLY_EXPORT int nifly_get_shape_global_transform(void* handle, int shape_idx,
+                                                   float* out_translation,
+                                                   float* out_rotation,
+                                                   float* out_scale);
+
+/*
+ * Calculate tangent space for a shape (calls nifly CalcTangentsForShape).
+ * Must be called after vertices, normals, UVs, and triangles are set.
+ * Returns 0 on success, -1 on error.
+ */
+NIFLY_EXPORT int nifly_calc_tangents(void* handle, int shape_idx);
+
+/*
+ * Set the root BSMultiBoundNode's translation (for terrain LOD positioning).
+ * FO3/FNV terrain LOD uses root translation for world placement.
+ * Returns 0 on success, -1 on error.
+ */
+NIFLY_EXPORT int nifly_set_root_translation(void* handle, float x, float y, float z);
+
+/*
+ * Set NiAVObject flags on the root node.
+ * For FO3/FNV LOD: flags=0x080E, flags2=8 → combined u32 = 0x0008080E
+ * Returns 0 on success, -1 on error.
+ */
+NIFLY_EXPORT int nifly_set_root_flags(void* handle, uint16_t flags, uint16_t flags2);
+
+/*
+ * Set the TextureClampMode on a shape's shader property.
+ * mode: 0=CLAMP_S_CLAMP_T, 1=CLAMP_S_WRAP_T, 2=WRAP_S_CLAMP_T, 3=WRAP_S_WRAP_T
+ * Returns 0 on success, -1 on error.
+ */
+NIFLY_EXPORT int nifly_set_texture_clamp_mode(void* handle, int shape_idx, uint32_t mode);
+
 #ifdef __cplusplus
 }
 #endif

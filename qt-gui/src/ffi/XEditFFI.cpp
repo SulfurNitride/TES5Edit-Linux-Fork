@@ -228,11 +228,8 @@ bool XEditFFI::load(const QString& libPath)
     xedit_add_record            = resolve<fn_xedit_add_record>("xedit_add_record");
 
     // LOD generation
-    xedit_lod_list_worldspaces  = resolve<fn_xedit_lod_list_worldspaces>("xedit_lod_list_worldspaces");
-    xedit_lod_generate          = resolve<fn_xedit_lod_generate>("xedit_lod_generate");
-    xedit_lod_status            = resolve<fn_xedit_lod_status>("xedit_lod_status");
-    xedit_lod_error             = resolve<fn_xedit_lod_error>("xedit_lod_error");
-    xedit_lod_cancel            = resolve<fn_xedit_lod_cancel>("xedit_lod_cancel");
+    xedit_generate_lod         = resolve<fn_xedit_generate_lod>("xedit_generate_lod");
+    xedit_lod_cancel           = resolve<fn_xedit_lod_cancel>("xedit_lod_cancel");
 
     return true;
 }
@@ -360,9 +357,7 @@ void XEditFFI::unload()
     xedit_add_record            = nullptr;
 
     // LOD generation
-    xedit_lod_list_worldspaces  = nullptr;
-    xedit_lod_generate          = nullptr;
-    xedit_lod_status            = nullptr;
-    xedit_lod_error             = nullptr;
-    xedit_lod_cancel            = nullptr;
+    xedit_generate_lod         = nullptr;
+    xedit_lod_cancel           = nullptr;
+
 }

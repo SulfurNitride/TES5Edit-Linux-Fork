@@ -6,10 +6,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Core Gui)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Core Gui Concurrent)
 
-set(SOURCES
-    src/main.cpp
+# Shared sources (everything except main entry points)
+set(SHARED_SOURCES
     # FFI
     src/ffi/XEditFFI.cpp
     # Models
@@ -94,14 +94,15 @@ set(HEADERS
     src/forms/WorldspaceCellDetailDialog.h
 )
 
-add_executable(xEdit ${SOURCES} ${HEADERS})
+# --- xEdit executable ---
+add_executable(xEdit src/main.cpp ${SHARED_SOURCES} ${HEADERS})
 
 target_include_directories(xEdit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 if(WIN32)
-    target_link_libraries(xEdit PRIVATE Qt6::Widgets Qt6::Core Qt6::Gui)
+    target_link_libraries(xEdit PRIVATE Qt6::Widgets Qt6::Core Qt6::Gui Qt6::Concurrent)
 else()
-    target_link_libraries(xEdit PRIVATE Qt6::Widgets Qt6::Core Qt6::Gui dl)
+    target_link_libraries(xEdit PRIVATE Qt6::Widgets Qt6::Core Qt6::Gui Qt6::Concurrent dl)
 endif()
 
 # Export compile commands for clangd

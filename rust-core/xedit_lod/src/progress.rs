@@ -1,67 +1,56 @@
-//! Thread-safe progress reporting wrapper for LOD generation.
+//! Thread-safe progress reporting for LOD generation.
 
-use std::ffi::CString;
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
 
-/// C-compatible progress callback function pointer.
-pub type ProgressFn = extern "C" fn(message: *const std::os::raw::c_char, progress: f64);
+/// Function pointer type for progress callbacks (matches C FFI).
+pub type ProgressFn = unsafe extern "C" fn(*const std::os::raw::c_char, f64);
 
-/// Thread-safe progress tracker that reports to an optional C callback.
+/// Thread-safe progress reporter.
+#[derive(Clone)]
 pub struct Progress {
     callback: Option<ProgressFn>,
-    cancelled: &'static AtomicBool,
-    total: AtomicU64,
-    done: AtomicU64,
+    message: Arc<Mutex<String>>,
+    fraction: Arc<Mutex<f64>>,
+    cancel: Arc<AtomicBool>,
 }
 
 impl Progress {
-    pub fn new(callback: Option<ProgressFn>, cancelled: &'static AtomicBool) -> Self {
+    pub fn new(callback: Option<ProgressFn>, cancel: Arc<AtomicBool>) -> Self {
         Self {
             callback,
-            cancelled,
-            total: AtomicU64::new(0),
-            done: AtomicU64::new(0),
+            message: Arc::new(Mutex::new(String::new())),
+            fraction: Arc::new(Mutex::new(0.0)),
+            cancel,
         }
     }
 
-    /// Set the total number of work items for progress fraction calculation.
-    pub fn set_total(&self, total: u64) {
-        self.total.store(total, Ordering::Relaxed);
-        self.done.store(0, Ordering::Relaxed);
-    }
-
-    /// Increment the done counter by one and update progress fraction.
-    /// Only sends the fraction update (no message text change).
-    pub fn increment(&self) {
-        let done = self.done.fetch_add(1, Ordering::Relaxed) + 1;
-        let total = self.total.load(Ordering::Relaxed);
-        if total > 0 {
-            let fraction = done as f64 / total as f64;
-            if let Some(cb) = self.callback {
-                // Send null message pointer to update fraction without changing message text
-                cb(std::ptr::null(), fraction);
-            }
+    /// Report progress with a message and fraction (0.0 to 1.0).
+    pub fn report(&self, msg: &str, fraction: f64) {
+        if let Ok(mut m) = self.message.lock() {
+            *m = msg.to_string();
         }
-    }
-
-    /// Report a text message with current progress fraction.
-    pub fn report(&self, msg: &str) {
+        if let Ok(mut f) = self.fraction.lock() {
+            *f = fraction;
+        }
         if let Some(cb) = self.callback {
-            let total = self.total.load(Ordering::Relaxed);
-            let done = self.done.load(Ordering::Relaxed);
-            let fraction = if total > 0 {
-                done as f64 / total as f64
-            } else {
-                0.0
-            };
-            if let Ok(c_msg) = CString::new(msg) {
-                cb(c_msg.as_ptr(), fraction);
-            }
+            let c_msg = std::ffi::CString::new(msg).unwrap_or_default();
+            unsafe { cb(c_msg.as_ptr(), fraction) };
         }
     }
 
-    /// Check if cancellation has been requested.
+    /// Check if cancellation was requested.
     pub fn is_cancelled(&self) -> bool {
-        self.cancelled.load(Ordering::Relaxed)
+        self.cancel.load(Ordering::Relaxed)
+    }
+
+    /// Create a no-op progress (for tests).
+    pub fn noop() -> Self {
+        Self {
+            callback: None,
+            message: Arc::new(Mutex::new(String::new())),
+            fraction: Arc::new(Mutex::new(0.0)),
+            cancel: Arc::new(AtomicBool::new(false)),
+        }
     }
 }

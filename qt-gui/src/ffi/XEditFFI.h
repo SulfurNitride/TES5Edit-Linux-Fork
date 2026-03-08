@@ -112,10 +112,7 @@ typedef int32_t (*fn_xedit_copy_record)(int32_t src_plugin_idx, int32_t src_grou
 typedef int32_t (*fn_xedit_add_record)(int32_t plugin_idx, int32_t group_idx, uint32_t form_id, const uint8_t* signature);
 
 // LOD generation
-typedef int32_t (*fn_xedit_lod_list_worldspaces)(uint8_t* buf, int32_t buf_len);
-typedef int32_t (*fn_xedit_lod_generate)(const char* options_json, void* progress_cb);
-typedef int32_t (*fn_xedit_lod_status)();
-typedef int32_t (*fn_xedit_lod_error)(uint8_t* buf, int32_t buf_len);
+typedef int32_t (*fn_xedit_generate_lod)(const char* json_config, void* log_callback);
 typedef int32_t (*fn_xedit_lod_cancel)();
 
 // ---------------------------------------------------------------------------
@@ -237,11 +234,8 @@ public:
     fn_xedit_add_record            xedit_add_record            = nullptr;
 
     // LOD generation
-    fn_xedit_lod_list_worldspaces  xedit_lod_list_worldspaces  = nullptr;
-    fn_xedit_lod_generate          xedit_lod_generate          = nullptr;
-    fn_xedit_lod_status            xedit_lod_status            = nullptr;
-    fn_xedit_lod_error             xedit_lod_error             = nullptr;
-    fn_xedit_lod_cancel            xedit_lod_cancel            = nullptr;
+    fn_xedit_generate_lod         xedit_generate_lod         = nullptr;
+    fn_xedit_lod_cancel           xedit_lod_cancel           = nullptr;
 
 private:
     XEditFFI() = default;

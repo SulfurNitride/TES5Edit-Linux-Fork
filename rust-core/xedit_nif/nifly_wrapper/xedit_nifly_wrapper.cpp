@@ -360,4 +360,288 @@ NIFLY_EXPORT int nifly_save(void* handle, const char* path) {
     }
 }
 
+/* ---- Transform helpers ---- */
+
+static void mat_transform_to_floats(const MatTransform& t,
+                                     float* out_translation,
+                                     float* out_rotation,
+                                     float* out_scale) {
+    if (out_translation) {
+        out_translation[0] = t.translation.x;
+        out_translation[1] = t.translation.y;
+        out_translation[2] = t.translation.z;
+    }
+    if (out_rotation) {
+        // Row-major 3x3 matrix
+        for (int r = 0; r < 3; r++)
+            for (int c = 0; c < 3; c++)
+                out_rotation[r * 3 + c] = t.rotation[r][c];
+    }
+    if (out_scale) {
+        *out_scale = t.scale;
+    }
+}
+
+NIFLY_EXPORT int nifly_get_root_translation(void* handle, float* out_xyz) {
+    if (!handle || !out_xyz) return -1;
+    NifFile* nif = static_cast<NifFile*>(handle);
+    try {
+        Vector3 v;
+        nif->GetRootTranslation(v);
+        out_xyz[0] = v.x;
+        out_xyz[1] = v.y;
+        out_xyz[2] = v.z;
+        return 0;
+    } catch (...) {
+        return -1;
+    }
+}
+
+NIFLY_EXPORT int nifly_get_shape_parent_node(void* handle, int shape_idx,
+                                              char* buf, int buflen) {
+    if (!handle || shape_idx < 0) return -1;
+    NifFile* nif = static_cast<NifFile*>(handle);
+    auto shapes = nif->GetShapes();
+    if (static_cast<size_t>(shape_idx) >= shapes.size()) return -1;
+
+    NiShape* shape = shapes[shape_idx];
+    NiNode* parent = nif->GetParentNode(shape);
+    if (!parent) {
+        if (buf && buflen > 0) buf[0] = '\0';
+        return 0;
+    }
+
+    std::string name = parent->name.get();
+    return copy_string_to_buf(name, buf, buflen);
+}
+
+NIFLY_EXPORT int nifly_get_node_transform(void* handle, const char* node_name,
+                                           float* out_translation,
+                                           float* out_rotation,
+                                           float* out_scale) {
+    if (!handle || !node_name) return -1;
+    NifFile* nif = static_cast<NifFile*>(handle);
+    try {
+        MatTransform t;
+        bool found = nif->GetNodeTransformToParent(node_name, t);
+        if (!found) return 0;
+        mat_transform_to_floats(t, out_translation, out_rotation, out_scale);
+        return 1;
+    } catch (...) {
+        return -1;
+    }
+}
+
+NIFLY_EXPORT int nifly_get_node_transform_global(void* handle, const char* node_name,
+                                                  float* out_translation,
+                                                  float* out_rotation,
+                                                  float* out_scale) {
+    if (!handle || !node_name) return -1;
+    NifFile* nif = static_cast<NifFile*>(handle);
+    try {
+        MatTransform t;
+        bool found = nif->GetNodeTransformToGlobal(node_name, t);
+        if (!found) return 0;
+        mat_transform_to_floats(t, out_translation, out_rotation, out_scale);
+        return 1;
+    } catch (...) {
+        return -1;
+    }
+}
+
+NIFLY_EXPORT int nifly_get_shape_transform(void* handle, int shape_idx,
+                                            float* out_translation,
+                                            float* out_rotation,
+                                            float* out_scale) {
+    if (!handle || shape_idx < 0) return -1;
+    NifFile* nif = static_cast<NifFile*>(handle);
+    auto shapes = nif->GetShapes();
+    if (static_cast<size_t>(shape_idx) >= shapes.size()) return -1;
+
+    NiShape* shape = shapes[shape_idx];
+    if (!shape) return -1;
+
+    try {
+        // Get shape's own transform-to-parent
+        auto& t = shape->GetTransformToParent();
+        mat_transform_to_floats(t, out_translation, out_rotation, out_scale);
+        return 1;
+    } catch (...) {
+        return -1;
+    }
+}
+
+NIFLY_EXPORT int nifly_get_shape_global_transform(void* handle, int shape_idx,
+                                                   float* out_translation,
+                                                   float* out_rotation,
+                                                   float* out_scale) {
+    if (!handle || shape_idx < 0) return -1;
+    NifFile* nif = static_cast<NifFile*>(handle);
+    auto shapes = nif->GetShapes();
+    if (static_cast<size_t>(shape_idx) >= shapes.size()) return -1;
+
+    NiShape* shape = shapes[shape_idx];
+    if (!shape) return -1;
+
+    try {
+        // Get shape's own transform
+        MatTransform shapeTrans = shape->GetTransformToParent();
+
+        // Get parent node's global transform and compose
+        NiNode* parent = nif->GetParentNode(shape);
+        if (parent) {
+            std::string parentName = parent->name.get();
+            MatTransform parentGlobal;
+            if (nif->GetNodeTransformToGlobal(parentName, parentGlobal)) {
+                // Compose: parentGlobal * shapeTrans
+                shapeTrans = parentGlobal.ComposeTransforms(shapeTrans);
+            }
+        }
+
+        mat_transform_to_floats(shapeTrans, out_translation, out_rotation, out_scale);
+        return 1;
+    } catch (...) {
+        return -1;
+    }
+}
+
+NIFLY_EXPORT void* nifly_create_lod(int game_version) {
+    NifFile* nif = new (std::nothrow) NifFile();
+    if (!nif) return nullptr;
+
+    try {
+        NiVersion version;
+        switch (game_version) {
+            case 0: version = NiVersion::getOB(); break;
+            case 1: version = NiVersion::getFO3(); break;
+            case 2: version = NiVersion::getSK(); break;
+            case 3: version = NiVersion::getSSE(); break;
+            case 4: version = NiVersion::getFO4(); break;
+            case 5: version = NiVersion::getSF(); break;
+            default:
+                delete nif;
+                return nullptr;
+        }
+
+        // Create normally (adds NiNode root at block 0)
+        nif->Create(version);
+
+        NiHeader& hdr = nif->GetHeader();
+
+        // Replace root NiNode with BSMultiBoundNode
+        // (no children yet — CreateShapeFromData adds them later)
+        auto mbRoot = std::make_unique<BSMultiBoundNode>();
+        mbRoot->name.get() = "Scene Root";
+        hdr.ReplaceBlock(0, std::move(mbRoot));
+
+        return static_cast<void*>(nif);
+    } catch (...) {
+        delete nif;
+        return nullptr;
+    }
+}
+
+NIFLY_EXPORT int nifly_add_multibound(void* handle,
+                                       float center_x, float center_y, float center_z,
+                                       float extent_x, float extent_y, float extent_z) {
+    if (!handle) return -1;
+    NifFile* nif = static_cast<NifFile*>(handle);
+
+    try {
+        NiHeader& hdr = nif->GetHeader();
+
+        // Create BSMultiBoundAABB
+        auto aabb = std::make_unique<BSMultiBoundAABB>();
+        aabb->center = {center_x, center_y, center_z};
+        aabb->halfExtent = {extent_x, extent_y, extent_z};
+        auto aabbIdx = hdr.AddBlock(std::move(aabb));
+
+        // Create BSMultiBound pointing to AABB
+        auto mb = std::make_unique<BSMultiBound>();
+        mb->dataRef.index = aabbIdx;
+        auto mbIdx = hdr.AddBlock(std::move(mb));
+
+        // Link root BSMultiBoundNode to BSMultiBound
+        auto* root = hdr.GetBlock<BSMultiBoundNode>(static_cast<uint32_t>(0));
+        if (!root) return -1;
+        root->multiBoundRef.index = mbIdx;
+
+        return 0;
+    } catch (...) {
+        return -1;
+    }
+}
+
+NIFLY_EXPORT int nifly_calc_tangents(void* handle, int shape_idx)
+{
+    if (!handle) return -1;
+    try {
+        auto* nif = static_cast<NifFile*>(handle);
+        auto shapes = nif->GetShapes();
+        if (shape_idx < 0 || shape_idx >= static_cast<int>(shapes.size()))
+            return -1;
+        nif->CalcTangentsForShape(shapes[shape_idx]);
+        return 0;
+    } catch (...) {
+        return -1;
+    }
+}
+
+NIFLY_EXPORT int nifly_set_root_translation(void* handle, float x, float y, float z)
+{
+    if (!handle) return -1;
+    try {
+        auto* nif = static_cast<NifFile*>(handle);
+        NiHeader& hdr = nif->GetHeader();
+        auto* root = hdr.GetBlock<NiNode>(static_cast<uint32_t>(0));
+        if (!root) return -1;
+        root->transform.translation = {x, y, z};
+        return 0;
+    } catch (...) {
+        return -1;
+    }
+}
+
+NIFLY_EXPORT int nifly_set_root_flags(void* handle, uint16_t flags, uint16_t flags2)
+{
+    if (!handle) return -1;
+    try {
+        auto* nif = static_cast<NifFile*>(handle);
+        NiHeader& hdr = nif->GetHeader();
+        auto* root = hdr.GetBlock<NiNode>(static_cast<uint32_t>(0));
+        if (!root) return -1;
+        root->flags = static_cast<uint32_t>(flags) | (static_cast<uint32_t>(flags2) << 16);
+        return 0;
+    } catch (...) {
+        return -1;
+    }
+}
+
+NIFLY_EXPORT int nifly_set_texture_clamp_mode(void* handle, int shape_idx, uint32_t mode)
+{
+    if (!handle) return -1;
+    try {
+        auto* nif = static_cast<NifFile*>(handle);
+        auto shapes = nif->GetShapes();
+        if (shape_idx < 0 || shape_idx >= static_cast<int>(shapes.size()))
+            return -1;
+
+        auto* shader = nif->GetShader(shapes[shape_idx]);
+        if (!shader) return -1;
+
+        // BSLightingShaderProperty and BSEffectShaderProperty both have textureClampMode
+        if (auto* lsp = dynamic_cast<BSLightingShaderProperty*>(shader)) {
+            lsp->textureClampMode = mode;
+            return 0;
+        }
+        if (auto* esp = dynamic_cast<BSEffectShaderProperty*>(shader)) {
+            esp->textureClampMode = mode;
+            return 0;
+        }
+        return -1;
+    } catch (...) {
+        return -1;
+    }
+}
+
 } /* extern "C" */

@@ -1,538 +1,286 @@
-//! Texture atlas builder — bin-packing textures onto atlas sheets.
+//! Tree billboard atlas builder.
 //!
-//! Matches the Delphi xEdit atlas building:
-//! 1. Sort textures by max(width, height) descending
-//! 2. Binary tree bin-packing
-//! 3. Multiple atlas sheets when textures don't fit (numbered 00, 01...)
-//! 4. Crop atlas to next power-of-2
+//! Loads billboard textures, packs them into an atlas, and produces
+//! the tree atlas DDS and TreeTypes.lst files.
+//!
+//! Ported from TwbLodTES5TreeList.BuildAtlas in wbLOD.pas.
 
-use anyhow::Result;
+use anyhow::{Context, Result};
+use tracing::{debug, info, warn};
 
-/// A placed texture entry on an atlas sheet
-#[derive(Debug, Clone)]
-pub struct AtlasEntry {
-    pub texture_path: String,
-    pub x: u32,
-    pub y: u32,
-    pub width: u32,
-    pub height: u32,
-    /// Which atlas sheet this entry is on (0-based)
-    pub atlas_index: u32,
-    pub raw_data: Vec<u8>,
-}
+use crate::bin_packer::BinBlock;
+use crate::dds_util;
+use crate::reference_scanner::{TreeBaseInfo, billboard_path};
+use crate::resource_loader::ResourceLoader;
+use crate::trees_lod::{TreeType, TreeTypeList, BillboardConfig};
 
-/// Binary tree node for rectangle packing
+/// Maximum atlas size (8192x8192).
+const MAX_ATLAS_SIZE: u32 = 8192;
+
+/// Atlas padding between billboards.
+const ATLAS_PADDING: u32 = 2;
+
+/// Information about a loaded billboard texture.
 #[derive(Debug)]
-struct PackNode {
-    x: u32,
-    y: u32,
-    w: u32,
-    h: u32,
-    used: bool,
-    right: Option<Box<PackNode>>,
-    down: Option<Box<PackNode>>,
+struct LoadedBillboard {
+    /// Index of the tree type.
+    type_index: i32,
+    /// RGBA pixel data.
+    rgba: Vec<u8>,
+    /// Width in pixels.
+    width: u32,
+    /// Height in pixels.
+    height: u32,
+    /// CRC32 of the raw DDS data (for dedup).
+    crc32: u32,
+    /// Billboard config (width/height/shift/scale from .txt file).
+    _config: BillboardConfig,
+    /// Game-units width (from OBND or .txt).
+    game_width: f32,
+    /// Game-units height (from OBND or .txt).
+    game_height: f32,
 }
 
-impl PackNode {
-    fn new(x: u32, y: u32, w: u32, h: u32) -> Self {
-        Self { x, y, w, h, used: false, right: None, down: None }
-    }
+/// Result of building a tree atlas.
+#[derive(Debug)]
+pub struct AtlasResult {
+    /// DXT5-compressed atlas DDS bytes (diffuse).
+    pub diffuse_dds: Vec<u8>,
+    /// DXT5-compressed atlas DDS bytes (normal map, if available).
+    pub normal_dds: Option<Vec<u8>>,
+    /// Tree type list for LST file.
+    pub tree_types: TreeTypeList,
+    /// Atlas dimensions.
+    pub atlas_width: u32,
+    pub atlas_height: u32,
+}
 
-    /// Try to find a spot for a block of size (w, h).
-    fn find(&mut self, w: u32, h: u32) -> Option<(u32, u32)> {
-        if self.used {
-            // Try right child first, then down
-            if let Some(ref mut right) = self.right {
-                if let Some(pos) = right.find(w, h) {
-                    return Some(pos);
-                }
+/// Build the tree billboard atlas from tree base records.
+///
+/// # Arguments
+/// * `tree_bases` - Tree base records with billboard paths
+/// * `loader` - Resource loader for reading textures
+/// * `diffuse_format` - DDS format code for diffuse atlas (usually 202 = DXT5)
+/// * `normal_format` - DDS format code for normal atlas (usually 202 = DXT5)
+/// * `build_normal` - Whether to build a normal map atlas
+/// * `brightness` - Brightness adjustment (-255..255, 0 = none)
+pub fn build_tree_atlas(
+    tree_bases: &[TreeBaseInfo],
+    loader: &ResourceLoader,
+    diffuse_format: u32,
+    normal_format: u32,
+    build_normal: bool,
+    brightness: i32,
+) -> Result<AtlasResult> {
+    // Step 1: Load billboard textures and configs
+    let mut billboards = Vec::new();
+    let mut seen_crc: std::collections::HashMap<u32, usize> = std::collections::HashMap::new();
+    let mut type_index = 0i32;
+
+    for base in tree_bases {
+        let bb_path = billboard_path(&base.plugin_filename, &base.model_path, base.form_id);
+
+        // Try to load the billboard DDS
+        let dds_data = match loader.load(&bb_path) {
+            Ok(data) => data,
+            Err(_) => {
+                warn!("Billboard not found: {} (base {:08X} {})", bb_path, base.form_id, base.editor_id);
+                continue;
             }
-            if let Some(ref mut down) = self.down {
-                return down.find(w, h);
+        };
+
+        // CRC32 for dedup
+        let crc = crc32fast::hash(&dds_data);
+
+        // Load billboard .txt config
+        let txt_path = bb_path.replace(".dds", ".txt");
+        let config = match loader.load(&txt_path) {
+            Ok(txt_data) => {
+                let content = String::from_utf8_lossy(&txt_data);
+                BillboardConfig::parse(&content)
             }
-            None
-        } else if w <= self.w && h <= self.h {
-            // Fits here — split this node
-            self.used = true;
-            self.right = Some(Box::new(PackNode::new(
-                self.x + w, self.y,
-                self.w.saturating_sub(w), h,
-            )));
-            self.down = Some(Box::new(PackNode::new(
-                self.x, self.y + h,
-                self.w, self.h.saturating_sub(h),
-            )));
-            Some((self.x, self.y))
-        } else {
-            None
+            Err(_) => BillboardConfig::default(),
+        };
+
+        // Width/Height: prefer .txt values, fall back to OBND
+        let game_width = if config.width > 0.0 { config.width } else { base.width };
+        let game_height = if config.height > 0.0 { config.height } else { base.height };
+
+        // Check for duplicate (by CRC32)
+        if seen_crc.contains_key(&crc) {
+            debug!("Duplicate billboard CRC {:08X} for {:08X}, reusing", crc, base.form_id);
         }
-    }
-}
 
-/// Atlas builder supporting multiple sheets
-pub struct AtlasBuilder {
-    pub width: u32,
-    pub height: u32,
-    pub max_texture_size: u32,
-    pub entries: Vec<AtlasEntry>,
-    pub sheet_count: u32,
-}
+        // Decompress to RGBA
+        let (rgba, w, h) = match dds_util::decompress_to_rgba(&dds_data) {
+            Ok(result) => result,
+            Err(e) => {
+                warn!("Failed to decompress billboard {}: {}", bb_path, e);
+                continue;
+            }
+        };
 
-impl AtlasBuilder {
-    pub fn new(width: u32, height: u32, max_texture_size: u32) -> Self {
-        Self {
-            width,
-            height,
-            max_texture_size,
-            entries: Vec::new(),
-            sheet_count: 0,
-        }
-    }
+        let idx = type_index;
+        type_index += 1;
 
-    /// Collect and pack all textures. Call add_texture() first, then pack_all().
-    /// For simpler usage, use add_texture + build which packs a single sheet.
-    pub fn add_texture(&mut self, path: &str, dds_data: &[u8]) -> Result<usize> {
-        let (tex_w, tex_h) = parse_dds_dimensions(dds_data)?;
-        let w = tex_w.min(self.max_texture_size);
-        let h = tex_h.min(self.max_texture_size);
+        seen_crc.entry(crc).or_insert(billboards.len());
 
-        let idx = self.entries.len();
-        self.entries.push(AtlasEntry {
-            texture_path: path.to_string(),
-            x: 0,
-            y: 0,
+        billboards.push(LoadedBillboard {
+            type_index: idx,
+            rgba,
             width: w,
             height: h,
-            atlas_index: 0,
-            raw_data: dds_data.to_vec(),
+            crc32: crc,
+            _config: config,
+            game_width,
+            game_height,
         });
-
-        Ok(idx)
     }
 
-    /// Pack all added textures into atlas sheets using binary tree packing.
-    /// Sorts by max(w,h) descending, then packs. Textures that don't fit
-    /// on the current sheet go to the next sheet.
-    pub fn pack_all(&mut self) {
-        if self.entries.is_empty() {
-            return;
+    if billboards.is_empty() {
+        anyhow::bail!("No valid billboard textures found");
+    }
+
+    info!("Loaded {} billboard textures", billboards.len());
+
+    // Step 2: Build unique blocks for packing (dedup by CRC32)
+    let mut unique_blocks: Vec<BinBlock> = Vec::new();
+    let mut crc_to_block: std::collections::HashMap<u32, usize> = std::collections::HashMap::new();
+
+    for bb in &billboards {
+        if crc_to_block.contains_key(&bb.crc32) {
+            continue;
+        }
+        crc_to_block.insert(bb.crc32, unique_blocks.len());
+        unique_blocks.push(BinBlock {
+            w: bb.width,
+            h: bb.height,
+            x: 0,
+            y: 0,
+            index: bb.type_index as usize,
+            placed: false,
+        });
+    }
+
+    // Step 3: Pack into atlas with auto-growth
+    let (atlas_w, atlas_h) = crate::bin_packer::fit_with_growth(
+        &mut unique_blocks,
+        512, 512,
+        MAX_ATLAS_SIZE, MAX_ATLAS_SIZE,
+        ATLAS_PADDING, ATLAS_PADDING,
+    ).ok_or_else(|| anyhow::anyhow!("Can't fit billboards on atlas, not enough space"))?;
+
+    info!("Atlas size: {}x{} for {} unique textures", atlas_w, atlas_h, unique_blocks.len());
+
+    // Step 4: Composite atlas
+    let mut canvas = dds_util::create_canvas(atlas_w, atlas_h);
+
+    for bb in &billboards {
+        let block_idx = crc_to_block[&bb.crc32];
+        let block = &unique_blocks[block_idx];
+
+        dds_util::composite_rect(
+            &mut canvas,
+            atlas_w,
+            &bb.rgba,
+            bb.width,
+            bb.height,
+            block.x,
+            block.y,
+        );
+    }
+
+    // Apply brightness adjustment
+    if brightness != 0 {
+        apply_brightness(&mut canvas, brightness);
+    }
+
+    // Step 5: Build tree type list with UV coordinates
+    let mut tree_types = Vec::new();
+    for bb in &billboards {
+        let block_idx = crc_to_block[&bb.crc32];
+        let block = &unique_blocks[block_idx];
+
+        tree_types.push(TreeType {
+            index: bb.type_index,
+            width: bb.game_width,
+            height: bb.game_height,
+            uv_min_x: block.x as f32 / atlas_w as f32,
+            uv_min_y: block.y as f32 / atlas_h as f32,
+            uv_max_x: (block.x + bb.width) as f32 / atlas_w as f32,
+            uv_max_y: (block.y + bb.height) as f32 / atlas_h as f32,
+            unknown: 0,
+        });
+    }
+
+    let lst = TreeTypeList { types: tree_types };
+
+    // Step 6: Compress atlas to DDS
+    let diffuse_dds = dds_util::compress_to_dds(&canvas, atlas_w, atlas_h, diffuse_format, true)
+        .context("Failed to compress diffuse atlas")?;
+
+    // Step 7: Build normal map atlas if requested
+    let normal_dds = if build_normal {
+        let mut normal_canvas = dds_util::create_canvas(atlas_w, atlas_h);
+        // Fill with default normal (128, 128, 255, 255) = flat normal
+        for pixel in normal_canvas.chunks_exact_mut(4) {
+            pixel[0] = 128; // R
+            pixel[1] = 128; // G
+            pixel[2] = 255; // B
+            pixel[3] = 255; // A
         }
 
-        // Sort indices by max(w,h) descending
-        let mut indices: Vec<usize> = (0..self.entries.len()).collect();
-        indices.sort_by(|&a, &b| {
-            let max_a = self.entries[a].width.max(self.entries[a].height);
-            let max_b = self.entries[b].width.max(self.entries[b].height);
-            max_b.cmp(&max_a)
-        });
+        // Load and composite normal billboards
+        for base in tree_bases {
+            let bb_path = billboard_path(&base.plugin_filename, &base.model_path, base.form_id);
+            let normal_path = bb_path.replace(".dds", "_n.dds");
 
-        let mut current_sheet = 0u32;
-        let mut remaining = indices;
-
-        while !remaining.is_empty() {
-            let mut root = PackNode::new(0, 0, self.width, self.height);
-            let mut packed = Vec::new();
-            let mut unpacked = Vec::new();
-
-            for &idx in &remaining {
-                let w = self.entries[idx].width;
-                let h = self.entries[idx].height;
-
-                if let Some((x, y)) = root.find(w, h) {
-                    self.entries[idx].x = x;
-                    self.entries[idx].y = y;
-                    self.entries[idx].atlas_index = current_sheet;
-                    packed.push(idx);
-                } else {
-                    unpacked.push(idx);
+            if let Ok(normal_data) = loader.load(&normal_path) {
+                if let Ok((rgba, w, h)) = dds_util::decompress_to_rgba(&normal_data) {
+                    // Find which billboard index this corresponds to
+                    let dds_data = match loader.load(&bb_path) {
+                        Ok(d) => d,
+                        Err(_) => continue,
+                    };
+                    let crc = crc32fast::hash(&dds_data);
+                    if let Some(&block_idx) = crc_to_block.get(&crc) {
+                        let block = &unique_blocks[block_idx];
+                        dds_util::composite_rect(
+                            &mut normal_canvas,
+                            atlas_w,
+                            &rgba,
+                            w,
+                            h,
+                            block.x,
+                            block.y,
+                        );
+                    }
                 }
             }
-
-            if packed.is_empty() {
-                // Nothing fits even on a fresh sheet — skip these textures
-                tracing::warn!(
-                    "{} textures too large for {}x{} atlas, skipping",
-                    unpacked.len(), self.width, self.height
-                );
-                break;
-            }
-
-            tracing::info!(
-                "Atlas sheet {}: packed {} textures ({} remaining)",
-                current_sheet, packed.len(), unpacked.len()
-            );
-
-            current_sheet += 1;
-            remaining = unpacked;
         }
 
-        self.sheet_count = current_sheet;
-    }
-
-    /// Build the atlas DDS for a specific sheet index.
-    pub fn build_sheet(&self, sheet_index: u32, _compression: &str) -> Result<Vec<u8>> {
-        let sheet_entries: Vec<&AtlasEntry> = self.entries.iter()
-            .filter(|e| e.atlas_index == sheet_index)
-            .collect();
-
-        if sheet_entries.is_empty() {
-            return Ok(Vec::new());
-        }
-
-        // Find actual used area and crop to next power-of-2
-        let max_x = sheet_entries.iter().map(|e| e.x + e.width).max().unwrap_or(0);
-        let max_y = sheet_entries.iter().map(|e| e.y + e.height).max().unwrap_or(0);
-        let actual_w = next_power_of_2(max_x).min(self.width);
-        let actual_h = next_power_of_2(max_y).min(self.height);
-
-        let pixel_count = (actual_w * actual_h) as usize;
-        let mut rgba = vec![0u8; pixel_count * 4];
-
-        for entry in &sheet_entries {
-            if let Ok(pixels) = decode_dds_to_rgba(&entry.raw_data, entry.width, entry.height) {
-                blit_rgba(
-                    &mut rgba, actual_w,
-                    &pixels, entry.x, entry.y, entry.width, entry.height,
-                );
-            }
-        }
-
-        Ok(write_dds_rgba(&rgba, actual_w, actual_h))
-    }
-
-    /// Build a single atlas DDS (sheet 0). For backwards compatibility.
-    pub fn build(&self, compression: &str) -> Result<Vec<u8>> {
-        self.build_sheet(0, compression)
-    }
-
-    /// Get the actual dimensions of a specific sheet (cropped to power-of-2).
-    pub fn sheet_dimensions(&self, sheet_index: u32) -> (u32, u32) {
-        let sheet_entries: Vec<&AtlasEntry> = self.entries.iter()
-            .filter(|e| e.atlas_index == sheet_index)
-            .collect();
-
-        if sheet_entries.is_empty() {
-            return (0, 0);
-        }
-
-        let max_x = sheet_entries.iter().map(|e| e.x + e.width).max().unwrap_or(0);
-        let max_y = sheet_entries.iter().map(|e| e.y + e.height).max().unwrap_or(0);
-        let w = next_power_of_2(max_x).min(self.width);
-        let h = next_power_of_2(max_y).min(self.height);
-        (w, h)
-    }
-}
-
-/// Next power of 2 >= n.
-fn next_power_of_2(n: u32) -> u32 {
-    if n == 0 { return 1; }
-    let mut v = n - 1;
-    v |= v >> 1;
-    v |= v >> 2;
-    v |= v >> 4;
-    v |= v >> 8;
-    v |= v >> 16;
-    v + 1
-}
-
-/// Parse DDS header to extract width and height.
-pub fn parse_dds_dimensions(data: &[u8]) -> Result<(u32, u32)> {
-    anyhow::ensure!(data.len() >= 128, "DDS file too small for header");
-    anyhow::ensure!(&data[0..4] == b"DDS ", "Not a DDS file (bad magic)");
-
-    let height = u32::from_le_bytes([data[12], data[13], data[14], data[15]]);
-    let width = u32::from_le_bytes([data[16], data[17], data[18], data[19]]);
-
-    Ok((width, height))
-}
-
-/// Simple DDS decode to RGBA (handles uncompressed, DXT1/BC1, DXT3/BC2, DXT5/BC3).
-fn decode_dds_to_rgba(data: &[u8], width: u32, height: u32) -> Result<Vec<u8>> {
-    if data.len() < 128 {
-        anyhow::bail!("DDS too small");
-    }
-
-    let pixel_format_offset = 76;
-    let fourcc_offset = pixel_format_offset + 8;
-
-    let fourcc = if data.len() >= fourcc_offset + 4 {
-        &data[fourcc_offset..fourcc_offset + 4]
+        Some(dds_util::compress_to_dds(&normal_canvas, atlas_w, atlas_h, normal_format, true)
+            .context("Failed to compress normal atlas")?)
     } else {
-        b"\0\0\0\0"
+        None
     };
 
-    let pixel_data = &data[128..];
-    let pixel_count = (width * height) as usize;
+    Ok(AtlasResult {
+        diffuse_dds,
+        normal_dds,
+        tree_types: lst,
+        atlas_width: atlas_w,
+        atlas_height: atlas_h,
+    })
+}
 
-    if fourcc == b"DXT1" {
-        Ok(decode_bc1(pixel_data, width, height))
-    } else if fourcc == b"DXT3" {
-        Ok(decode_bc2(pixel_data, width, height))
-    } else if fourcc == b"DXT5" {
-        Ok(decode_bc3(pixel_data, width, height))
-    } else {
-        // Assume uncompressed RGBA or BGRA
-        let rgb_size = &data[pixel_format_offset + 4..pixel_format_offset + 8];
-        let bits_per_pixel = u32::from_le_bytes([rgb_size[0], rgb_size[1], rgb_size[2], rgb_size[3]]);
-
-        if bits_per_pixel == 32 && pixel_data.len() >= pixel_count * 4 {
-            Ok(pixel_data[..pixel_count * 4].to_vec())
-        } else if bits_per_pixel == 24 && pixel_data.len() >= pixel_count * 3 {
-            let mut rgba = vec![0u8; pixel_count * 4];
-            for i in 0..pixel_count {
-                rgba[i * 4] = pixel_data[i * 3];
-                rgba[i * 4 + 1] = pixel_data[i * 3 + 1];
-                rgba[i * 4 + 2] = pixel_data[i * 3 + 2];
-                rgba[i * 4 + 3] = 255;
-            }
-            Ok(rgba)
-        } else {
-            // Fallback: solid gray
-            Ok(vec![128u8; pixel_count * 4])
+/// Apply brightness adjustment to RGBA pixels.
+fn apply_brightness(rgba: &mut [u8], brightness: i32) {
+    for pixel in rgba.chunks_exact_mut(4) {
+        // Only adjust RGB, not alpha
+        for channel in &mut pixel[..3] {
+            let val = (*channel as i32) + brightness;
+            *channel = val.clamp(0, 255) as u8;
         }
     }
-}
-
-/// Decode BC1/DXT1 compressed data to RGBA.
-fn decode_bc1(data: &[u8], width: u32, height: u32) -> Vec<u8> {
-    let blocks_x = (width + 3) / 4;
-    let blocks_y = (height + 3) / 4;
-    let mut rgba = vec![0u8; (width * height * 4) as usize];
-
-    for by in 0..blocks_y {
-        for bx in 0..blocks_x {
-            let block_idx = (by * blocks_x + bx) as usize;
-            let block_offset = block_idx * 8;
-            if block_offset + 8 > data.len() { break; }
-
-            let block = &data[block_offset..block_offset + 8];
-            let c0 = u16::from_le_bytes([block[0], block[1]]);
-            let c1 = u16::from_le_bytes([block[2], block[3]]);
-            let colors = decode_bc1_colors(c0, c1);
-
-            for py in 0..4u32 {
-                for px in 0..4u32 {
-                    let x = bx * 4 + px;
-                    let y = by * 4 + py;
-                    if x < width && y < height {
-                        let bit_idx = py * 4 + px;
-                        let selector = (block[4 + (bit_idx / 4) as usize] >> ((bit_idx % 4) * 2)) & 0x03;
-                        let color = &colors[selector as usize];
-                        let pixel_offset = ((y * width + x) * 4) as usize;
-                        rgba[pixel_offset..pixel_offset + 4].copy_from_slice(color);
-                    }
-                }
-            }
-        }
-    }
-    rgba
-}
-
-/// Decode BC2/DXT3 compressed data to RGBA.
-fn decode_bc2(data: &[u8], width: u32, height: u32) -> Vec<u8> {
-    let blocks_x = (width + 3) / 4;
-    let blocks_y = (height + 3) / 4;
-    let mut rgba = vec![0u8; (width * height * 4) as usize];
-
-    for by in 0..blocks_y {
-        for bx in 0..blocks_x {
-            let block_idx = (by * blocks_x + bx) as usize;
-            let block_offset = block_idx * 16; // 16 bytes per BC2 block
-            if block_offset + 16 > data.len() { break; }
-
-            let alpha_block = &data[block_offset..block_offset + 8];
-            let color_block = &data[block_offset + 8..block_offset + 16];
-
-            let c0 = u16::from_le_bytes([color_block[0], color_block[1]]);
-            let c1 = u16::from_le_bytes([color_block[2], color_block[3]]);
-            let colors = decode_bc1_colors_opaque(c0, c1);
-
-            for py in 0..4u32 {
-                for px in 0..4u32 {
-                    let x = bx * 4 + px;
-                    let y = by * 4 + py;
-                    if x < width && y < height {
-                        let bit_idx = py * 4 + px;
-                        let selector = (color_block[4 + (bit_idx / 4) as usize] >> ((bit_idx % 4) * 2)) & 0x03;
-                        let color = &colors[selector as usize];
-                        let pixel_offset = ((y * width + x) * 4) as usize;
-                        rgba[pixel_offset] = color[0];
-                        rgba[pixel_offset + 1] = color[1];
-                        rgba[pixel_offset + 2] = color[2];
-                        // Explicit alpha from alpha block (4-bit per pixel)
-                        let alpha_byte = alpha_block[(py * 2 + px / 2) as usize];
-                        let alpha_nibble = if px % 2 == 0 { alpha_byte & 0x0F } else { alpha_byte >> 4 };
-                        rgba[pixel_offset + 3] = alpha_nibble | (alpha_nibble << 4);
-                    }
-                }
-            }
-        }
-    }
-    rgba
-}
-
-/// Decode BC3/DXT5 compressed data to RGBA.
-fn decode_bc3(data: &[u8], width: u32, height: u32) -> Vec<u8> {
-    let blocks_x = (width + 3) / 4;
-    let blocks_y = (height + 3) / 4;
-    let mut rgba = vec![0u8; (width * height * 4) as usize];
-
-    for by in 0..blocks_y {
-        for bx in 0..blocks_x {
-            let block_idx = (by * blocks_x + bx) as usize;
-            let block_offset = block_idx * 16;
-            if block_offset + 16 > data.len() { break; }
-
-            let alpha_block = &data[block_offset..block_offset + 8];
-            let color_block = &data[block_offset + 8..block_offset + 16];
-
-            let c0 = u16::from_le_bytes([color_block[0], color_block[1]]);
-            let c1 = u16::from_le_bytes([color_block[2], color_block[3]]);
-            let colors = decode_bc1_colors_opaque(c0, c1);
-
-            // Decode interpolated alpha
-            let a0 = alpha_block[0];
-            let a1 = alpha_block[1];
-            let alpha_lut = decode_bc3_alpha_lut(a0, a1);
-            let mut alpha_bits = 0u64;
-            for i in 2..8 {
-                alpha_bits |= (alpha_block[i] as u64) << ((i - 2) * 8);
-            }
-
-            for py in 0..4u32 {
-                for px in 0..4u32 {
-                    let x = bx * 4 + px;
-                    let y = by * 4 + py;
-                    if x < width && y < height {
-                        let bit_idx = py * 4 + px;
-                        let selector = (color_block[4 + (bit_idx / 4) as usize] >> ((bit_idx % 4) * 2)) & 0x03;
-                        let color = &colors[selector as usize];
-                        let pixel_offset = ((y * width + x) * 4) as usize;
-                        rgba[pixel_offset] = color[0];
-                        rgba[pixel_offset + 1] = color[1];
-                        rgba[pixel_offset + 2] = color[2];
-                        let alpha_idx = (alpha_bits >> (bit_idx * 3)) & 0x07;
-                        rgba[pixel_offset + 3] = alpha_lut[alpha_idx as usize];
-                    }
-                }
-            }
-        }
-    }
-    rgba
-}
-
-fn decode_bc3_alpha_lut(a0: u8, a1: u8) -> [u8; 8] {
-    let mut lut = [0u8; 8];
-    lut[0] = a0;
-    lut[1] = a1;
-    if a0 > a1 {
-        for i in 2..8 {
-            lut[i] = (((8 - i) as u16 * a0 as u16 + (i - 1) as u16 * a1 as u16) / 7) as u8;
-        }
-    } else {
-        for i in 2..6 {
-            lut[i] = (((6 - i) as u16 * a0 as u16 + (i - 1) as u16 * a1 as u16) / 5) as u8;
-        }
-        lut[6] = 0;
-        lut[7] = 255;
-    }
-    lut
-}
-
-fn decode_bc1_colors(c0: u16, c1: u16) -> [[u8; 4]; 4] {
-    let (r0, g0, b0) = expand_565(c0);
-    let (r1, g1, b1) = expand_565(c1);
-
-    if c0 > c1 {
-        [
-            [r0, g0, b0, 255],
-            [r1, g1, b1, 255],
-            [lerp3(r0, r1, 2, 1), lerp3(g0, g1, 2, 1), lerp3(b0, b1, 2, 1), 255],
-            [lerp3(r0, r1, 1, 2), lerp3(g0, g1, 1, 2), lerp3(b0, b1, 1, 2), 255],
-        ]
-    } else {
-        [
-            [r0, g0, b0, 255],
-            [r1, g1, b1, 255],
-            [lerp2(r0, r1), lerp2(g0, g1), lerp2(b0, b1), 255],
-            [0, 0, 0, 0],
-        ]
-    }
-}
-
-fn decode_bc1_colors_opaque(c0: u16, c1: u16) -> [[u8; 4]; 4] {
-    let (r0, g0, b0) = expand_565(c0);
-    let (r1, g1, b1) = expand_565(c1);
-
-    [
-        [r0, g0, b0, 255],
-        [r1, g1, b1, 255],
-        [lerp3(r0, r1, 2, 1), lerp3(g0, g1, 2, 1), lerp3(b0, b1, 2, 1), 255],
-        [lerp3(r0, r1, 1, 2), lerp3(g0, g1, 1, 2), lerp3(b0, b1, 1, 2), 255],
-    ]
-}
-
-fn expand_565(c: u16) -> (u8, u8, u8) {
-    let r = ((c >> 11) & 0x1F) as u8;
-    let g = ((c >> 5) & 0x3F) as u8;
-    let b = (c & 0x1F) as u8;
-    ((r << 3) | (r >> 2), (g << 2) | (g >> 4), (b << 3) | (b >> 2))
-}
-
-fn lerp3(a: u8, b: u8, wa: u16, wb: u16) -> u8 {
-    ((wa * a as u16 + wb * b as u16) / 3) as u8
-}
-
-fn lerp2(a: u8, b: u8) -> u8 {
-    ((a as u16 + b as u16) / 2) as u8
-}
-
-/// Blit RGBA pixels onto the atlas buffer.
-fn blit_rgba(
-    atlas: &mut [u8], atlas_width: u32,
-    src: &[u8], dst_x: u32, dst_y: u32, src_w: u32, src_h: u32,
-) {
-    for y in 0..src_h {
-        for x in 0..src_w {
-            let src_offset = ((y * src_w + x) * 4) as usize;
-            let dst_offset = (((dst_y + y) * atlas_width + (dst_x + x)) * 4) as usize;
-            if src_offset + 4 <= src.len() && dst_offset + 4 <= atlas.len() {
-                atlas[dst_offset..dst_offset + 4].copy_from_slice(&src[src_offset..src_offset + 4]);
-            }
-        }
-    }
-}
-
-/// Write an uncompressed RGBA DDS file.
-fn write_dds_rgba(rgba: &[u8], width: u32, height: u32) -> Vec<u8> {
-    let mut out = Vec::with_capacity(128 + rgba.len());
-
-    out.extend_from_slice(b"DDS ");
-    out.extend_from_slice(&124u32.to_le_bytes());
-    out.extend_from_slice(&0x0002_100Fu32.to_le_bytes()); // flags
-    out.extend_from_slice(&height.to_le_bytes());
-    out.extend_from_slice(&width.to_le_bytes());
-    out.extend_from_slice(&(width * 4).to_le_bytes()); // pitch
-    out.extend_from_slice(&0u32.to_le_bytes()); // depth
-    out.extend_from_slice(&1u32.to_le_bytes()); // mipmap count
-    out.extend_from_slice(&[0u8; 44]); // reserved
-
-    // Pixel format
-    out.extend_from_slice(&32u32.to_le_bytes()); // size
-    out.extend_from_slice(&0x41u32.to_le_bytes()); // flags (RGB|ALPHA)
-    out.extend_from_slice(&0u32.to_le_bytes()); // fourcc
-    out.extend_from_slice(&32u32.to_le_bytes()); // bits
-    out.extend_from_slice(&0x00FF_0000u32.to_le_bytes()); // R mask
-    out.extend_from_slice(&0x0000_FF00u32.to_le_bytes()); // G mask
-    out.extend_from_slice(&0x0000_00FFu32.to_le_bytes()); // B mask
-    out.extend_from_slice(&0xFF00_0000u32.to_le_bytes()); // A mask
-
-    out.extend_from_slice(&0x1000u32.to_le_bytes()); // caps
-    out.extend_from_slice(&0u32.to_le_bytes());
-    out.extend_from_slice(&0u32.to_le_bytes());
-    out.extend_from_slice(&0u32.to_le_bytes());
-    out.extend_from_slice(&0u32.to_le_bytes());
-
-    out.extend_from_slice(rgba);
-    out
 }

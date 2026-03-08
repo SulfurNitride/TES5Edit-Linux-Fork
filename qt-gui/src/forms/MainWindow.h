@@ -71,7 +71,6 @@ private slots:
     void onLogAnalyzer();
     void onLocalization();
     void onLocalizePlugin();
-    void onLODGen();
     void onModGroupSelect();
     void onModGroupEdit();
     void onViewElements();
@@ -79,6 +78,7 @@ private slots:
     void onFileSelect();
     void onDeveloperMessage();
     void onTipOfTheDay();
+    void onLODGen();
 
     // Navigation history
     void onNavBack();
